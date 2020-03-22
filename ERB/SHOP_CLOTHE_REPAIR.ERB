@@ -1,0 +1,101 @@
+﻿;========================================================================
+;衣服修復屋
+;普通の店に設置したいところだったが、普通の店が娼婦と非娼婦時とで別の店員が出てくるため分離
+;========================================================================
+@SHOP_CLOTHE_REPAIR
+
+;FOR文用
+#DIM L_LOCAL, 1
+
+DRAWLINE
+PRINTFORML ～～裏通り　衣服修復屋～～
+PRINTFORML 薄汚れた男「なんだ。お前か……
+;追放されたかどうかでメッセージを分岐する
+IF FLAG:王宮追放
+	PRINTFORML 　　　　　　王宮追い出されるとか何やってんだよ
+ELSE
+	PRINTFORML 　　　　　　わざわざ俺のところに来なくても他に宛てがあるだろ
+ENDIF
+PRINTFORML 　　　　　　まあいい。何か用があるなら見てやる」
+
+$BACK_LOOP_MAIN
+
+DRAWLINE
+PRINT (所持金:
+CALL SETCOLOR_MONEY
+PRINTFORM ${MONEY}
+RESETCOLOR
+PRINTFORML )
+
+PRINTFORML [0] - 衣服を修復する(要$20000)　　　　　破れた服を直してやる
+PRINTFORML [1] - %CALLNAME:TARGET, 10%について　　　　　　　　俺に聞いてどうすんだよ
+PRINTFORML [9] - 帰る　　　　　　　　　　　　　　　そうか、用ができたらまた来いよ
+
+$INPUT_LOOP
+INPUT
+
+;戻る
+IF RESULT == 9
+	RETURN 0
+ELSEIF RESULT == 0
+	$BACK_LOOP
+	
+	
+	IF MONEY < 20000
+		PRINTFORML お金が足りないぞ
+		GOTO BACK_LOOP_MAIN
+	ENDIF
+	DRAWLINE
+	PRINTFORML どの服を直すんだ？
+	PRINT (所持金:
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${MONEY}
+	RESETCOLOR
+	PRINTFORML )
+	FOR L_LOCAL, 0, 140
+		;半壊及び全壊状態の衣服のみ表示させる
+		IF DITEMTYPE:L_LOCAL:14
+			PRINTFORML [{L_LOCAL}] - %ITEMNAME:L_LOCAL%
+		ENDIF
+	NEXT
+	PRINTFORML [999] - 戻る
+	
+	$INPUT_LOOP_1
+	INPUT
+	
+	IF INRANGE(RESULT, 0, 140) && ITEM:RESULT && DITEMTYPE:RESULT:14
+		DRAWLINE
+		LOCAL = RESULT
+		PRINTFORML %ITEMNAME:LOCAL%でいいんだな？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML よし分かった！　すぐに直してやるからな！
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW %ITEMNAME:LOCAL%の破けが直った！
+			MONEY -= 20000
+			RESETCOLOR
+			DITEMTYPE:LOCAL:14 = 0
+		ELSE
+			;BACK_LOOPが後ろにあるので、この分岐は空白
+		ENDIF
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 999
+		GOTO BACK_LOOP_MAIN
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP
+	ENDIF
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML 薄汚れた男「あ？　お前が教育を任されてんだろ？」
+	PRINTFORMW 　　　　　　王宮の奴らはいけ好かねえけど、そいつとは関係ねえ話だしな」
+	GOTO BACK_LOOP_MAIN
+ELSE
+	PRINTFORML 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+

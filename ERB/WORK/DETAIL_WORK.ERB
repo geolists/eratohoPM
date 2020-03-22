@@ -1,0 +1,157 @@
+﻿;---------------------------------------------------
+;職業紹介関数
+;---------------------------------------------------
+@DETAIL_WORK, ARG
+
+DRAWLINE
+IF ARG >= 21
+	PRINTFORML ○%NAME_METAWORK(ARG-21)%
+ELSE
+	PRINTFORML ○%IN_WORK_NAME(ARG)%
+ENDIF
+
+TRYCALLFORM DETAIL_WORK_{ARG}
+
+
+;----------------------
+;服屋
+;----------------------
+@DETAIL_WORK_1
+PRINTFORML 　月の都にある服屋で働きます
+PRINTFORML 　服についての知識が身に付き、美麗に関しての知識や興味を持ちます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：$15,000
+PRINTFORML 　伸びる能力：　美麗↑
+RESETCOLOR
+
+;----------------------
+;図書館
+;----------------------
+@DETAIL_WORK_2
+PRINTFORML 　月の都にある図書館で働きます
+PRINTFORML 　本を管理する事により、様々な知識を得る事ができます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：$15,000
+PRINTFORML 　伸びる能力：　知力↑
+RESETCOLOR
+
+;----------------------
+;商人
+;----------------------
+@DETAIL_WORK_3
+PRINTFORML 　月の都にある商店にて働きます
+PRINTFORML 　人と会話する事が主な仕事となるので、疎通に関する知識等が身に付きます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：$15,000
+PRINTFORML 　伸びる能力：　疎通↑
+RESETCOLOR
+
+;----------------------
+;メイド
+;----------------------
+@DETAIL_WORK_4
+PRINTFORML 　金持ちが所有する館にてメイドとして出向して働きます
+PRINTFORML 　メイドとしての知識と経験が身に付きます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：出来高
+PRINTFORML 　伸びる能力：　家事↑　メイド経験↑
+RESETCOLOR
+
+;----------------------
+;シスター
+;----------------------
+@DETAIL_WORK_5
+PRINTFORML 　月の都に点在する教会(や神社・寺)にてシスター(巫女)として働きます
+
+PRINTFORML 　シスター(あるいは巫女)としての知識と経験が身に付きます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：出来高
+PRINTFORML 　伸びる能力：　信仰↑　シスター経験↑
+RESETCOLOR
+
+;----------------------
+;魔術ギルド
+;----------------------
+@DETAIL_WORK_6
+PRINTFORML 　ゴスロリといえば魔術！　という謎理論により、魔術ギルドにて働きます
+PRINTFORML 　ゴスロリとしての知識と経験が身に付きます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：出来高
+PRINTFORML 　伸びる能力：　知力↑　ゴスロリ経験↑
+RESETCOLOR
+
+;----------------------
+;花嫁修業
+;----------------------
+@DETAIL_WORK_7
+PRINTFORML 　花嫁になるために幅広く色々な物事を経験します
+PRINTFORML 　幅広い経験が身に付きますが、金銭を入手することはできません
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：なし
+PRINTFORML 　伸びる能力：　美麗↑　知力↑　疎通↑　花嫁経験↑
+RESETCOLOR
+
+;----------------------
+;夜の店
+;----------------------
+@DETAIL_WORK_8
+PRINTFORML 　穢れ深き闇社会にある店で働きます
+PRINTFORML 　真相は自分の目で確かめてください
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：？？？
+PRINTFORML 　伸びる能力：　淫妖↑↑↑
+RESETCOLOR
+
+;----------------------
+;力仕事
+;----------------------
+@DETAIL_WORK_9
+PRINTFORML 　月の里に出向いて力仕事を行います
+PRINTFORML 　身体が鍛えられ、武者修行や疲労を溜めづらい身体を作る際に役立ちます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　　基本給：$15,000
+PRINTFORML 　伸びる能力：　体力↑　武士経験↑
+RESETCOLOR
+
+;----------------------
+;寺小屋
+;----------------------
+@DETAIL_WORK_21
+PRINTFORML 　月の都の中央にある寺小屋にて住み込みで働きます
+PRINTFORML 　多種多様な年齢の子供達の前で授業を行うので、知識の応用力と
+PRINTFORML 　他人に意図を的確に伝えられる能力が求められます
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　一定期間住み込みで働きます
+PRINTFORML 　　　　基本給：$20,000/半月
+PRINTFORML 　　必要な能力：　知識経験150以上　疎通経験70以上
+PRINTFORML 　　伸びる能力：　知力↑↑　疎通↑
+PRINTFORML 求められる能力：知力と疎通
+RESETCOLOR
+
+;----------------------
+;人魚の社
+;----------------------
+@DETAIL_WORK_22
+PRINTFORML 　月の都から少し外れた所に存在する神聖なる社にて住み込みで働きます
+PRINTFORML 　一説によると地球の海と繋がっているらしいですが、真相は不明です
+PRINTFORML 　あまりにも長い期間、ここで働くと……？
+PRINTFORML 　
+CALL SETCOLOR_ABL
+PRINTFORML 　　一定期間住み込みで働きます
+PRINTFORML 　　[衣装：人魚の衣]が支給されます
+PRINTFORML 　　　　基本給：$20,000/半月
+PRINTFORML 　　必要な能力：　美麗経験170以上　疎通経験50以上
+PRINTFORML 　　伸びる能力：　美麗↑↑↑
+PRINTFORML 求められる能力：美麗が一番求められます。疎通や信仰を喜ばれる方もおられます
+RESETCOLOR
+

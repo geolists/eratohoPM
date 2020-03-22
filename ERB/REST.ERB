@@ -1,0 +1,226 @@
+﻿;==========================================================
+;旅行
+;1ヶ月間旅行に出て身体を休めます
+;==========================================================
+@REST
+LOCAL = 60000
+LOCAL:1 = 5000
+
+;コスト管理を注力している場合、半額になる
+IF CHECKSKILL(311)
+	LOCAL /= 2
+ENDIF
+
+DRAWLINE
+PRINTFORML ～～旅行～～
+IF FLAG:王宮追放
+	PRINTFORML 担当者「ほう？　その身なりで旅行か
+	PRINTFORML 　　　　せいぜい襲われないよう気をつけることだな
+ELSE
+	PRINTFORML 担当者「旅行におでかけになられるのですか？
+	PRINTFORML 　　　　王宮内は堅苦しいでしょうから、たまには息抜きも重要だと思います
+	PRINTFORML 　　　　それでは、行かれるのでしたらこちらの休暇届けにサインを」
+ENDIF
+PRINTL 
+PRINTFORM [0] - 遠出する　　(
+CALL SETCOLOR_MONEY
+PRINTFORM ${LOCAL}
+RESETCOLOR
+PRINTFORML )　　　　　　　　疲労を大幅に解消します。
+PRINTFORML [1] - 近場で保養　(タダ！)　　　　　　　　半月で戻ってきます。疲労を解消します。
+RESETCOLOR
+PRINTL [2] - やめる
+
+$INPUT_LOOP
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0
+	IF MONEY < LOCAL
+		PRINTL 所持金が足りないようですが？
+		GOTO INPUT_LOOP
+	ENDIF
+	
+	DRAWLINE
+	PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と共に旅行へ出発した！
+	MONEY -= LOCAL
+	CALL REST_END, 0
+	BEGIN TURNEND
+ELSEIF RESULT == 1
+	DRAWLINE
+	CALL REST_END, 1
+	BEGIN TURNEND
+ELSEIF RESULT == 2
+	RETURN 1
+ENDIF
+
+;-------------------------------------
+;休憩の結果表示
+;LOCAL　回復量設定(素質で補正をかけるために設定)
+;ARG:1　海or山
+;-------------------------------------
+@REST_END, ARG, ARG:1
+DRAWLINE
+
+;休養フラグを立てる
+FLAG:休養 = 1
+
+;休暇
+IF ARG == 0
+
+	;季節に応じて旅行先を変える
+	;春:　植物園
+	;夏:　祭りor花火会場
+	;秋:　名産地
+	;冬:　雪原or温泉
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%と一緒に旅行を楽しんだ！
+	SELECTCASE SEASON(DAY)
+		CASE 1
+			PRINTFORML 植物園では色鮮やかな花が咲き乱れ、二人の心を癒していく……
+		CASE 2
+			PRINTFORML 祭りでは屋台を渡り歩き、田んぼの端に腰かけて花火を眺める……
+		CASE 3
+			PRINTFORML 収穫の秋。名産を持つ地方へ赴き、自然の恵みを味わった
+		CASE 4
+			PRINTFORML 雪原は一面の銀世界を展開し、%CALLNAME:TARGET%はその上ではしゃぎ続ける
+	ENDSELECT
+	PRINTFORML とても楽しかったようで、お土産を見て笑みを浮かべている
+	PRINTL 
+	PRINTFORM 淫妖:{BASE:淫妖}　→　
+	BASE:淫妖 -= BASE:淫妖 * 1 / 10
+	PRINTFORML {BASE:淫妖}
+	;BASE:アライメント += 2
+	;PRINTFORML アライメント + 2
+	PRINTFORM 感度　{BASE:感度}　→　
+	BASE:感度 -= 5
+	IF BASE:感度 < 0
+		BASE:感度 = 0
+	ENDIF
+	PRINTFORML {BASE:感度}
+	PRINTFORM 疲労度　{BASE:ストレス}　→　
+	
+	;マーチングバトン
+	IF CFLAG:日用品／その他 == 430
+		BASE:ストレス -= 10
+	ENDIF
+	
+	;回復量に補正をかける
+	LOCAL = 60
+	
+	IF TALENT:回復早い
+		LOCAL = LOCAL * 3 / 2
+	ELSEIF TALENT:回復遅い
+		LOCAL = LOCAL * 2 / 3
+	ENDIF
+	
+	BASE:ストレス -= LOCAL
+	IF BASE:ストレス < 0
+		BASE:ストレス = 0
+	ENDIF
+	PRINTFORML {BASE:ストレス}
+	BASE:淫乱 -= 5
+	IF BASE:淫乱 < 0
+		BASE:淫乱 = 0
+	ENDIF
+	
+	LOCAL = 0
+	;行楽服だと主人への好感度と周囲の評価が+1される
+	IF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, SEASON(DAY))) && !RAND:10
+		LOCAL += 1
+	ELSE
+	IF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, DAY+4)) && !RAND:10
+		LOCAL += 1
+	ENDIF
+	
+	IF LOCAL
+		PRINTFORML %CALLNAME:TARGET%の着ている服が周囲の雰囲気と合致し、ムードを盛り上げた
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 主人への友好度が1上がった！
+		PRINTFORML 民衆の評価が1上がった！
+		CFLAG:主人への友好度 += 1
+		BASE:民衆の評価 = MIN(BASE:民衆の評価+1, MAXBASE:民衆の評価)
+		RESETCOLOR
+		LOCAL = 0
+	ENDIF
+	
+ENDIF
+;保養
+ELSEIF ARG == 1
+	PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%と共に近所を観光して身体を休めた！
+	PRINTL 
+	PRINTFORM 淫妖:{BASE:淫妖}　→　
+	BASE:淫妖 -= BASE:淫妖 * 15 / 100
+	PRINTFORML {BASE:淫妖}
+	
+	;BASE:アライメント += 1
+	;PRINTFORML アライメント + 1
+	PRINTFORM 疲労度　{BASE:ストレス}　→　
+	
+	
+	;回復量に補正をかける
+	LOCAL = 30
+	
+	IF TALENT:回復早い
+		LOCAL = LOCAL * 3 / 2
+	ELSEIF TALENT:回復遅い
+		LOCAL = LOCAL * 2 / 3
+	ENDIF
+	
+	
+	BASE:ストレス -= LOCAL
+	
+	;マーチングバトン
+	IF CFLAG:日用品／その他 == 430
+		BASE:ストレス -= 10
+	ENDIF
+	
+	IF BASE:ストレス < 0
+		BASE:ストレス = 0
+	ENDIF
+	BASE:淫乱 -= 2
+	IF BASE:淫乱 < 0
+		BASE:淫乱 = 0
+	ENDIF
+	PRINTFORML {BASE:ストレス}
+	
+
+	
+	LOCAL = 0
+	;行楽服だと主人への好感度と周囲の評価が+1される
+	IF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, SEASON(DAY)))
+		LOCAL += 1
+	ELSEIF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, DAY+4))
+		LOCAL += 1
+	ENDIF
+	
+	IF LOCAL
+		PRINTFORML %CALLNAME:TARGET%の着ている服が周囲の雰囲気と合致し、ムードを盛り上げた
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 主人への友好度が1上がった！
+		PRINTFORML 民衆の評価が1上がった！
+		CFLAG:主人への友好度 += 1
+		BASE:民衆の評価 = MIN(BASE:民衆の評価+1, MAXBASE:民衆の評価)
+		RESETCOLOR
+		LOCAL = 0
+	ENDIF
+	
+;遊ぶ
+ELSEIF ARG == 2
+	PRINTFORMW %CALLNAME:MASTER%は都へ遊びにでかけた！
+	PRINTL 
+	;BASE:アライメント += 1
+	;PRINTFORML アライメント + 1
+	PRINTFORM ストレス　{BASE:ストレス}　→　
+	BASE:ストレス -= 30
+	IF BASE:ストレス < 0
+		BASE:ストレス = 0
+	ENDIF
+	BASE:淫乱 -= 4
+	IF BASE:淫乱 < 0
+		BASE:淫乱 = 0
+	ENDIF
+	PRINTFORML {BASE:ストレス}
+ENDIF
+
+CALL UP_STATUS
+
+DRAWLINE

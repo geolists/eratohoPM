@@ -1,0 +1,474 @@
+﻿@SHOW_JUEL
+#DIM DOWN_ABL, 1
+#DIM DOWN_PAR, 1
+#DIM MAX_PAR, 2
+#DIM TARGET_PAR, 2
+;比較用変数
+#DIM COM_PAR, 2
+
+;衣服の属性用変数
+#DIM CLO_ELE, 1
+#DIM CLO_POINT, 1
+
+#DIM L_LOCAL, 1
+
+
+;教育を実施した場合、教育コマンドを立てる
+IF CFLAG:モード == 0
+	TFLAG:教育 = 1
+ENDIF
+
+DRAWLINE
+REPEAT 3
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	;CALL SHOW_SHIP_MONEY, LOCALS, COUNT
+	LOCAL:(COUNT) = RESULT
+REND
+CALL INDICATE_MODE
+PRINTFORML の結果、以下のような変化になりました
+PRINTL 
+
+FOR COUNT, 0, 8
+	LOCAL = COUNT
+	;没能力or関係無いステータスは飛ばす
+	IF LOCAL >= 6
+		LOCAL += 2
+	ENDIF
+	CALL PALAM_CONVERT_NAME, LOCAL
+	PRINTFORM %STR%　{TFLAG:("開始前の"+STR+"")}　→　
+	IF TFLAG:("開始前の"+STR+"") > BASE:STR
+		CALL SETCOLOR_PALAMDOWN
+	ELSEIF TFLAG:("開始前の"+STR+"") < BASE:STR
+		CALL SETCOLOR_PALAMUP
+	ENDIF
+	PRINTFORML {BASE:STR}
+	RESETCOLOR
+NEXT
+
+IF !TFLAG:経験入手フラグ／淫妖 && !TFLAG:経験入手フラグ／堕落
+	DRAWLINE
+	IF (!TFLAG:経験入手フラグ／淫妖 && BASE:淫妖) || (!TFLAG:経験入手フラグ／堕落 && BASE:堕落)
+		PRINTFORML また、堕落と淫妖が減少します
+		REPEAT 2
+			LOCAL = COUNT + 8
+			CALL PALAM_CONVERT, LOCAL
+			LOCALS = %STR%
+			IF !TFLAG:("経験入手フラグ／"+STR+"") && BASE:STR
+				;堕落・淫妖の場合は別処理
+				;+補正　下降率が1％ダウン
+				;-補正　特殊効果無し
+				IF STR == "堕落"
+					DOWN_PAR = 100 - 10 * CFLAG:("補正／"+STR+"") + 3
+				ELSEIF STR == "淫妖"
+					DOWN_PAR = 100 - 10 * CFLAG:("補正／"+STR+"")
+				ELSE
+					DOWN_PAR = 100 - 25 * CFLAG:("補正／"+STR+"")
+					;夜伽の場合、減少割合は1.25倍
+					IF FLAG:モード == 1
+						DOWN_PAR *= 1250 / 1000
+					ENDIF
+				ENDIF
+				
+				IF DOWN_PAR < 0
+					DOWN_PAR = 0
+				ENDIF
+				DOWN_ABL = (BASE:STR * DOWN_PAR) / 1000
+				IF DOWN_ABL < 1
+					DOWN_ABL = 1
+				ENDIF
+				TFLAG:("開始前の"+STR+"") = BASE:STR
+				BASE:STR -= DOWN_ABL
+				PRINTFORML %STR%　{TFLAG:("開始前の"+STR+"")}　→　{BASE:STR}
+			ENDIF
+		REND
+	ENDIF
+	BASE:快楽動機づけ = LIMIT(BASE:快楽動機づけ-4, 0, 400)
+	CALL CAL_CHASTE, 2, "上昇"
+ELSE
+	;夜伽の場合
+	IF FLAG:モード == 1
+		;アライメントが0以上で感度が300未満の場合、貞操が上昇する
+		IF BASE:アライメント >= 100 && BASE:感度 < 300
+			CALL CAL_CHASTE, 3, "上昇"
+		;それ以外の場合、下降する
+		ELSE
+			CALL CAL_CHASTE, 2, "下降"
+		ENDIF
+	ELSE
+		CALL CAL_CHASTE, 2, "下降"
+	ENDIF
+	FLAG:淫妖入手フラグ = 1
+ENDIF
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+CALL CLOTHE_ABL, "属性強度"
+CLO_POINT = RESULT
+
+IF GETBIT(CLO_ELE, 6) && GETBIT(CLO_ELE, 7) && (TFLAG:経験入手フラグ／淫妖 && BASE:淫妖) || (TFLAG:経験入手フラグ／堕落 && BASE:堕落)
+	CALL CHANGE_ELEMENT, CLO_POINT+1
+ENDIF
+
+IF TFLAG:家事 && GETBIT(CLO_ELE, 2)
+	CALL CHANGE_ELEMENT, 1
+	TFLAG:家事 = 0
+ENDIF
+
+;$DEBUG
+CALL CHANGE_ELEMENT, CLO_POINT
+
+;INPUT
+
+;IF RESULT == 0
+;	GOTO DEBUG
+;ELSEIF RESULT == 1
+;	INPUT
+;	
+;	FLAG:年数 = RESULT
+;	PRINTFORML 年数を{FLAG:年数}年に変更しました
+;	GOTO DEBUG
+;ELSEIF RESULT == 2
+;	IF CFLAG:属性 & 1p2
+;		CFLAG:属性 = 1p3
+;	ELSE
+;		CFLAG:属性 = 1p2
+;	ENDIF
+;	PRINTW 
+;	GOTO DEBUG
+;ENDIF
+
+;素入手の表示判定の為に初期化
+LOCAL = 0
+
+IF TFLAG:経験入手フラグ／知力 && BASE:思考力 >= 300
+	;入手確率　(思考力-300)/50×獲得知力経験/4→(知力経験4につき入手率が最大で6％上がる)
+	IF (BASE:思考力 - 300)/50 * (EXP:知力経験-TFLAG:開始時の知力経験)/4 >= RAND:99 + 1
+		DRAWLINE
+		;PRINTFORML {(BASE:思考力 - 300)/50 * (EXP:知力経験-TFLAG:開始時の知力経験)/2}
+		PRINTFORML %CALLNAME:TARGET%は今回の教育で得た知力経験を活かし、気付きの機会を得た……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 気付きの種を手に入れた！
+		
+		ITEM:気付きの種 += 1
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～～素入手判定～～
+PRINTFORML %CALLNAME:TARGET%の日課に対応した属性の素を入手する事があります
+PRINTFORML 入手確率は%CALLNAME:TARGET%の思考力に比例して高くなります
+FOR L_LOCAL, 0, 8
+	IF GETBIT(CFLAG:習慣職業／日課, L_LOCAL)
+		;(思考力/12+5)％の確率で素を入手できる
+		IF (BASE:思考力/12 + 5) >= RAND:(99+1)
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %ITEMNAME:(800+L_LOCAL-1)%を入手した！
+			ITEM:(800+L_LOCAL-1) += 1
+			RESETCOLOR
+			LOCAL += 1
+		ENDIF
+	ENDIF
+NEXT
+
+IF !LOCAL
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 今回は何も入手できなかった……
+	RESETCOLOR
+ENDIF
+DRAWLINE
+
+PRINTL [100] - 終わる
+
+@SHOW_ABLUP_SELECT
+
+@USERABLUP
+
+
+
+IF RESULT == 100
+	BEGIN TURNEND
+ENDIF
+RETURN 1
+
+;------------------------------------------------
+;奨励金ランクごとの目標値設定
+;ARGS:1　参照する奨励金ランク
+;ARG:1　代入する先
+;------------------------------------------------
+@SHOW_SHIP_MONEY, ARGS:1, ARG:1
+IF FLAG:("奨励金／"+ARGS:1+"") == 0
+	LOCAL = 25
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 1
+	LOCAL = 50
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 2
+	LOCAL = 100
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 3
+	LOCAL = 150
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 4
+	LOCAL = 300
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 5
+	LOCAL = 450
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 6
+	LOCAL = 600
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 7
+	LOCAL = 800
+ELSEIF FLAG:("奨励金／"+ARGS:1+"") == 8
+	LOCAL = 950
+ENDIF
+
+RETURN LOCAL
+
+
+
+;------------------------------------------------
+;各数値を能力に変換する
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;ARGS　能力
+;------------------------------------------------
+@ELEMENT_CONVERT, ARG
+IF ARG == 0
+	STR = 姫様
+ELSEIF ARG == 1
+	STR = メイド
+ELSEIF ARG == 2
+	STR = シスター
+ELSEIF ARG == 3
+	STR = ゴスロリ
+ELSEIF ARG == 4
+	STR = 花嫁
+ELSEIF ARG == 5
+	STR = 淫魔
+ELSEIF ARG == 6
+	STR = 乞食
+ELSEIF ARG == 7
+	STR = 武士
+ELSEIF ARG == 8
+	STR = 里娘
+ENDIF
+
+RETURN 0
+
+;------------------------------------------------
+;各属性単語をビットに変換する
+;目的：REPEATを使う時に用いる
+;ARGS　能力
+;------------------------------------------------
+@ELEMENT_CONVERT_REV, ARGS
+IF ARGS == "姫様"
+	LOCAL = 1p1
+ELSEIF ARGS == "メイド"
+	LOCAL = 1p2
+ELSEIF ARGS == "シスター"
+	LOCAL = 1p3
+ELSEIF ARGS == "ゴスロリ"
+	LOCAL = 1p4
+ELSEIF ARGS == "花嫁"
+	LOCAL = 1p5
+ELSEIF ARGS == "淫魔"
+	LOCAL = 1p6
+ELSEIF ARGS == "乞食"
+	LOCAL = 1p7
+ELSEIF ARGS == "武士"
+	LOCAL = 1p8
+ELSEIF ARGS == "里娘"
+	LOCAL = 1p9
+ENDIF
+
+RETURN LOCAL
+
+;------------------------------------------------
+;各数値をビットに変換する
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;
+;(2015/06/12)　関数重複のため、こちらを機能停止させる
+;------------------------------------------------
+;@CONVERT_BIT, ARG
+;IF ARG == 0
+;	ARG = 1p0
+;ELSEIF ARG == 1
+;	ARG = 1p1
+;ELSEIF ARG == 2
+;	ARG = 1p2
+;ELSEIF ARG == 3
+;	ARG = 1p3
+;ELSEIF ARG == 4
+;	ARG = 1p4
+;ELSEIF ARG == 5
+;	ARG = 1p5
+;ELSEIF ARG == 6
+;	ARG = 1p6
+;ELSEIF ARG == 7
+;	ARG = 1p7
+;ENDIF
+
+;RETURN ARG
+
+
+;------------------------------------------------
+;各数値をビットに変換する（コマンド属性限定）
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@ELEMENT_CONVERT_BIT, ARG
+IF ARG == 0
+	ARG = 1p1
+ELSEIF ARG == 1
+	ARG = 1p2
+ELSEIF ARG == 2
+	ARG = 1p3
+ELSEIF ARG == 3
+	ARG = 1p4
+ELSEIF ARG == 4
+	ARG = 1p5
+ELSEIF ARG == 5
+	ARG = 1p6
+ELSEIF ARG == 6
+	ARG = 1p7
+ELSEIF ARG == 7
+	ARG = 1p8
+ELSEIF ARG == 8
+	ARG = 1p9
+ENDIF
+
+RETURN ARG
+
+;------------------------------------------------
+;各ビットを数値に変換する（コマンド属性限定）
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@ELEMENT_CONVERT_BIT_REV, ARG
+IF ARG == 1p1
+	ARG = 1
+ELSEIF ARG == 1p2
+	ARG = 2
+ELSEIF ARG == 1p3
+	ARG = 3
+ELSEIF ARG == 1p4
+	ARG = 4
+ELSEIF ARG == 1p5
+	ARG = 5
+ELSEIF ARG == 1p6
+	ARG = 6
+ELSEIF ARG == 1p7
+	ARG = 7
+ELSEIF ARG == 1p8
+	ARG = 8
+ENDIF
+
+RETURN ARG
+
+;------------------------------------------------
+;数値をステータス名に変換
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@PALAM_CONVERT_NAME, ARG
+IF ARG == 0
+	STR = 美麗
+ELSEIF ARG == 1
+	STR = 知力
+ELSEIF ARG == 2
+	STR = 疎通
+ELSEIF ARG == 3
+	STR = 家事
+ELSEIF ARG == 4
+	STR = 信仰
+ELSEIF ARG == 5
+	STR = 体力
+ELSEIF ARG == 6
+	STR = 色気
+ELSEIF ARG == 7
+	STR = 背徳
+ELSEIF ARG == 8
+	STR = 淫妖
+ELSEIF ARG == 9
+	STR = 堕落
+ELSEIF ARG == 10
+	STR = 愛情
+ENDIF
+
+RETURN ARG
+
+
+;------------------------------------------------
+;数値をステータス名に変換(式中関数版)
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@GETNAME_PALAM, ARG
+#FUNCTIONS
+#LOCALSSIZE 10
+SIF LOCALS == ""
+	SPLIT "美麗_知力_疎通_家事_信仰_体力_色気_背徳_淫妖_堕落_愛情", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------------------
+;数値を気質名に変換
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@KISITU_CONVERT_NAME, ARG
+IF ARG == 0
+	STR = 気品
+ELSEIF ARG == 1
+	STR = プライド
+ELSEIF ARG == 2
+	STR = 感度
+ELSEIF ARG == 3
+	STR = 話術
+ELSEIF ARG == 4
+	STR = 常識
+ELSEIF ARG == 5
+	STR = 思考力
+ELSEIF ARG == 6
+	STR = 信仰心
+ELSEIF ARG == 7
+	STR = 献身
+ELSEIF ARG == 8
+	STR = 依存
+ELSEIF ARG == 9
+	STR = スタミナ
+ENDIF
+
+RETURN ARG
+
+;------------------------------------------------
+;数値を気質名に変換(式中関数版)
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@GETNAME_KISITU, ARG
+#FUNCTIONS
+#LOCALSSIZE 10
+SIF LOCALS == ""
+	SPLIT "気品_プライド_感度_話術_常識_思考力_信仰心_献身_依存_スタミナ", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------------------
+;数値を性格名に変換
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@SEIKAKU_CONVERT_NAME, ARG
+IF ARG == 0
+	STR = 天真爛漫
+ELSEIF ARG == 1
+	STR = 真面目
+ELSEIF ARG == 2
+	STR = 高飛車
+ELSEIF ARG == 3
+	STR = 臆病
+ELSEIF ARG == 4
+	STR = 淫乱
+ELSEIF ARG == 5
+	STR = 非行
+ENDIF
+
+RETURN ARG
+

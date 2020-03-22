@@ -1,0 +1,2008 @@
+﻿;========================================
+;敵の行動決定
+;行動順決定前に敵側の優先度を出す必要があるため分離
+;========================================
+@ENEMY_MOVE_DICIDE
+#DIM L_LOCAL, 1
+
+;敵の数だけENEMY_AIを実行して行動値とステータスを埋める
+FOR L_LOCAL, 3, TFLAG:敵の数+3
+	;攻撃対象を初期化
+	TFLAG:(530+L_LOCAL) = 0
+	
+	;AIを呼び出す
+	CALL ENEMY_AI, L_LOCAL
+	
+	;行動IDによって関数名を変更
+	;40～49　魔法
+	IF TFLAG:(536+L_LOCAL) >= 40 && TFLAG:(536+L_LOCAL) <= 49
+		CALLFORM MAGIC_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;50～69　淫術
+	ELSEIF TFLAG:(536+L_LOCAL) >= 50 && TFLAG:(536+L_LOCAL) <= 69
+		CALLFORM NINFO_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;70～79　打術
+	ELSEIF TFLAG:(536+L_LOCAL) >= 70 && TFLAG:(536+L_LOCAL) <= 79
+		CALLFORM BEAT_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;80～89　刀術
+	ELSEIF TFLAG:(536+L_LOCAL) >= 80 && TFLAG:(536+L_LOCAL) <= 89
+		CALLFORM KATANA_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;90～99　弓術
+	ELSEIF TFLAG:(536+L_LOCAL) >= 90 && TFLAG:(536+L_LOCAL) <= 99
+		CALLFORM ARROW_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;1000～　何もしない
+	ELSEIF TFLAG:(536+L_LOCAL) >= 1000
+		CALLFORM SKILL_ID{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	;200～　 敵専用の技
+	ELSEIF TFLAG:(536+L_LOCAL) >= 200
+		CALLFORM ENEMY_SKILL_{TFLAG:(536+L_LOCAL)}, L_LOCAL
+	ENDIF
+	;100番台にある行動は省略(優先度が高い行動は含まれていないため)
+NEXT
+
+
+;========================================
+;敵の行動実行
+;ARG　最初に行動する敵
+;SPI　素早さ保存値　0:　数値　1:どの敵か
+;========================================
+@ENEMY_MOVE, ARG
+#DIM L_LOCAL, 1
+#DIM moved, 6
+
+#DIM SPI, 3
+;SPI:0　素早さの実値
+;SPI:1　SPI:0の値を持つ敵キャラID
+;SPI:2　SPI:1の敵キャラが持つ優先度
+
+
+VARSET moved, 0
+;AIに従って行動を決定する
+;CALL ENEMY_AI, ARG
+;CALL BEFORE_MOVE, ARG
+;CALLFORM ATTACK_MOVE_{TFLAG:(536+ARG)}, ARG
+;moved:ARG = 1
+
+$MOVE_LOOP
+VARSET SPI, -1
+;敵or味方は纏めて行動する
+FOR L_LOCAL, 30, 60, 10
+	;行動順決定
+	;優先度が高いキャラから順番に行動する
+	IF (TFLAG:(555+L_LOCAL)*(100+50*TFLAG:(663+ARG:3))/100 >= SPI || TFLAG:(542+L_LOCAL/10) > SPI:2) && !moved:(L_LOCAL/10) && TFLAG:(555+L_LOCAL)*(100+50*TFLAG:(663+ARG:3))/100 && !GETBIT(TFLAG:(500+L_LOCAL/10),6) && !GETBIT(TFLAG:(500+L_LOCAL/10),7)
+		;優先度が登録されたキャラより低い場合、弾く
+		IF TFLAG:(542+L_LOCAL/10) < SPI:2
+			CONTINUE
+		ENDIF
+		SPI = TFLAG:(555+L_LOCAL)
+		SPI:1 = L_LOCAL/10
+		SPI:2 = TFLAG:(542+L_LOCAL/10)
+		;PRINTFORML L_LOCAL{L_LOCAL}
+	ENDIF
+NEXT
+
+;PRINTFORML SPI:1 {SPI:1}
+IF SPI:1 != -1
+	IF !(TFLAG:(500+SPI:1) == 6 || TFLAG:(500+SPI:1) == 7)
+		DRAWLINE
+		
+		;PRINTFORML 性別:{TFLAG:(615+SPI:1)}
+		;敵が男の場合、特殊戦闘時はＡＩを変える
+		IF FLAG:特殊戦闘 && TFLAG:(615+SPI:1)
+			CALL AI_SPE, SPI:1
+		ELSE
+			;IF !TFLAG:(536+L_LOCAL/10)
+			;	CALL ENEMY_AI, SPI:1
+			;ENDIF
+			CALL BEFORE_MOVE, SPI:1
+		ENDIF
+		
+		;PRINTFORML 敵の行動:{TFLAG:(536+SPI:1)}
+		IF TFLAG:(536+SPI:1) >= 1
+			;取り替え子状態の場合、行動対象に行動者のIDを入れ、行動元に取り替え子対象のIDを入れる
+			IF SPI:1 <= 2 && GETBIT(CFLAG:永続状態異常, 2)
+				CALLFORM ATTACK_MOVE_{TFLAG:(536+SPI:1)}, TFLAG:(645+SPI:1)
+			ELSE
+				CALLFORM ATTACK_MOVE_{TFLAG:(536+SPI:1)}, SPI:1
+			ENDIF
+		ELSEIF TFLAG:(536+SPI:1) == 0
+			CALL SETCOLOR_ABL
+			PRINTFORML 行動エラー
+			PRINTFORML 行動IDに0が代入されています！
+			RESETCOLOR
+		ENDIF
+	ENDIF
+	moved:(SPI:1) = 1
+	GOTO MOVE_LOOP
+ENDIF
+
+;========================================
+;敵のAI
+;ARG　敵キャラ
+;========================================
+@ENEMY_AI, ARG
+#DIM sent, 10
+#DIM s_sent, 10
+#DIM L_LOCAL, 1
+
+;基本は攻撃
+;3ターンに1回特技を使う
+
+LOCAL = TFLAG:(558+ARG*10)
+
+
+;------------------------------------
+;一般キャラ
+;------------------------------------
+;1:　追い剥ぎ
+IF LOCAL == 1
+	;相手の衣服が半裸以上の場合
+	IF TFLAG:609 && !RAND:4
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		;相手の衣服が全裸でない場合、服を剥ぐ
+		IF TFLAG:609 != 2 && !(TFLAG:ターン数 % 3)
+			TFLAG:(536+ARG) = 200
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;2:　盗賊
+ELSEIF LOCAL == 2
+	;相手の衣服が半裸以上の場合
+	IF TFLAG:609 && !RAND:4
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			TFLAG:(536+ARG) = 100
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;3:　下級盗賊
+ELSEIF LOCAL == 3
+	IF !(TFLAG:ターン数 % 3)
+		IF FLAG:特殊戦闘
+			;特殊戦闘用のＡＩを呼び出す
+			CALL AI_SPE, ARG
+		ELSE
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;4:　かじりネズミ
+ELSEIF LOCAL == 4
+	IF !(TFLAG:ターン数 % 3)
+		TFLAG:(536+ARG) = 100
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;5:　狼
+ELSEIF LOCAL == 5
+	IF !(TFLAG:ターン数 % 3)
+		TFLAG:(536+ARG) = 101
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;6:　スライム
+ELSEIF LOCAL == 6
+	;相手の気力が70％以下
+	IF TFLAG:(557)*10 <= TFLAG:(551)*7
+		IF !(TFLAG:ターン数 % 3)
+			;淫靡な香り
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;スライム愛撫
+			TFLAG:(536+ARG) = 205
+		ENDIF
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;臭い液体
+			TFLAG:(536+ARG) = 206
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;7:　狼男
+;4ターン目に凶暴化して攻撃力を2倍にする
+ELSEIF LOCAL == 7
+	IF !(TFLAG:ターン数 % 4)
+		TFLAG:(536+ARG) = 210
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 101
+	ENDIF
+;8: ハゲタカ
+;弱者狙いを打つ
+ELSEIF LOCAL == 8
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃(強)
+	;sent:1　弱者狙い
+	
+	FOR L_LOCAL, 0, 2
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手のＨＰが半分以下の場合、弱者狙い+60
+	;そうでないなら+-0
+	IF TFLAG:(556)*2 <= TFLAG:(550)
+		sent:1 += 60
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 2
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 2
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 101
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 211
+	ENDIF
+;9: 魔製スライム
+;基本的にはスライムと同じ
+ELSEIF LOCAL == 9
+	;相手の気力が70％以下
+	IF TFLAG:(557)*10 <= TFLAG:(551)*7
+		IF !(TFLAG:ターン数 % 3)
+			;淫靡な香り
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;媚薬入りスライム愛撫
+			TFLAG:(536+ARG) = 213
+		ENDIF
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;臭い液体
+			TFLAG:(536+ARG) = 206
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;10: 魔術使い
+;ファイアショットとサンダーシュートをランダムで撃つ
+ELSEIF LOCAL == 10
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		;3ターンに1回はサンダーシュートを使う
+		IF !(TFLAG:ターン数 % 3)
+			TFLAG:(536+ARG) = 43
+		ELSE
+			;ファイアショット
+			TFLAG:(536+ARG) = 40
+		ENDIF
+	ENDIF
+;11: 中流盗賊
+;3ターンに1回は外道剣を使ってくる
+ELSEIF LOCAL == 11
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;胸愛撫を行う
+		TFLAG:(536+ARG) = 70
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;外道剣
+			TFLAG:(536+ARG) = 219
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;12: 暗闇の鷹
+;弱者狙いと目潰しを打つ
+ELSEIF LOCAL == 12
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃(強)
+	;sent:1　弱者狙い
+	;sent:2　目潰し
+	
+	FOR L_LOCAL, 0, 2
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手のＨＰが半分以下の場合、弱者狙い+60
+	;そうでないなら+-0
+	IF TFLAG:(556)*2 <= TFLAG:(550)
+		sent:1 += 60
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 101
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 211
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 220
+	ENDIF
+;13: ゴブリン
+;50％の確率でチェンジリングを打つ
+ELSEIF LOCAL == 13
+	SELECTCASE RAND:2
+		CASE 0
+			;チェンジリング
+			TFLAG:(536+ARG) = 224
+		CASEELSE
+			TFLAG:(536+ARG) = 100
+	ENDSELECT
+;14: ホブゴブリン
+;50％の確率でチェンジリングを打つ
+ELSEIF LOCAL == 14
+	SELECTCASE RAND:2
+		CASE 0
+			;チェンジリング
+			TFLAG:(536+ARG) = 224
+		CASEELSE
+			TFLAG:(536+ARG) = 100
+	ENDSELECT
+;15: ゴブスライム
+;66％の確率でチェンジリングを打つ
+ELSEIF LOCAL == 15
+	SELECTCASE RAND:3
+		CASE 0
+			TFLAG:(536+ARG) = 100
+		CASEELSE
+			;チェンジリング
+			TFLAG:(536+ARG) = 224
+	ENDSELECT
+;16: 上級盗賊
+;3ターンに1回は外道剣を使ってくる
+;錯乱剣も使ってくる
+ELSEIF LOCAL == 16
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;胸愛撫を行う
+		TFLAG:(536+ARG) = 70
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			IF !RAND:2
+				;外道剣
+				TFLAG:(536+ARG) = 219
+			ELSE
+				
+			ENDIF
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;17: 燃素纏い
+;偶数ターンは燃素を浮かべるか力を貯めるかのどちらかを行う
+ELSEIF LOCAL == 17
+	;偶数ターン
+	IF !(TFLAG:ターン数 & 2)
+		;1/2の確率でどちらかの行動を取る
+		IF !RAND:2
+			;燃素を浮かべる
+			TFLAG:(536+ARG) = 228
+		ELSE
+			;炎上突進
+			TFLAG:(536+ARG) = 230
+		ENDIF
+	ELSE
+		;1/2の確率でどちらかの行動を取る
+		IF !RAND:2
+			;ファイアショット
+			TFLAG:(536+ARG) = 40
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;18: 疫病鼠
+;通常攻撃か強攻撃しか行わない
+ELSEIF LOCAL == 18
+	IF !(TFLAG:ターン数 % 3)
+		TFLAG:(536+ARG) = 100
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;19: 神狂いの祈祷師
+;神憑きと呪術を行う
+ELSEIF LOCAL == 19
+	IF (TFLAG:ターン数 % 3) == 1
+		;神憑き
+		TFLAG:(536+ARG) = 239
+	ELSE
+		;呪術
+		TFLAG:(536+ARG) = 246
+	ENDIF
+;20: 国司逃れの盗賊
+;外道剣しか使ってこない
+ELSEIF LOCAL == 20
+	;外道剣
+	TFLAG:(536+ARG) = 219
+;21: 痘潰し
+;偶数ターンは症状の悪化を使う確率が高い(70％)
+ELSEIF LOCAL == 21
+	;偶数ターン
+	IF !(TFLAG:ターン数 % 2)
+		IF RAND:10 <= 6
+			;症状の悪化
+			TFLAG:(536+ARG) = 241
+		ELSE
+			;瘴気
+			TFLAG:(536+ARG) = 247
+		ENDIF
+	ELSE
+		;それぞれ50％の確率で使用
+		IF !RAND:2
+			;症状の悪化
+			TFLAG:(536+ARG) = 241
+		ELSE
+			;瘴気
+			TFLAG:(536+ARG) = 247
+		ENDIF
+	ENDIF
+;22: 霊気纏い
+;通常攻撃とエーテルの風を使う
+ELSEIF LOCAL == 22
+	;それぞれ50％の確率で使用
+	IF !RAND:2
+		;通常攻撃
+		TFLAG:(536+ARG) = 100
+	ELSE
+		;エーテルの風
+		TFLAG:(536+ARG) = 248
+	ENDIF
+;23: 八咫烏もどき
+;取れる行動：羽ばたき、夜の訪れ、通常攻撃(強)
+;奇数ターン：羽ばたきを50％の確率で使用
+;偶数ターン：夜の訪れを50％の確率で使用
+ELSEIF LOCAL == 23
+	;偶数ターン
+	IF !(TFLAG:ターン数 % 2)
+		;50％の確率で夜の訪れ
+		IF !RAND:2
+			;夜の訪れ
+			TFLAG:(536+ARG) = 240
+		ELSE
+			IF !RAND:2
+				;羽ばたき
+				TFLAG:(536+ARG) = 249
+			ELSE
+				;通常攻撃(強)
+				TFLAG:(536+ARG) = 101
+			ENDIF
+		ENDIF
+	ELSE
+		;50％の確率で羽ばたき
+		IF !RAND:2
+			;羽ばたき
+			TFLAG:(536+ARG) = 249
+		ELSE
+			IF !RAND:2
+				;夜の訪れ
+				TFLAG:(536+ARG) = 240
+			ELSE
+				;通常攻撃(強)
+				TFLAG:(536+ARG) = 101
+			ENDIF
+		ENDIF
+	ENDIF
+;24: 嫦娥の使い
+;通常攻撃(強)となめまわしをランダムで使う
+ELSEIF LOCAL == 24
+	;それぞれ50％の確率で使用
+	IF !RAND:2
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ELSE
+		;なめまわし
+		TFLAG:(536+ARG) = 242
+	ENDIF
+;25: 死の犠牲者
+;40％：通常攻撃(強い)
+;60％：振り下ろしと錯乱した言動
+ELSEIF LOCAL == 25
+	;40％の確率で使用
+	IF RAND:5 <= 1
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ELSE
+		IF !RAND:2
+			;振り下ろし
+			TFLAG:(536+ARG) = 257
+		ELSE
+			;錯乱した言動
+			TFLAG:(536+ARG) = 250
+		ENDIF
+	ENDIF
+;50:　ピンクスライム
+ELSEIF LOCAL == 50
+	;相手の気力が70％以下
+	IF TFLAG:(557)*10 <= TFLAG:(551)*7
+		IF !(TFLAG:ターン数 % 3)
+			;淫靡な香り
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;スライム愛撫
+			TFLAG:(536+ARG) = 205
+		ENDIF
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;臭い液体
+			TFLAG:(536+ARG) = 206
+		ELSE
+			IF !RAND:2
+				;溶解液
+				TFLAG:(536+ARG) = 204
+			ELSE
+				;威力80の通常攻撃
+				TFLAG:(536+ARG) = 100
+			ENDIF
+		ENDIF
+	ENDIF
+;51:　薬好き
+ELSEIF LOCAL == 51
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		;3ターンに1回は欲情の香りを使う
+		;自分から損傷状態になれば相手を嵌める事ができるぞ
+		TFLAG:(536+ARG) = 46
+	ENDIF
+;52:　ブリガンデーモン
+ELSEIF LOCAL == 52
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		;二刃斬りと通常攻撃(強)からランダムで
+		IF !RAND:2
+			TFLAG:(536+ARG) = 101
+		ELSE
+			TFLAG:(536+ARG) = 80
+		ENDIF
+	ENDIF
+;53:　星スライム
+ELSEIF LOCAL == 53
+	;相手の気力が70％以下
+	IF TFLAG:(557)*10 <= TFLAG:(551)*7
+		IF !(TFLAG:ターン数 % 3)
+			;淫靡な香り
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;スライム愛撫
+			TFLAG:(536+ARG) = 205
+		ENDIF
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;臭い液体
+			TFLAG:(536+ARG) = 206
+		ELSE
+			IF !RAND:2
+				;溶解液
+				TFLAG:(536+ARG) = 204
+			ELSE
+				;威力80の通常攻撃
+				TFLAG:(536+ARG) = 100
+			ENDIF
+		ENDIF
+	ENDIF
+;54:　スターキメラ
+;1/3の確率でスターブレスを吐く
+ELSEIF LOCAL == 54
+	SELECTCASE RAND:3
+		CASE 0
+			TFLAG:(536+ARG) = 209
+		CASEELSE
+			TFLAG:(536+ARG) = 101
+	ENDSELECT
+;55:　ローパー
+;触手責めを使ってくる
+ELSEIF LOCAL == 55
+	;相手の気力が70％以下
+	IF TFLAG:(557)*10 <= TFLAG:(551)*7
+		IF !(TFLAG:ターン数 % 3)
+			;淫靡な香り
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;触手責め
+			TFLAG:(536+ARG) = 212
+		ENDIF
+	ELSE
+		IF !(TFLAG:ターン数 % 3)
+			;臭い液体
+			TFLAG:(536+ARG) = 206
+		ELSE
+			IF !RAND:3
+				;溶解液
+				TFLAG:(536+ARG) = 204
+			ELSEIF !RAND:2
+				;通常攻撃
+				TFLAG:(536+ARG) = 100
+			ELSE
+				;愛撫
+				TFLAG:(536+ARG) = 102
+			ENDIF
+		ENDIF
+	ENDIF
+;56:　ゴーゴン
+;石化睨み(相手の行動が物理攻撃でないと命中しない)で石化させてから愛撫を行う
+ELSEIF LOCAL == 56
+	;相手が石化している
+	IF TFLAG:(500) == 3
+		;胸愛撫と愛撫を使い分ける
+		;相手の欲情が50％未満なら胸愛撫
+		IF TFLAG:(506)*2 <= TFLAG:(524)
+			;胸愛撫
+			TFLAG:(536+ARG) = 70
+		ELSE
+			;愛撫
+			TFLAG:(536+ARG) = 102
+		ENDIF
+	ELSE
+		;ファイアショットと石化睨みをランダムで
+		SELECTCASE RAND:2
+			CASE 0
+				;石化睨み
+				TFLAG:(536+ARG) = 214
+			CASEELSE
+				;ファイアショット
+				TFLAG:(536+ARG) = 40
+		ENDSELECT
+	ENDIF
+;57:　アルラウネ
+;相手を欲情させてから責め具を挿し、性交で相手を達しさせ続ける
+ELSEIF LOCAL == 57
+	;相手が欲情している、あるいは気力60％未満
+	IF TFLAG:(500+ARG:4) == 1 || (TFLAG:(506)*10 <= TFLAG:(524)*6)
+		;相手に責め具が挿されていない場合挿入させ、そこから性交に移る
+
+		IF !(OTHER_ACC(500) || TFLAG:633 == 1)
+			;触手挿しこみ
+			TFLAG:(536+ARG) = 215
+		ELSE
+			SELECTCASE RAND:2
+				CASE 0
+					;性交
+					TFLAG:(536+ARG) = 104
+				CASEELSE
+					;胸愛撫
+					TFLAG:(536+ARG) = 70
+			ENDSELECT
+		ENDIF
+	ELSE
+		;甘い息と淫靡な香りをランダムで
+		SELECTCASE RAND:2
+			CASE 0
+				;甘い息を使う
+				TFLAG:(536+ARG) = 202
+			CASEELSE
+				;欲情の香り(淫靡な香り？)
+				TFLAG:(536+ARG) = 46
+		ENDSELECT
+	ENDIF
+
+;------------------------------------
+;ユニークキャラ
+;------------------------------------
+;100:　依姫
+ELSEIF LOCAL == 100
+	;相手(輝夜とかスターとか)のレベルによって使う技のレパートリーが変わる
+	;レベルが35以上　八雷神の襲来が追加
+	;25以上　　　　　伊豆能売の水が追加
+	
+	;無条件使用　　　赤きカグツチの炎、須佐乃男の太刀筋
+	IF !(TFLAG:ターン数 % 3)
+		;3ターンに1度、50％の確率で八雷神の襲来を使ってくる
+		SELECTCASE RAND:2
+			CASE 0
+				;輝夜のレベルが35以上
+				IF BASE:レベル >= 35
+					;八雷神の襲来
+					TFLAG:(536+ARG) = 252
+				ELSE
+					;レベル35未満では「八雷神の襲来」を行わないので、空いた確率を3つの行動にばらす
+					
+					IF !RAND:3
+						;赤きカグツチの炎
+						TFLAG:(536+ARG) = 251
+					ELSEIF !RAND:2
+						;須佐乃男の太刀筋
+						TFLAG:(536+ARG) = 253
+					ELSE
+						;通常攻撃(強)
+						TFLAG:(536+ARG) = 101
+					ENDIF
+				ENDIF
+			CASE 1
+				;(確率から漏れたので)通常行動パターン
+				
+				IF !RAND:3
+					;赤きカグツチの炎
+					TFLAG:(536+ARG) = 251
+				ELSEIF !RAND:2
+					;須佐乃男の太刀筋
+					TFLAG:(536+ARG) = 253
+				ELSE
+					;通常攻撃(強)
+					TFLAG:(536+ARG) = 101
+				ENDIF
+		ENDSELECT
+	ELSE
+		;輝夜のレベルが25以上の場合、伊豆能売の水も使用する
+		IF !RAND:4
+			IF BASE:レベル >= 25
+				;伊豆能売の水
+				TFLAG:(536+ARG) = 254
+			;レベル25未満の場合、代わりに通常攻撃(強)を行う
+			ELSE
+				;通常攻撃(強)
+				TFLAG:(536+ARG) = 101
+			ENDIF
+		ELSEIF !RAND:3
+			;赤きカグツチの炎
+			TFLAG:(536+ARG) = 251
+		ELSEIF !RAND:2
+			;須佐乃男の太刀筋
+			TFLAG:(536+ARG) = 253
+		ELSE
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ENDIF
+	ENDIF
+;101:　豊姫
+ELSEIF LOCAL == 101
+	;3ターンに1回驚かすを使う(33％の確率で)
+	IF !(TFLAG:ターン数 % 3)
+		IF !RAND:3
+			;驚かす
+			TFLAG:(536+ARG) = 256
+		ELSE
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ENDIF
+	ELSE
+		;1/3の確率で勾玉を使う
+		IF !RAND:3
+			;紅き勾玉
+			TFLAG:(536+ARG) = 255
+		ELSE
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ENDIF
+	ENDIF
+;102:　親玉
+ELSEIF LOCAL == 102
+	IF !(TFLAG:ターン数 % 3)
+		TFLAG:(536+ARG) = 101
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;103:　下級合成獣
+ELSEIF LOCAL == 103
+	IF !(TFLAG:ターン数 % 3)
+		TFLAG:(536+ARG) = 100
+	ELSE
+		;威力80の通常攻撃
+		TFLAG:(536+ARG) = 101
+	ENDIF
+;104:　赤の魔術師
+ELSEIF LOCAL == 104
+	;相手が欲情している
+	IF TFLAG:(500+ARG:4) == 1
+		;愛撫を行う
+		TFLAG:(536+ARG) = 102
+	ELSE
+		;3ターンに1回は欲情の香りを使う
+		IF !(TFLAG:ターン数 % 3)
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;ファイアショット
+			TFLAG:(536+ARG) = 40
+		ENDIF
+	ENDIF
+;105:　ミミック
+ELSEIF LOCAL == 105
+	;相手の気力が60％以下の場合、確実にかぶりついてくる
+	IF TFLAG:(557) * 100 <= TFLAG:(551) * 60
+		TFLAG:(536+ARG) = 203
+	ELSEIF !(TFLAG:ターン数 % 3)
+		;甘い息を使う
+		TFLAG:(536+ARG) = 202
+	ELSE
+		;10％の確率でかぶりついてくる
+		IF !RAND:10
+			TFLAG:(536+ARG) = 203
+		ELSE
+			;威力80の通常攻撃
+			TFLAG:(536+ARG) = 100
+		ENDIF
+	ENDIF
+;107:　調教役
+;一発で服を脱がせた後はひたすら快楽攻撃を続ける
+ELSEIF LOCAL == 107
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　媚薬
+	;sent:2　脱衣攻撃(強)
+	;sent:3　愛撫
+	;sent:4　胸愛撫
+	;sent:5　性交
+	
+	FOR L_LOCAL, 0, 6
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+
+	;相手が状態異常になっている場合、媚薬を0に
+	;なっていないなら媚薬+80
+	IF TFLAG:(500)
+		sent:1 = 0
+	ELSE
+		sent:1 += 80
+	ENDIF
+	
+	;服を着ている場合、脱衣攻撃+100
+	;着ていないなら0に
+	IF TFLAG:(609) < 2
+		sent:2 += 100
+	ELSE
+		sent:2 = 0
+	ENDIF
+	
+	;相手の欲情が半分以下の場合、愛撫-50　胸愛撫+50　性交=0
+	IF TFLAG:(506)*2 <= TFLAG:(524)
+		sent:3 -= 50
+		sent:4 += 50
+		sent:5 = 0
+	ENDIF
+	
+	;相手の欲情ゲージが最大の場合、性交+100　通常攻撃-50
+	;そうでないなら愛撫+100　性交-50
+	IF TFLAG:(506) >= TFLAG:(524)
+		sent:5 += 100
+		sent -= 50
+	ELSE
+		sent:4 += 100
+		sent:5 -= 50
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 6
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 6
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 46
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 207
+	ELSEIF s_sent:1 == 3
+		TFLAG:(536+ARG) = 102
+	ELSEIF s_sent:1 == 4
+		TFLAG:(536+ARG) = 60
+	ELSEIF s_sent:1 == 5
+		TFLAG:(536+ARG) = 104
+	ENDIF
+;108:　緑の魔術師
+;精神ヘドロと不気味な笑みを使い分ける
+ELSEIF LOCAL == 108
+	;相手が欲情している
+	IF GETBIT(TFLAG:(500+ARG:4), 1)
+		;胸愛撫を行う
+		TFLAG:(536+ARG) = 70
+	;相手の気力が65％以下なら精神ヘドロを連打する
+	ELSEIF TFLAG:(557) * 100 <= TFLAG:(551) * 65
+		TFLAG:(536+ARG) = 217
+	ELSE
+		;1/3の確率で精神ヘドロを打つ
+		IF !RAND:3
+			TFLAG:(536+ARG) = 217
+		ELSE
+			;不気味な笑み
+			TFLAG:(536+ARG) = 61
+		ENDIF
+	ENDIF
+;109:　青の魔術師
+;相手の気力を10％削る攻撃魔法「凍える風」で相手の気力と体力を削り
+;気力が50％以下になったら娼婦化呪文で娼婦にする
+ELSEIF LOCAL == 109
+	;相手が娼婦
+	IF STR:(6) == "娼婦"
+		;3ターンに1回は欲情の香りを使う
+		IF !(TFLAG:ターン数 % 3) && !GETBIT(TFLAG:(500+ARG:4), 1)
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;性交
+			TFLAG:(536+ARG) = 104
+		ENDIF
+	;相手の気力が50％以下なら娼婦化呪文を連打する
+	ELSEIF TFLAG:(557) * 100 <= TFLAG:(551) * 50
+		TFLAG:(536+ARG) = 216
+	ELSE
+		;3ターンに1回は欲情の香りを使う
+		IF !(TFLAG:ターン数 % 3)
+			TFLAG:(536+ARG) = 46
+		ELSE
+			;凍える風
+			TFLAG:(536+ARG) = 223
+		ENDIF
+	ENDIF
+;110:　星の司祭
+;流星群ぶっぱ、スネークポイズンも使うのでヒット→敗北もありえる
+ELSEIF LOCAL == 110
+	;行動候補を作り、数値を割り振る
+	;sent　　ファイアショット
+	;sent:1　流星群
+	;sent:2　スネークポイズン
+	
+	
+	;相手のＨＰが1/10以下の場合、流星群=0
+	;そうでないなら+200
+	IF TFLAG:(556)*10 <= TFLAG:(550)
+		sent:1 = 0
+	ELSE
+		sent:1 += 200
+	ENDIF
+	
+	;相手が状態異常になっている場合、スネークポイズンを0に
+	;なっていないなら+30
+	IF TFLAG:(500)
+		sent:2 = 0
+	ELSE
+		sent:2 += 30
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 40
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 208
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 42
+	ENDIF
+;111: 獣使いの盗賊
+;アブレーショットを打つ
+ELSEIF LOCAL == 111
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　アブレーショット
+	
+	FOR L_LOCAL, 0, 2
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手のＨＰが半分以下の場合、アブレーショット＝0
+	;そうでないなら+60
+	IF TFLAG:(556)*2 <= TFLAG:(550)
+		sent:1 = 0
+	ELSE
+		sent:1 += 60
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 2
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 2
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 92
+	ENDIF
+;112: 盗賊の頭目
+;行動の自由を奪い、部下に襲わせる
+ELSEIF LOCAL == 112
+	;行動候補を作り、数値を割り振る
+	;sent　　目潰し
+	;sent:1　媚薬
+	;sent:2　臭い息
+	;sent:3　通常攻撃
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手の気力が1/3以下の場合、媚薬＝200
+	;そうでないなら0にし、臭い息+50
+	IF TFLAG:(556)*3 <= TFLAG:(550)
+		sent:1 = 200
+	ELSE
+		sent:1 += 0
+		sent:2 += 50
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 220
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 218
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 206
+	ELSEIF s_sent:1 == 3
+		TFLAG:(536+ARG) = 100
+	ENDIF
+;113: 盗賊の主導者
+;外道剣、媚薬剣を使ってくる
+ELSEIF LOCAL == 113
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　外道剣
+	;sent:2　媚薬剣
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手が既に損傷状態ならば外道剣=0
+	IF GETBIT(TFLAG:(500), 1)
+		sent:1 = 0
+	ENDIF
+	
+	;相手が既に欲情状態ならば媚薬剣=0
+	IF GETBIT(TFLAG:(500), 0)
+		sent:2 = 0
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 219
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 218
+	ENDIF
+;114: 魔造産廃物
+;大技を放つ際に粘性体になる。(ちなみに8ターン目に行う)
+;粘性体化→アウトバースト(威力100の3回攻撃。命中率は100％)
+;快楽の宴(威力200　欲情+損傷+衣服破損+欲情30％上昇　4回攻撃)で潰しにかかってくる←この攻撃技は裏通りルートの敵で使用することにした
+;使った後は1ターンかけて獣に戻る
+;弓使いならエクポーズショットで一撃で仕留められるぞ！
+ELSEIF LOCAL == 114
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　臭い息
+	;sent:2　強打
+	;sent:3　力溜め溶ける
+	;sent:4　アウトバースト
+	
+	FOR L_LOCAL, 0, 5
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;力溜め溶けるとアウトバーストは条件を満たさない限り使用しない
+	sent:3 = 0
+	sent:4 = 0
+	
+	;偶数ターンは臭い息を放つ
+	;奇数ターンは相手の気力に応じて通常攻撃と強打を使い分ける
+	IF !(TFLAG:ターン数%2)
+		;相手の気力が半分以下なら強打+50
+		IF TFLAG:(556)*2 <= TFLAG:(550)
+			sent:2 += 50
+		;そうでないなら通常攻撃+50
+		ELSE
+			sent:0 += 50
+		ENDIF
+	ELSE
+		;偶数ターンは条件を満たさない限り臭い息しか使わない
+		sent = 0
+		sent:1 += 50
+		sent:2 = 0
+		sent:3 = 0
+	ENDIF
+	
+	;体力が最大値の1/3以下になると、力溜め溶ける→アウトバーストを使用する
+	IF TFLAG:(556+ARG*10) * 3 <= TFLAG:(550+ARG*10)
+		VARSET sent, 0
+		
+		;既に粘性体になっている場合、アウトバーストを使用する
+		IF STR:(6+ARG) == "粘性体"
+			;アウトバーストのみ+100
+			sent:4 = 100
+		ELSE
+			;力溜め溶けるのみ+100
+			sent:3 = 100
+		ENDIF
+	ENDIF
+	
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 5
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 5
+		IF RAND:s_sent+1 <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 206
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 80
+	ELSEIF s_sent:1 == 3
+		TFLAG:(536+ARG) = 222
+	ELSEIF s_sent:1 == 4
+		TFLAG:(536+ARG) = 232
+	ENDIF
+;115:　君主の内通者
+;2ターンに1回不純物の輝きを使ってくる
+;HPが1/3以下になったらポンピングを使った後二刃切りを行う
+ELSEIF LOCAL == 115
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　不純物の輝き
+	;sent:2　ポンピング
+	;sent:3　二刃切り
+	
+	FOR L_LOCAL, 0, 4
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+
+	
+	;HPが1/3以下
+	IF TFLAG:(556+ARG*10) * 3 <= TFLAG:(550+ARG*10)
+		;行動パターンを限定する
+		VARSET sent, 0
+		
+		;攻撃と素早さが共に1段階上昇していない場合、ポンピングを行う
+		IF TFLAG:(651+ARG) < 1 && TFLAG:(671+ARG) < 1
+			sent:2 = 100
+		;二刃切りのみ行う
+		ELSE
+			sent:3 = 100
+		ENDIF
+	ELSE
+		;奇数ターンに不純物の輝きを使う
+		
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 4
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 4
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 101
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 233
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 234
+	ELSEIF s_sent:1 == 3
+		TFLAG:(536+ARG) = 80
+	ENDIF
+;116:　君主＆兵士
+;カタナとカサゴで攻撃
+ELSEIF LOCAL == 116
+	;行動候補を作り、数値を割り振る
+	;sent　　カタナ
+	;sent:1　カサゴ
+	;sent:2　通常攻撃
+	
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手が状態異常になっている場合、カタナを0に
+	;なっていないなら+40
+	IF TFLAG:(500)
+		sent:0 = 0
+	ELSE
+		sent:0 += 40
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 226
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 225
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 101
+	ENDIF
+;117:　君主
+;攻撃パターンは同じ
+ELSEIF LOCAL == 117
+	;行動候補を作り、数値を割り振る
+	;sent　　カタナ
+	;sent:1　カサゴ
+	;sent:2　通常攻撃
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	
+	;相手が状態異常になっている場合、カタナを0に
+	;なっていないなら+40
+	IF TFLAG:(500)
+		sent:0 = 0
+	ELSE
+		sent:0 += 40
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 226
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 225
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 101
+	ENDIF
+;118:　ワールブルク実験体
+;ハイポキシアを偶数ターンに使用する
+ELSEIF LOCAL == 118
+	;偶数ターンなら確定でハイポキシアを使用する
+	IF !(TFLAG:ターン数 % 2)
+		TFLAG:(536+ARG) = 231
+	ELSE
+		;行動候補を作り、数値を割り振る
+		;sent　　サンダーストーム
+		;sent:1　ファイアショット
+		;sent:2　力貯め
+		
+		FOR L_LOCAL, 0, 3
+			sent:L_LOCAL = 100
+		NEXT
+		s_sent = 0
+
+		
+		;既に力貯め状態になっている場合、力貯めを0に
+		;なっていないなら+40
+		IF GETBIT(TFLAG:(488+ARG), 3)
+			sent:2 = 0
+		ELSE
+			sent:2 += 40
+		ENDIF
+		
+		;スーパーsentを作って合計値を出す
+		FOR L_LOCAL, 0, 3
+			s_sent += sent:L_LOCAL
+		NEXT
+		
+		;各sent毎に判定を行う
+		FOR L_LOCAL, 0, 3
+			IF RAND:s_sent <= sent:L_LOCAL
+				s_sent:1 = L_LOCAL
+				BREAK
+			ENDIF
+			s_sent -= sent:L_LOCAL
+		NEXT
+		
+		
+		;s_sent:1の値で分岐
+		IF s_sent:1 == 0
+			TFLAG:(536+ARG) = 43
+		ELSEIF s_sent:1 == 1
+			TFLAG:(536+ARG) = 40
+		ELSEIF s_sent:1 == 2
+			TFLAG:(536+ARG) = 229
+		ENDIF
+	ENDIF
+
+;119：　魔術に取り込まれし者
+;魔術実験場のボス
+;女性である。HPを半分以下にすると植物になり触手攻撃を行うようになる
+ELSEIF LOCAL == 119
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　不純物の輝き
+	;sent:2　ポンピング
+	;sent:3　二刃切り
+	
+	FOR L_LOCAL, 0, 4
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+
+	;HPが1/2以下で植物になっていない
+	IF TFLAG:(556+ARG*10) * 3 <= TFLAG:(550+ARG*10) && STR:(6+ARG) != "植物"
+		;正体を現す(植物)
+		TFLAG:(536+ARG) = 235
+	;植物になっている
+	ELSEIF STR:(6+ARG) == "植物"
+		;アルラウネと同じ
+		;相手が欲情している、あるいは気力60％未満
+		IF TFLAG:(500+ARG:4) == 1 || (TFLAG:(506)*10 <= TFLAG:(524)*6)
+			;相手に責め具が挿されていない場合挿入させ、そこから性交に移る
+
+			IF !(OTHER_ACC(500) || TFLAG:633 == 1)
+				;触手挿しこみ
+				TFLAG:(536+ARG) = 215
+			ELSE
+				SELECTCASE RAND:2
+					CASE 0
+						;性交
+						TFLAG:(536+ARG) = 104
+					CASEELSE
+						;胸愛撫
+						TFLAG:(536+ARG) = 70
+				ENDSELECT
+			ENDIF
+		ELSE
+			;甘い息と淫靡な香りをランダムで
+			SELECTCASE RAND:2
+				CASE 0
+					;甘い息を使う
+					TFLAG:(536+ARG) = 202
+				CASEELSE
+					;淫靡な香り？
+					TFLAG:(536+ARG) = 46
+			ENDSELECT
+		ENDIF
+	ELSE
+		;偶数ターン
+		;淫靡な香りを使う
+		IF !(TFLAG:ターン数 & 2)
+			;1/2の確率でどちらかの行動を取る
+			IF !RAND:2
+				;淫靡な香り
+				TFLAG:(536+ARG) = 46
+			ELSE
+				;愛撫
+				TFLAG:(536+ARG) = 102
+			ENDIF
+		ELSE
+			;ファイアショットかサンダーシュートをランダムで使用する
+			IF !RAND:2
+				;ファイアショット
+				TFLAG:(536+ARG) = 40
+			ELSE
+				;サンダーシュート
+				TFLAG:(536+ARG) = 43
+			ENDIF
+		ENDIF
+	ENDIF
+;120：　淫魔の生産者
+;魔獣の巣のボス
+;里娘を淫魔にした後、性攻撃を行う
+ELSEIF LOCAL == 120
+	;行動候補を作り、数値を割り振る
+	;sent　　胸愛撫
+	;sent:1　淫魔のキス
+	;sent:2　淫靡な香り
+	;sent:3　性交
+	
+	FOR L_LOCAL, 0, 4
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+
+	;淫魔になっていなくて動ける里娘がいる
+	FOR L_LOCAL, 3, 6
+		IF !GETBIT(TFLAG:(500+L_LOCAL), 7) && L_LOCAL != ARG && STR:(6+L_LOCAL) != "淫魔"
+			VARSET sent, 0
+			sent:1 = 200
+		ENDIF
+	NEXT
+	
+	
+	;淫魔のキスが200で奇数ターンの場合、後の技選択は全てスキップする
+	IF sent:1 != 200
+		;淫魔のキスの使用確率を0にする
+		sent:1 = 0
+	ELSEIF TFLAG:ターン数 % 2
+		sent = 0
+		sent:2 = 0
+		sent:3 = 0
+	ENDIF
+	
+		
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 4
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 4
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 60
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 237
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 46
+	ELSEIF s_sent:1 == 3
+		TFLAG:(536+ARG) = 104
+	ENDIF
+;121：　八岐大蛇
+;偶数ターンに25％の確率で八つ首の襲撃を使う
+ELSEIF LOCAL == 121
+	;偶数ターン＆1/4の確率
+	IF !(TFLAG:ターン数 & 2) && !RAND:4
+		;八つ首の襲撃
+		TFLAG:(536+ARG) = 238
+	ELSE
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ENDIF
+;122：　穢れ塗れの嫦娥
+;[M.O.F]は損傷+暗闇+気力5％減少の大技
+;[贖罪[独り占めの薬]]は魔力を2段階上げるが、自身が損傷状態になる(1ターン目に使う)
+;[在りし日への回帰]は威力150の特殊攻撃
+;
+ELSEIF LOCAL == 122
+	;1ターン目にM.O.Fを使う
+	IF TFLAG:ターン数 == 1
+		;M.O.F
+		TFLAG:(536+ARG) = 243
+	;2ターン目に[贖罪[独り占めの薬]]を使う
+	ELSEIF TFLAG:ターン数 == 2
+		;贖罪[独り占めの薬]
+		TFLAG:(536+ARG) = 244
+	;2ターンに1度、25％の確率で[在りし日への回帰]を使う
+	ELSE
+		;偶数ターン＆1/4の確率
+		IF !(TFLAG:ターン数 & 2) && !RAND:4
+			;在りし日への回帰
+			TFLAG:(536+ARG) = 245
+		ELSE
+			;瘴気
+			TFLAG:(536+ARG) = 247
+		ENDIF
+	ENDIF
+;125：　玉龍
+;旋風と通常攻撃を使う
+;HPが30％以下になったら根絶やしの炎を使う
+ELSEIF LOCAL == 125
+	;HPが30％以下
+	IF TFLAG:(556+ARG*10) * 3 <= TFLAG:(550+ARG*10)
+		IF !RAND:4
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ELSE
+			;根絶やしの炎
+			TFLAG:(536+ARG) = 259
+		ENDIF
+	ELSE
+		IF !RAND:2
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ELSE
+			;旋風
+			TFLAG:(536+ARG) = 258
+		ENDIF
+	ENDIF
+
+;131：　妨害の力
+;毎ターン万物の風を使う
+ELSEIF LOCAL == 131
+	;万物の風
+	TFLAG:(536+ARG) = 268
+	
+;132：　純狐
+;1ターン目に必ず「げい殺しの計」を使う
+;2ターン目以降は、以下のパターンに沿って行動する
+
+;常時　　　　50％　殺意の百合
+;常時　　　　25％　2回攻撃
+
+;2n+1ターン　25％　純粋なる狂気
+;2nターン　　25％　掌の純光
+ELSEIF LOCAL == 132
+	;相手が弓を装備している場合
+	;2n+1ターンに「げい殺しの計」を使ってくる
+	IF CFLAG:装備 >= 575 && CFLAG:装備 <= 589 && (TFLAG:ターン数 % 2) == 1
+		;げい殺しの計
+		TFLAG:(536+ARG) = 269
+	ELSE
+		IF !RAND:4
+			;2nターン
+			IF !(TFLAG:ターン数 % 2)
+				;純粋なる狂気
+				TFLAG:(536+ARG) = 262
+			;2n+1ターン
+			ELSE
+				;掌の純光
+				TFLAG:(536+ARG) = 263
+			ENDIF
+		ELSEIF !RAND:3
+			;2回攻撃
+			TFLAG:(536+ARG) = 264
+		ELSE
+			;殺意の百合
+			TFLAG:(536+ARG) = 261
+		ENDIF
+	ENDIF
+	
+;133：　生命の始原体
+;通常攻撃、2回攻撃、ダブルサイドワインダーを使う
+;ダブルサイドワインダーは2nターンに50％の確率で使用する
+ELSEIF LOCAL == 133
+	;2nターン
+	IF !(TFLAG:ターン数 % 2) && !RAND:2
+		;ダブルサイドワインダー
+		TFLAG:(536+ARG) = 260
+	ELSE
+		IF !RAND:2
+			;通常攻撃(強)
+			TFLAG:(536+ARG) = 101
+		ELSE
+			;2回攻撃
+			TFLAG:(536+ARG) = 264
+		ENDIF
+	ENDIF
+
+;136：　殺意の盗賊
+;通常攻撃と霧纏いの太刀を交互に使う
+ELSEIF LOCAL == 136
+	IF !RAND:2
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ELSE
+		;霧纏いの太刀
+		TFLAG:(536+ARG) = 267
+	ENDIF
+
+;138：　君主(前哨戦)
+;偶数ターンに下剋上の石を使うことがある
+ELSEIF LOCAL == 138
+	IF !(TFLAG:ターン数 % 2) && !RAND:2
+		;下剋上の石
+		TFLAG:(536+ARG) = 270
+	ELSE
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ENDIF
+
+
+;139：　君主(綿月姉妹が駆けつけた後)
+;偶数ターンに下剋上の石を使うことがある
+ELSEIF LOCAL == 139
+	IF !(TFLAG:ターン数 % 2) && !RAND:2
+		;下剋上の石
+		TFLAG:(536+ARG) = 270
+	ELSE
+		;通常攻撃(強)
+		TFLAG:(536+ARG) = 101
+	ENDIF
+
+;140：　白狼賊の白頭巾
+;殺意の波動→エアスラ→エアスラ→エアスラ→……で無限ハメ(MPが続く限り)
+ELSEIF LOCAL == 140
+	;1ターン目は殺意の波動
+	IF TFLAG:ターン数 == 1
+		;殺意の波動
+		TFLAG:(536+ARG) = 271
+	ELSE
+		;エアスラッシュ
+		TFLAG:(536+ARG) = 272
+	ENDIF
+
+;143：　悪夢の化身
+;奇数ターン：グロウショット
+;偶数ターン：50％の確率で神速、それ以外の場合は暗闇落としを使用する
+ELSEIF LOCAL == 143
+	;偶数ターンは神速か暗闇落としを使用する
+	IF !(TFLAG:ターン数 % 2)
+		IF !RAND:2
+			;暗闇落とし
+			TFLAG:(536+ARG) = 274
+		ELSE
+			;神速
+			TFLAG:(536+ARG) = 275
+		ENDIF
+	ELSE
+		;グロウショット
+		TFLAG:(536+ARG) = 273
+	ENDIF
+
+
+;------------------------------------
+;闘技大会
+;------------------------------------
+;200:　サクラ
+;あまり戦闘能力が高くない。強いて言えば魔力が高い
+;ファイアショットとサンダーシュートからランダムで選択
+ELSEIF LOCAL == 200
+	SELECTCASE RAND:2
+		CASE 0
+			TFLAG:(536+ARG) = 40
+		CASE 1
+			TFLAG:(536+ARG) = 43
+	ENDSELECT
+;201:　仙空
+;攻撃力が高く諸刃の剣術を好む。よく自滅する
+;2/3の確立で諸刃の剣術を使用
+ELSEIF LOCAL == 201
+	SELECTCASE RAND:3
+		CASE 0
+			TFLAG:(536+ARG) = 100
+		CASEELSE
+			TFLAG:(536+ARG) = 82
+	ENDSELECT
+;202:　市伝
+;弓術と魔術が得意。アブレーショットを連発してからスネークポイズンをかけるといった思考パターンを持つ。
+;2/3の確立で諸刃の剣術を使用
+ELSEIF LOCAL == 202
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　アブレーショット
+	;sent:2　スネークポイズン
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+
+	;相手が状態異常になっている場合、スネークポイズンを0に
+	;なっていないなら+40
+	IF TFLAG:(500)
+		sent:2 = 0
+	ELSE
+		sent:2 += 40
+	ENDIF
+	
+	;相手のＨＰが半分以下の場合、アブレーショット＝0
+	;そうでないなら+80
+	IF TFLAG:(556)*2 <= TFLAG:(550)
+		sent:1 = 0
+	ELSE
+		sent:1 += 80
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 92
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 42
+	ENDIF
+;203:　桜花
+;弓術の達人。魔術に対して非常に弱い
+;乱れ撃ちを使う事ができる
+;フェムトアローは輝夜と綿月姉妹しか使えない設定
+;(輝夜　能力を使って須臾の間に撃つ
+; 依姫　神の力を使って撃つ
+; 豊姫　山と海を繋ぐことで空間を越える速度を作りだす
+ELSEIF LOCAL == 203
+	;行動候補を作り、数値を割り振る
+	;sent　　通常攻撃
+	;sent:1　アブレーショット
+	;sent:2　乱れ撃ち
+	
+	FOR L_LOCAL, 0, 3
+		sent:L_LOCAL = 100
+	NEXT
+	s_sent = 0
+	
+	;相手のＨＰが半分以下の場合、アブレーショット＝0
+	;そうでないなら+40
+	IF TFLAG:(556)*2 <= TFLAG:(550)
+		sent:1 = 0
+	ELSE
+		sent:1 += 40
+	ENDIF
+	
+	;スーパーsentを作って合計値を出す
+	FOR L_LOCAL, 0, 3
+		s_sent += sent:L_LOCAL
+	NEXT
+	
+	;各sent毎に判定を行う
+	FOR L_LOCAL, 0, 3
+		IF RAND:s_sent <= sent:L_LOCAL
+			s_sent:1 = L_LOCAL
+			BREAK
+		ENDIF
+		s_sent -= sent:L_LOCAL
+	NEXT
+	
+	;s_sent:1の値で分岐
+	IF s_sent:1 == 0
+		TFLAG:(536+ARG) = 100
+	ELSEIF s_sent:1 == 1
+		TFLAG:(536+ARG) = 92
+	ELSEIF s_sent:1 == 2
+		TFLAG:(536+ARG) = 93
+	ENDIF
+;204:　地官
+;強くない。100年早ければ……
+;凶殺陣、二刃斬り、通常攻撃の中からランダムで使用する
+ELSEIF LOCAL == 204
+	SELECTCASE RAND:3
+		CASE 0
+			TFLAG:(536+ARG) = 100
+		CASE 1
+			TFLAG:(536+ARG) = 80
+		CASE 2
+			TFLAG:(536+ARG) = 81
+	ENDSELECT
+;300と301:　里の娘＆貴族の娘
+;何もしない
+ELSEIF LOCAL == 300 || LOCAL == 301
+	;淫魔化している場合、愛撫と性交をランダムで使う
+	IF STR:(6+ARG) == "淫魔"
+		IF !RAND:2
+			TFLAG:(536+ARG) = 104
+		ELSE
+			TFLAG:(536+ARG) = 60
+		ENDIF
+	ELSE
+		TFLAG:(536+ARG) = 1000
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------------------------
+;敵の快楽攻撃パターン
+;ARG　　対象
+;ARG:1　パターン値
+;----------------------------------------------------------------------------
+@ENEMY_NINFO, ARG, ARG:1
+
+;通常
+IF ARG:1 == 0
+	CALL CONSPI_DARK, TFLAG:(530+ARG)+1
+	LOCAL = RESULT
+	
+	;味方と敵で分岐
+	IF ARG <= 2
+		;前提条件：自身が欲情
+		;次の条件の内、女性側がいずれかを満たすと性交を行う
+		;絶頂回数4回以上or悪目立ち度が25以上or非処女で尚且つ欲情ゲージが最大の50％以上
+		IF TFLAG:(500+TFLAG:(530+ARG)) == 1 && (TFLAG:(518+ARG) >= 4 || RESULT >= 25 || (!TALENT:ARG:処女 && TFLAG:(506+ARG)*2 >= TFLAG:(524+ARG)))
+			TFLAG:(536+ARG) = 105
+		ELSE
+			;肩書によって変わる
+			;　メイド：局部露出、自己満足
+			;シスター：フェラチオ、誘い受け
+			;ゴスロリ：淫靡な香り、触手召喚(対象を自分に向ける)
+			;　　花嫁：卑猥な言葉、押し倒す
+			
+			SELECTCASE STR:(6+ARG)
+				CASE "メイド"
+					IF !RAND:2
+						TFLAG:(536+ARG) = 108
+					ELSE
+						TFLAG:(536+ARG) = 65
+					ENDIF
+				CASE "シスター"
+					IF !RAND:2
+						TFLAG:(536+ARG) = 107
+					ELSE
+						TFLAG:(536+ARG) = 61
+					ENDIF
+				CASE "ゴスロリ"
+					IF !RAND:2
+						TFLAG:(536+ARG) = 46
+					ELSE
+						TFLAG:(536+ARG) = 236
+					ENDIF
+				CASE "花嫁"
+					IF !RAND:2
+						TFLAG:(536+ARG) = 109
+					ELSE
+						TFLAG:(536+ARG) = 62
+					ENDIF
+				CASEELSE
+					TFLAG:(536+ARG) = 102
+			ENDSELECT
+		ENDIF
+	ELSE
+		;前提条件：行動者が♂
+		;味方側が次の条件の内、いずれかを満たすと性交を行う
+		;絶頂回数4回以上or悪目立ち度が25以上or非処女で尚且つ欲情ゲージが最大の50％以上
+		IF TFLAG:(615+ARG) && (TFLAG:(518+TFLAG:(530+ARG)) >= 4 || RESULT >= 25 || (!TALENT:(TFLAG:(530+ARG)+1):処女 && TFLAG:(506+ARG)*2 >= TFLAG:(524+ARG)))
+			TFLAG:(536+ARG) = 104
+		ELSE
+			TFLAG:(536+ARG) = 102
+		ENDIF
+	ENDIF
+ELSE
+	
+ENDIF
+
+;----------------------------------------------------------------------------
+;特殊戦闘用
+;ARG　　対象
+;ARG:1　パターン値
+;----------------------------------------------------------------------------
+@AI_SPE, ARG, ARG:1
+
+IF ARG:1 == 0
+	;無差別愛撫と同士討ち押し倒しをランダムに行う
+	;↓
+	;相手が押し倒されている場合、服脱がし→愛撫→性交
+	IF IJYOU_BATTLE(3)
+		;相手の服が全壊ではない場合、服脱がしを行う
+		IF TFLAG:(609+3) != 2
+			TFLAG:(536+ARG) = 227
+			TFLAG:(530+ARG) = 3
+		ELSEIF !RAND:2
+			TFLAG:(536+ARG) = 102
+			TFLAG:(530+ARG) = 3
+		ELSE
+			TFLAG:(536+ARG) = 104
+			TFLAG:(530+ARG) = 3
+		ENDIF
+	ELSE
+		SELECTCASE RAND:2
+			CASE 0
+				TFLAG:(536+ARG) = 62
+				TFLAG:(530+ARG) = 3
+			CASE 1
+				TFLAG:(536+ARG) = 106
+		ENDSELECT
+	ENDIF
+ENDIF
+;PRINTFORML 敵の行動:{TFLAG:(536+ARG)}
+
+

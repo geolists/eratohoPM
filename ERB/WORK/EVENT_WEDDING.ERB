@@ -1,0 +1,364 @@
+﻿;-------------------------------------------------------------
+;花嫁固有行動
+;
+;-------------------------------------------------------------
+
+@MOVE_WEDDING
+
+;イベントを選出する
+CALL ELECTION_WORK, "家事"
+
+;イベントの呼び出し
+IF RESULT == 0
+	CALL MOVE_WEDDING_0
+ELSEIF RESULT == 5
+	CALL MOVE_WEDDING_6
+ELSE
+	CALL MOVE_WEDDING_COMMON, RESULT
+ENDIF
+
+;複雑な条件にするとほぼ間違いなく面倒臭がられるので(このイベントと戦闘面の鍛錬を両立させるだけでも充分複雑なはず)
+;花嫁割合と美麗に加えて市民からの評価が一定以上あれば発生するようにする
+;1回目　花嫁40％以上、美麗200以上
+;2回目　花嫁60％以上、美麗400以上、民衆の評価50以上
+;3回目　花嫁80％以上、美麗600以上、民衆の評価150以上
+
+LOCAL = 0
+;1回目の条件
+IF CFLAG:属性／花嫁 >= 40 && BASE:美麗 >= 200 && !CFLAG:特殊イベント／花嫁
+	LOCAL = 1
+;2回目
+ELSEIF CFLAG:属性／花嫁 >= 60 && BASE:美麗 >= 400 && BASE:民衆の評価 >= 50 && CFLAG:特殊イベント／花嫁 == 1
+	LOCAL = 1
+;3回目
+ELSEIF CFLAG:属性／花嫁 >= 80 && BASE:美麗 >= 600 && BASE:民衆の評価 >= 150 && CFLAG:特殊イベント／花嫁 == 2
+	LOCAL = 1
+ENDIF
+
+;条件を満たしていると特殊イベントを呼び出す
+IF LOCAL
+	CALL WEDDING_SPECIAL_EVENT
+ENDIF
+
+;===========================================================================
+;能力毎のイベント
+;===========================================================================
+
+
+;-----------------------------------------------------------------
+;美麗イベント
+;-----------------------------------------------------------------
+@MOVE_WEDDING_0
+
+;美麗の数値よって分岐
+;(300毎に)
+LOCAL = BASE:美麗 / 300
+
+;900～は該当する属性が60%以上無いと出ない
+IF LOCAL == 3 && CFLAG:属性／花嫁 >= 60
+	PRINTFORML %CALLNAME:TARGET%が家事を行う姿の一つ一つが繊細で、かつ美しく
+	PRINTFORMW その腕は今にも折れてしまいそうな気がしてしまう
+	PRINTFORML %CALLNAME:MASTER%が礼の言葉を言うと%CALLNAME:TARGET%は笑顔を浮かべて返してきた
+	PRINTFORMW ずっとこうしていたいと思えてしまった
+ELSEIF LOCAL == 2
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に抱きつき、潤んだ瞳をして懇願してきた
+	PRINTFORML 
+	PRINTFORML 
+	PRINTFORML どうやら高い場所にある物が取れなかったらしい
+	PRINTFORMW %CALLNAME:MASTER%が容易く取ると%CALLNAME:TARGET%は満面の笑みを浮かべた
+ELSEIF LOCAL == 1
+	PRINTFORML %CALLNAME:TARGET%は鼻歌を歌いながら料理を作り、運ぼうとした時に
+	PRINTFORMW 敷居の段差に足を引っ掛け転びそうになった
+	PRINTFORMW 慌てて%CALLNAME:MASTER%が支えると、嬉しそうな表情をしながら悪態ついてきた
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の手を取り、嬉しそうに引っ張った
+	PRINTFORMW その先には古い家具があり、あたふたした様子で使い方を聞いてきた
+	PRINTFORMW どうやら使い方が分からないらしい
+ENDIF
+
+;上昇処理
+CALL DAILY_PALAM_0, LOCAL+1, "美麗", "美麗"
+
+;---------------------------------------------------
+;家事、知力、疎通イベント
+;中心能力：家事
+;---------------------------------------------------
+@MOVE_WEDDING_COMMON, ARG
+#DIM inyou, 1
+
+;対象の数値よって分岐
+;(300毎に)
+LOCAL = BASE:(ARG+5) / 300
+
+IF LOCAL == 3
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%と一緒に王宮の外に軽く出かけた
+	;知力
+	IF ARG == 1
+		PRINTFORML 出かけたのは遺跡で、%CALLNAME:TARGET%の蘊蓄話に%CALLNAME:MASTER%は延々と相槌を打った
+		PRINTFORMW 当時の人達が見た情景を思い浮かべることができ、有意義な時間を過ごした
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 市場に出かけ、多くの人と会話をした
+		PRINTFORMW 帰り道は、口車に乗せられ買った大量の食材をどう料理するかで話し合った
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORML 料理教室に出かけた。「夫婦の為の料理教室」と書いてあるのが気になるが……
+		PRINTFORMW 疑いの視線を向けられたが%CALLNAME:MASTER%に罪は無いので無視し続けた
+	ENDIF
+ELSEIF LOCAL == 2
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%を驚かせようと何かを仕込んだ
+	;知力
+	IF ARG == 1
+		PRINTFORML 内装を変えて驚かせようという作戦で、歴史に因んでいることで%CALLNAME:MASTER%を思わず感心させた
+		PRINTFORMW ……役人に見つかり、内装を片づけるのに時間がかかったのだけは唯一の失敗だったようだ
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 宴を企画したらしく、記念日ではないのに行われる事に対して%CALLNAME:MASTER%は驚いた
+		PRINTFORMW 宴は一晩中続き、朝方には机に伏して睡眠に浸る%CALLNAME:TARGET%の姿があった
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORML 仕込んだのは豪華な御馳走で、戻ってきた%CALLNAME:MASTER%を大きく驚かせることになる
+		PRINTFORMW もちろん味も大変美味しく、調理人の鋭利な感覚が光る
+	ENDIF
+ELSEIF LOCAL == 1
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に手伝いを頼んだ
+	;知力
+	IF ARG == 1
+		PRINTFORML どうやら本を読んでいたら読めない言葉が出てきたらしい
+		PRINTFORMW %CALLNAME:MASTER%が教えるとその場で飛び跳ねて喜んだ
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 仲が良い女中に伝言があり、今手が離せないので代わりに伝えてほしいとのことだった
+		PRINTFORMW 女中に伝えると笑顔で返事をされ、%CALLNAME:TARGET%に関係する話をたくさん行われた
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORML どうやら新しい料理を試すらしく、実験ｄ……意見役をしてほしいとのこと
+		PRINTFORMW 試行錯誤の末新たな料理が手法に加わる事になった
+	ENDIF
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は料理に必要な調味料が足りない事に気付いた
+	;知力
+	IF ARG == 1
+		PRINTFORML 調味料の成り立ちや由来に詳しい%CALLNAME:TARGET%は、なんとその場で調味料を作り上げた
+		PRINTFORMW 食べたことがない風味に%CALLNAME:MASTER%は困惑するが、その味が持つ歴史を聞いて驚く事になる
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 人と話することに長けた%CALLNAME:TARGET%は女中に調味料を借りに行った
+		PRINTFORMW 会話が弾んだらしく、戻ってきた%CALLNAME:TARGET%は嬉しそうにしている
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORML 家事の知識がある%CALLNAME:TARGET%は他の料理を試してみることにした
+		PRINTFORMW 今食べている料理が美味しく、突発的に変えたとはとても思えなかった
+	ENDIF
+ENDIF
+
+
+;ARGを対応する能力の文字に変換
+IF ARG == 1
+	STR = 知力
+ELSEIF ARG == 2
+	STR = 疎通
+ELSEIF ARG == 3
+	STR = 家事
+ENDIF
+
+IF inyou
+	CALL COMMON_ABLUP, "淫妖", LOCAL:4, "WAIT"
+ELSE
+	CALL DAILY_PALAM_0, LOCAL+1, "美麗", STR
+ENDIF
+
+
+;---------------------------------------------------
+;淫妖イベント
+;花嫁属性でNTRやると離反されそ…ふさわしくないので
+;アライメントが低い場合：半ば主人に強制されて
+;貞操が低い場合：自ら
+;この差を付けることにします
+;---------------------------------------------------
+@MOVE_WEDDING_6
+
+;淫妖の数値よって分岐
+;(300毎に)
+LOCAL = BASE:淫妖 / 300
+
+;野外で行為に耽る
+IF LOCAL == 3
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%と共に一通りが少ない森へでかけ
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 
+	;半裸
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+		PRINTFORM 布を捲られ
+	ELSE
+		PRINTFORM 衣服を剥かれて
+	ENDIF
+	PRINTFORMW 行為に及んだ……
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%は人目を憚らず大きな声をあげ、更に行為をねだった
+		PRINTFORMW その内堪え切れなくなったのか自ら胸を弄り始め、何度も身体を大きく震わせた
+		PRINTFORMW 行為が終わり互いに仰向けで寝転んだ後も、%CALLNAME:TARGET%は秘裂に指を突っ込んで甘い声を漏らし、快楽を貪った
+		
+		LOCAL:1 = 50
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORMW %CALLNAME:MASTER%に突かれると%CALLNAME:TARGET%は蕩けた声をあげ、自ら腰を振り始めた
+		PRINTFORMW 何度も達する内に周囲に卑しい香りが広まり、事を終える頃には外れの道に足跡がいくつか見られた
+		PRINTFORMW どうやら数人が近辺を通ったらしい
+		
+		LOCAL:1 = 40
+	;それ以外
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は近辺をしきりに確認し、人が来ないか心配した
+		PRINTFORMW それでも%CALLNAME:MASTER%に突かれる度に顔は赤くなっていき、声も艶を帯びていった
+		PRINTFORMW 行為が終わった後に、荒い息をつく%CALLNAME:TARGET%は%CALLNAME:MASTER%に抱きついた
+		
+		LOCAL:1 = 35
+	ENDIF
+	CALL INSERT, 0, 0
+;日頃から責め具を付けられる
+ELSEIF LOCAL == 2
+	PRINTFORML %CALLNAME:TARGET%は局部に責め具を付けた状態で花嫁修業を行わされた……
+	
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%は媚声をあげながら艶めかしく腰を振って歩いた
+		PRINTFORML 修行中に何度も達し、水溜りをあらゆる場所に作り
+		PRINTFORMW 終いには自ら汚した床を拭きながら声をあげて達し、再び床を汚すようになった
+		
+		LOCAL:1 = 40
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORMW %CALLNAME:TARGET%はしきりに太腿を擦り合わせ、小さく媚声を漏らした
+		PRINTFORMW 時折机の角に秘部を擦りつけ溜まった快感を晴らそうとしている
+		PRINTFORMW 結局一日の内に何度も達し、床のあらゆる場所に水溜りを作った
+		
+		LOCAL:1 = 30
+	;それ以外
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は時折身体を震わせ、太腿を擦り合わせながら歩いた
+		PRINTFORMW 一日の終わりが近づくにつれて擦り合わせる音は水気を増していく
+		PRINTFORMW 責め具を取り外す際に%CALLNAME:TARGET%は荒い息をつき、濡れた瞳で%CALLNAME:MASTER%を見つめた
+		
+		LOCAL:1 = 25
+	ENDIF
+;調理中に弄られる
+ELSEIF LOCAL == 1
+	PRINTFORM %CALLNAME:TARGET%が鼻歌を歌いながら料理を作っていると、背後から%CALLNAME:MASTER%に
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 露出した局部に手を添えられ
+	;半裸
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+		PRINTFORM 布を捲られ
+	ELSE
+		PRINTFORM 衣服に手を入れられ
+	ENDIF
+	PRINTFORMW きめ細かい手つきで刺激された
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORML %CALLNAME:TARGET%は艶やかな声をあげ、腰を%CALLNAME:MASTER%に押し付けた
+		;身体付きによって分岐
+		IF BODY_RIPEN(TARGET) >= 15
+			PRINTFORM すっかり卑しくなった股体を
+		ELSE
+			PRINTFORM まだ実りが未熟な股体を
+		ENDIF
+		PRINTFORML 軽く撫で、秘所に水音を立てながら指を挿れると媚声をあげて身体を痙攣させ達した
+		PRINTFORMW 濡れた瞳を%CALLNAME:MASTER%に向け、調理を置いてひたすら交わり続けた……
+		
+		CALL INSERT, 0, 0
+		
+		LOCAL:1 = 30
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML %CALLNAME:TARGET%は艶を帯びた表情をして振り返り、口を半開きにして可愛らしい声をあげた
+		PRINTFORMW 腰を%CALLNAME:MASTER%に押し付けるようにひっつけ、与えられる刺激に対して身体を震わせた
+		PRINTFORMW 身体が感極まった時、%CALLNAME:TARGET%は艶やかな声をあげて%CALLNAME:MASTER%にもたれかかった
+		
+		LOCAL:1 = 20
+	;それ以外
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は嫌がる仕草を見せながらも%CALLNAME:MASTER%の責めに対して鋭い反応を見せた
+		PRINTFORMW やがて身体が昂ぶり、熱い吐息を漏らして腰をよじって一際甲高い声をあげ、その場に座り込んだ
+		PRINTFORMW %CALLNAME:TARGET%ははあはあと荒い息を漏らしながら%CALLNAME:MASTER%の行いを咎めた
+		
+		LOCAL:1 = 15
+	ENDIF
+ELSE
+	PRINTFORM %CALLNAME:TARGET%は物陰に隠れて
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 
+	ELSE
+		PRINTFORM 衣服を肌蹴、
+	ENDIF
+	PRINTFORMW 局部を弄った……
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORML 自慰の手は留まる事を知らず、ついには自ら腰をよじりだした
+		PRINTFORMW 微かに漏れる程度だった媚声は大きくなり、近くにいる%CALLNAME:MASTER%に気を遣う様子がない
+		PRINTFORMW %CALLNAME:MASTER%の元に戻ってきた%CALLNAME:TARGET%は熱い吐息を漏らし、瞳も濡れていた
+		
+		LOCAL:1 = 20
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORMW 運が悪かったのか%CALLNAME:MASTER%に見つけられてしまった
+		PRINTFORMW 熱い吐息を漏らす%CALLNAME:TARGET%は手を止めることができず、そのまま自慰に耽ってしまった
+		PRINTFORMW 否定の言葉を紡ぐ口とは正反対なことをしている状況で、益々%CALLNAME:TARGET%の身体は昂ぶりを覚えることとなった
+		
+		LOCAL:1 = 10
+	;それ以外
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に発見される恐れという背徳感を感じながら耽った
+		PRINTFORML やがて背筋を震わせ、熱い吐息を漏らしながら達した%CALLNAME:TARGET%は
+		PRINTFORMW 赤みがかった表情を残したまま%CALLNAME:MASTER%の元へ戻った……
+		
+		LOCAL:1 = 5
+	ENDIF
+ENDIF
+
+CALL DAILY_PALAM_6, LOCAL+1, "淫妖", "淫妖"
+
+;====================================================
+;花嫁固有イベント
+;====================================================
+@WEDDING_SPECIAL_EVENT
+PRINTFORML ～～"清め"が引き裂く男女の仲　未亡人は見た～～
+;1回目
+IF !CFLAG:特殊イベント／花嫁
+	PRINTFORML 未亡人「あらあら、綺麗なドレスを纏っているとは相当愛されているのですね貴方
+	PRINTFORML 　　　　昔のことを思い出すわ。私にも愛する夫がいたんだけどある日占い師から「お前の旦那さんは穢れている！」と言われまして……
+	PRINTFORMW 　　　　うう……思い出すと涙が……
+	PRINTFORML 
+	PRINTFORML 未亡人はどこかへ去っていった
+	CALL SETCOLOR_ABL
+	PRINTFORMW 花嫁としての能力(美麗)を鍛えつつ民衆の評価も上げれば女性は信用してくれるかもしれない
+	RESETCOLOR
+;2回目
+ELSEIF CFLAG:特殊イベント／花嫁 == 1
+	PRINTFORML 未亡人「先日は突然取り乱してしまい、迷惑をかけてしまいました……
+	PRINTFORML 　　　　前回の話の続きをしましょう。夫が穢れていると知った私は王宮に行き相談したんです
+	PRINTFORML 　　　　そしたら"清めの儀"を受けることを勧められまして……
+	PRINTFORML 　　　　ここから先は貴方がもっと美しくなってから話した方がよさそうですね
+;3回目
+ELSEIF CFLAG:特殊イベント／花嫁 == 2
+	PRINTFORML 未亡人「へえ……結構綺麗になられましたね
+	PRINTFORML 　　　　約束通り話の続きをしましょう。私の夫は王宮へ"清めの儀"を受けに行ったんです
+	PRINTFORML 　　　　「数時間で帰ってくるよ」と言って出ていった夫を、私は信じて待ちました
+	PRINTFORML 　　　　だけど数時間、数日、数ヶ月と経っても戻ってこなかったんです……
+	PRINTFORML 　　　　
+	PRINTFORML 　　　　……ふう、すっきりしました
+	PRINTFORML 　　　　これは夫が去った後差出人不明で送られてきた石です
+	PRINTFORML 　　　　私には使い道が分からないので受け取ってください
+	PRINTFORML
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 　　　　　ワールブルクの石を手に入れた！
+	ITEM:ワールブルクの石 += 1
+	RESETCOLOR
+ENDIF
+CFLAG:特殊イベント／花嫁 += 1
+
+

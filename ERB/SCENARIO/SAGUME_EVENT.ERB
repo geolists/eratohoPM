@@ -1,0 +1,581 @@
+﻿;======================================================
+;サグメイベント
+;======================================================
+;---------------------------
+;(念の為)イベント管理関数
+;イベント発生の可否を管理する
+;---------------------------
+@MANAGE_SAGUME_EVENT
+
+;輝夜が誘拐されている場合はイベント発生を弾く
+;(メッセージを出してイベント発生がスルーされたことを伝える)
+IF CFLAG:モード == 2
+	DRAWLINE
+	PRINTFORML ～～不幸を呼ぶ預言者　王宮にて～～
+	PRINTFORML 片翼の預言者「あの、%CALLNAME:TARGET%さんはどちらに……？」
+	PRINTFORMW 片翼の預言者「そうですか……この場にいないのでしたら、私にできることはないですね」
+ELSE
+	;1回目のイベント　2年目の9月上旬
+	;民衆の評価が50以上あることが必要
+	IF FLAG:年数 == 2 && DAY == 9 && TIME == 0 && BASE:民衆の評価 >= 50
+		CALL SAGUME_EVENT, 1
+	
+	;2回目以降は前回のイベントが発生していることが前提条件
+	
+	;2回目のイベント　3年目の7月上旬
+	ELSEIF FLAG:年数 == 3 && DAY == 7 && TIME == 0 && GETBIT(FLAG:サグメイベント管理, 0)
+		CALL SAGUME_EVENT, 2
+	;3回目のイベント　4年目の9月上旬
+	ELSEIF FLAG:年数 == 4 && DAY == 9 && TIME == 0 && GETBIT(FLAG:サグメイベント管理, 1)
+		CALL SAGUME_EVENT, 3
+	;4回目のイベント　5年目の10月上旬
+	ELSEIF FLAG:年数 == 5 && DAY == 10 && TIME == 0 && GETBIT(FLAG:サグメイベント管理, 2)
+		CALL SAGUME_EVENT, 4
+	ENDIF
+ENDIF
+
+;---------------------------
+;イベント本体
+;ARG　イベントID
+;---------------------------
+@SAGUME_EVENT,ARG
+
+DRAWLINE
+SELECTCASE ARG
+	;1回目のイベント
+	CASE 1
+		PRINTFORML ～～月の都にて　「不幸を運ぶ預言者」～～
+		FORCEWAIT
+		PRINTFORML 都の住民と仲良くなった%CALLNAME:TARGET%は、いつものように町端で数人の住民との雑談に興じていた
+		PRINTFORMW 途中までは他愛もない世間話が多かったのだが、とある言葉が出てから雰囲気が重たくなった
+		PRINTFORML 
+		PRINTFORML 「ねえ、聞いた？　また現れたんですって……」
+		PRINTFORML 「うわ、マジかよ。会った奴可哀想だな」
+		PRINTFORMW 「これでもう3軒目よ。あの預言者が原因で店を畳んだの……」
+		PRINTFORML 
+		PRINTFORML 預言者――
+		PRINTFORML %CALLNAME:TARGET%にとって全く身に覚えがないわけではなかった
+		PRINTFORML 以前、匪賊に狙われていると忠告に来てくれたのだ。
+		PRINTFORMW 幸いにも不幸な目に遭ったことはないが……
+		PRINTFORML 
+		PRINTFORMW %CALLNAME:TARGET%は預言者について興味が涌き、恐る恐る聞くことにした
+		PRINTFORML 
+		PRINTFORML 「ああ、預言者ね……本当にひどいのよ。預言したことと正反対のことが起こるの」
+		PRINTFORML 「悪いことも預言してくれるならいいんだが、内容は全て良い物だったからな」
+		PRINTFORMW 「だから、みんな"不幸を運ぶ預言者"として呼んでるのよ」
+		PRINTFORML 
+		;PRINTFORML 預言者は不幸を運ぶらしい
+		PRINTFORML 預言と正反対の出来事ばかり起こるという噂だが、本当なのだろうか
+		PRINTFORMW %CALLNAME:TARGET%は内心疑問に思いながらも、話を続けることにした
+		PRINTFORML 
+		PRINTFORML だが、後に彼女は知ることになる
+		PRINTFORMW 不幸な預言者の"実力"というものを――
+		
+		FLAG:サグメイベント管理 |= 1p0
+	;2回目のイベント
+	CASE 2
+		PRINTFORML ～～「不幸を運ぶ預言者」　警備隊の詰め所にて～～
+		FORCEWAIT
+		PRINTFORML %CALLNAME:TARGET%は、都に住む女性を連れて詰め所に来ていた
+		PRINTFORML 
+		PRINTFORMW 警備隊「分かりました。私達の方で調べてみますので、一旦お帰りください」
+		PRINTFORML 
+		PRINTFORMW 安堵の表情を浮かべる女性。というのも、彼女は子供の捜索依頼を出しに来ていたのだ
+		PRINTFORML ある日突然いなくなったものだから困っていた。その時現れたのが%CALLNAME:TARGET%であった
+		PRINTFORMW こうして警備隊に捜索依頼を出しに来たのは%CALLNAME:TARGET%に勧められたからであった
+		PRINTFORML 
+		PRINTFORMW 詰め所から%CALLNAME:TARGET%と女性が姿を消し、数分が経った……
+		PRINTFORML 次に詰め所を訪れたのは、深々とフードを被った少女だった
+		PRINTFORMW 背中には片翼を生やしている
+		PRINTFORML 
+		PRINTFORML 　　　警備隊「おお、預言者の方ですね。いつも報告ありがとうございます」
+		PRINTFORML 片翼の預言者「さっき、都の女性に会いましたが、依頼に来られたのですか？」
+		PRINTFORML 　　　警備隊「ええ、子供の捜索依頼とのことでした」
+		PRINTFORML 
+		PRINTFORMW 警備隊がそう答えると、預言者はフードを深く下げ、静かに話し始めた
+		PRINTFORML 
+		PRINTFORML 片翼の預言者「……あの子は、恐らく匪賊に誘拐されています」
+		PRINTFORMW 　　　警備隊「やはりそうでしたか。それでは早速、彼らの居城への突入準備を――」
+		PRINTFORML 片翼の預言者「待ってください。正面以外から突入しましょう」
+		PRINTFORMW 　　　警備隊「なぜです？」
+		PRINTFORML 片翼の預言者「実は、獣道から裏に回ることができます。その道を使って侵入しましょう。匪賊達が滅多に使うことのない裏道です」
+		PRINTFORMW 　　　警備隊「なるほど！　では、そちらの道を使って突入します！」
+		PRINTFORML 
+		PRINTFORML こうして、警備隊達は預言者に教えられた道を使い、匪賊達の居城に突入することにした
+		PRINTFORMW しかし、警備隊達が進むのを、匪賊は見てしまった。たまたま居合わせただけだった彼は、大慌てで居城へと戻る
+		PRINTFORML 
+		PRINTFORML 居城に突入した警備隊。何やら様子がおかしい。というのも、やけに静かだったのだ
+		PRINTFORML 居城に何度か突入したことがあるが、大抵うるさかった。統制が取れない彼らは常に騒いでいるのだ
+		PRINTFORMW もしや少女に何かあったのでは……。不吉な予感を抱えながら、捜索を続ける警備隊
+		PRINTFORML 
+		PRINTFORMW そして、ついに不吉な予感は当たってしまう……
+		PRINTFORMW 居城の奥にある大広間にて、少女を発見したのだ
+		PRINTFORML 少女は床に横たわり、虚ろな目を宙に向けている
+		PRINTFORML 全裸にひん剥かれ、股間からは赤混じりの白濁液を垂れ流している
+		PRINTFORML 周囲に捨てられた注射針や、錠剤の包み紙が少女の身に起きた出来事を物語っている
+		PRINTFORMW 少女の上体を起こして揺すると、少女は首を力なく片肩に寄せ、口の端から涎を垂らした……
+		PRINTFORML 
+		PRINTFORML 依頼主の女性「どうしてなの！？　どうして私の子は助からなかったの！？」
+		PRINTFORML 
+		PRINTFORML 警備隊から報せを受けた女性は、目から涙を流しながら警備隊を怒鳴る
+		PRINTFORMW 少女は"死んだ"と報せた。さすがに実態を報告するわけにはいかない
+		PRINTFORML 
+		PRINTFORML 警備隊が女性からの暴言を受けていると、どこかからフードを被った少女が現れた
+		PRINTFORML 
+		PRINTFORMW 片翼の預言者「娘さんのことは、その……すみませんでした……！」
+		PRINTFORML 
+		PRINTFORML 預言者は女性の前で深々と頭を下げる
+		PRINTFORMW そんな預言者の様子を依頼主は見つめながら、静かに言葉を出した
+		PRINTFORML 
+		PRINTFORML 依頼主の女性「貴方が……警備隊に何か言ったのね……」
+		PRINTFORML 片翼の預言者「はい。探索の助けになることを助言したら――」
+		PRINTFORMW 依頼主の女性「この人殺しッ！」
+		PRINTFORML 
+		PRINTFORMW 依頼主は、詰め所の窓が割れそうなくらい大きな声をあげた
+		PRINTFORML 
+		PRINTFORML 依頼主の女性「貴方……自分が何をしたか分かってるの！？」
+		PRINTFORML 片翼の預言者「いえ、だから助言をしてですね……」
+		PRINTFORMW 依頼主の女性「その助言が余計なのよ！　うちの娘をどうしてくれるのよ！　ねえ！」
+		PRINTFORML 
+		PRINTFORML 依頼主は預言者に詰め寄り、両肩を揺すりながら大声で怒鳴る
+		PRINTFORMW 両目に宿る涙が頬を伝い、床に落ちる
+		PRINTFORML 
+		PRINTFORML 依頼主の女性「かけがえのない、たった一つの命なのよ！　ねえ！　あなたが代わりに死んでくれるの！？　だったら死んで！　今すぐ死んで詫びて！」
+		PRINTFORML 
+		PRINTFORML 預言者は依頼主の手を何とか振り切り、逃げるように詰め所を出ていった
+		PRINTFORML 
+		PRINTFORMW 依頼主は肩で呼吸をして息を整えた後、ゆっくりと口を開いた
+		PRINTFORML 
+		PRINTFORML 依頼主の女性「……警備隊の方、もう、あの預言者と関わらないでください」
+		PRINTFORML 
+		PRINTFORMW その言葉を残して、依頼主も詰め所を後にした
+		PRINTFORMW 警備隊は困った表情を浮かべている。心情は察せるが、要求を呑むことは信条に反することになるからだ
+		
+		FLAG:サグメイベント管理 |= 1p1
+	;3回目のイベント
+	CASE 3
+		PRINTFORML ～～「不幸を運ぶ預言者」　依姫の部屋にて～～
+		FORCEWAIT
+		PRINTFORML 昼間から部屋に呼び出された%CALLNAME:TARGET%
+		PRINTFORML 目の前には、依姫と預言者の二人がいる
+		PRINTFORML 
+		PRINTFORML 「ふう……さて、預言者様。色々と話してもらいましょうか」
+		PRINTFORML 
+		PRINTFORML 依姫は預言者が被っているフードを脱がし、顔を明らかにさせた
+		PRINTFORMW フードの下から現れたのは、銀色の短髪をした少女だった。不安そうに視線を漂わせている
+		PRINTFORML 
+		PRINTFORML 「なぜ、貴方は都の民を不幸に陥れるのでしょう？　何か恨みでもあるのですか？」
+		PRINTFORML 「いえ……私には特に……」
+		PRINTFORML 「だったら、他に理由があるのです？」
+		PRINTFORML 「私はただ……困っている人を助けたいだけで……」
+		PRINTFORMW 「……貴方、嘘をついていますね」
+		;後から出てくる罵倒と同じような内容だったのでカット
+		;PRINTFORML 
+		;PRINTFORMW 依姫の鋭い視線が、預言者をすくみ上らせた
+		;PRINTFORML 
+		;PRINTFORML 　依姫「本当に救いたいのなら、数度預言をして不幸になったのを見たら預言をやめるでしょう？」
+		;PRINTFORML 預言者「いや……次こそは上手く行く可能性もあ――」
+		;PRINTFORMW 　依姫「貴方は、自分の能力に気付けない。ということですか？　それとも……」
+		;PRINTFORML 
+		PRINTFORML 依姫は戸棚に行き、一冊の本を取り出した
+		PRINTFORMW 古ぼけた表紙には、墨で"聴取記録"と書かれている
+		PRINTFORML 
+		;PRINTFORMW 　依姫「能力に気付けない。という嘘をついていますね」
+		;PRINTFORML 
+		PRINTFORML 「そ……それは」
+		PRINTFORMW 預言者は後ずさり、壁に背をつけた
+		PRINTFORML 
+		PRINTFORML 「過去に貴方が犯した過失についての聴取記録です。資料室から借りてきました」
+		PRINTFORML 「やめて……それは昔の話でしょう？」
+		PRINTFORML 「貴方は"穢れの地"に派遣された者の現状を視察に行き、嘘をついた結果、その者を殺してしまったのです」
+		PRINTFORML 「だ、だから、あの時のことがあったから、今の私は――」
+		PRINTFORMW 「嘘をついていない。と言いたいのでしょうが、とても、そのようには見えないですね」
+		PRINTFORML 
+		PRINTFORMW 依姫は預言者に寄り、眼前で指さした
+		PRINTFORML 
+		PRINTFORML 「どうして都の民を救いたいのに、いつも同じ失敗を繰り返すのですか？　結果を見たら自分の能力に自ずと気づけるのでは？」
+		PRINTFORML 「本当は自分がいい思いをしたかった。過去への贖罪を"嘘をつかない自分"という形でしたかった。そうじゃないですか？」
+		PRINTFORMW 「今までの自分の言動とその結果を振り返れば、自分が何をすべきなのか。そして本当は何を望んでいるのか分かるでしょうに」
+		PRINTFORML 
+		PRINTFORMW 依姫からの質問に対し、預言者は視線を背け、静かに口を開いた
+		PRINTFORML 
+		PRINTFORMW 預言者「考えさせてください……今の私には、整理が必要ですから……」
+		PRINTFORML 
+		PRINTFORMW 預言者はそう言って部屋を後にした
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORML 夕暮れ――
+		PRINTFORMW 王宮の近くにある丘。預言者は座ってぼーっと空を見つめていた
+		PRINTFORML 預言者「あら……貴方は%CALLNAME:TARGET%さんですね」
+		PRINTFORML 
+		PRINTFORML 預言者の少女は、手に小さな花を持っている。
+		PRINTFORML 周りに咲いている花と同じような花びらをしていることから、恐らくこの辺りで採ったのだろう
+		PRINTFORMW その花を見つめながら、預言者は口を開いた
+		PRINTFORML 
+		PRINTFORMW 預言者「私……酷い人間なのでしょうか。嘘をついて……他人を陥れる……そんな人間なのでしょうか」
+		PRINTFORML 視線を落とし、重い口調で話す預言者に対して%CALLNAME:TARGET%は返事を返した
+		PRINTFORML 
+		PRINTFORML [0] - 「そんなことないよ」
+		PRINTFORML [1] - 「うーん……」
+		
+		CALL SENTAKUSHI, 2
+		
+		;サグメにいい返事をしたフラグを立てる
+		IF RESULT == 0
+			FLAG:サグメイベント管理 |= 1p30
+			
+			PRINTFORML 「……そうね。もしかしたら、私の思い込みなのかもしれませんね」
+			PRINTFORMW 預言者は立ち上がり、%CALLNAME:TARGET%に笑みを見せた。
+			PRINTFORML 
+			PRINTFORMW 「ありがとうございます。おかげで少し気が楽になりました。お礼と言っては何ですが、こちらを……」
+			PRINTFORML 
+			PRINTFORML 預言者は懐から何かを取り出し、%CALLNAME:TARGET%の手に握らせた
+			PRINTFORMW 手を離された後に%CALLNAME:TARGET%が手を開くと、橙色の石が収まっていた
+			PRINTFORML 
+			PRINTFORML 「それは、私が穢れの地から帰ってきた時に天照様から渡された石です
+			PRINTFORMW 　大事に使ってください」
+			PRINTFORML 
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%は天照の石を手に入れた！
+			ITEM:天照の石 += 1
+			RESETCOLOR
+		ELSE
+			PRINTFORML 
+			PRINTFORML 「……うん。まあそうだろうと思っていました」
+			PRINTFORMW 預言者は立ち上がり、砂埃を払いながら%CALLNAME:TARGET%を見る
+			PRINTFORML 
+			PRINTFORMW 「迷惑をかけてごめんなさいね。では、私はそろそろ帰ります」
+		ENDIF
+		
+		;サグメの心情値によって分岐する
+		;心情値が+15以上
+		IF CLUC_SAGUME_SENTIMENT() >= 15
+			PRINTFORML 
+			PRINTFORML 「ちょっと待って」
+			PRINTFORMW %CALLNAME:TARGET%は預言者を呼び止めた
+			PRINTFORML 
+			PRINTFORML 「……なん、でしょうか……」
+			PRINTFORMW 預言者は振り向いた。目には依然として不安が籠っている
+			PRINTFORML 「私、あなたにもできることがあると信じているから……」
+			PRINTFORMW %CALLNAME:TARGET%は預言者の元まで駆け、両手を握った
+			PRINTFORML 
+			PRINTFORML 「ええ……」
+			PRINTFORMW 預言者は%CALLNAME:TARGET%の顔と、強く握られた手を交互に見て
+			PRINTFORML 「ありがとう……」
+			PRINTFORMW と言って、その場を後にした
+			PRINTFORML 
+			PRINTFORML 「私にも、できることはあるのかもしれない……」
+			PRINTFORMW 帰り道にて、預言者は小さく呟いた
+			
+			;サグメイベントが成功する
+			FLAG:サグメイベント管理 |= 1p29
+		ELSE
+			;この分岐に入った場合、サグメイベントは恐らく失敗する
+		ENDIF
+		
+		
+		;いい返事を返したフラグが立っていない場合、依姫からアイテムを貰える
+		IF !GETBIT(FLAG:サグメイベント管理, 30)
+			PRINTFORML 
+			PRINTFORML 「はあっ……はあ……預言者様は？」
+			PRINTFORMW %CALLNAME:TARGET%が預言者はもう帰ったことを知らせると、依姫の声から元気がなくなった
+			PRINTFORML 
+			PRINTFORML 「そう……ですか……。あの預言者には、少し言い過ぎました……」
+			PRINTFORML 
+			PRINTFORML 依姫は%CALLNAME:TARGET%を取り、何かを握らせてから離した
+			PRINTFORMW 掌を開くと、そこには紐が付いた茶色の石がある
+			PRINTFORML 
+			PRINTFORML 
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%は姉妹のお守りを手に入れた！
+			ITEM:姉妹のお守り += 1
+			RESETCOLOR
+			PRINTFORML 「それは……私が大切にしていたお守りです……
+			PRINTFORML 　その……預言者様へのお詫びの印として……
+			PRINTFORMW 　%CALLNAME:TARGET%さんに渡してもどうにもならないことは分かっているのですが……」
+			PRINTFORML 
+			PRINTFORMW 「お願いします……預言者様を救ってください……
+			PRINTFORMW 　勝手なお願いなのは分かっているのですが……このままでは、私は……」
+			PRINTFORML 
+			PRINTFORMW 依姫の声は少しずつ小さくなっていった
+			PRINTFORMW 
+		ELSE
+			
+		ENDIF
+		
+		;[以下コメント部]仕様変更により没にしました
+		;IF RESULT == 0
+			;PRINTFORML 
+			;PRINTFORML 「……そうね。もしかしたら、私の思い込みなのかもしれませんね」
+			;PRINTFORML 
+			;PRINTFORMW 預言者は立ち上がり、%CALLNAME:TARGET%に笑みを見せた。
+			;PRINTFORML 
+			;PRINTFORMW 「ありがとうございます。おかげで少し気が楽になりました。お礼と言っては何ですが、こちらを……」
+			;PRINTFORML 
+			;PRINTFORML 預言者は懐から何かを取り出し、%CALLNAME:TARGET%の手に握らせた
+			;PRINTFORMW 手を離された後に%CALLNAME:TARGET%が手を開くと、橙色の石が収まっていた
+			;PRINTFORML 
+			;PRINTFORMW 「それは、私が穢れの地から帰ってきた時に天照様から渡された石です
+			;PRINTFORML 　大事に使ってください」
+			;PRINTFORML 
+			;PRINTFORML %CALLNAME:TARGET%「えっ……いいの？　貴方の大切な石なんじゃ……」
+			;PRINTFORMW 困惑した声色で訊く%CALLNAME:TARGET%。しかし預言者の眼に迷いはなかった
+			;PRINTFORML 
+			;PRINTFORML 「いいんです。貴方なら、きっとうまく使えるはずです。それに――」
+			;PRINTFORML 　%CALLNAME:TARGET%「それに？」
+			;PRINTFORMW 「……いえ、なんでもないです。さて、私はそろそろ帰ることにします」
+			;PRINTFORML 
+			;PRINTFORMW こうして、預言者は%CALLNAME:TARGET%と別れた
+			
+			
+		;ELSE
+			;PRINTFORML 
+			;PRINTFORML 「……うん。まあそうだろうと思っていました」
+			;PRINTFORMW 預言者は立ち上がり、砂埃を払いながら%CALLNAME:TARGET%を見る
+			;PRINTFORML 
+			;PRINTFORMW 「迷惑をかけてごめんなさいね。では、私はそろそろ帰ります」
+			;PRINTFORML 
+			;PRINTFORMW そして%CALLNAME:TARGET%に背を向け、この場を去った
+			;PRINTFORML 
+			;PRINTFORML 一人残された%CALLNAME:TARGET%の下に、駆けてくる人影があった
+			;PRINTFORMW その人影は、昼に預言者を叱っていた者だった
+			;PRINTFORML 
+			;PRINTFORML 「はあっ……はあ……預言者様は？」
+			;PRINTFORML 
+			;PRINTFORMW もう帰ったことを知らせると、依姫の声から元気がなくなった
+			;PRINTFORML 
+			;PRINTFORML 「そう……ですか……。あの預言者には、少し言い過ぎました……」
+			;PRINTFORML 
+			;PRINTFORML 依姫は%CALLNAME:TARGET%を取り、何かを握らせてから離した
+			;PRINTFORMW 掌を開くと、そこには紐が付いた茶色の石がある
+			;PRINTFORML 
+			;PRINTFORML 「それは……私が大切にしていたお守りです……
+			;PRINTFORML 　その……預言者様へのお詫びの印として……
+			;PRINTFORMW 　%CALLNAME:TARGET%様に渡してもどうにもならないことは分かっているのですが……」
+			;PRINTFORML 
+			;PRINTFORMW 「お願いします……預言者様を救ってください……
+			;PRINTFORMW 　勝手なお願いなのは分かっているのですが……このままでは、私は……」
+			;PRINTFORML 
+			;PRINTFORMW 依姫の声は少しずつ小さくなっていった
+			;PRINTFORMW 
+		;ENDIF
+		
+		
+		FLAG:サグメイベント管理 |= 1p2
+	;4回目のイベント
+	CASE 4
+		PRINTFORML ～～「不幸を呼ぶ預言者」　君主の間にて～～
+		FORCEWAIT
+		PRINTFORML 
+		PRINTFORML ある日、預言者は君主に呼ばれていた
+		PRINTFORML 側近の者は全員外に出され、この空間には君主と預言者の二人しかいない
+		PRINTFORMW 広間の真ん中にて、二人は立ったままの状態で対面している
+		PRINTFORML 
+		PRINTFORML 「やっと会えたな。預言者……いや、サグメと呼んだ方がいいか」
+		PRINTFORMW 預言者――サグメはフードを脱ぎ、君主の顔を見る
+		PRINTFORML 
+		PRINTFORML 「お前は、綿月の血筋に相当虐められたようだな」
+		PRINTFORML 「いえ……そのようなことは……」
+		PRINTFORMW サグメは頭を振って否定する。心中では君主に見抜かれたことに驚いている
+		PRINTFORMW 依姫に叱られた事は誰にも言っていないはずなのに、どうして分かったのだろうか
+		PRINTFORML 
+		PRINTFORML 「よいか。綿月に虐められたのはお前が悪いのではない。お前の血に原因があるのだ」
+		PRINTFORML 「……えっ」
+		PRINTFORMW 君主の言葉に、サグメの瞳が揺らぐ
+		PRINTFORML 
+		PRINTFORML 「お前の血は、早い内に月へと渡った者と、後になって月に渡った者の二者の血が混ざっているのだからな
+		PRINTFORML 　後になって月に渡った者は、早くから月に渡った者に蔑まれているのだ
+		PRINTFORML 　あいつらは建前では「後から月に来た者は穢れの地に長くいた分、穢れを多く被っている」と言っているが、本音は違う」
+		PRINTFORML 
+		PRINTFORMW 君主は壁際の棚の前に行き、目を瞑って口を開いた
+		PRINTFORML 
+		PRINTFORMW 「自分達が切り開いた利益を、他人にただ乗りされたくない。と考えているのだ」
+		PRINTFORML 
+		PRINTFORMW そして再びサグメに振り向き、言葉を続ける
+		PRINTFORML 
+		PRINTFORML 「当然、綿月の者達は早い内に月に渡った者。お前のことなぞ本心では忌み嫌っているだろうな」
+		PRINTFORMW サグメは視線を漂わせ、困惑した。依姫たちは本当に恨んでいたの……？　さっきまで分かっていたはずの意図が、闇の中へ沈んでしまう
+		PRINTFORML 
+		PRINTFORML 「私は、そんな自己中心的な奴らから月を解放するために動いている。そこで、だ――」
+		PRINTFORMW 君主はサグメの肩を持ち、耳元で囁いた
+		PRINTFORML 
+		
+		FLAG:サグメイベント管理 |= 1p3
+		
+		DRAWLINE
+		
+		PRINTFORML 
+		PRINTFORML それは突然のことだった
+		PRINTFORML %CALLNAME:TARGET%は、大事な話があるという名目で都の外にある廃墟に呼び出された
+		PRINTFORMW しかし、それは君主の罠であった
+		PRINTFORML 
+		PRINTFORMW 君主「この時がようやく来たな。%CALLNAME:TARGET%よ。お前の命もここまでだ」
+		PRINTFORML 
+		PRINTFORMW 君主の右手で、妖しげな石が輝いている……
+		PRINTFORML 
+		PRINTFORMW 君主「月の都の発展のため、人柱となってもらうぞ……！」
+		;君主(すごく強い)と戦闘
+		;前哨戦なので、HPはすごく低い
+		CALL SET_STATUS, 1
+		CALL HEALING, 1
+		CALL BATTLE, 138, 0, 0, 0, 32, 1
+		
+		PRINTFORML 
+		PRINTFORMW 君主が持つ妖しげな石が放つ光線はとても速く、%CALLNAME:TARGET%の行動が阻害されてしまう！
+		PRINTFORML 
+		PRINTFORMW 君主「さて……そろそろ観念したらどうだ」
+		PRINTFORML 
+		PRINTFORML %CALLNAME:TARGET%の後ろにあるのは壁。もう逃げ道はない
+		PRINTFORMW 妖しげな石が輝き、%CALLNAME:TARGET%が目を瞑ったその時――
+		;サグメイベントの成功判定がついている場合、サグメが駆けてきて弱点を教えてくれる
+		IF GETBIT(FLAG:サグメイベント管理, 29)
+			PRINTFORMW 「%CALLNAME:TARGET%さん！　今です！　物陰に隠れてください！」
+			PRINTFORML 
+			PRINTFORML サグメの声が上方から聞こえてきた
+			PRINTFORMW 目を開けると、君主は頭から布を被せられている
+			PRINTFORML 
+			PRINTFORML サグメは廃墟の屋根上にいた
+			PRINTFORML 「あの石は穢れの地から反射される光を基に光線を放出しているんです！　ですから――」
+			PRINTFORML 預言者が指差す方向には大きな廃墟がある。%CALLNAME:TARGET%は駆けてその建物に入った
+			PRINTFORMW 君主は布を取り除くと、%CALLNAME:TARGET%の後を追う
+			PRINTFORML 
+			PRINTFORML 廃墟の中は薄暗く、所々埃を被っている
+			PRINTFORML 「おのれ……あの預言者め……！　やはり奴も半身は先行者の身であったか……！」
+			PRINTFORMW 君主は恨めしそうに言葉を吐くと、再び%CALLNAME:TARGET%に襲いかかった！
+			
+			;(他のイベントと同じ君主と再戦)
+			CALL SET_STATUS, 1
+			CALL HEALING, 1
+			CALL BATTLE, 117, 0, 0, 0, 28, 1
+			
+		;成功判定が立っていない場合、綿月姉妹が駆けてきて石の攻撃を散乱させてくれる
+		ELSE
+			PRINTFORML 「間に合ったようね！」
+			PRINTFORML 
+			PRINTFORMW 聞き覚えのある声と共に、君主がたじろぐ声が聞こえた
+			PRINTFORML 
+			PRINTFORMW 目を開くと、そこには豊姫の姿があった
+			PRINTFORML 
+			PRINTFORML 「依姫が教えてくれたのよ。貴方が君主と共に出かけるのを見かけたんですって」
+			PRINTFORMW 「滅多に人が行かない方向へと出ていったので、気になって後を追ったんです」
+			;↓無理矢理繋げた感じがするので没
+			;PRINTFORML 「……本当は預言者のことも気になってたんじゃないの？」
+			;PRINTFORMW 「い、いえ……そんなことは……！」
+			PRINTFORML 
+			PRINTFORML 「おのれ……お前ら三人共始末してやる」
+			PRINTFORMW 君主は石を天に掲げたが――
+			PRINTFORML 「ぐやちゃんを相手にするなら……」
+			PRINTFORML 豊姫は輝く勾玉を君主に見せた
+			PRINTFORMW あまりの眩しさに君主は目を瞑り、石から放たれる光線は見当違いの方向へ飛んでいった
+			PRINTFORML 「私達も対処しないといけませんよ」
+			PRINTFORMW 依姫が追撃を仕掛ける！　君主の目の前に雷が落ち、轟音に君主が怯む
+			PRINTFORML 
+			PRINTFORMW 「くそ……！　ならば、まとめて始末してやる……！」
+			PRINTFORML 君主は光線の狙いを不規則に変えた。その光線は狙いが定まっていない
+			PRINTFORMW 二人が狙いを散乱させてくれたおかげで、多少は戦いやすくなりそうだ
+			
+			;君主(結構強い)と戦闘
+			CALL SET_STATUS, 1
+			CALL HEALING, 1
+			CALL BATTLE, 139, 0, 0, 0, 28, 1
+		ENDIF
+		
+		;戦闘に勝った場合、イベントが続行される
+		IF RESULT == 1
+			PRINTFORML 
+			PRINTFORMW 君主「くそ……っ！　この私が、負ける……だと……！」
+			PRINTFORML 
+			PRINTFORMW 君主の身体は紫色の煙に巻かれ、煙と共に姿を消した
+			PRINTFORML 
+			;サグメイベントの成功判定が立っているかどうかで分岐
+			IF GETBIT(FLAG:サグメイベント管理, 29)
+				PRINTFORMW サグメ「あの……ありがとうございます」
+				PRINTFORML 
+				PRINTFORML サグメ「私……自分のことが嫌いになっていたんです……
+				PRINTFORMW 　　　　ですが、それは間違っていました」
+				PRINTFORML 
+				PRINTFORML サグメ「私の力は、うまく使うことができる……そのことを、ようやく知ったんです
+				PRINTFORMW 　　　　だから……」
+				PRINTFORMW 
+				PRINTFORML サグメは%CALLNAME:TARGET%に近づき、フードを外した
+				PRINTFORML 
+				PRINTFORMW サグメ「……私は、月の都を守ります」
+				PRINTFORML 
+				PRINTFORML この時、運命は流転した
+				PRINTFORMW 彼女が持っていた岩戸に閉じこもる未来は、月の都を守るため自身の力を活用する未来へと姿を変えた……
+			;サグメイベントの成功判定が立っていない
+			ELSE
+				PRINTFORMW そして、物陰から預言者――サグメが現れた
+				PRINTFORML 
+				PRINTFORMW サグメ「……」
+				PRINTFORML 
+				PRINTFORMW 　依姫「……以前は色々と言いすぎました。これからは仲良く――」
+				PRINTFORML 
+				PRINTFORMW サグメに手を差し伸べる依姫。だが、その手はサグメに払われた
+				PRINTFORML 
+				PRINTFORMW サグメ「……もう……私に近づかないでください……」
+				PRINTFORML 
+				PRINTFORMW サグメは依姫に背を向け、駆けて去ってしまった
+				PRINTFORML 
+				PRINTFORML サグメが去った後、誰一人として口を開くことはできなかった
+				PRINTFORMW 依姫は自身の手を抓り、苦虫をかみ殺したような表情を浮かべている……
+				
+				;サグメが失踪する
+				FLAG:サグメイベント管理 |= 1p31
+			ENDIF
+		;負けた場合、輝夜が誘拐される上に君主の制約条件が+3される
+		ELSE
+			PRINTFORML 「ふん……口ほどにも無い奴め……」
+			PRINTFORMW 君主は満身創痍となった%CALLNAME:TARGET%を持ち上げ、廃墟を去った
+			PRINTFORML 君主に弱みを握られてしまった以上、どんな制約を挙げられても否定することはできない……
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML 
+			PRINTFORML ＜%CALLNAME:TARGET%は胸部の下着を着ける事ができなくなりました＞
+			PRINTFORML ＜%CALLNAME:TARGET%は秘所の下着を着ける事ができなくなりました＞
+			PRINTFORML ＜%CALLNAME:TARGET%の働き先が夜の店に固定されました＞
+			PRINTFORMW ＜%CALLNAME:TARGET%は誘拐された＞
+			
+			CFLAG:胸部下着 = 0
+			CFLAG:秘所下着 = 0
+			CFLAG:職業 = 9
+			
+			CFLAG:君主制約 = 3
+			CFLAG:モード = 2
+			RESETCOLOR
+		ENDIF
+ENDSELECT
+
+;---------------------------
+;サグメの心情値
+;式中関数
+;サグメイベント4回目での分岐に用いる
+;---------------------------
+@CLUC_SAGUME_SENTIMENT
+#FUNCTION
+
+;判定値はLOCALに入れる
+LOCAL = 0
+
+;アライメントによって値が変わる
+IF BASE:アライメント <= 50
+	LOCAL -= 10
+ELSEIF BASE:アライメント <= 99
+	LOCAL -= 5
+ELSEIF BASE:アライメント <= 110
+	LOCAL += 0
+ELSEIF BASE:アライメント <= 149
+	LOCAL += 5
+ELSE
+	LOCAL += 10
+ENDIF
+
+;(疎通+知力/2)/10
+LOCAL += (BASE:疎通+BASE:知力/2)/10
+
+;3回目のサグメイベントにて、サグメにいい返事を返していると+10
+IF GETBIT(FLAG:サグメイベント管理, 30)
+	LOCAL += 10
+ENDIF
+
+RETURNF LOCAL
+

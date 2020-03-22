@@ -1,0 +1,54 @@
+﻿;==================================================
+;淫魔が持つ淫術
+;==================================================
+
+;------------------------------
+;50:　媚薬の香り
+;------------------------------
+@NINFO_SKILL_50, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 50
+
+@ATTACK_MOVE_50, ARG
+PRINTFORML %STR:ARG%は媚薬の香りを%STR:(TFLAG:(530+ARG))%目がけて放った！
+CALL DAMAGE_CALCULATION, 3, 0, 30, ARG, TFLAG:(530+ARG), 0, 1
+
+;------------------------------
+;51:　不気味な笑み
+;相手の気力にダメージを与える
+;------------------------------
+@NINFO_SKILL_51, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 51
+
+@ATTACK_MOVE_51, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に向かって不気味な笑みを浮かべた！
+CALL DAMAGE_CALCULATION, 2, LIMIT(10+TFLAG:(554+ARG*10)/50,0,30), 95, ARG, TFLAG:(530+ARG), 1, 0
+
+
+;------------------------------
+;52:　吸精のキス
+;------------------------------
+@NINFO_SKILL_52, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 52
+
+@ATTACK_MOVE_52, ARG
+PRINTFORML %STR:ARG%は姿を消しながら%STR:(TFLAG:(530+ARG))%に近づき、口を付けた！
+CALL DAMAGE_CALCULATION, 2, 20, 40, ARG, TFLAG:(530+ARG), 3, 2
+

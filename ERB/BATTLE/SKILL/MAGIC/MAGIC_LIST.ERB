@@ -1,0 +1,130 @@
+﻿;===========================================
+;魔術スキル
+;ARG　リスト参照者
+;===========================================
+@MAGIC_SKILL, ARG
+;使えるスキルの種類
+;0だと使える特技が無いと出して返す
+#DIM parm, 1
+
+VARSET LOCAL, 0
+$BACK_LOOP
+parm = 0
+DRAWLINE
+;ゴスロリ属性が10％以上
+IF CFLAG:属性／ゴスロリ >= 10
+	PRINTL [40] - ファイアショット
+	LOCAL:40 = 1
+	parm += 1
+ENDIF
+;ゴスロリ属性が20％以上
+IF CFLAG:属性／ゴスロリ >= 20
+	PRINTL [41] - フリーズブラスト
+	LOCAL:41 = 1
+	parm += 1
+ENDIF
+;ゴスロリ属性が30％以上
+IF CFLAG:属性／ゴスロリ >= 30
+	PRINTL [42] - スネークポイズン
+	LOCAL:42 = 1
+	parm += 1
+ENDIF
+
+;普通のゴスロリ以上
+
+;邪道のゴスロリLv1以上
+IF (CFLAG:称号／ゴスロリ % 3) == 2 && (CFLAG:称号／ゴスロリ / 3) >= 1
+	PRINTL [46] - 欲情の香り
+	LOCAL:46 = 1
+	parm += 1
+ENDIF
+;邪道のゴスロリLv2以上
+IF (CFLAG:称号／ゴスロリ % 3) == 2 && (CFLAG:称号／ゴスロリ / 3) >= 2
+	PRINTL [47] - 蛙変化
+	LOCAL:47 = 1
+	parm += 1
+ENDIF
+
+IF !parm
+	PRINTFORML 使える魔術はありません
+	CALL SETCOLOR_ABL
+	PRINTFORML 魔術の習得には最低でもゴスロリ属性が10％以上必要です
+	RESETCOLOR
+	RETURN 1
+ENDIF
+
+DRAWLINE
+PRINTFORML [997] - 魔術特技の説明
+PRINTFORML [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT >= 40 && RESULT <= 49 && LOCAL:RESULT
+	CALLFORM MAGIC_SKILL_{RESULT}
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 997
+	CALL SHOW_MAGIC_SKILL
+	GOTO BACK_LOOP
+ELSEIF RESULT == 999
+	RETURN -1
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+;----------------------------------------------
+;魔術の説明
+;ARG　ゴスロリ称号のレベル(現在は機能していない)
+;----------------------------------------------
+@SHOW_MAGIC_SKILL, ARG
+DRAWLINE
+
+
+;表示項目数をLOCALに記録する
+;LOCALを初期化
+VARSET LOCAL, 0
+
+
+PRINTFORML ○魔術一覧
+IF CFLAG:属性／ゴスロリ >= 10
+	PRINTFORML 　ファイアブラスト　　特殊　消費気力:4　　魔術の基礎攻撃。気力消費が控えめで使いやすい
+	LOCAL += 1
+ENDIF
+IF CFLAG:属性／ゴスロリ >= 20
+	PRINTFORML 　フリーズブラスト　　特殊　消費気力:6　　蛙・スライム系に特攻
+	LOCAL += 1
+ENDIF
+IF CFLAG:属性／ゴスロリ >= 30
+	PRINTFORML 　スネークポイズン　　特殊　消費気力:8　　相手を損傷状態にする
+	LOCAL += 1
+ENDIF
+;正道のゴスロリLv1以上
+IF CFLAG:称号レベル >= 1 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 0
+	PRINTFORML 　サンダーシュート　　特殊　消費気力:7　　相手より先に攻撃できる
+	LOCAL += 1
+ENDIF
+;正道のゴスロリLv2以上
+IF CFLAG:称号レベル >= 2 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 0
+	PRINTFORML 　マジックストーム　　特殊　消費気力:11 　敵全体に攻撃する
+	LOCAL += 1
+ENDIF
+;邪道のゴスロリLv1以上
+IF CFLAG:称号レベル >= 1 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 2
+	PRINTFORML 　欲情の香り　　　　　変化　消費気力:3　　相手を欲情状態にする
+	LOCAL += 1
+ENDIF
+;邪道のゴスロリLv2以上
+IF CFLAG:称号レベル >= 2 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 2
+	PRINTFORML 　蛙変化　　　　　　　変化　消費気力:12 　相手を蛙にする
+	LOCAL += 1
+ENDIF
+
+
+IF !LOCAL
+	PRINTL 使用できる魔術はありません
+ENDIF
+PRINTL 
+
+

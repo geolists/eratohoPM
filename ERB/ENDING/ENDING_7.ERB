@@ -1,0 +1,64 @@
+﻿;=======================================================
+;淫魔エンド
+;君主が堕ちたかどうかでのみ分岐
+;君主を堕とすと、その時点でエンディング発生
+;堕とさずに6年目になってもエンディングへ
+;ARG どちらのルートで来たか？　0:陥落させた　1:6年目になった
+;=======================================================
+@ENDING_SUCCUBUS, ARG
+
+LOADGLOBAL
+;エンディング閲覧回数+1
+GLOBAL:503 += 1
+SAVEGLOBAL
+
+;陥落させた場合
+IF ARG == 0
+	DRAWLINE
+	PRINTFORML ＜運命が消えました＞
+	PRINTFORML 敵対する君主は消えたが、それは同時に%CALLNAME:TARGET%が成長する機会を永遠に失ったも同然である
+	PRINTFORMW そう、人成らざる者になったのだ……
+	DRAWLINE
+	PRINTFORMW 所々に美しい彫刻が為されている廃墟があり、門の奥は暗闇に包まれている
+	PRINTFORML かつては王宮と呼ばれ、月の都で中核を担っていたが
+	PRINTFORMW 今やその面影はなく、綺麗な装飾品や趣深い絵画は埃を被っていた
+	PRINTFORML 
+	PRINTFORMW 誰も住んでいないはずだが、内部では卑しい水音が鳴り響いている
+	PRINTFORML 王宮の主である君主は淫魔に襲われ消息を絶ち、月の都は淫魔に主導権を奪われてしまったのだ
+	PRINTFORMW 廃墟には日夜攫われた少女が連れられ、無理矢理犯されて淫魔へと姿を変えられている
+	PRINTFORMW 中には奴隷同然の扱いをされている男性達がおり、その中には元役人も散見される
+	PRINTFORMW 月の都は魔界と同様の姿と化していた……
+	PRINTFORML 
+	PRINTFORMW -VAGUE END 「新たな魔界ができた日」-
+	
+	;エンディング視聴フラグを加算
+	LOADGLOBAL
+	GLOBAL:881 += 1
+	SAVEGLOBAL
+	
+	CALL TARMINATION, 1
+;6年目になった場合
+ELSEIF ARG == 1
+	DRAWLINE
+	PRINTFORML ……
+	PRINTFORML …
+	PRINTFORML 
+	PRINTFORMW ここは月の都から遠く離れた場所にある小屋
+	PRINTFORML %CALLNAME:MASTER%はその身を淫魔へと変えた%CALLNAME:TARGET%と共に暮らしている
+	PRINTFORMW その身体はすっかり妖艶となっており、王族の娘だった元の面影を全く残していない
+	PRINTFORMW 「ねえ、また都の人間を攫って魔界へ貢献しましょう？　退屈になったの」
+	PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべながら提案をする。前に攫った人間は大分前に"変異"し魔界へと転送していた
+	PRINTFORMW 再び遊び相手を作るのも悪くないだろう。そう思った%CALLNAME:MASTER%は外出の準備を始めた
+	PRINTL 
+	PRINTFORMW -FALLEN END 「魔界の一族」
+	
+	;エンディング視聴フラグを加算
+	LOADGLOBAL
+	GLOBAL:882 += 1
+	SAVEGLOBAL
+	
+	CALL TARMINATION, 1
+ENDIF
+
+
+

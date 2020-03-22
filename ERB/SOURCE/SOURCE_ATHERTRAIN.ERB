@@ -1,0 +1,146 @@
+﻿;=======================================================
+;SOURCE_ATHERTRAIN.ERB
+;調教経験を得るコマンドを使った際の処理
+;(他人を調教できるコマンド)
+;=======================================================
+@SOURCE_ATHERTRAIN
+#DIM HOSEI,1
+#DIM GET_ABL, 1
+#DIM EXP_BONUS, 1
+
+LOCAL:10 = TARGET
+;調教経験の場合、姉妹の淫妖＆堕落経験に換算して影響を与え
+;物乞い属性も2だけ上昇させる
+LOCAL = TFLAG:調教経験
+PRINTFORML 調教経験 + {TFLAG:調教経験}　（現在：{EXP:調教経験}）
+
+FOR COUNT:1, 0, FLAG:攫った姉妹の数
+	LOCAL:1 = GETCHARA(2 + COUNT:1)
+	TARGET = LOCAL:1
+	
+	;誘拐されている場合飛ばす
+	IF CFLAG:モード == 2
+		BREAK
+	ENDIF
+	
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%
+	
+	SOURCE:淫妖 = SOURCE:(LOCAL:10):淫妖
+	SOURCE:堕落 = SOURCE:(LOCAL:10):堕落
+	
+	EXP:淫妖経験 += TFLAG:調教経験
+	EXP:堕落経験 += TFLAG:調教経験
+	
+	CALLFORM MESSAGE_MINI_{SELECTCOM}
+	
+	;------------------------------------
+	;淫妖、堕落入手処理ここから
+	;------------------------------------
+	
+	;経験補正
+	EXP_BONUS = EXP:淫妖経験 / 40
+	
+	CALL CLOTHE_ABL, "淫妖"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(淫妖)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = SOURCE:淫妖 * HOSEI / 100
+	ELSE
+		GET_ABL = SOURCE:淫妖
+	ENDIF
+	
+	;媚薬状態の場合、媚薬ゲージ/10の数だけ伸びが+される
+	;（最高で+2）
+	IF CFLAG:媚薬状態
+		LOCAL = BASE:媚薬 / 10
+		IF LOCAL > 2
+			LOCAL = 2
+		ENDIF
+		GET_ABL += LOCAL
+	ENDIF
+	
+	;素養補正
+	;感度が関わる
+	GET_ABL = (GET_ABL + BASE:淫妖 / 200) * BASE:感度 / 200
+	
+	;媚薬状態の場合、媚薬ゲージ/5倍だけ強化される
+	;（最高で3倍）
+	IF CFLAG:媚薬状態
+		LOCAL = BASE:媚薬 / 5
+		IF LOCAL > 3
+			LOCAL = 3
+		ENDIF
+		GET_ABL *= LOCAL
+	ENDIF
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 淫妖: {BASE:淫妖} + {GET_ABL} → 
+	BASE:淫妖 += GET_ABL
+	PRINTFORML {BASE:淫妖}
+	;誘拐中は上昇しない
+	IF CFLAG:モード != 2
+		;乞食属性の衣装ではない場合、-5される
+		IF CFLAG:属性 != 7
+			BASE:淫乱 += 2 + (3 - FLAG:年数 / 2)
+		ELSE
+			BASE:淫乱 += 5 + (25 - FLAG:年数 * 5)
+		ENDIF
+	ENDIF
+	
+	;経験補正
+	EXP_BONUS = EXP:堕落経験 / 40
+	
+	CALL CLOTHE_ABL, "堕落"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(堕落)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = SOURCE:堕落 * HOSEI / 100
+	ELSE
+		GET_ABL = SOURCE:堕落
+	ENDIF
+	
+	;媚薬状態の場合、+1される
+	IF CFLAG:媚薬状態
+		GET_ABL += 1
+	ENDIF
+	
+	;素養補正
+	;気品、プライドが関わる
+	;アライメントも関わる
+	;信仰心でマイナス補正がかかる
+	LOCAL = (600 - BASE:信仰心 - ((BASE:アライメント - 100) * 3))
+	
+	IF LOCAL < 0
+		LOCAL = 0
+	ENDIF
+	
+	GET_ABL = (GET_ABL + BASE:淫妖 / 400) * (LOCAL / 350) + (GET_ABL * (BASE:気品 + BASE:プライド) / 600)
+	
+	;媚薬状態の場合、数値が2倍になる
+	;（最高で3倍）
+	IF CFLAG:媚薬状態
+		GET_ABL *= 2
+	ENDIF
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	
+	PRINTFORM 堕落: {BASE:堕落} + {GET_ABL} → 
+	BASE:堕落 += GET_ABL
+	PRINTFORML {BASE:堕落}
+	
+	;------------------------------------
+	;淫妖、堕落入手処理ここまで
+	;------------------------------------
+	
+	;物乞いに2%移行させる
+	CALL CHANGE_ELEMENT, 2
+	DRAWLINE
+NEXT
+TARGET = LOCAL:10
+
+

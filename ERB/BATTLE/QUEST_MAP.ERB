@@ -1,0 +1,607 @@
+﻿;-----------------------------------------------------
+;クエスト時のメニュー
+;ARG　マップID(現在地のこと)
+;-----------------------------------------------------
+@MENU_QUEST, ARG
+#DIM syu, 1
+#DIM lim, 1
+#DIM now_ex, 1
+
+lim = 0
+$QUEST_LOOP
+
+IF ((ARG < 30 && lim >= 20) || (ARG >= 30 && lim >= 25)) && !TALENT:淫魔 && ARG != 99
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 傭兵「中々帰ってこないから何かあったのかと思ったぜ。今回は帰りな」
+	PRINTW 止む無くこの場を後にした……
+	RESETCOLOR
+	BEGIN TURNEND
+ENDIF
+
+;ダンジョン内のイベントは、階層到達時に呼び出す
+CALL DUNGEON_WORDS, ARG
+
+DRAWLINE
+PRINTFORM 場所:%CONVERT_BATTLE_MAP(ARG)%　深さ({TFLAG:現在の階層}/{TFLAG:最深部の階層})
+IF (ARG < 30 && !TALENT:淫魔) || ARG == 99
+	PRINTFORML 　残り{20-lim}ターン
+;30以降の場合、最大25ターンになる
+ELSEIF ARG >= 30 && !TALENT:淫魔
+	PRINTFORML 　残り{25-lim}ターン
+ELSE
+	PRINTL 
+ENDIF
+CALL SHOW_HP_STATUS, 0
+DRAWLINE
+IF TFLAG:現在の階層 == TFLAG:最深部の階層
+	;淫魔化している場合ボスと戦えない
+	;誘拐後に振り切った場合も戦えない
+	IF GETBIT(CFLAG:永続状態異常, 0) || ARG == 99
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTL [0] - ボスと戦う
+	RESETCOLOR
+ELSE
+	PRINTL [0] - 先に進む
+ENDIF
+PRINTL [1] - 探索する
+PRINTL [2] - 休憩する(4ターン消費)
+;娼婦か淫魔の場合、あるいは淫乱か欲情している場合のみ実行可能
+IF TALENT:娼婦 || TALENT:淫魔 || TFLAG:500 == 1 || CFLAG:性格 == -1
+	PRINTL [3] - 自慰を行う
+ENDIF
+PRINTL [9] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	IF TFLAG:現在の階層+1 >= TFLAG:最深部の階層
+		IF GETBIT(CFLAG:永続状態異常, 0)
+			PRINTFORML なぜか淫魔化した身体が動かない……
+			GOTO INPUT_LOOP
+		ELSEIF ARG == 99
+			PRINTFORML みすみす捕まりに戻る事はできない……
+			GOTO INPUT_LOOP
+		ENDIF
+	ENDIF
+		
+	IF TFLAG:現在の階層+1 == TFLAG:最深部の階層
+		PRINTFORML 奥から拠点の主の気配を感じる……
+		PRINTFORML 本当にボスと戦いますか？
+		PRINTL 
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF !RESULT
+			;ボスと戦う
+		ELSE
+			GOTO QUEST_LOOP
+		ENDIF
+	ENDIF
+	PRINTFORML %CALLNAME:TARGET%は奥へ進んだ……
+	;戦闘終了後の処理に使うので、返り値を保存
+	LOCAL = RESULT
+ELSEIF RESULT == 1
+	PRINTFORML %CALLNAME:TARGET%は辺りを探索した……
+	TFLAG:現在の階層 -= 1
+	;戦闘終了後の処理に使うので、返り値を保存
+	LOCAL = RESULT
+;2:休憩　体力と気力を15％回復させるが、3ターン消費する
+ELSEIF RESULT == 2
+	;戦闘終了後の処理に使うので、返り値を保存
+	LOCAL = RESULT
+	
+	;回復量
+	LOCAL:1 = 15
+	
+	;メイドの場合、回復量+4％
+	IF STR:6 == "メイド"
+		LOCAL:1 += 4
+	ENDIF
+	
+	PRINTL 4ターン消費して休憩します
+	IF STR:6 == "メイド"
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%はメイドとしての素養を活かし、効率よく休憩することができそうだ……
+		RESETCOLOR
+	ENDIF
+	PRINTL 回復結果は以下のようになりますがよろしいですか？
+	LOCAL = LIMIT(TFLAG:556+TFLAG:550*LOCAL:1/100, 0, TFLAG:550)
+	LOCAL:1 = LIMIT(TFLAG:557+TFLAG:551*LOCAL:1/100, 0, TFLAG:551)
+	PRINTFORM ＨＰ：{TFLAG:556}　→　
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {LOCAL}
+	RESETCOLOR
+	
+	PRINTFORM 気力：{TFLAG:557}　→　
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {LOCAL:1}
+	RESETCOLOR
+	
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTL 休憩して体力・気力が回復した！
+		TFLAG:556 = LOCAL
+		TFLAG:557 = LOCAL:1
+		lim += 4
+		GOTO QUEST_LOOP
+	ELSE
+		GOTO QUEST_LOOP
+	ENDIF
+ELSEIF RESULT == 3
+	PRINTFORM %CALLNAME:TARGET%は
+	IF CFLAG:服装 < 0 || DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINT 裸身の局部に手を添えて
+	ELSEIF CFLAG:服装 < 0 || DITEMTYPE:(CFLAG:服装):11 == 1
+		PRINT 露出度が極端に高い衣服を肌蹴て
+	ENDIF
+	PRINTFORML 自らを慰め始めた……
+	
+	lim += 3
+	LOCAL = 0
+	
+	$SELF_LOOP
+	;現在の絶頂回数を記録
+	now_ex = TFLAG:518
+	TFLAG:(506+TARGET) = LIMIT(TFLAG:(506+TARGET)+TFLAG:(524+TARGET), 0, TFLAG:(524+TARGET))
+	
+	$EX_LOOP
+	CALL DAMAGE_CALCULATION, 2, 160, -1, 0, 0, 2, 1000
+	
+	;絶頂していない場合、自慰を続ける
+	IF now_ex == TFLAG:518
+		GOTO EX_LOOP
+	ENDIF
+	
+
+	;感度が高い場合、手が止まらなくなる場合がある
+	;計算式：感度×(100-貞操)/100%
+	IF RAND(1,100) <= BASE:感度*(100-BASE:貞操)/100 && LOCAL <= 2
+		PRINTFORML %CALLNAME:TARGET%は自慰の手を止めることができない！
+		LOCAL += 1
+		GOTO SELF_LOOP
+	ENDIF
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%の欲情が治まった！
+	TFLAG:(500) = 0
+	TFLAG:(627) = 0
+	RESETCOLOR
+	
+	;20％の確率で敵が出る
+	IF !RAND:5
+		PRINTL 敵が現れた！
+		CALL ENCOUNT_DATA, ARG, TFLAG:現在の階層
+		syu = RESULT
+		CALL BATTLE, TFLAG:敵1のＩＤ, TFLAG:敵2のＩＤ, TFLAG:敵3のＩＤ, 0, TFLAG:ダンジョンレベル
+		IF RESULT == -1
+			DRAWLINE
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORM %CALLNAME:TARGET%は
+			IF syu == 0
+				PRINT 匪賊
+			ELSEIF syu == 1
+				PRINT 魔物
+			;悪魔
+			ELSEIF syu == 3
+				PRINT 淫魔
+			ELSE
+				PRINT 魔術師
+			ENDIF
+			PRINTFORMW に捕まってしまった！
+			RESETCOLOR
+			CALL CATCH_HIZOKU, TFLAG:現在の階層, syu
+			IF !RESULT
+				RETURN -1
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	GOTO QUEST_LOOP
+ELSEIF RESULT == 9
+	;戦闘終了後の処理に使うので、返り値を保存
+	LOCAL = RESULT
+	;草原or1F
+	IF TFLAG:現在の階層 == 1 || ARG == 1
+		IF FLAG:王宮追放
+			PRINT 住処
+		ELSE
+			PRINT 王宮
+		ENDIF
+		PRINTL へ帰りますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML %CALLNAME:TARGET%は%CONVERT_BATTLE_MAP(ARG)%を後にした……
+			BEGIN TURNEND
+		ELSE
+			GOTO QUEST_LOOP
+		ENDIF
+	ENDIF
+	PRINTFORML %CALLNAME:TARGET%は来た道を戻った……
+	TFLAG:現在の階層 -= 2
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;バイブを挿入している場合、快楽ダメージを得る
+IF OTHER_ACC(500)
+	PRINTFORML 股間に挿入されている張り型の振動が%CALLNAME:TARGET%の息を荒げさせる……
+	CALL DAMAGE_CALCULATION, 2, 20, -1, 0, 0, 2, 1000
+ENDIF
+
+;最深部ではない場合、階層を1進む
+IF TFLAG:現在の階層 < TFLAG:最深部の階層
+	TFLAG:現在の階層 += 1
+ENDIF
+
+;イベント処理
+;ランダムでイベントを発生させる
+CALL EVENT_DUNGEON, ARG, TFLAG:現在の階層
+
+
+;戦闘前イベント
+CALL DUNGEON_BEFORE_BATTLE_EVENT, ARG
+
+;戻る場合は70％の確率で遭遇する
+IF (LOCAL == 9 && (RAND:100 + 1) <= 70) || LOCAL == 0 || LOCAL == 1
+	PRINTL 敵が現れた！
+	CALL ENCOUNT_DATA, ARG, TFLAG:現在の階層
+	syu = RESULT
+	CALL BATTLE, TFLAG:敵1のＩＤ, TFLAG:敵2のＩＤ, TFLAG:敵3のＩＤ, 0, TFLAG:ダンジョンレベル
+	IF RESULT == -1
+		DRAWLINE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORM %CALLNAME:TARGET%は
+		IF syu == 0
+			PRINT 匪賊
+		ELSEIF syu == 1
+			PRINT 魔物
+		;悪魔
+		ELSEIF syu == 3
+			PRINT 淫魔
+		;触手
+		ELSEIF syu == 4
+			PRINT 触手
+		;アルラウネ
+		ELSEIF syu == 5
+			PRINT アルラウネ
+		;スライム
+		ELSEIF syu == 6
+			PRINT スライム
+		ELSE
+			PRINT 魔術師
+		ENDIF
+		PRINTFORMW に捕まってしまった！
+		RESETCOLOR
+		CALL CATCH_HIZOKU, TFLAG:現在の階層, syu
+		IF !RESULT
+			RETURN -1
+		ENDIF
+	ELSEIF TFLAG:現在の階層 == TFLAG:最深部の階層 && RESULT == 1
+		DRAWLINE
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%はこの地点を制覇した！
+		IF !FLAG:("拠点クリア／"+CONVERT_BATTLE_MAP(ARG)+"")
+			CALL SETCOLOR_MONEY
+			LOCAL = TFLAG:ダンジョンレベル*2000
+			PRINTFORML ${LOCAL}を手に入れた！
+			LOCAL:1 = 300
+			CALL CALCULATION_PALAM, LOCAL:1, "君主の権力値"
+		ENDIF
+		MONEY += LOCAL
+		RESETCOLOR
+		FLAG:("拠点クリア／"+CONVERT_BATTLE_MAP(ARG)+"") = 1
+		
+		;ダンジョンクリア時のイベントを呼び出す
+		CALL DUNGEON_CLEAR_EVENT, ARG
+		
+		RETURN 1
+	ENDIF
+ENDIF
+
+;気絶or戦闘不能になった場合、誘拐される
+IF RESULT != -1 && (TFLAG:500 == 6 || TFLAG:500 == 7)
+	DRAWLINE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:TARGET%は匪賊に捕まってしまった！
+	RESETCOLOR
+	CALL CATCH_HIZOKU, TFLAG:現在の階層, 0
+	IF !RESULT
+		RETURN -1
+	ENDIF
+ENDIF
+
+
+lim += 1
+
+
+
+GOTO QUEST_LOOP
+
+
+;-----------------------------------------------------
+;匪賊に捕まった場合
+;ARG 　捕まった階層
+;ARG:1 捕まった相手(0:匪賊　1:魔物　2:魔術師)
+;-----------------------------------------------------
+@CATCH_HIZOKU, ARG, ARG:1
+#DIM hokaku, 1
+#DIM max_hokaku, 1
+#DIM will, 1
+#DIM down_will, 1
+#DIM com_will, 1
+#DIM day_move, 1
+#DIM will_point, 1
+#DIM syu, 1
+
+
+;捕まる日数は階層×2
+IF ARG != 99
+	hokaku = ARG * 2
+ELSE
+	hokaku = 3
+ENDIF
+max_hokaku = hokaku
+LOCAL:1 = 0
+
+;意思力を100にリセット
+will = 100
+;TFLAG:(621) = 10
+
+$LOOP_CATCH
+;意思力が0の場合、相手によって処理を変える
+day_move = 2
+DRAWLINE
+PRINTFORML ○{LOCAL:1+1}日目
+IF TALENT:淫魔
+	PRINTFORML %CALLNAME:TARGET%は相手から精力を吸い取って全回復した！
+	CALL HEALING, 1
+	TFLAG:621 += 2
+	TFLAG:現在の階層 = LIMIT(TFLAG:現在の階層-1, 0, TFLAG:最深部の階層)
+	RETURN 1
+ELSEIF will <= 0
+	;匪賊の場合
+	;誘拐フラグが立つ
+	IF ARG:1 == 0
+		$CATCH_JUMP
+		PRINTFORMW 抵抗を見せない%CALLNAME:TARGET%を匪賊が抱え、住処へと攫った……
+		CALL SETCOLOR_BAD
+		PRINTFORMW ＜%CALLNAME:TARGET%が誘拐された！＞
+		RESETCOLOR
+		;誘拐モードへ
+		CFLAG:モード = 2
+		;誘拐蓄積値をリセット
+		CFLAG:誘拐蓄積値 = 0
+		
+		FLAG:誘拐回数 += 1
+		
+		;念の為に初期化
+		FLAG:救出失敗回数 = 0
+		RETURN 0
+	;魔物の場合
+	;魔物の住処に連れ去られる
+	ELSEIF ARG:1 == 1
+		PRINTFORML 獣は虚ろな目をした%CALLNAME:TARGET%を巣に持ちかえり、一族全員で嬲り続けた……
+		PRINTFORML 精飲経験 + 5
+		PRINTFORML 淫妖経験 + 10
+		PRINTFORML 堕落経験 + 10
+		EXP:精飲経験 += 5
+		EXP:淫妖経験 += 10
+		EXP:堕落経験 += 10
+		CALL INSERT, 3, 1
+		PRINTFORMW 傭兵が見つけた頃には、精液塗れで反応を返さない%CALLNAME:TARGET%が残されていた……
+		RETURN 0
+	;魔術師の場合
+	;淫魔化させられて放置される
+	;体力・気力共に全回復するが毎ターン欲情が貯まる
+	;また、欲情が高いと勝手に行動してしまうため、制御するのは難しい
+	;10回絶頂すると戻れなくなる
+	;ダンジョンを出ると戻れる
+	ELSEIF ARG:1 == 2 && !TALENT:淫魔
+		PRINTFORMW 魔術師はぐったりとして抵抗を見せない%CALLNAME:TARGET%に魔術をかけた
+		PRINTFORMW %CALLNAME:TARGET%は紫色の霧で包まれ、すっかり見えなくなった
+		PRINTFORML やがて霧が晴れた時、虚ろな目をして淫魔と化した%CALLNAME:TARGET%の姿があった
+		PRINTFORMW どうやら術をかけられて一時的に淫魔と化したようだ
+		CFLAG:永続状態異常 |= 1p0
+		TALENT:淫魔 = 1
+		STR:1 = 淫魔
+		TFLAG:609 = 0
+		CALL HEALING, 1
+		TFLAG:現在の階層 = LIMIT(TFLAG:現在の階層-1, 0, TFLAG:最深部の階層)
+		RETURN 1
+	;淫魔の場合
+	;基本的には魔術師と同じだが、テキストが異なる
+	ELSEIF ARG:1 == 3 && !TALENT:淫魔
+		PRINTFORMW 淫魔はぐったりとして抵抗を見せない%CALLNAME:TARGET%に口づけをした
+		PRINTFORMW %CALLNAME:TARGET%は紫色の霧で包まれ、すっかり見えなくなった
+		PRINTFORML やがて霧が晴れた時、虚ろな目をして淫魔と化した%CALLNAME:TARGET%の姿があった
+		PRINTFORMW どうやら術をかけられて一時的に淫魔と化したようだ
+		CFLAG:永続状態異常 |= 1p0
+		TALENT:淫魔 = 1
+		STR:1 = 淫魔
+		TFLAG:609 = 0
+		CALL HEALING, 1
+		TFLAG:現在の階層 = LIMIT(TFLAG:現在の階層-1, 0, TFLAG:最深部の階層)
+		RETURN 1
+	;スライム、触手、アルラウネの場合
+	;変異因子が+200される形式の輪姦を受ける
+	ELSEIF (ARG:1 == 4 || ARG:1 == 5 || ARG:1 == 6) && !TALENT:人魚 && !TALENT:スライム娘 && !TALENT:触手娘 && !TALENT:アルラウネ
+		SELECTCASE ARG:1
+			CASE 4
+				PRINT 触手
+			CASE 5
+				PRINT アルラウネ
+			CASE 6
+				PRINT スライム
+		ENDSELECT
+		PRINTFORML は%CALLNAME:TARGET%を住処に持ち帰り、身体の隅々を堪能した……
+		PRINTL 
+		PRINTFORML 淫妖経験 + 20
+		PRINTFORML 堕落経験 + 15
+		EXP:淫妖経験 += 20
+		EXP:堕落経験 += 15
+		;変異因子増加
+		CALL FACTOR_MUTATION, ARG:1-4, 200
+		;変異した場合、文章を変える
+		IF TALENT:スライム娘 || TALENT:触手娘 || TALENT:アルラウネ
+			PRINTFORM 傭兵が住処に乗り込んだ時、そこには
+			SELECTCASE ARG:1
+				CASE 4
+					PRINT 触手生物
+				CASE 5
+					PRINT アルラウネ
+				CASE 6
+					PRINT スライム
+			ENDSELECT
+			PRINTFORMW と化した%CALLNAME:TARGET%が不気味に微笑んでいたという……
+		ELSE
+			PRINTFORM 傭兵が見つけた頃には、
+			SELECTCASE ARG:1
+				CASE 4
+					PRINT 粘液
+				CASE 5
+					PRINT 花粉
+				CASE 6
+					PRINT 粘液
+			ENDSELECT
+			PRINTFORMW 塗れで反応を返さない%CALLNAME:TARGET%が残されていた……
+		ENDIF
+		RETURN 0
+	;上記の条件を満たさない場合(具体的には変異済みの輝夜が誘拐された場合)
+	;適当に輪姦された後解放される
+	ELSE
+		PRINTFORML 哀れな%CALLNAME:TARGET%の周りに不埒な者達が集まり、全員で嬲り続けた……
+		PRINTFORML 精飲経験 + 8
+		PRINTFORML 淫妖経験 + 13
+		PRINTFORML 堕落経験 + 13
+		EXP:精飲経験 += 8
+		EXP:淫妖経験 += 13
+		EXP:堕落経験 += 13
+		CALL INSERT, 3, 1
+		PRINTFORMW 傭兵が見つけた頃には、精液塗れで反応を返さない%CALLNAME:TARGET%が残されていた……
+		RETURN 0
+	ENDIF
+ELSEIF will <= 50
+	PRINTFORML %CALLNAME:TARGET%は虚ろな目で相手を見つめている
+	PRINTFORML 意思が大分削がれてきたのか、抵抗が弱くなりはじめている……
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は目に涙を浮かべ、自由に動かせない身体を暴れさせ抵抗している……
+ENDIF
+
+;意思力+貞操/2-淫妖/20によってコマンドを分ける
+com_will = will + BASE:貞操/2 - BASE:淫妖/20
+
+IF ARG:1 == 2
+	IF !RAND:2
+		PRINTFORML 魔術師は%CALLNAME:TARGET%に発情魔法をかけた！
+		PRINTFORML %CALLNAME:TARGET%の身体は疼き、しきりに太腿を擦り合わせ始めた
+		IF CFLAG:媚薬状態 != 2
+			CFLAG:媚薬状態 = 1
+		ENDIF
+		BASE:媚薬 = LIMIT(BASE:媚薬+10, 0, MAXBASE:媚薬-1)
+	ELSEIF !RAND:2
+		PRINTFORML 魔術師は%CALLNAME:TARGET%に催眠をかけた！
+		PRINTFORML %CALLNAME:TARGET%の瞳は忽ち虚ろになり、抵抗する意思を失っていく……
+		will -= 10
+	ENDIF
+ENDIF
+
+$LOOP_SAME_DAY
+;20以下の場合
+;とりあえず仮埋め
+IF com_will <= 20
+	;性交
+	LOCAL = 220
+	will_point = 3
+;50以下の場合
+ELSEIF com_will <= 50
+	;性交
+	LOCAL = 220
+	will_point = 3
+;100以下の場合
+ELSEIF com_will <= 100
+	SELECTCASE RAND:2
+		;指挿し入れ
+		CASE 0
+			LOCAL = 210
+			will_point = 2
+		;フェラチオ
+		CASE 1
+			LOCAL = 211
+			will_point = 2
+	ENDSELECT
+;それ以外
+ELSE
+	SELECTCASE RAND:2
+		;愛撫
+		CASE 0
+			LOCAL = 200
+			will_point = 1
+		;キス
+		CASE 1
+			LOCAL = 201
+			will_point = 1
+	ENDSELECT
+ENDIF
+
+syu = ARG:1 - 3
+
+;変異因子対応の種族の場合、因子を増加させる
+IF syu >= 1 && !(TALENT:人魚 || TALENT:触手娘 || TALENT:アルラウネ || TALENT:スライム娘)
+	PRINTFORML 異性物の粘液が%CALLNAME:TARGET%の皮膚に刷り込まれていく……
+	PRINTFORML %CALLNAME:TARGET%は身をよじり抵抗するが、その程度では身体を蝕む瘴気に抗うことはできない
+	CALL FACTOR_MUTATION, syu, 50
+ENDIF
+
+DRAWLINE
+VARSET SOURCE, 0
+SELECTCOM = LOCAL
+CALLFORM COM{LOCAL}_T
+CALL SOURCE_CALCURATE, 1
+CALL EVENTCOMEND_T
+
+CALL CALC_IMP, 1
+day_move -= 1
+
+;意思力減少数は基礎値*感度/100*(200-貞操)/50+堕落/100+淫妖/200
+;媚薬状態の場合、2倍減少する
+down_will = will_point * BASE:感度/100 * (200-BASE:貞操)/50 + BASE:堕落/100 + BASE:淫妖/200
+IF CFLAG:媚薬状態
+	down_will *= 2
+ENDIF
+will -= down_will
+
+IF day_move
+	GOTO LOOP_SAME_DAY
+ENDIF
+
+;日数を1減らす
+hokaku -= 1
+LOCAL:1 += 1
+IF CFLAG:媚薬状態 != 2
+		CFLAG:媚薬状態 = 0
+ENDIF
+
+;日数が0以下の場合救出される
+IF hokaku <= 0 && ARG != 99
+	PRINTFORML 傭兵達が駆けつけ、ぐったりとしている%CALLNAME:TARGET%を救出した！
+	RETURN 0
+ELSEIF ARG == 99 && hokaku <= 0
+	GOTO CATCH_JUMP
+ELSE
+	GOTO LOOP_CATCH
+ENDIF
+
+
+

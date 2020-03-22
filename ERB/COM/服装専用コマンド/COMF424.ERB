@@ -1,0 +1,87 @@
+﻿;-------------------------------------------------
+;滝行
+;服装固有コマンド
+;巫女服限定
+;-------------------------------------------------
+@COM424
+#DIM GET_FAITH, 1
+
+;消費CP
+LOSEBASE:0 = 8
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+PRINTL 滝行
+STR:0 = 滝行
+
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+IF BASE:アライメント < 100
+	TFLAG:淫妖経験 = 3
+ELSE
+	TFLAG:知力経験 = 3
+ENDIF
+TFLAG:信仰経験 = 5
+
+;ランダムで追加効果が発生
+IF (RAND:100 + 1) <= 50
+	;常識・思考力の気質がランダムで3上昇
+	LOCAL = 44 + RAND:3
+	LOCAL:1 = 3
+	
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %BASENAME:LOCAL%が{LOCAL:1}上昇した！
+	PRINTFORM %BASENAME:LOCAL, 3, LEFT%:{BASE:LOCAL}　→　
+	BASE:LOCAL += LOCAL:1
+	PRINTFORML {BASE:LOCAL}
+	RESETCOLOR
+ELSEIF (RAND:50 + 1) <= 20
+	;常識・思考力の気質がランダムで6上昇
+	LOCAL = 44 + RAND:3
+	LOCAL:1 = 6
+	
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %BASENAME:LOCAL%が{LOCAL:1}上昇した！
+	PRINTFORM %BASENAME:LOCAL, 3, LEFT%:{BASE:LOCAL}　→　
+	BASE:LOCAL += LOCAL:1
+	PRINTFORML {BASE:LOCAL}
+	RESETCOLOR
+ELSEIF (RAND:30 + 1) <= 10
+	;何らかのメリット素質を取得
+	
+	IF !RAND:5 && TALENT:100 == 0
+		LOCAL = 100
+		TALENT:101 = 0
+	ELSEIF !RAND:4 && TALENT:106 == 0
+		LOCAL = 106
+		TALENT:107 = 0
+	ELSEIF !RAND:3 && TALENT:107 == 0
+		LOCAL = 107
+		TALENT:106 = 0
+	ELSEIF !RAND:2 && TALENT:108 == 0
+		LOCAL = 108
+		TALENT:109 = 0
+	ELSEIF TALENT:110 == 0
+		LOCAL = 110
+		TALENT:111 = 0
+	ELSE
+		LOCAL = 0
+	ENDIF
+	
+	IF LOCAL
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML [%TALENTNAME:LOCAL%]を習得した！
+		TALENT:LOCAL = 1
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+RETURN 1
+

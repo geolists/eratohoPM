@@ -1,0 +1,80 @@
+﻿;==============================================
+;弓術リスト
+;==============================================
+
+;------------------------------
+;80:　フェムトアロー
+;優先度+3の攻撃
+;------------------------------
+@ARROW_SKILL_90, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 90
+;優先度+3
+TFLAG:(542+ARG) = 3
+
+@ATTACK_MOVE_90, ARG
+PRINTFORML %STR:ARG%はフェムトアローを放った！
+CALL DAMAGE_CALCULATION, 0, 110, 100, ARG, TFLAG:(530+ARG), 0, 0, 4
+
+;------------------------------
+;91:　エクポーズショット
+;粘性体を即死させる
+;------------------------------
+@ARROW_SKILL_91, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 91
+
+@ATTACK_MOVE_91, ARG
+#DIM L_LOCAL, 1
+PRINTFORML %STR:ARG%はエクポーズショットを放った！
+PRINTFORML あまりにも強いエネルギーは粘性体を凝固させる！
+CALL DAMAGE_CALCULATION, 3, 0, 85, ARG, TFLAG:(530+ARG), 0, 8, 5
+
+;------------------------------
+;92:　アブレーショット
+;相手のＨＰを2/3にする
+;------------------------------
+@ARROW_SKILL_92, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 92
+
+@ATTACK_MOVE_92, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に向けてアブレーショットを放った！
+CALL DAMAGE_CALCULATION, 0, TFLAG:(556+TFLAG:(530+ARG)*10)/3, 95, ARG, TFLAG:(530+ARG), 0, 1002, 8
+
+;------------------------------
+;93:　乱れ撃ち
+;消費気力が高め
+;凶殺陣より命中が低いが(命中85)外しても止まらない
+;------------------------------
+@ARROW_SKILL_93, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 93
+
+@ATTACK_MOVE_93, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に対して乱れ撃ちを放った！
+CALL DAMAGE_CALCULATION, 0, 40, 85, ARG, TFLAG:(530+ARG), 0, 0, 16
+CALL DAMAGE_CALCULATION, 0, 40, 85, ARG, TFLAG:(530+ARG), 0, 0, 0
+CALL DAMAGE_CALCULATION, 0, 40, 85, ARG, TFLAG:(530+ARG), 0, 0, 0
+CALL DAMAGE_CALCULATION, 0, 40, 85, ARG, TFLAG:(530+ARG), 0, 0, 0
+

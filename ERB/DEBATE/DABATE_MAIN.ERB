@@ -1,0 +1,469 @@
+﻿;========================================================
+;討論会　行動管理
+;各フェイズでの行動進行を行う
+;========================================================
+@DEBATE_MAIN
+#DIM L_LOCAL
+
+
+
+
+;初期設定
+TFLAG:ターン = 1
+TFLAG:影響力 = 0
+
+FOR TFLAG:ターン, 1, 5
+	DRAWLINE
+	CALL SETCOLOR_ABL
+	SELECTCASE TFLAG:討論フェイズ
+		CASE 0
+			PRINTFORML ～～上座争奪フェイズ～～
+		CASE 1
+			PRINTFORML ～～討論レベル決定フェイズ～～
+		CASE 2
+			PRINTFORML ～～討論内容決定フェイズ～～
+	ENDSELECT
+	RESETCOLOR
+	PRINTFORML 現在{TFLAG:ターン}ターン目
+	PRINTFORM 総影響力({TOTAL_DEBATE_EFF(), 4, RIGHT}/3000)
+	
+	;最大　　 橙色
+	IF TOTAL_DEBATE_EFF()/30 == 100
+		SETCOLOR 255, 164, 0
+	;1/2以上　黄緑
+	ELSEIF TOTAL_DEBATE_EFF()/30 >= 50
+		SETCOLOR 164, 255, 0
+	;1/4以上　青色
+	ELSEIF TOTAL_DEBATE_EFF()/30 >= 25
+		SETCOLOR 0, 164, 255
+	;それ以下　青色
+	ELSE
+		SETCOLOR 0, 0, 255
+	ENDIF
+	
+	FOR COUNT, 0, (TOTAL_DEBATE_EFF()/90)
+		PRINTFORM %UNICODE(0x2588)%
+	NEXT
+	RESETCOLOR
+	
+	PRINTL 
+	PRINTFORML 役人の影響力:{TFLAG:役人の影響力}
+	PRINTFORML ・好物
+	FOR L_LOCAL, 1, 4
+		PRINTFORM グル―プ{L_LOCAL}({TFLAG:@"グループ{L_LOCAL}の影響力", 4, RIGHT}/1000):
+		IF TFLAG:@"グループ{L_LOCAL}の好物判明"
+			PRINTFORML %DEBATE_FAVORITE(TFLAG:(6+L_LOCAL))%
+		ELSE
+			PRINTFORML ？
+		ENDIF
+	NEXT
+	
+	;半裸、全裸衣装を着ている場合、役人達の反応が表示される
+	;(現時点では効果無し)
+	;全裸
+	IF CFLAG:服装 < 0 || DITEMTYPE:(CFLAG:服装):11 == 2
+		DRAWLINE
+		PRINTFORML 局部を僅かばかり隠すだけである%CALLNAME:TARGET%の服装に、役人達の視線が集まっている
+	;半裸
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+		DRAWLINE
+		PRINTFORML 素肌を大きく露出し、太腿や腰が曝け出されている%CALLNAME:TARGET%の服装は、役人達の興味を惹いている
+	ENDIF
+	
+	DRAWLINE
+	PRINTFORML 何をしますか？
+	PRINTFORML [0] - 会話する
+	PRINTFORML [1] - 飲み物を振舞う
+	PRINTFORML [2] - 君主を探す
+	
+	CALL SENTAKUSHI, 3
+	
+	SELECTCASE RESULT
+		CASE 0
+			CALL DEBATE_TALK
+		CASE 1
+			CALL DEBATE_FAIR
+			IF RESULT == -1
+				TFLAG:ターン -= 1
+			ENDIF
+		CASE 2
+			CALL DEBATE_SEARCH
+	ENDSELECT
+	TFLAG:役人の影響力 = DEBATE_HANTEI(TFLAG:討論フェイズ, TFLAG:役人の影響力, "計算")
+NEXT
+
+DRAWLINE
+PRINTFORML ～～フェイズ終了　結果～～
+PRINTFORML 役人の影響力:{TFLAG:役人の影響力}
+PRINTFORML %CALLNAME:TARGET%の影響力:{TOTAL_DEBATE_EFF()}
+
+SELECTCASE TFLAG:討論フェイズ
+	CASE 0
+		IF DEBATE_HANTEI(TFLAG:討論フェイズ, TFLAG:役人の影響力, "判定") >= 1
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%達が決定権を得た！
+			PRINTFORML %CALLNAME:TARGET%達は上座を取ることに成功した！
+			TFLAG:討論上座 = 1
+			RESETCOLOR
+		ELSE
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML %CALLNAME:TARGET%達は決定権を獲得できなかった……
+			PRINTFORML 役人達に上座を取られてしまった……
+			TFLAG:討論上座 = 0
+			RESETCOLOR
+		ENDIF
+	CASE 1
+		SELECTCASE DEBATE_HANTEI(TFLAG:討論フェイズ, TFLAG:役人の影響力, "判定")
+			CASE 2
+				LOCAL = 4
+			CASE 1
+				LOCAL = 3
+			CASE -1
+				LOCAL = 2
+			CASE -2
+				LOCAL = 1
+		ENDSELECT
+		TFLAG:討論レベル = LOCAL
+		PRINTFORMW 討論レベルが{TFLAG:討論レベル}で決定した！
+	CASE 2
+		IF DEBATE_HANTEI(TFLAG:討論フェイズ, TFLAG:役人の影響力, "判定") >= 1
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%達が決定権を得た！
+			PRINTFORML %CALLNAME:TARGET%達が主導権を取った！
+			RESETCOLOR
+			PRINTL どれを行いますか？
+			FOR L_LOCAL, 0, 3
+				PRINTFORML [{L_LOCAL}] - %DEBATE_SUBJECT(L_LOCAL)%
+			NEXT
+			
+			CALL SENTAKUSHI, 4
+			
+			TFLAG:討論内容 = RESULT
+			PRINTFORML 討論内容を%DEBATE_SUBJECT(RESULT)%に決定した！
+		ELSE
+			TFLAG:討論内容 = TFLAG:役人の討論内容
+			
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML %CALLNAME:TARGET%達は決定権を獲得できなかった……
+			LOCAL = RAND:3+3
+			PRINTFORML 役人達は討論内容を%DEBATE_SUBJECT(LOCAL)%に決定した！
+			
+			TFLAG:討論内容 = LOCAL
+			RESETCOLOR
+		ENDIF
+ENDSELECT
+TFLAG:前フェイズの役人の影響力 = TFLAG:役人の影響力
+;TFLAG:役人の影響力 += DEBATE_HANTEI(TFLAG:討論フェイズ, TFLAG:役人の影響力, "")
+
+;------------------------------------
+;議論グループの好物表示
+;------------------------------------
+@DEBATE_FAVORITE, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+
+SIF LOCALS == ""
+	SPLIT "紅茶_珈琲_緑茶", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------
+;総影響力
+;------------------------------------
+@TOTAL_DEBATE_EFF
+#FUNCTION
+#DIM L_LOCAL,1
+
+LOCAL = 0
+
+FOR L_LOCAL, 1, 4
+	LOCAL += TFLAG:@"グループ{L_LOCAL}の影響力"
+NEXT
+
+RETURNF LOCAL
+
+;------------------------------------
+;討論内容表示
+;------------------------------------
+@DEBATE_SUBJECT, ARG
+#FUNCTIONS
+#LOCALSSIZE 6
+
+SIF LOCALS == ""
+	SPLIT "君主謁見_風紀改善_予算改定_夜の贄_君主に献金_晩餐会", "_", LOCALS
+RETURNF LOCALS:ARG
+
+
+;------------------------------------
+;役人側の影響力計算
+;ARG　討論フェイズ
+;------------------------------------
+;@CALC_DEBATE_EFFECT, ARG
+
+;50+50*((フェイズID)^2)*年数
+;LOCAL = 50+50*ARG*ARG*FLAG:年数
+
+;------------------------------------
+;影響力の勝敗判定
+;ARG　討論フェイズ
+;ARG:1 元手の値
+;ARGS 機能選択
+;------------------------------------
+@DEBATE_HANTEI, ARG, ARG:1, ARGS
+#FUNCTION
+
+IF ARGS == "計算"
+	ARG += 1
+	;役人側の影響力
+	;計算式は100+50*((フェイズID+1)^2)*年数
+	;(上限値は2950)
+	LOCAL = ARG:1+(100+40*(ARG*ARG)*FLAG:年数-TFLAG:前フェイズの役人の影響力)*(100+RAND:21)/100/4
+	IF ARG >= 2 && !TFLAG:討論上座
+		LOCAL = MIN(LOCAL * 150 / 100, 2950)
+	ENDIF
+	
+	;3年以下だと+1×年数(上座決定フェイズ以外)
+	IF FLAG:年数 <= 3 && ARG != 0
+		LOCAL += 1*FLAG:年数
+	ENDIF
+ENDIF
+
+IF ARGS == "判定"
+	;相手の1.5倍以上
+	IF TOTAL_DEBATE_EFF() >= LOCAL*3/2
+		LOCAL = 2
+	;相手以上
+	ELSEIF TOTAL_DEBATE_EFF() >= LOCAL
+		LOCAL = 1
+	;相手の1/2以上
+	ELSEIF TOTAL_DEBATE_EFF() >= LOCAL/2
+		LOCAL = -1
+	;それ未満
+	ELSE
+		LOCAL = -2
+	ENDIF
+ENDIF
+
+RETURNF LOCAL
+
+;========================================================
+;討論会　会話
+;各グループの好物を聞き出す事ができる
+;疎通/100毎にまとめて聞き出せるようになる
+;========================================================
+@DEBATE_TALK
+#DIM L_LOCAL, 1
+
+DRAWLINE
+PRINTFORML %CALLNAME:TARGET%は貴族達に話をして回った……
+LOCAL = MIN(BASE:疎通/100, 2)
+LOCAL:1 = 1
+
+CALL SETCOLOR_PALAMUP
+FOR L_LOCAL, 1, LOCAL+2
+	IF !TFLAG:@"グループ{LOCAL:1}の好物判明"
+		PRINTFORML 貴族グループ{LOCAL:1}の好みを聞き出した！
+		TFLAG:@"グループ{LOCAL:1}の好物判明" = 1
+	ELSE
+		IF LOCAL:1 != 3
+			L_LOCAL -= 1
+		ENDIF
+	ENDIF
+	LOCAL:1 = MIN(LOCAL:1+1, 3)
+NEXT
+RESETCOLOR
+
+;========================================================
+;討論会　飲み物を振舞う
+;グループに好物を振舞う
+;========================================================
+@DEBATE_FAIR
+#DIM L_LOCAL, 2
+#DIM TAG, 6
+#DIM can_tag, 1
+
+;変数の初期化
+VARSET TAG, 0
+
+DRAWLINE
+
+can_tag = 1
+
+;お茶入れの作法を持つ場合、複数のグループを選択できる
+IF TALENT:お茶入れの作法
+	can_tag += TALENT:お茶入れの作法
+ENDIF
+
+$BACK_LOOP
+;FOR文を使い、選択した情報を確認できる構造にする
+FOR L_LOCAL, 0, can_tag*2
+	FOR L_LOCAL:1, 0, 3
+		IF TAG:(L_LOCAL:1*2)
+			PRINTFORM 対象グループ:
+			IF TAG:(L_LOCAL:1*2)
+				PRINTFORM グループ{TAG:(L_LOCAL:1*2)}
+			ENDIF
+			PRINTL 
+			PRINTFORM 振舞う飲み物:
+			;今更飲み物の式中関数の始点を0から1に変えるのも面倒だったので
+			IF TAG:(L_LOCAL:1*2+1) && L_LOCAL:1 <= L_LOCAL*2
+				PRINTFORM %DEBATE_FAVORITE(TAG:(L_LOCAL:1*2+1))%
+			ENDIF
+			PRINTL 
+			DRAWLINE
+		ENDIF
+	NEXT
+		
+	;設定項目毎に分岐
+	IF !(L_LOCAL%2)
+		PRINTFORML どのグループに飲み物を振舞いますか？
+
+		
+		PRINTFORML お茶を淹れられるグループ：{can_tag}組
+		
+		FOR L_LOCAL:1, 1, 4
+			PRINTFORML [{L_LOCAL:1-1}] - グループ{L_LOCAL:1}
+		NEXT
+		PRINTL [3] - 戻る
+
+		CALL SENTAKUSHI, 4
+		
+		IF RESULT == 3
+			RETURN -1
+		ELSE
+			TAG:L_LOCAL = RESULT+1
+		ENDIF
+	ELSE
+		PRINTFORML どの飲み物を振舞いますか？
+		FOR L_LOCAL:1, 0, 3
+			PRINTFORML [{L_LOCAL:1}] - %DEBATE_FAVORITE(L_LOCAL:1)%
+		NEXT
+		PRINTL [3] - 戻る
+
+		CALL SENTAKUSHI, 4
+		
+		IF RESULT == 3
+			;一つ前の項目に戻るので、L_LOCALを2減らす
+			L_LOCAL -= 2
+		ELSE
+			TAG:L_LOCAL = RESULT
+		ENDIF
+	ENDIF
+NEXT
+
+DRAWLINE
+FOR L_LOCAL, 0, 3
+	IF TAG:(L_LOCAL*2)
+		PRINTFORML 対象グループ:グループ{TAG:(L_LOCAL*2)}
+		PRINTFORML 振舞う飲み物:%DEBATE_FAVORITE(TAG:(L_LOCAL*2+1))%
+		PRINTL 
+	ENDIF
+NEXT
+PRINTFORML 以上の項目で振舞います
+PRINTFORML よろしいですか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	FOR L_LOCAL, 0, 3
+		IF TAG:(L_LOCAL*2)
+			DRAWLINE
+			PRINTFORML %CALLNAME:TARGET%は貴族グループ{TAG:(L_LOCAL*2)}に%DEBATE_FAVORITE(TAG:(L_LOCAL*2+1))%を振舞った！
+			
+			;上昇基礎値計算
+			LOCAL = 30+BASE:家事/10+BASE:疎通/20
+			IF TFLAG:@"グループ{TAG:(L_LOCAL*2)}の好物" == TAG:(L_LOCAL*2+1)
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %DEBATE_FAVORITE(TAG:(L_LOCAL*2+1))%はグループ{TAG:(L_LOCAL*2)}の好物だ！
+				;好物判明フラグを立てる
+				TFLAG:@"グループ{TAG:(L_LOCAL*2)}の好物判明" = 1
+				
+				LOCAL *= 2
+			ENDIF
+			IF TFLAG:討論上座
+				PRINTFORML 上座補正　×　1.50
+				LOCAL = 150*LOCAL/100
+			ENDIF
+			RESETCOLOR
+			PRINTFORMW グループ{TAG:(L_LOCAL*2)}への影響力が{LOCAL}上がった！
+			TFLAG:@"グループ{TAG:(L_LOCAL*2)}の影響力" = LIMIT(TFLAG:@"グループ{TAG:(L_LOCAL*2)}の影響力"+LOCAL, 0, 1000)
+		ENDIF
+	NEXT
+ELSE
+	L_LOCAL -= 1
+	GOTO BACK_LOOP
+ENDIF
+
+;========================================================
+;討論会　君主の姿を探す
+;成功すると、君主の影響力が-30～-60される
+;========================================================
+@DEBATE_SEARCH
+#DIM L_LOCAL, 2
+#DIM TAG, 2
+
+LOCAL = 30 + 10*RAND:4
+
+PRINTFORML %CALLNAME:TARGET%は君主の姿を探している……
+PRINTFORMW 君主の姿を見つけた！　これを弱みにする事ができればいいが……
+CALL CALCULATION_PALAM, LOCAL, "君主の権力値"
+RESETCOLOR
+
+;純狐フラグが立っていない場合、1/2の確率で純狐を見つける
+;追うか追わないかを選択できる。追わなかった場合、次の討論会までイベントは発生しない
+;用意するフラグ
+;TFLAG　328,純狐フラグ／討論会中(討論会終了時にリセット
+;CFLAG　540,純狐フラグ
+
+IF !(TFLAG:純狐フラグ／討論会中 || CFLAG:純狐フラグ)
+	DRAWLINE
+	PRINTFORML ～～会場裏　不思議な出会い～～
+	PRINTFORML %CALLNAME:TARGET%は、会場から外れた廊下にて、不審な女性を見つけた
+	PRINTFORML その女性からは狐のような気配を感じる
+	PRINTFORML しきりに左右を見渡している。どうやら人を探しているようだ
+	PRINTFORML 女性「……？　誰？　私と戦ってみたいのかしら？」
+	
+	;純狐イベントは戦闘が発生し、負けるとバッドイベントとなるので一応警告しておく
+	PRINTFORML 女性は真剣な眼差しで%CALLNAME:TARGET%を見つめている
+	PRINTL
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 周囲に漂う妖気はとても濃く、軽はずみな回答をすると痛い目に遭うかもしれない……
+	RESETCOLOR
+	PRINTFORML 自信が無ければ戦わない方がよさそうだ
+	PRINTFORML [0] - 戦ってみたい
+	PRINTFORML [1] - やっぱりやめておく
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORMW 女性は%CALLNAME:TARGET%を見つめた
+		PRINTFORML 
+		PRINTFORMW 女性「……もしかして、貴方、冗談が分からないお方？」
+		PRINTFORML 
+		PRINTFORML 女性は嫌そうな声色で言った後、背を向けて去った
+		PRINTFORML 素っ気ない様子に首を傾げる%CALLNAME:TARGET%
+		PRINTFORML しかし――
+		PRINTFORML 
+		PRINTFORML 女性「ふふ、面白そうね。嫌がらせしてみようかしら……」
+		PRINTFORML 
+		PRINTFORML 女性が呟いたその一言を、%CALLNAME:TARGET%が知る術はなかった
+		
+		CALL SETCOLOR_ABL
+		PRINTFORMW 1年に1度。純狐が襲ってくるようになった！
+		RESETCOLOR
+
+		;純狐フラグを立てる
+		CFLAG:純狐フラグ = 1
+	ELSE
+		PRINTFORML 女性「そう……じゃあ、こんな所にいないで会場に戻りなさい。みんな心配するわよ」
+		PRINTFORML そう言って、女性は顔を背けた
+		CALL SETCOLOR_ABL
+		PRINTFORMW これは直感だが、恐らく次の討論会でも再び姿を見かけるだろう
+		RESETCOLOR
+	ENDIF
+	
+	;この討論会中は、このイベントが発生しないようにする
+	TFLAG:純狐フラグ／討論会中 = 1
+ENDIF
+

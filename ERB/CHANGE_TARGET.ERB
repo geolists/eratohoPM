@@ -1,0 +1,37 @@
+﻿;=======================================
+;対象変更
+;=======================================
+;@CHANGE_TARGET
+;DRAWLINE
+;$BACK_LOOP
+;PRINTL どのキャラに焦点を当てますか？
+;PRINTL [1] - 輝夜
+;IF GETBIT(FLAG:姉妹陥落フラグ, 1)
+;	PRINTL [2] - 依姫
+;ENDIF
+;IF GETBIT(FLAG:姉妹陥落フラグ, 2)
+;	PRINTL [3] - 豊姫
+;ENDIF
+;PRINTFORML [9] - 戻る
+
+;$INPUT_LOOP
+;INPUT
+
+;IF RESULT >= 1 && RESULT <= 3
+;	IF RESULT == 2 && !GETBIT(FLAG:姉妹陥落フラグ, 1)
+;		PRINTFORML %CALLNAME:RESULT%はまだ陥落していません
+;		GOTO INPUT_LOOP
+;	ELSEIF RESULT == 3 && !GETBIT(FLAG:姉妹陥落フラグ, 2)
+;		PRINTFORML %CALLNAME:RESULT%はまだ陥落していません
+;		GOTO INPUT_LOOP
+;	ENDIF
+;	
+;	PRINTFORML 対象を%CALLNAME:RESULT%に変更しました
+;	TARGET = RESULT
+;ELSEIF RESULT == 9
+;	RETURN 0
+;ELSE
+;	PRINTL 対象が不正です
+;	GOTO INPUT_LOOP
+;ENDIF
+

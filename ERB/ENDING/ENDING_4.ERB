@@ -1,0 +1,530 @@
+﻿;========================================================
+;シスタールート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;========================================================
+@ENDING_SISTER
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落+淫妖が900以上
+IF BASE:堕落 + BASE:淫妖 >= 900
+	CALL ENDING_SISTER_1
+	LOCAL:1 = 740
+;600以上
+ELSEIF BASE:堕落 + BASE:淫妖 >= 600
+	CALL ENDING_SISTER_2
+	LOCAL:1 = 741
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	CALL ENDING_SISTER_18
+	LOCAL:1 = 757
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_SISTER_19
+	LOCAL:1 = 758
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_SISTER_20
+	LOCAL:1 = 759
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SISTER_3
+			LOCAL:1 = 742
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SISTER_4
+			LOCAL:1 = 743
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SISTER_5
+			LOCAL:1 = 744
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SISTER_6
+			LOCAL:1 = 745
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SISTER_7
+			LOCAL:1 = 746
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SISTER_8
+			LOCAL:1 = 747
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SISTER_9
+			LOCAL:1 = 748
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SISTER_10
+			LOCAL:1 = 749
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SISTER_11
+			LOCAL:1 = 750
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SISTER_12
+			LOCAL:1 = 751
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SISTER_13
+			LOCAL:1 = 752
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SISTER_14
+			LOCAL:1 = 753
+		ENDIF
+	;信仰
+	ELSEIF LOCAL:1 == 9
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SISTER_15
+			LOCAL:1 = 754
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SISTER_16
+			LOCAL:1 = 755
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SISTER_17
+			LOCAL:1 = 756
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　神の供物
+;---------------------------------------------------------
+@ENDING_SISTER_1
+PRINTFORMW %CALLNAME:TARGET%は神に仕える者として長い時を過ごした
+PRINTFORML 祈りより優れた素質を持つ彼女は、とある大役を任されることになったらしい
+PRINTFORML 
+PRINTFORMW 「ふーん……ここが仕事場なの？」
+PRINTFORML 年中霧が深く、人気の無さが不気味さを醸し出している山
+PRINTFORMW その奥深くに位置するほら穴の前に%CALLNAME:TARGET%と信者達は立っていた
+PRINTFORMW 身に着けているのは丈が短く、太腿が露出した巫女服だ
+PRINTL 
+PRINTFORML 位が高い人物と交わってもらうとだけ言われた%CALLNAME:TARGET%は
+PRINTFORML 粘っこい霧が衣服を肌に張り付けてくるのを感じながら
+PRINTFORMW 期待と不安が入り混じる表情でほら穴の先を見つめ続けた……
+PRINTFORML 
+PRINTFORML 「ひゃっ……ん、な……え……？」
+PRINTFORML 突然胸先にそっと撫でられた感覚が伝わり、思わず声をあげる%CALLNAME:TARGET%
+PRINTFORMW 胸先には不気味が触手が伸びている
+PRINTFORML 
+PRINTFORML 「え……？　まさか相手って……んんっ、や、ぁあっ……たす……」
+PRINTFORMW もう一本伸びてきた触手が腰に巻き付いたかと思うと、哀れな供物を霧の中へ引き摺ってしまった……
+PRINTFORML 
+PRINTFORMW それ以降、%CALLNAME:TARGET%の姿を見た者はいない……
+PRINTFORML 
+PRINTFORMW -シスターED No.1　神の供物
+
+;---------------------------------------------------------
+;ED2　信者の慰み者
+;---------------------------------------------------------
+@ENDING_SISTER_2
+PRINTFORMW 礼拝堂には地下へ続く階段があり、下った先には日差しが差し込む場所があった
+PRINTFORMW 大昔に秘教の信仰場として使われていたらしく、古びた銅像が座している
+PRINTFORML そんな歴史ある場所だが、仰向けの女性とそれに群がる数人の男性が見え
+PRINTFORMW 辺り一面には荒い吐息と卑しい水音が鳴り響いていた
+PRINTFORML 
+PRINTFORMW 色事に耽り続けていた女性は、命を産み出す儀式という名目を利用し
+PRINTFORMW 多くの男性と交わってきた
+PRINTFORML 
+PRINTFORMW しかしそれが教主にバレてしまったのか、多くの信者に捕えられ無理矢理為されてしまったのを境に
+PRINTFORMW 毎日朝から晩まで信者に犯される日々を過ごす羽目になってしまった
+PRINTFORML 
+PRINTFORML 咥えさせられていた一物から白濁液が飛びだし、%CALLNAME:TARGET%は瞳を濡らした
+PRINTFORMW 果たして、今彼女は幸せなのだろうか
+PRINTFORML 
+PRINTFORMW -シスターED No.2　信者の慰み者
+
+;---------------------------------------------------------
+;ED3　美しさの勝利
+;---------------------------------------------------------
+@ENDING_SISTER_3
+PRINTFORMW %CALLNAME:TARGET%は稀に見る美しさで多くの信徒を教会に引き寄せた
+PRINTFORMW あまりの美麗の高さに魅了されており、%CALLNAME:TARGET%の一言で信徒達は行動を行う程の結束力を持っている
+PRINTFORML 
+PRINTFORMW そしてある日、信徒達がクーデターを起こし王宮に押しかけた
+PRINTFORMW どうやら%CALLNAME:TARGET%の過去置かれていた境遇が信徒の同情を誘ったらしい
+PRINTFORMW 君主は冷静に参謀を呼び、兵を組織し鎮圧にかかった
+PRINTFORML 
+PRINTFORMW 「私は指示してないんだけど……何がいけなかったのかな？」
+PRINTFORMW 自らの美しさが引き起こしたという自覚がない%CALLNAME:TARGET%はとぼけている
+PRINTFORML 
+PRINTFORMW -シスターED No.3　美しさの勝利
+
+
+;---------------------------------------------------------
+;ED4　信仰＝美麗？
+;---------------------------------------------------------
+@ENDING_SISTER_4
+PRINTFORMW %CALLNAME:TARGET%は目立つ美しさで多くの信徒を入信させ、月の都の治安に手を入れ始めた
+PRINTFORML 
+PRINTFORML まずは裏通りに存在する闇の店に信徒が赴いて布教を行い、少々の犠牲は出しつつも浄化が推し進められた
+PRINTFORMW 当然闇社会からは反発が出るが、%CALLNAME:TARGET%に手を出そうと襲ってきた暴徒達は次々と側近たちに取り押さえられた
+PRINTFORML 
+PRINTFORMW こうして闇社会を浄化した%CALLNAME:TARGET%は、都全体に信仰を広めることにした
+PRINTFORMW 最初のうちは上手く行かなかったが、徐々に広まっていき、やがては%CALLNAME:TARGET%が通るだけで拝まれるまでになった
+PRINTFORML 
+PRINTFORML 「何か違うような……まあ、信仰自体は広まったのでよしとしますか」
+PRINTFORMW %CALLNAME:TARGET%は首を傾げながらも結果が出た事に満足しているようだ
+PRINTFORML 
+PRINTFORMW ちなみに、一部の間では%CALLNAME:TARGET%に信者がついただけではないかとも噂されている
+PRINTFORML 
+PRINTFORMW -シスターED No.4　信仰＝美麗？-
+
+;---------------------------------------------------------
+;ED5　美麗信仰
+;---------------------------------------------------------
+@ENDING_SISTER_5
+PRINTFORML %CALLNAME:TARGET%はそこそこの美しさで役人を魅了した
+PRINTFORML 
+PRINTFORML 魅了された役人達を%CALLNAME:TARGET%が誘導して教会に入信させ
+PRINTFORMW 教会の圧力を王宮にかけることによって君主の魔の手を衰退させることに成功した
+PRINTFORML 
+PRINTFORML 「ねえ、貴方も入信しない？」
+PRINTFORML 「……いや、必要無さそうね。だってもう貴方……」
+PRINTFORMW 椅子にちょこんと座った%CALLNAME:TARGET%は、%CALLNAME:MASTER%の額を人差し指で突きながら笑みを浮かべた
+PRINTFORML 
+PRINTFORMW こうして、君主との闘争は幕を閉じた……
+PRINTFORML 
+PRINTFORMW -シスターED No.5　美麗信仰-
+
+;---------------------------------------------------------
+;ED6　信仰戦略
+;---------------------------------------------------------
+@ENDING_SISTER_6
+PRINTFORML 「これからは信仰を増やす為に知略が必要になるのよ」
+PRINTFORMW 教会内で一定の地位を手に入れた%CALLNAME:TARGET%はそう打ち明けた
+PRINTFORML 
+PRINTFORML 月の都に以下の張り紙が張り出される
+PRINTFORML 
+CALL SETCOLOR_PALAM
+PRINTFORML ～～悩みを打ち明けてください！～～
+PRINTFORML 穢れを負ったわけではないんだけど、心配事がある
+PRINTFORML そんなお悩みを持つ貴方、王宮へ行かれる前に是非私達の教会へ寄ってください
+PRINTFORML 親切な助言で道を示す事ができるという自信が、私達にはあります
+PRINTFORML 　　　　　　　　　　　　　　　　　　　　　　　　月の信仰教会より
+PRINTFORML 
+RESETCOLOR
+PRINTFORML 教会側もこの広告について最初は半信半疑だったが、多くの相談者が教会に訪れた
+PRINTFORMW どうやら王宮へ相談に行くことに少し疑念が生まれていたようだ
+PRINTFORML ここまで来たらしめたもの、教会は相談者にお守りを渡し
+PRINTFORMW 今後不安がある時は何時でも訊ねてもらってもいいと伝えた
+PRINTFORML 
+PRINTFORML お守りを貰った人は教会に通うようになり、王宮からは足が遠のいていった
+PRINTFORMW 開放的な行いにした方が功を奏したようだ
+PRINTFORML こうして教会と民衆の距離が縮んだ後、積極的に教会は催し事を行った
+PRINTFORMW 王宮の催し事と重なる日程で行い、王宮の影を薄れさせた
+PRINTFORMW 当然王宮から役人が赴いて止めるよう抗議したが、銅像を見せつけ反抗する者には穢れが来ると脅した
+PRINTFORML 
+PRINTFORMW 「王宮の権力を衰えさせるのは手間がかかったわね……」
+PRINTFORML %CALLNAME:TARGET%はふうとため息を吐いている
+PRINTFORMW 教会に頼る民衆の割合は少しずつ増えていき。先日になってようやく王宮の権力が失墜し、君主が失脚したようだ
+PRINTFORMW 都に貼ってあった王宮への斡旋ポスターはすっかり朽ちている
+PRINTFORML 
+PRINTFORMW この状況を成立させた%CALLNAME:TARGET%の知力を築きあげた%CALLNAME:MASTER%に感謝を……
+PRINTFORML 
+PRINTFORMW -シスターED No.6　信仰戦略-
+
+;---------------------------------------------------------
+;ED7　信仰知識
+;---------------------------------------------------------
+@ENDING_SISTER_7
+PRINTFORMW %CALLNAME:TARGET%は教会に民衆を集め、食べ物を与えた
+PRINTFORMW どうやら日頃から好感度を高めておき、有事の際に力を借りる算段のようだ
+PRINTFORML 
+PRINTFORML 「日頃の行いが大事だからね」
+PRINTFORMW そう言いながら髪をかきあげる%CALLNAME:TARGET%は常日頃から立ち振舞いを工夫した
+PRINTFORML 
+PRINTFORMW その奉仕精神は教会内でも評判になり、今では教会の権限を握る立場にまで登りつめた
+PRINTFORML 
+PRINTFORML 「王宮を責めにかかっても色々と失うだけだし、このまま維持するのがいいのでしょうね……」
+PRINTFORMW %CALLNAME:TARGET%は現状維持に努め、月の都の平和と信仰心を保ち続けた……
+PRINTFORML 
+PRINTFORMW -シスターED No.7　信仰知識-
+
+;---------------------------------------------------------
+;ED8　信仰もどき
+;---------------------------------------------------------
+@ENDING_SISTER_8
+PRINTFORML %CALLNAME:TARGET%はそれなりに得た知力を基に女中間に信仰を広め
+PRINTFORMW 住みやすい環境を整えた
+PRINTFORML 
+PRINTFORMW しかし、整えたのは環境だけであり君主には……
+PRINTFORMW %CALLNAME:TARGET%は王宮内で未だに脅威を拭いされていない
+PRINTFORML 
+PRINTFORMW 「やっぱり君主を何とかしないと駄目ね……」
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は物憂げな表情を浮かべ、%CALLNAME:MASTER%に愚痴を言った……
+PRINTFORML 
+PRINTFORMW -シスターED No.8　信仰もどき-
+
+;---------------------------------------------------------
+;ED9　数珠繋ぎの信仰
+;---------------------------------------------------------
+@ENDING_SISTER_9
+PRINTFORMW 教育係に就任して6年目を迎える前日……
+PRINTFORMW %CALLNAME:TARGET%は嬉しそうな表情で%CALLNAME:MASTER%に話しかけてきた
+PRINTFORMW 「ねえねえ、明日は記念日だしちょっと外に行かない？」
+PRINTFORML 
+PRINTFORML %CALLNAME:TARGET%に手を引っ張られて外に出た%CALLNAME:MASTER%は都の外れにある山間部に向かい
+PRINTFORMW 鮮やかな自然や頂上から一望できる都の景色を堪能した
+PRINTFORML 
+PRINTFORML 「美しいわね……」
+PRINTFORMW %CALLNAME:TARGET%は景色を見てうっとりとしている
+PRINTFORML 
+PRINTFORML 「噂を耳にしただけなんだけど、地上では四季折々の景色が見られるらしいわ」
+PRINTFORMW 「長期旅行に出かけましょうよ」
+PRINTFORMW 「……え？　都との折り合いが付かない？　……そろそろ戻りましょうか♪」
+PRINTFORMW %CALLNAME:TARGET%は笑みを浮かべ、%CALLNAME:MASTER%の手を引っ張って山を降りた
+PRINTFORML 
+PRINTFORMW 王宮に戻ってきた%CALLNAME:MASTER%は、その様子に驚いた
+PRINTFORML 何と大勢の修道士やシスター達が集まっているじゃないか
+PRINTFORMW 「どうやら君主は捕まったらしいわ。日頃から根回ししておいて助かったわね」
+PRINTFORMW %CALLNAME:TARGET%は満足そうにしている
+PRINTFORML 
+PRINTFORML 最初は小さな輪だった信仰が数珠繋ぎで広がり、最終的には大事を成し遂げられた
+PRINTFORMW この親交の輪が途切れることはないだろう……
+PRINTFORML 
+PRINTFORMW -シスターED No.9　数珠繋ぎの信仰-
+
+;---------------------------------------------------------
+;ED10　信仰の輪
+;---------------------------------------------------------
+@ENDING_SISTER_10
+PRINTFORML %CALLNAME:TARGET%はそれなりに育った疎通力を生かし、多くの民衆から支持を得た
+PRINTFORMW 王宮内での問題は解決できていないものの、外部には多くの味方が居るのだ
+PRINTFORMW これほど心強い物はない
+PRINTFORML 
+PRINTFORML 「もちろん、貴方もその内の一人に入るからね？」
+PRINTFORMW %CALLNAME:TARGET%は笑みを浮かべ、%CALLNAME:MASTER%の手を両手で握りしめている
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%の将来はまだ分からない……
+PRINTFORML 
+PRINTFORMW -シスターED No.10　信仰の輪-
+
+;---------------------------------------------------------
+;ED11　信仰の井戸
+;---------------------------------------------------------
+@ENDING_SISTER_11
+PRINTFORML %CALLNAME:TARGET%は内輪で止まってしまう疎通力に無力さを感じた
+PRINTFORMW 信徒や知人を作る事はできても、それから先へ行けない%CALLNAME:TARGET%は……
+PRINTFORML 
+PRINTFORML 「王宮に居座ろうとした私が馬鹿だったわ……」
+PRINTFORMW 教会に住まい、日夜修行に励んでいる
+PRINTFORMW 元から修道女をやっていたおかげか筋はいいようだ
+PRINTFORMW 先輩からの評価は手厚い
+PRINTFORML 
+PRINTFORMW -シスターED No.11　信仰の井戸-
+
+;---------------------------------------------------------
+;ED12　家事に宿る信仰
+;---------------------------------------------------------
+@ENDING_SISTER_12
+PRINTFORML %CALLNAME:TARGET%はシスター内でとても人気があり
+PRINTFORMW 料理が美味しいことと、それを信仰に結びつけるのがとても上手いのがその秘訣らしい
+PRINTFORML 
+PRINTFORML 「この日に料理をしないのは火の神様を休ませるためと言われているわ」
+PRINTFORMW 常識的な話だが、料理が美味しいので誰も気にしない
+PRINTFORML 
+PRINTFORML %CALLNAME:TARGET%の評価は日に日に大きくなり
+PRINTFORMW やがては何も知らない君主までもが偵察に現れた
+PRINTFORML 
+PRINTFORMW 君主が出された料理を口に入れると、忽ち頬を緩めて感激の意を表した
+PRINTFORMW 君主はまた現れると言いその場を後にするが、翌日、再び教会に現れた
+PRINTFORMW こうして毎日通う君主は身も心も骨抜きにされ……
+PRINTFORML 
+PRINTFORML ある日、ついに王宮がふしだらな君主を追放し、新体制を築き上げた
+PRINTFORMW もはや料理の信者と化した君主は教会の前で寝泊りを行い、やがては追い出される身となった
+PRINTFORML 
+PRINTFORMW 「少しは同情するけど、自業自得だよね」
+PRINTFORMW %CALLNAME:TARGET%は少々困った顔を浮かべているが、その表情からはどこか清々しさを感じた
+PRINTFORML 
+PRINTFORMW -シスターED No.12　家事に宿る信仰-
+
+;---------------------------------------------------------
+;ED13　家事の布教
+;---------------------------------------------------------
+@ENDING_SISTER_13
+PRINTFORML 家事に慣れた%CALLNAME:TARGET%は周囲のシスターに家事の手ほどきをしている内に
+PRINTFORMW 都で家事の研修会を定期的に行うことになった
+PRINTFORML 
+PRINTFORML 最初は参加者も少なく、半信半疑だったものの
+PRINTFORMW %CALLNAME:TARGET%の高い遂行力に参加者の多くが見惚れ
+PRINTFORMW 次第に参加者が増えていった
+PRINTFORML 
+PRINTFORML 「信仰は広まっているのかな……」
+PRINTFORMW %CALLNAME:TARGET%は家事ばかりが巧くなっていく民衆を見て不安に感じた……
+PRINTFORML 
+PRINTFORMW -シスターED No.13　家事の布教-
+
+;---------------------------------------------------------
+;ED14　教会内の家事
+;---------------------------------------------------------
+@ENDING_SISTER_14
+PRINTFORML %CALLNAME:TARGET%はその手慣れた家事で教会を掃除した……
+PRINTFORMW すると、磨かれた銅像が光り、語り始めた
+PRINTFORML 
+PRINTFORML 銅像の語った内容を要約すると、何か一つ願いごとを叶えてくれるらしい
+PRINTFORMW 君主から自由にしてほしいと祈った所、%CALLNAME:TARGET%の周りに多くのシスターが群がり……
+PRINTFORML 
+PRINTFORML 数日後……%CALLNAME:TARGET%はシスターとして生きていく決心をし
+PRINTFORML 王宮に戻らなくなった、教会内はすっかり綺麗になっており
+PRINTFORMW 近辺の民から高い評価を得ている
+PRINTFORML 
+PRINTFORMW -シスターED No.14　教会内の家事-
+
+;---------------------------------------------------------
+;ED15　本当の力
+;---------------------------------------------------------
+@ENDING_SISTER_15
+PRINTFORMW %CALLNAME:TARGET%は修道女に必要な信仰力を完璧に身に着け、司祭に昇りつめた
+PRINTFORML 
+PRINTFORMW 毎日多くの信者が教会に通い、教えを乞うている
+PRINTFORMW %CALLNAME:TARGET%は適切に指示を出し、救いの手を差し出すのだ
+PRINTFORML 
+PRINTFORML 君主の圧力に怯えることがない生活を送れており、%CALLNAME:TARGET%はとても嬉しそうだ
+PRINTFORMW これからも永遠に信者達の支えとなっていくだろう……
+PRINTFORML 
+PRINTFORMW -シスターED No.15　本当の力-
+
+;---------------------------------------------------------
+;ED16　信じることとは
+;---------------------------------------------------------
+@ENDING_SISTER_16
+PRINTFORMW %CALLNAME:TARGET%はそれなりの信仰力を手に入れ、教会へ入信する人を増やした
+PRINTFORML 
+PRINTFORML 「こうして信者を増やせるのも%CALLNAME:MASTER%が私にしてくれた教育のおかげね……」
+PRINTFORMW %CALLNAME:TARGET%は感慨深いこれまでの道程を思い返し、感謝の意を呟いた
+PRINTFORML 
+PRINTFORML 王宮が貼り紙をしているせいか、外部に設立された信教はいずれも苦戦を強いられている
+PRINTFORMW 胡散臭いといわれる噂はあるものの、あくまで噂は噂であるのだ
+PRINTFORML 
+PRINTFORML そんな中で%CALLNAME:TARGET%が所属している教会で信者を伸ばすことができたのは
+PRINTFORMW 自らの教えを信じ、心から愛する事で説得力を増した事にあると本人は語っている
+PRINTFORML 
+PRINTFORML 「外見を作るのは心からというしね」
+PRINTFORMW %CALLNAME:TARGET%は笑みを浮かべ、教会の門を叩く民衆を見守っている
+PRINTFORML 
+PRINTFORMW -シスターED No.16　信じることとは-
+
+;---------------------------------------------------------
+;ED17　前を見よう
+;---------------------------------------------------------
+@ENDING_SISTER_17
+PRINTFORML 「うーん……おかしいわね」
+PRINTFORMW %CALLNAME:TARGET%は困惑の表情を浮かべ、机に肘をついている
+PRINTFORML それなりの信仰心を持って教会内で目立つ存在にはなれたが
+PRINTFORMW 民衆や王宮に対しての影響力を持つことができない事に対して焦りを感じてらしい
+PRINTFORML 
+PRINTFORMW 頭の中で思考の堂々巡りを起こしている中、同僚が声をかけた
+PRINTFORML 最近様子が変だから一緒に外出しようというお誘いのようだ
+PRINTFORMW %CALLNAME:TARGET%は快く頷き、外へ出た
+PRINTFORML 
+PRINTFORMW 外へ出た%CALLNAME:TARGET%は都に住む人達の様子を見て、何かに気付いたようだ
+PRINTFORMW みんな表情が豊かで、目前の事に対して力を注いでいる
+PRINTFORMW 自分は内側の事ばかり見すぎていたのかもしれない。そう反省した
+PRINTFORML 
+PRINTFORML 「やっぱり色々悩んでいても仕方ないわね。これからは積極的に布教しましょう」
+PRINTFORMW それからというものの、%CALLNAME:TARGET%は定期的に外へ出かけ活動を行うようになったらしい
+PRINTFORML 
+PRINTFORMW -シスターED No.17　前を見よう-
+
+;---------------------------------------------------------
+;ED18　永久の信仰
+;---------------------------------------------------------
+@ENDING_SISTER_18
+PRINTFORML %CALLNAME:TARGET%はその類稀なる能力により、教会が政治に介入できるように仕向けることができた
+PRINTFORMW その事により月の都の雰囲気は大きく変わる事になった……
+PRINTL
+PRINTFORML %CALLNAME:MASTER%が都の路地を歩いていたところ、壁に貼られた1枚の広告が目に入った
+PRINTL
+CALL SETCOLOR_ABL
+PRINTFORML ～～穢れなき人生をその手に！～～
+PRINTFORML 私達の教団は王宮の研究庁と協力し、ついに浄化の光を操ることに成功した！
+PRINTFORML この光は目に入るとその者から光を奪ってしまうほどの力を持つが、適切に利用するとあらゆる穢れを払う事ができる
+PRINTFORML 一度受けたいと思われる者は下記の場所まで赴いてくるように
+PRINTFORML 　　　　　　　　　　　　　　　　　　　　月夜見教団　司祭「%CALLNAME:TARGET%」
+RESETCOLOR
+PRINTL
+PRINTFORMW %CALLNAME:MASTER%は複雑な気持ちになりながら道を歩くと少女にぶつかった
+PRINTFORML 「あら、ごめんなさい……ってあら？　もしかして……」
+PRINTFORMW %CALLNAME:MASTER%ははっとして見上げた
+PRINTFORMW 「やっぱり……
+PRINTFORML 　貴方が司祭の元教育係なのですね。私は%CALLNAME:TARGET%様に育てられた元孤児です」
+PRINTFORML どうやら%CALLNAME:TARGET%の振舞いが妙に手慣れていたらしく
+PRINTFORMW 何度も教育係の話がされていたらしい
+PRINTFORMW 最後に深々とお辞儀をして少女が去っていき、%CALLNAME:MASTER%は空を見つめ続けた……
+PRINTFORML 
+PRINTFORMW -シスターED No.18　永久の信仰-
+
+;---------------------------------------------------------
+;ED19　王宮の信仰
+;---------------------------------------------------------
+@ENDING_SISTER_19
+PRINTFORML 全体的に優秀な能力を持ったシスターへと育った%CALLNAME:TARGET%は
+PRINTFORMW 教会の力を借りて君主を丸めこみ、王宮の司祭に就任した
+PRINTL 
+PRINTFORML 就任した%CALLNAME:TARGET%は王宮内部にある装飾を信仰深い物に変えていき
+PRINTFORMW しきたりも宗教の思想を巧妙に取り入れた内容に改良した
+PRINTFORMW そして今、%CALLNAME:MASTER%は%CALLNAME:TARGET%の隣に座り、司祭の補佐をしている
+PRINTFORML 
+PRINTFORML 「まさか貴方がこの立場になれるなんてね……」
+PRINTFORMW 
+PRINTFORML %CALLNAME:TARGET%は袖で手を抑え、小さく笑みを浮かべた
+PRINTFORMW 纏っている衣服は%CALLNAME:MASTER%が親から貰った物で、司祭に就任する頃にふわさしい装飾を付け加えた物だ
+PRINTFORML 
+PRINTFORMW 「両親には会えないけど、私には貴方や神の御力があるんですもの。もう寂しくないわね」
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の腕を抱き寄せ、目前に広がる都を一望した……
+PRINTFORML 
+PRINTFORMW -シスターED No.19　王宮の信仰-
+
+;---------------------------------------------------------
+;ED20　隔世の信仰
+;---------------------------------------------------------
+@ENDING_SISTER_20
+PRINTFORML そつなく物事をこなした%CALLNAME:TARGET%はそこそこの結果を残して教団から抜けた
+PRINTFORML 
+PRINTFORML そして数百年後……
+PRINTFORML %CALLNAME:TARGET%は一人で街道を歩いていると、寂れた石碑を見つけた
+PRINTFORML 
+CALL SETCOLOR_ABL
+PRINTFORML ――備忘の碑――
+PRINTFORML 遥か昔、この地に信仰を深めようとした者あり
+PRINTFORML その者は歴史の表舞台に登れなかったものの民衆の心に平穏を与えた。その実績と名誉をここに表する
+PRINTFORML 
+PRINTFORML %NAME:TARGET%
+PRINTFORMW 
+RESETCOLOR
+PRINTFORMW %CALLNAME:TARGET%は心に何かが満ちた感覚を覚え、機嫌良くその場を去った
+PRINTFORML 
+PRINTFORMW シスターED No.20　隔世の信仰-

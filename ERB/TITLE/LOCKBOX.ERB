@@ -1,0 +1,63 @@
+﻿;================================================================
+;鍵穴
+;32穴あるグローバル変数を全部開けたら勝ち
+;(グローバル変数995は再起動する度にリセットされます)
+;================================================================
+@LOCKBOX
+
+DRAWLINE
+;SFC版スターフォックス
+PRINTFORML ～～別次元への風穴～～
+PRINTFORML 銀髪の女性「あら……？　人が一人、反応から消えたわ……
+PRINTFORMW 　　　　　　あの人が消えただなんて、月の都と輝夜はこれから一体どうすればいいのかしら……」
+DRAWLINE
+PRINTFORML ～～雪原～～
+PRINTFORML ここは雪原です
+PRINTFORML 何をしますか？
+PRINTFORML [0] - 寝転がる
+PRINTFORML [1] - 穴を掘る
+PRINTFORML [2] - 一人雪合戦
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0
+	GLOBAL:995 |= 0xffffbfff
+ELSEIF RESULT == 1
+	GLOBAL:995 |= 0xfffffffb
+ELSEIF RESULT == 2
+	GLOBAL:995 |= 0xfffffffe
+ENDIF
+
+CALL LOCK_RESULT
+
+;================================================================
+;鍵穴の結果
+;ビットに対応した結果を返す
+;================================================================
+@LOCK_RESULT
+
+;14へ行け
+IF GLOBAL:995 & 1p14
+	DRAWLINE
+	PRINTFORML ～～突然の滑落～～
+	PRINTFORML %CALLNAME:MASTER%は突然足を滑らせた
+	PRINTFORMW そのまま支えを失い、身体は奈落の底へと落ちていく……
+	PRINTL
+	PRINTFORMW -GAME OVER-
+;31：　ゲームクリア
+ELSEIF GLOBAL:995 & 1p31
+	DRAWLINE
+	PRINTFORML ～～雪降る夜空～～
+	PRINTFORML 無事にゲームをクリアしました！
+	
+	$END_LOOP
+	PRINTFORMW THE END
+	PRINTFORML ＜何か入力できます＞
+	INPUT
+	
+	IF RESULT
+		GOTO END_LOOP
+	ENDIF
+ENDIF
+
+

@@ -1,0 +1,95 @@
+﻿;/////////////////////////////////////////////////////////////////////
+;特殊ゲームモード
+;タイトル画面の？？？から選択できる
+;/////////////////////////////////////////////////////////////////////
+@EXTRA_MODE
+#DIM key,1
+
+
+$BACK_LOOP
+DRAWLINE
+PRINTFORML ～～擦り切れた本～～
+PRINTFORML 特殊ゲームモードへようこそ！
+PRINTFORML ここでは通常とは異なる状況でゲームを開始することができます
+PRINTL 
+PRINTFORML どのゲームモードで開始しますか？
+;1/255で発生する乱数を引くと解禁
+IF GLOBAL:999
+	PRINTFORML [0] - ゆめみる妖精　　　　　　　時空を超えて月へやってきた妖精、スターサファイアが姫君に上り詰めるお話です
+ELSE
+	SETCOLOR 96,96,96
+	PRINTFORML [0] - ？？？　　　　　　　　　　まだ解禁されていません
+ENDIF
+RESETCOLOR
+;一度エンディングを迎えると解禁
+IF GLOBAL:503
+	;里娘60％、乞食40％でゲームが始まる
+	;初期衣服は布きれだが、着替えさせることが可能
+	PRINTFORML [1] - Legend of Another World　 貴族に引き取られた戦争孤児、輝夜が姫君に上り詰めるお話です
+ELSE
+	SETCOLOR 96,96,96
+	PRINTFORML [1] - ？？？　　　　　　　　　　まだ解禁されていません
+ENDIF
+RESETCOLOR
+;以下3つは未実装
+IF key
+	;一度エンディングを迎えると解禁される
+	PRINTFORML [2] - 月面の舞闘曲　　　　　　　ついに月の都で舞闘会が開催されることになった！　勝ち続けて頂点に上り詰めろ！
+	
+	PRINTFORML [3] - ホーリーダガー　　　　　　姫騎士となり、厚い信頼を得ている輝夜は2年で君主の内通者を討伐しなければならない
+	PRINTFORML [4] - 光の魔術士　　　　　　　　4年目からスタート！　君主の内通者を倒せ！
+	PRINTFORML [5] - ソウルハッカーズ　　　　　月毎にランダムで魂を乗っ取られる！
+ELSE
+	SETCOLOR 96,96,96
+	PRINTFORML [2] - ？？？　　　　　　　　　　未実装です
+	PRINTFORML [3] - ？？？　　　　　　　　　　未実装です
+	PRINTFORML [4] - ？？？　　　　　　　　　　未実装です
+	PRINTFORML [5] - ？？？　　　　　　　　　　未実装です
+	RESETCOLOR
+ENDIF
+PRINTFORML [5] - 戻る
+
+CALL SENTAKUSHI, 6
+
+IF (RESULT == 0 && !GLOBAL:999) || (RESULT == 1 && !GLOBAL:503)
+	PRINTFORML 解禁していません
+	RESTART
+ELSEIF RESULT == 5
+	RETURN 1
+ELSEIF RESULT <= 1
+	LOCAL = RESULT+1
+	PRINTFORML このゲームモードで開始しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		FLAG:特殊ゲーム = LOCAL
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSE
+	PRINTFORML 未実装です
+	RESTART
+ENDIF
+
+;----------------------------------------------------------------------
+;特殊ゲーム解禁数
+;----------------------------------------------------------------------
+@CHECKEXTRAGAME
+#FUNCTION
+
+LOCAL = 0
+
+;エンディング閲覧数が1回以上
+IF GLOBAL:503
+	LOCAL += 1
+ENDIF
+;特殊フラグが立っている
+IF GLOBAL:999
+	LOCAL += 1
+ENDIF
+
+RETURNF LOCAL
+

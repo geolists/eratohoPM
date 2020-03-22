@@ -1,0 +1,27 @@
+﻿;==========================================================
+;経験値入手
+;ARG　　キャラ番号
+;ARG:1　対象(0:レベル　1:刀術　2:弓術　3;魔術　4:淫術　5:打術)
+;ARG:2　経験値量
+;==========================================================
+@GET_EXP, ARG, ARG:1, ARG:2
+#DIM L_LOCAL, 1
+
+;星座補正をかける
+CALL CONSTELLATIO_HOSEI, ARG:2, ""+BATTLE_EXP_NAME(ARG:1)+"経験値", "上昇"
+ARG:2 = RESULT
+
+;PRINTFORML ""+BATTLE_EXP_NAME(ARG:1)+"経験値"
+CALL EXP_TABLE, ARG, ARG:1
+PRINTFORML %CALLNAME:ARG%は{ARG:2}の%BATTLE_EXP_NAME(ARG:1)%経験値を入手した！
+BASE:ARG:("経験値／"+BATTLE_EXP_NAME(ARG:1)+"レベル") += ARG:2
+
+IF MAXBASE:ARG:("経験値／"+BATTLE_EXP_NAME(ARG:1)+"レベル") <= BASE:ARG:("経験値／"+BATTLE_EXP_NAME(ARG:1)+"レベル")
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:ARG%の%BATTLE_EXP_NAME(ARG:1)%レベルが{BASE:ARG:(""+BATTLE_EXP_NAME(ARG:1)+"レベル")+1}になった！
+	BASE:ARG:(""+BATTLE_EXP_NAME(ARG:1)+"レベル") = LIMIT(BASE:ARG:(""+BATTLE_EXP_NAME(ARG:1)+"レベル")+1 ,0, MAXBASE:ARG:(""+BATTLE_EXP_NAME(ARG:1)+"レベル"))
+	CALL EXP_TABLE, ARG, ARG:1
+	RESETCOLOR
+ENDIF
+
+

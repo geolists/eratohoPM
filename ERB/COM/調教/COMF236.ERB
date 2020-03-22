@@ -1,0 +1,68 @@
+﻿;-------------------------------------------------
+;職業淫行
+;最も高い職業属性に応じて行為を行う
+;-------------------------------------------------
+@COM236_T
+#DIM element, 1
+
+PRINTL 職業淫行
+STR:0 = 職業淫行
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+;消費CP
+;LOSEBASE:0 = 10
+
+;獲得基礎能
+SOURCE:淫妖 = 10
+SOURCE:堕落 = 7
+
+;獲得経験
+TFLAG:淫妖経験 = 5
+TFLAG:堕落経験 = 3
+
+;アライメント
+LOSEBASE:アライメント = 0
+
+;最も高い属性を検索させ、elementに格納する
+LOCAL = MAXARRAY(CFLAG, 220, 228)
+element = FINDELEMENT(CFLAG, LOCAL, 220, 228)
+
+;変数の始点が220なので、取得した値から220引く
+element -= 220
+
+;属性IDに応じた属性名を取得する
+;(取得した属性名はSTRに格納される)
+CALL ELEMENT_CONVERT, element
+
+;最も高い属性の％が2上がる
+;既にその属性が100％になっている場合、属性固有の称号を得る
+CALL CHANGE_ELEMENT_OTHER, STR, 2
+
+;最も高い属性の％が100以上になった場合
+IF CFLAG:element >= 100
+	;まだ属性に対応した素質を取得していない場合、取得イベントが発生する
+	IF !TALENT:STR
+		PRINTFORML %CALLNAME:TARGET%は、職業での淫行を受けすぎて心まで感化された……
+		
+		;一応今回はバッドイベント扱い
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は[%STR%]を得た
+		TALENT:STR = 1
+		
+		;習慣職業を統一する
+		
+		;統一するために、現在の属性IDをビット変換して保持する
+		
+		FOR COUNT, 0, 5
+			CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") = 3
+			CFLAG:("習慣職業／"+LIFESTYLE_NAME(COUNT)+"") = LOCAL
+		NEXT
+		
+	ENDIF
+ENDIF
+
+RETURN 1
+

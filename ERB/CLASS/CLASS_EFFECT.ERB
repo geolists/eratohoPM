@@ -1,0 +1,194 @@
+﻿;=========================================================================================
+;称号の恩恵
+;誘発されるタイミングは異なるが、称号効果を纏めるためにここに称号の効果内容を作る
+;ARG　　　対象とするキャラ
+;ARGS　　 誘発したタイミング(0:コマンド使用時)
+;ARGS:1　 教育中の場合、何の属性か。それ以外の状況なら誘発要因を入れる
+;ARG:1　　何らかの値
+;=========================================================================================
+@CLASS_EFFECT, ARGS, ARGS:1, ARG:1
+
+
+;称号：メイド
+;誘発条件：家事コマンドを使用した時
+;正道：(2+Lv*3)％の確率で食べ物を獲得する
+;普通：周囲の評価が(1+Lv)アップする(確率は(5+5Lv))
+;邪道：君主からの評価を(1+Lv)下げる代わりに$(300+300Lv)入手する
+
+IF ARGS == "教育"
+	IF CFLAG:称号属性 == 1
+		IF ARGS:1 == "家事"
+			;正道
+			IF CFLAG:称号アライメント == 0
+				IF (2+CFLAG:称号レベル*3) >= RAND:100
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 家事を行う傍らで、%CALLNAME:TARGET%は葛湯を作っていた！
+					ITEM:葛湯 += 1
+					RESETCOLOR
+				ENDIF
+			;普通
+			ELSEIF CFLAG:称号アライメント == 1
+				IF (5+CFLAG:称号レベル*5) >= RAND:100
+					LOCAL = CFLAG:称号レベル
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML メイドとしての気遣いが民衆の目に留まった……
+					CALL CALCULATION_PALAM, LOCAL, "民衆の評価"
+				ENDIF
+			;邪道
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は家事を行う傍らで金目の物をくすねた
+				LOCAL = CFLAG:称号レベル+1
+				LOCAL:1 = 300+CFLAG:称号レベル*300
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 君主の評価が{LOCAL}下がった
+				CALL SETCOLOR_MONEY
+				PRINTFORML ${LOCAL:1}手に入れた！
+				RESETCOLOR
+				
+				MONEY += LOCAL:1
+				BASE:君主の評価 -= LOCAL
+			ENDIF
+		ENDIF
+	;称号：シスター
+	;誘発条件：信仰コマンドを使用した時
+	;正道：(2+Lv*2)％の確率で像や能力上昇アイテムを得られる
+	;普通：役人の評価が(Lv)アップする(確率は(5+5Lv))
+	;邪道：信仰が(1+Lv)下降する代わりにランダムで信仰以外の能力がその分上昇する
+	ELSEIF CFLAG:称号属性 == 2
+		IF ARGS:1 == "信仰"
+			;正道
+			IF CFLAG:称号アライメント == 0
+				IF (2+CFLAG:称号レベル*2) >= RAND:100
+					;入手アイテムは完全にランダム
+					LOCAL = RAND:8
+					
+					;能力上昇アイテム
+					IF LOCAL <= 4
+						LOCAL = 522+LOCAL
+					;その他
+					ELSE
+						LOCAL = 530+(LOCAL-5)
+					ENDIF
+					
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 天からの授かり物として、%CALLNAME:TARGET%は%ITEMNAME:LOCAL%を入手した！
+					ITEM:LOCAL += 1
+					RESETCOLOR
+				ENDIF
+			;普通
+			ELSEIF CFLAG:称号アライメント == 1
+				IF (5+CFLAG:称号レベル*5) >= RAND:100
+					LOCAL = CFLAG:称号レベル
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 役人の評価が{LOCAL}上がった！
+					BASE:役人の評価 += LOCAL
+					RESETCOLOR
+				ENDIF
+			;邪道
+			ELSE
+				LOCAL = CFLAG:称号レベル+1
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 信仰が{LOCAL}下がった！
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 代わりに、%BASENAME:(5+LOCAL:1)%が{LOCAL}上がった！
+				RESETCOLOR
+				
+				BASE:信仰 -= LOCAL
+				BASE:(5+LOCAL:1) += LOCAL
+			ENDIF
+		ENDIF
+	;称号：ゴスロリ
+	;誘発条件：知力コマンドを使用した時
+	;正道：魔力+(2+Lv)される。失敗すると淫妖経験+2。ちなみに失敗確率は(20-5Lv)
+	;普通：疲労度が-Lvされ、アライメントがランダムで+-1される
+	;邪道：なし。その代わりに専用コマンドが追加される(邪悪な実験系統)
+	ELSEIF CFLAG:称号属性 == 3
+		IF ARGS:1 == "知力"
+			;正道
+			IF CFLAG:称号アライメント == 0
+				PRINTFORML %CALLNAME:TARGET%は魔力を得ようと召喚術を試みている……
+				
+				;失敗
+				IF (20-5*CFLAG:称号レベル) >= RAND:100
+					CALL SETCOLOR_PALAMDOWN
+					PRINTFORML %CALLNAME:TARGET%は間違えて触手を呼びだしてしまった
+					PRINTFORML 身体に絡みついた触手が%CALLNAME:TARGET%の息を荒くさせる……
+					
+					PRINTFORML 淫妖経験+2
+					EXP:淫妖経験 += 2
+				;成功
+				ELSE
+					PRINTFORML 何事も無く召喚術を終えたようだ
+				ENDIF
+				LOCAL = 2+CFLAG:称号レベル
+				
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML {LOCAL}の魔力を得た！
+				RESETCOLOR
+			;普通
+			ELSEIF CFLAG:称号アライメント == 1
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %CALLNAME:TARGET%は空いた時間に作った魔法陣で身体を癒している……
+				PRINTFORML 疲労度が{CFLAG:称号レベル}回復した！
+				RESETCOLOR
+				
+				BASE:ストレス = LIMIT(BASE:ストレス-CFLAG:称号レベル, 0, 100)
+				
+				;アライメントがランダムで+-1される
+				SELECTCASE RAND:2
+					CASE 0
+						CALL SETCOLOR_PALAMUP
+						PRINTFORML アライメント+{CFLAG:称号レベル}
+						
+						BASE:アライメント = LIMIT(BASE:アライメント+CFLAG:称号レベル, 0, MAXBASE:アライメント)
+					CASE 1
+						CALL SETCOLOR_PALAMDOWN
+						PRINTFORML アライメント-{CFLAG:称号レベル}
+						
+						BASE:アライメント = LIMIT(BASE:アライメント-CFLAG:称号レベル, 0, MAXBASE:アライメント)
+				ENDSELECT
+				RESETCOLOR
+			;邪道
+			ELSE
+				;この項目では無し(コマンドで補う)
+				
+			ENDIF
+		ENDIF
+	;-----------------以下特殊称号、正道か邪道しかなく、誘発条件もバラバラ--------------------------
+	;称号：花嫁
+	;正道：家事(SHOP画面で選べる方)で主人との友好度が+2Lvされる
+	;邪道：なし。その代わりに専用コマンドが追加される(邪悪な実験系統)
+	ELSEIF CFLAG:称号属性 == 4
+		
+	;称号：娼婦
+	;Lv1まで：ターン終了時に慰み者が+Lvされる
+	;Lv2以降：いわゆる花魁ルート
+	ELSEIF CFLAG:称号属性 == 6
+		
+	ENDIF
+ELSEIF ARGS == "特殊"
+	;邪道のメイドは主人と身体を重ねた際に上昇する評価を(5+5Lv)％アップさせる
+	IF CFLAG:称号属性 == 1
+		IF ARGS:1 == "家事"
+			;正道
+			IF CFLAG:称号アライメント == 0
+				
+			;普通
+			ELSEIF CFLAG:称号アライメント == 1
+				
+			;邪道
+			ELSE
+				IF ARGS:1 == "君主との夜伽"
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 邪道のメイドとして育った%CALLNAME:TARGET%は、君主を悦ばせる術を心得ていた……
+					ARG:1 = ARG;1*(100+5+CFLAG:称号レベル*5)
+					RESETCOLOR
+					
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN ARG:1
+

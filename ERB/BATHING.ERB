@@ -1,0 +1,52 @@
+﻿;========================================================================
+;入浴剤処理
+;入浴剤による処理を行う
+;========================================================================
+@BATHING
+#DIM TAG, 2
+#DIM L_LOCAL, 1
+
+;LOCALの初期化
+VARSET LOCAL, 0
+VARSET TAG, 0
+
+DRAWLINE
+;美麗～信仰経験増加要因はまとめて処理
+FOR L_LOCAL, 490, 496
+	IF CFLAG:日用品／入浴剤 == L_LOCAL
+		TAG = 71+(L_LOCAL-490)
+		LOCAL = 3
+	ENDIF
+NEXT
+IF CFLAG:日用品／入浴剤 == 496
+	TAG = 67
+	LOCAL = 3
+ELSEIF CFLAG:日用品／入浴剤 == 497
+	TAG = 79
+	LOCAL = 3
+	BASE:貞操 = LIMIT(BASE:貞操-2, 0, MAXBASE:貞操)
+ENDIF
+
+PRINTFORM %CALLNAME:TARGET%は
+IF CFLAG:日用品／入浴剤 <= 495
+	PRINTFORM %ITEMNAME:(CFLAG:日用品／入浴剤)%の香りが漂う風呂
+ELSE
+	PRINTFORM %ITEMNAME:(CFLAG:日用品／入浴剤)%
+ENDIF
+PRINTFORML に入った……
+CALL SETCOLOR_PALAM
+PRINTFORML %EXPNAME:(TAG)% + {LOCAL}
+EXP:TAG += LOCAL
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 疲労度が10回復した！
+BASE:ストレス = LIMIT(BASE:ストレス-10, 0, MAXBASE:ストレス)
+ITEM:(CFLAG:日用品／入浴剤) -= 1
+IF ITEM:(CFLAG:日用品／入浴剤) < 0
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %ITEMNAME:(CFLAG:日用品／入浴剤)%が無くなった！
+	ITEM:(CFLAG:日用品／入浴剤) = 0
+	CFLAG:日用品／入浴剤 = 0
+ENDIF
+RESETCOLOR
+
+

@@ -1,0 +1,255 @@
+﻿;============================================================
+;探索中のイベント
+;ARG　　ダンジョンの種類
+;ARG:1　階層
+;============================================================
+@EVENT_DUNGEON, ARG, ARG:1
+
+;特定の階層に居る場合、特定のイベントを発生させる
+;CALL DUNGEON_SPECIAL_EVENT
+
+$DUNGEON_LOOP
+SELECTCASE RAND:6
+	;1:　水を飲んで体力回復or気力5％ダウン
+	;(中盤以降は欲情or毒にかかる可能性がある)
+	CASE 0
+		CALL EVENT_DUNGEON_1, ARG, ARG:1
+	;2:　物が飛んでくる
+	;体力が10％ダウンor回避してダンジョンレベル×400の金を入手
+	CASE 1
+		CALL EVENT_DUNGEON_2, ARG, ARG:1
+	;3:　宝箱
+	CASE 2
+		CALL EVENT_DUNGEON_3, ARG, ARG:1
+	;4:　淫魔or娼婦の場合、魔物の巣に突っ込んで性交する
+	CASE 3
+		IF !(TALENT:淫魔 || TALENT:娼婦)
+			GOTO DUNGEON_LOOP
+		ENDIF
+		CALL EVENT_DUNGEON_4, ARG, ARG:1
+ENDSELECT
+
+RESETCOLOR
+
+;-----------------------------------------------
+;1:　水を飲んで体力回復or気力5％ダウン
+;(中盤以降は欲情or毒にかかる可能性がある)
+;-----------------------------------------------
+@EVENT_DUNGEON_1, ARG, ARG:1
+PRINTL 目の前に小さな水飲み場がある……
+PRINTL 水を飲みますか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	$SELECT_LOOP
+	IF !RAND:3
+		SELECTCASE RAND:3
+			;気力5％ダウン
+			CASE 0
+				PRINTFORML 水を飲んだ%CALLNAME:TARGET%は急に気だるくなった
+				CALL SETCOLOR_PALAMDOWN
+				LOCAL = TFLAG:551/20
+				PRINTFORMW %CALLNAME:TARGET%の気力が{LOCAL}下がった……
+				TFLAG:557 = LIMIT(TFLAG:557-LOCAL, 0, TFLAG:557)
+			;欲情する
+			;挑戦ルートのみ存在
+			CASE 1
+				IF ARG >= 10 || TFLAG:(500+ARG:4)
+					GOTO SELECT_LOOP
+				ENDIF
+				PRINTFORML 手で水をすくい、水が喉を通った途端%CALLNAME:TARGET%の身体が熱を帯び始め、胸が高鳴り始めた！
+				PRINTFORMW どうやらこの水は欲情の呼び水だったようだ……
+				TFLAG:(500+ARG:4) = 1
+				TFLAG:(627+ARG:4) = 5
+			;毒にかかる
+			;盗賊のアジト１以降にのみ存在
+			CASE 2
+				IF (ARG >= 10 && ARG < 14) || TFLAG:(500+ARG:4)
+					GOTO SELECT_LOOP
+				ENDIF
+				PRINTFORML 手で水をすくい、水を飲んだ%CALLNAME:TARGET%は腹部に異常を感じ痛そうに身体を腕で抱いた！
+				PRINTFORMW どうやらこの水には毒が入っていたようだ……
+				TFLAG:(500+ARG:4) = 2
+				TFLAG:(627+ARG:4) = 5
+		ENDSELECT
+	ELSE
+		;体力回復
+		PRINTFORML 水を飲んだ%CALLNAME:TARGET%の身体に力が沸いてきた
+		CALL SETCOLOR_PALAMUP
+		LOCAL = TFLAG:550/10
+		PRINTFORMW %CALLNAME:TARGET%の体力が{LOCAL}回復した！
+		TFLAG:556 = LIMIT(TFLAG:556+LOCAL, 0, TFLAG:550)
+	ENDIF
+	
+ENDIF
+
+;-----------------------------------------------
+;2:　物が飛んでくる
+;体力が10％ダウンor回避してダンジョンレベル×400の金を入手
+;-----------------------------------------------
+@EVENT_DUNGEON_2, ARG, ARG:1
+
+PRINTFORML %CALLNAME:TARGET%目掛けて物体が投げつけられた！
+IF !RAND:10
+	PRINTFORML 咄嗟の判断で避けると、そこには価値がある金塊が転がっていた！
+	CALL SETCOLOR_MONEY
+	LOCAL = 3000+TFLAG:ダンジョンレベル * 400
+	PRINTFORMW %CALLNAME:TARGET%は${LOCAL}を入手した！
+	MONEY += LOCAL
+ELSE
+	PRINTFORML 突然の出来事に%CALLNAME:TARGET%は回避できず、涙目になりながら物が当たった箇所を撫でた……
+	LOCAL = TFLAG:550/10
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW %CALLNAME:TARGET%の体力が{LOCAL}減少した……
+	TFLAG:556 = LIMIT(TFLAG:556-LOCAL, 0, TFLAG:556)
+ENDIF
+
+;-----------------------------------------------
+;3:　宝箱
+;-----------------------------------------------
+@EVENT_DUNGEON_3, ARG, ARG:1
+PRINTL 目の前に宝箱がある
+PRINTL 開けますか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	;成功イベント　75％で発生
+	;(内訳)
+	;25％　金銭をゲット(ダンジョンレベル×200)
+	;75％　アイテムをゲット(能力上昇、堕落の書or浄化の書)
+	
+	;失敗イベント　40％で発生
+	;序盤から
+	;70％　矢が飛んでくる(ＨＰの10％のダメージを受ける)
+	;30％　気力が減る(気力が10％削られる)
+	
+	;中盤から(70％から内訳)
+	;10％　宝箱が爆発(ＨＰの25％のダメージを受ける)
+	;20％　ミミックが出る
+	
+	;挑戦ルート専用
+	;11％　服が溶ける
+	;22％　淫魔化の罠が発動する
+	;20％　ミミックの代わりにパンドラボックスが出る
+	
+	IF (RAND:100+1) <= 75
+		IF (RAND:100+1) <= 25
+			CALL SETCOLOR_MONEY
+			LOCAL = 5000+TFLAG:ダンジョンレベル * 200
+			PRINTFORMW %CALLNAME:TARGET%は${LOCAL}を入手した！
+			MONEY += LOCAL
+		ELSE
+			IF !RAND:2
+				LOCAL = 515 + RAND:2
+			ELSE
+				LOCAL = 522 + RAND:5
+			ENDIF
+			
+			;基本ルート:　1+(ダンジョンID-10)/2(1～5個でばらつく)
+			;挑戦ルート:　2+(ダンジョンID×2)(2～10個でばらつく)
+			;流星の流れ場:　2個
+			IF INRANGE(ARG, 0, 9)
+				LOCAL:1 = 1+ARG*2
+			ELSEIF ARG == 18
+				LOCAL:1 = 2
+			ELSE
+				LOCAL:1 = 1+(ARG-10)/2
+			ENDIF
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORM %ITEMNAME:LOCAL%を
+			IF LOCAL:1 >= 2
+				PRINTFORM {LOCAL:1}個
+			ENDIF
+			PRINTFORMW 手に入れた！
+			RESETCOLOR
+			ITEM:(LOCAL) += LOCAL:1
+		ENDIF
+	ELSE
+		IF !RAND:100 <= 70
+			;挑戦ルートの2番目のダンジョンからかかる
+			IF ARG >= 1 && ARG < 10 && !RAND:3
+				;淫魔化の罠が発動する
+				IF !RAND:3 && !TALENT:淫魔
+					PRINTFORML 突然紫色の煙が噴き出し、%CALLNAME:TARGET%の身体を包みこんだ！
+					PRINTFORMW 霧が晴れた頃には、妖艶な仕草をしつつ時折困った表情を浮かべる淫魔と化した%CALLNAME:TARGET%の姿があった
+					CFLAG:永続状態異常 |= 1p0
+					TALENT:淫魔 = 1
+					STR:1 = 淫魔
+					TFLAG:609 = 0
+					CALL HEALING, 0
+					RETURN 1
+				;服が溶ける
+				ELSEIF TFLAG:609 != 2
+					PRINTFORML 溶解液だ！
+					PRINTFORMW %CALLNAME:TARGET%の衣服が溶け、股体を隠す事ができなくなってしまった！
+					TFLAG:609 = 2
+					IF ARG:4 <= 2 && CFLAG:(ARG:4):服装 >= 0
+						DITEMTYPE:(CFLAG:服装):14 = 2
+						DITEMTYPE:(CFLAG:服装):11 = 2
+					ENDIF
+				ELSE
+					PRINTFORMW しかし何も起こらなかった
+				ENDIF
+			;挑戦ルート2つ目、通常ルート4つ目のダンジョンから分岐がかかる
+			ELSEIF (ARG < 10 && ARG >= 2) || (ARG >= 13 && ARG != 18) && !RAND:2
+				IF !RAND:3
+					PRINTFORML 宝箱が爆発した！
+					LOCAL = TFLAG:550/4
+					CALL SETCOLOR_PALAMDOWN
+					PRINTFORMW %CALLNAME:TARGET%の体力が{LOCAL}減少した……
+					TFLAG:556 = LIMIT(TFLAG:556-LOCAL, 0, TFLAG:556)
+				ELSE
+					PRINTFORML ！！ああっと！！
+					PRINTFORMW 宝箱はモンスターだった！
+					;挑戦ルートだとパンドラボックスと遭遇する
+					IF ARG >= 0 && ARG <= 9
+						PRINTFORMW だがパンドラボックスは眠っているようだ
+						;実装はVer0.999にて！
+					ELSE
+						CALL BATTLE, 105, 0, 0, 0, TFLAG:ダンジョンレベル
+					ENDIF
+				ENDIF
+			ELSE
+				PRINTFORML 宝箱を開けると、中から矢が飛びだした！
+				LOCAL = TFLAG:550/10
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORMW %CALLNAME:TARGET%の体力が{LOCAL}減少した……
+				TFLAG:556 = LIMIT(TFLAG:556-LOCAL, 0, TFLAG:556)
+			ENDIF
+		ELSE
+			PRINTFORML 煙が噴き出し、%CALLNAME:TARGET%の気分を盛り下げる……
+			CALL SETCOLOR_PALAMDOWN
+			LOCAL = TFLAG:551/10
+			PRINTFORMW %CALLNAME:TARGET%の気力が{LOCAL}下がった……
+			TFLAG:557 = LIMIT(TFLAG:557-LOCAL, 0, TFLAG:557)
+		ENDIF
+	ENDIF
+ENDIF
+
+;-----------------------------------------------
+;4:　魔物の巣
+;-----------------------------------------------
+@EVENT_DUNGEON_4, ARG, ARG:1
+
+PRINTFORML %CALLNAME:TARGET%は本能を抑えることができず
+PRINTFORML 近くにあった魔物の群がりへ赴き、性交を行った……
+
+;欲情状態にして欲情ゲージを30％伸ばす
+;TFLAG:(500) = 1
+;TFLAG:(627) = 5
+
+TFLAG:(506+ARG) = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/3, 0, TFLAG:(524+ARG))
+
+CALL DAMAGE_CALCULATION, 2, 110, -1, 0, 0, 2, 1000
+
+;被射精回数+1
+CALL INSERT, 2, 1
+TFLAG:(621+ARG) += 1
+

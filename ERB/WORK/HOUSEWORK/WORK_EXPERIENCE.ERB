@@ -1,0 +1,87 @@
+﻿;=======================================================================
+;労働評価
+;評価によって賃金を変更します
+;=======================================================================
+@WORK_EXPERIENCE
+#DIM GET_MONEY,1
+
+GET_MONEY = 0
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～～労働評価～～
+PRINTFORML 場所：%NAME_METAWORK(CFLAG:職業-21)%
+;評価基準関数を呼ぶ
+SELECTCASE WORK_EXPERIENCERATE(NAME_METAWORK(CFLAG:職業-21))
+	CASE "超絶成功"
+		CALL SETCOLOR_GREAT
+		PRINTFORML ☆☆超絶成功☆☆
+		CALL SETCOLOR_ABL
+		PRINTFORML 客から非常に高い評価を貰いました。
+		PRINTFORMW 賛美の声が%CALLNAME:TARGET%にしきりにかけられます
+		PRINTFORMW 歓声の大きさに戸惑っていると、後ろから肩を叩かれ、非常に多い報酬を貰いました
+		
+		GET_MONEY += 40000
+	CASE "超成功"
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML ☆超成功☆
+		CALL SETCOLOR_ABL
+		PRINTFORML 客から高い評価を貰いました。
+		PRINTFORMW %CALLNAME:TARGET%は声をかけられ、金一封を渡されました
+		
+		GET_MONEY += 30000
+	CASE "大成功"
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 成功
+		CALL SETCOLOR_ABL
+		PRINTFORML 客から良い評価を貰いました
+		PRINTFORMW %CALLNAME:TARGET%はささやかな気持ちを受け取ります
+		
+		GET_MONEY += 20000
+	CASEELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 失敗……
+		PRINTFORMW 客達から良い評価をもらえなかった……
+		
+		GET_MONEY = 0
+ENDSELECT
+RESETCOLOR
+
+IF GET_MONEY
+	CALL SETCOLOR_MONEY
+	PRINTFORML 報酬金として${GET_MONEY}を手に入れた！
+	MONEY += GET_MONEY
+	RESETCOLOR
+ENDIF
+
+;=======================================================================
+;労働評価基準
+;ARGS　労働内容
+;=======================================================================
+@WORK_EXPERIENCERATE,ARGS
+#FUNCTIONS
+
+SELECTCASE ARGS
+	CASE "天女の社"
+		IF BASE:達成値 >= 701
+			LOCALS = 超絶成功
+		ELSEIF BASE:達成値 >= 551
+			LOCALS = 超成功
+		ELSEIF BASE:達成値 >= 201
+			LOCALS = 大成功
+		ELSE
+			LOCALS = 普通
+		ENDIF
+	CASEELSE
+		IF BASE:達成値 >= 701
+			LOCALS = 超絶成功
+		ELSEIF BASE:達成値 >= 551
+			LOCALS = 超成功
+		ELSEIF BASE:達成値 >= 201
+			LOCALS = 大成功
+		ELSE
+			LOCALS = 普通
+		ENDIF
+ENDSELECT
+
+RETURNF LOCALS
+

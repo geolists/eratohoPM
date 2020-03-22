@@ -1,0 +1,135 @@
+﻿;==============================================
+;特技名出力関数
+;==============================================
+@SKILLNAME, ARG
+#FUNCTIONS
+
+IF ARG == 300
+	LOCALS = 純化の儀
+ELSEIF ARG == 301
+	LOCALS = ヤグショット
+ELSEIF ARG == 302
+	LOCALS = メモリーライト
+ELSEIF ARG == 303
+	LOCALS = 夜の帳
+ENDIF
+
+RETURNF LOCALS
+
+;------------------------------
+;300:　純化の儀
+;相手の肩書きを消す
+;------------------------------
+@SPE_SKILL_300, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 300
+
+@ATTACK_MOVE_300, ARG
+PRINTFORML %STR:ARG%は純化の儀を放った！
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 11, 6
+
+;------------------------------
+;301:　ヤグショット
+;相手を損傷状態にする
+;------------------------------
+@SPE_SKILL_301, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 301
+
+@ATTACK_MOVE_301, ARG
+PRINTFORML %STR:ARG%はヤグの力を込めた矢を放った！
+CALL DAMAGE_CALCULATION, 0, 95, 100, ARG, TFLAG:(530+ARG), 0, 10, 7
+
+;------------------------------
+;302:　メモリーライト
+;相手の行動を通常攻撃(強)に変える
+;------------------------------
+@SPE_SKILL_302, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 302
+
+@ATTACK_MOVE_302, ARG
+PRINTFORML %STR:ARG%はメモリーライトを放った！
+CALL DAMAGE_CALCULATION, 3, 70, 95, ARG, TFLAG:(530+ARG), 0, 12, 4
+
+;------------------------------
+;303:　夜の帳
+;相手の気力を10％減らす
+;------------------------------
+@SPE_SKILL_303, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 303
+
+@ATTACK_MOVE_303, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に夜の帳を降ろした
+CALL DAMAGE_CALCULATION, 3, 10, 100, ARG, TFLAG:(530+ARG), 1, 22, 2
+
+
+;------------------------------
+;304:　キャンサーロック
+;相手の気力を15％減らす
+;気力が0の敵を戦闘不能にする
+;------------------------------
+@SPE_SKILL_304, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 304
+
+@ATTACK_MOVE_304, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%はキャンサーロックを放った
+PRINTFORML 禍々しい瘴気が%STR:(TFLAG:(530+ARG))%を包み込む！
+CALL DAMAGE_CALCULATION, 1, 15, 100, ARG, TFLAG:(530+ARG), 1, 55, 2
+
+;------------------------------
+;305:　3回攻撃
+;敵を3回攻撃する
+;凶殺陣と比較すると攻撃回数が1回少ない代わりに威力が10高い
+;(凶殺陣より消費気力が高いので台無しなのですが)
+;------------------------------
+@KATANA_SKILL_305, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 305
+
+@ATTACK_MOVE_305, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%の3回攻撃！
+CALL DAMAGE_CALCULATION, 0, 50, 95, ARG, TFLAG:(530+ARG), 0, 0, 12
+IF RESULT && TFLAG:(556+TFLAG:(530+ARG)*10)
+	FOR L_LOCAL, 0, 2
+		CALL DAMAGE_CALCULATION, 0, 50, 95, ARG, TFLAG:(530+ARG), 0, 0, 0
+		IF !RESULT || !TFLAG:(556+TFLAG:(530+ARG)*10)
+			BREAK
+		ENDIF
+	NEXT
+ENDIF
+

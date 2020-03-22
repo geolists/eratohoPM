@@ -1,0 +1,107 @@
+﻿;======================================================
+;家事
+;======================================================
+@LUNCH
+#DIM kaji, 2
+#DIM kosuu, 5
+kaji = BASE:家事 / 4 + CFLAG:属性／メイド / 2
+
+;前職が執事の場合、行動ポイントを1.5倍に
+IF FLAG:主人の前職
+	kaji = kaji * 150 / 100
+ENDIF
+
+FOR COUNT, 0, 5
+	kosuu:COUNT = 0
+NEXT
+kaji:1 = 0
+$BACK_LOOP
+DRAWLINE
+
+PRINTFORML どれを作りますか？
+PRINTFORML 現在の行動ポイント[{kaji}]
+PRINTFORML 使用する行動ポイント[{kaji:1}]
+PRINTL 
+FOR COUNT, 517,522
+	CALL LUNCH_COST, COUNT
+	PRINTFORML [{COUNT}] - %ITEMNAME:COUNT,16,LEFT%　要求コスト:{RESULT,3,LEFT}　×　{kosuu:(COUNT-517)}
+NEXT
+PRINTL 
+PRINTL [980] - 効果を確認する
+DRAWLINE
+PRINTL [990] - 物を作る
+DRAWLINE
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT >= 517 && RESULT <= 522
+	LOCAL = RESULT
+	CALL LUNCH_COST, LOCAL
+	kaji:1 += RESULT
+	IF kaji:1 > kaji
+		PRINTL コストが足りません
+		kaji:1 -= RESULT
+		GOTO BACK_LOOP
+	ENDIF
+	
+	kosuu:(LOCAL-517) += 1
+	PRINTFORML %ITEMNAME:LOCAL%を作る数を1つ増やします
+	GOTO BACK_LOOP
+ELSEIF RESULT == 980
+	CALL DETAIL_LUNCH
+	DRAWLINE
+	GOTO BACK_LOOP
+ELSEIF RESULT == 990
+	PRINTL 要求した物を作ります
+	PRINTL よろしいですか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 1
+		GOTO BACK_LOOP
+	ENDIF
+	
+	FOR COUNT, 517,522
+		ITEM:COUNT += kosuu:(COUNT-517)
+	NEXT
+	PRINTL アイテムを作りました
+	BEGIN TURNEND
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;======================================================
+;コスト
+;======================================================
+@LUNCH_COST, ARG
+
+IF ARG == 517
+	RETURN 10
+ELSEIF ARG == 518
+	RETURN 20
+ELSEIF ARG == 519
+	RETURN 50
+ELSEIF ARG == 520
+	RETURN 75
+ELSEIF ARG == 521
+	RETURN 100
+ENDIF
+
+
+;======================================================
+;効果確認
+;======================================================
+@DETAIL_LUNCH
+DRAWLINE
+PRINTL 葛湯　　　　：　疲労度を  5回復します
+PRINTL おにぎり　　：　疲労度を 10回復します
+PRINTL 干し肉　　　：　疲労度を 30回復します
+PRINTL 免厄の妙薬　：　疲労度を 60回復します
+PRINTW 月のドリンク：　疲労度を100回復します

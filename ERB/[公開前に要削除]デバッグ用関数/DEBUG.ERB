@@ -1,0 +1,180 @@
+﻿;----------------------------------------
+;デバッグ用関数
+;----------------------------------------
+@DEBUG_PM
+#DIM debug, 33
+
+
+FOR LOCAL,220,229
+	CFLAG:LOCAL = 0
+	PRINTFORML テスト
+NEXT
+
+CALL WORK_RESULT
+
+;メイド属性100%+普段着没収
+CFLAG:属性／メイド = 100
+ITEM:普段着 = 0
+BASE:貞操 = 0
+BASE:アライメント = 0
+BASE:淫妖 = 1000
+;ITEM:弓道着 = 1
+;DITEMTYPE:16:14 = 1
+
+;BASE:知力 = 600
+;CFLAG:レベル／穢れの地への移住計画_その1 = 5
+;CFLAG:レベル／穢れの地への移住計画_その2 = 0
+;
+;TALENT:裁縫技術 = 1
+;ITEM:普段着 = 0
+;
+;BASE:堕落 = 200
+;
+;MONEY = 200000
+;
+;;新天地エンド確認用
+;ITEM:徳の量子電池 = 1
+;ITEM:無穢の気体 = 1
+;ITEM:解脱の歯車 = 1
+;
+;TALENT:相愛 = 1
+
+;CALL ENDING_CHECK
+
+;コスト管理取得
+;入浴剤獲得
+;ITEM:ラベンダー = 1
+;TALENT:コスト管理 = 1
+;CFLAG:セットスキル1 = 311
+
+;CFLAG:属性／ゴスロリ = 10
+;CFLAG:属性／姫様 = 90
+;
+;ITEM:おにぎり = 100
+;ITEM:葛湯 = 100
+;ITEM:干し肉 = 100
+;FOR LOCAL, 522, 526
+;	ITEM:LOCAL = 100
+;NEXT
+;BASE:ストレス = 100
+
+
+;課外活動デバッグ用
+;FOR LOCAL, 0, 10
+;	CALL EXTRA_MOVE, "教育", 300, 3
+;NEXT
+
+;FOR LOCAL, 560, 600
+;	ITEM:LOCAL = 1
+;NEXT
+
+;CALL TARMINATION
+
+;TFLAG:500 = 1
+;DITEMTYPE:0:11 = 1
+
+;FLAG:年数 = 5
+;DAY = 12
+;TIME = 1
+;
+;TALENT:相愛 = 1
+;ITEM:解脱の歯車 = 1
+
+;EXP:淫妖経験 = 0
+;EXP:堕落経験 = 0
+;
+;BASE:美麗 = 1000
+;BASE:知力 = 1000
+;BASE:疎通 = 1000
+;BASE:家事 = 1000
+;BASE:信仰 = 1000
+;BASE:体力 = 1000
+;BASE:淫妖 = 0
+;BASE:堕落 = 0
+
+;FLAG:年数 = 2
+;DAY = 7
+
+;スライムの強さをテストプレイする
+;BASE:体力 = 150
+;BASE:レベル = 10
+;MONEY = 500000
+
+;称号関係バグ検証
+;武士だけ取得できない？
+;他の属性でのテストも行う予定
+;CFLAG:属性／武士 = 100
+;CFLAG:習慣職業／生活習慣 = 1p8
+;
+;;全体攻撃バグ検証
+;;属性をゴスロリにして、称号を持たせる
+;CFLAG:属性／ゴスロリ = 100
+;CFLAG:称号属性 = 3
+;CFLAG:称号アライメント = 0
+;CFLAG:称号レベル = 5
+;
+;BASE:アライメント = 80
+;FLAG:布の痛み = 1
+;FOR LOCAL, 1, 104
+;	IF ITEMNAME:LOCAL != "" && LOCAL != 72
+;		ITEM:LOCAL = 1
+;		;DITEMTYPE:LOCAL:14 = 2
+;	ENDIF
+;NEXT
+
+;ITEM:討論会招待券 = 1
+
+;CALL SHOP_CLOTHE_REPAIR
+
+;ITEM:0 = 0
+;MONEY = 1000000
+;;BASE:胸囲 = 122
+;;TALENT:裁縫技術 = 1
+;
+;
+;EXP:愛情経験 = 150
+;CFLAG:主人への友好度 = 300
+
+;属性喪失検出プログラム
+;DITEMTYPE0～49をdebugに格納
+;服のDITEMTYPEを更地にした後、修繕時の付与属性復元関数を呼び出す
+;修繕前後での差異を検出したら文字列を表示する
+;FOR LOCAL, 0, 104
+;	IF ITEMNAME:LOCAL != "" && LOCAL != 72
+;		FOR LOCAL:1, 0, 33
+;			debug:(LOCAL:1) = DITEMTYPE:LOCAL:(LOCAL:1)
+;		NEXT
+;		CALL RESET_REMODEL, LOCAL
+;		FOR LOCAL:1, 0, 33
+;			;全壊・半壊以外
+;			IF LOCAL:1 != 14
+;				IF DITEMTYPE:LOCAL:(LOCAL:1) != debug:(LOCAL:1)
+;					PRINTFORML 修繕前後での属性差異を検出しました(服装ID:{LOCAL})(付与属性ID:{LOCAL:1})
+;					PRINTFORML (修繕前:{debug:(LOCAL:1)})　(修繕後:{DITEMTYPE:LOCAL:(LOCAL:1)})
+;				ENDIF
+;			ENDIF
+;		NEXT
+;	ENDIF
+;NEXT
+
+
+;CFLAG:日用品／その他 = 508
+;CFLAG:日用品／その他2 = 507
+;CALL MESSAGE_COM235
+;ITEM:透明な服 = 1
+
+;FOR LOCAL, 490, 498
+;	ITEM:LOCAL += 1
+;	EXP:精飲経験 = 50
+;NEXT
+
+
+RETURN 1
+
+;----------------------------
+;デバッグ処理検出用関数
+;抜き忘れ防止の為に使用する
+;----------------------------
+@CHECK_DEBUG_PM
+RETURN 100
+

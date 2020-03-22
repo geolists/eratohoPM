@@ -1,0 +1,464 @@
+﻿;-------------------------------------------------------------
+;シスター固有行動
+;
+;-------------------------------------------------------------
+
+@MOVE_SISTER
+
+;イベントを選出する
+CALL ELECTION_WORK, "信仰"
+
+;イベントの呼び出し
+IF RESULT == 0
+	CALL MOVE_SISTER_0
+ELSEIF RESULT == 5
+	CALL MOVE_SISTER_6
+ELSE
+	CALL MOVE_SISTER_COMMON, RESULT
+ENDIF
+
+
+;錫杖を持っていない場合、25+シスター属性％の確率で木の錫杖を拾う
+IF !ITEM:木の錫杖 && RAND:99+1 <= 25+CFLAG:属性／シスター
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は先輩から護衛用として木でできた錫杖を渡された
+	PRINTFORML 武器としては少々心許ないが無いよりはマシだろう……
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 木の錫杖を手に入れた！
+	ITEM:木の錫杖 += 1
+	RESETCOLOR
+;竹の錫杖を持っておらず、且つシスター属性が50％以上ある場合、25+(シスター属性-50)％の確率で竹の錫杖を拾う
+ELSEIF !ITEM:木の錫杖 && RAND:99+1 <= 25+(CFLAG:属性／シスター-50)
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%はシスターとしてよく頑張っているため、ご褒美として先輩から錫杖を渡された
+	PRINTFORML どうやらシスターとして一定以上の成果を修めた者に与えられるらしく、%CALLNAME:TARGET%の頑張りが認められた結果とのこと
+	PRINTFORML %CALLNAME:TARGET%は礼儀正しくお辞儀をして、竹の錫杖を大切に仕舞った！
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 竹の錫杖を手に入れた！
+	ITEM:竹の錫杖 += 1
+	RESETCOLOR
+ENDIF
+
+
+;特定の条件を満たすと、職業イベントが発生する
+;3回発生し、完遂するとワールブルクの石が貰える
+
+;複雑な条件にするとほぼ間違いなく面倒臭がられるので(このイベントと戦闘面の鍛錬を両立させるだけでも充分複雑なはず)
+;シスター割合と信仰に加えて市民からの評価が一定以上あれば発生するようにする
+;1回目　シスター40％以上、信仰200以上
+;2回目　シスター60％以上、信仰400以上、民衆の評価50以上
+;3回目　シスター80％以上、信仰600以上、民衆の評価150以上
+
+LOCAL = 0
+;1回目の条件
+IF CFLAG:属性／シスター >= 40 && BASE:信仰 >= 200 && !CFLAG:特殊イベント／シスター
+	LOCAL = 1
+;2回目
+ELSEIF CFLAG:属性／シスター >= 60 && BASE:信仰 >= 400 && BASE:民衆の評価 >= 50 && CFLAG:特殊イベント／シスター == 1
+	LOCAL = 1
+;3回目
+ELSEIF CFLAG:属性／シスター >= 80 && BASE:信仰 >= 600 && BASE:民衆の評価 >= 150 && CFLAG:特殊イベント／シスター == 2
+	LOCAL = 1
+ENDIF
+
+;条件を満たしていると特殊イベントを呼び出す
+IF LOCAL
+	CALL SISTER_SPECIAL_EVENT
+ENDIF
+
+;===========================================================================
+;能力毎のイベント
+;===========================================================================
+
+;-----------------------------------------------------------------
+;美麗イベント
+;-----------------------------------------------------------------
+@MOVE_SISTER_0
+
+;美麗の数値よって分岐
+;(300毎に)
+LOCAL = BASE:美麗 / 300
+
+;900～は該当する属性が60%以上無いと出ない
+IF LOCAL == 3 && CFLAG:属性／シスター >= 60
+	PRINTFORM %CALLNAME:TARGET%が都の
+	;巫女服かどうかで分岐
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):12
+		PRINTFORM 神社
+	ELSE
+		PRINTFORM 教会
+	ENDIF
+	PRINTFORMW へ向かう途中、私服姿の女中と出会った
+	PRINTFORMW どうやら休みを貰ったらしく、買い物をして楽しんでいたそうだ
+	PRINTFORML %CALLNAME:TARGET%の麗しい外見と、無駄が無く美しく見える仕草を見て
+	PRINTFORMW 女中は頬を真っ赤にし、持っていた袋を落とした
+ELSEIF LOCAL == 2
+	PRINTFORMW %CALLNAME:TARGET%が都に出ると、道行く人々の視線が集まった
+	;巫女服かどうかで分岐
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):12
+		PRINTFORM 巫女服と
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 清らかな裸身と
+	ELSE
+		PRINTFORM 修道服から覗かせる
+	ENDIF
+	PRINTFORML 長髪が適度な濃淡となっており、%CALLNAME:TARGET%の美しさを更に引きたてているようだ
+	PRINTFORMW %CALLNAME:TARGET%は頬を赤くして照れながら道を歩いた
+ELSEIF LOCAL == 1
+	PRINTFORMW %CALLNAME:TARGET%が廊下を歩いていると、立ち話をしていた女中がこちらに向き、静かに祈り始めた
+	PRINTFORMW 普通の少女よりは目立つ美しさに神々しさを感じたようだ
+	PRINTFORMW %CALLNAME:TARGET%は頭を傾げながらその場を去った
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%が祈りを捧げていると、通りかかった女中が話しかけてきた
+	PRINTFORML 窓から差し込む日差しに照らされた%CALLNAME:TARGET%は修道服と合い重なって清らかに見える
+	PRINTFORMW その姿に女中はおどおどして、%CALLNAME:TARGET%が振り向いてからも言葉をまともに紡げなかった
+ENDIF
+
+;上昇処理
+CALL DAILY_PALAM_0, LOCAL+1, "美麗", "美麗"
+
+;---------------------------------------------------
+;信仰、知力、疎通イベント
+;中心能力：信仰
+;---------------------------------------------------
+@MOVE_SISTER_COMMON, ARG
+
+;対象の数値よって分岐
+;(300毎に)
+LOCAL = BASE:(ARG+5) / 300
+
+IF LOCAL == 3
+	PRINTFORMW %CALLNAME:TARGET%が都を歩いていると、道行く人が立ち止まった
+	;知力
+	IF ARG == 1
+		PRINTFORMW 立ち止ったのは幼い少女で、%CALLNAME:TARGET%の服装が目についたようだ
+		PRINTFORMW 少女が服装について質問を飛ばしてきたので答えてやると、少女は笑顔を浮かべお辞儀をした
+		PRINTFORMW 去り際に手を振った少女の様子が目に焼きついた
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORM 立ち止まったのは
+		;巫女服かどうかで分岐
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):12
+			PRINTFORM 巫女
+		ELSE
+			PRINTFORM シスター
+		ENDIF
+		PRINTFORMW で、雰囲気につられて%CALLNAME:TARGET%に話しかけたようだ
+		PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべて世間話から様々な話題に発展させると、相手も会話を楽しんだ
+		PRINTFORMW 相手は去り際にお辞儀をして去っていき、%CALLNAME:TARGET%の心も幾分かすっきりしたようだ
+	;信仰
+	ELSEIF ARG == 4
+		PRINTFORMW 立ち止ったのは若い男性で、つい先日に不幸な目に遭ったばかりらしい
+		PRINTFORML %CALLNAME:TARGET%は相槌を打ちながら聞き、神を信じるよう助言を与えると
+		PRINTFORMW 男は喜び、手を振ってその場を去った
+	ENDIF
+ELSEIF LOCAL == 2
+	PRINTFORMW %CALLNAME:TARGET%は定期的に参拝日を設けた……
+	;知力
+	IF ARG == 1
+		PRINTFORML 日を設ける意図について女中が聞いてきたので優しく説明すると
+		PRINTFORMW 女中は頭で頷き、快い返事をした。どうやら大体は理解してもらえたようだ
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 参拝が終わると、女中達の会話の輪に加わって世間話に没頭した
+		PRINTFORMW 無事打ち解けられたようで、笑みを浮かべている
+	;信仰
+	ELSEIF ARG == 4
+		PRINTFORML 張り紙を貼ったり、手軽な信仰物を廊下に置いて親近感を出したりと参拝日の前日まで入念に準備を行った
+		PRINTFORMW その結果、当日には多くの女中や役人が参拝に参加した
+		PRINTFORMW 一定の成果を得た事を%CALLNAME:TARGET%は嬉しそうに自慢した
+	ENDIF
+ELSEIF LOCAL == 1
+	PRINTFORMW %CALLNAME:TARGET%が手を合わせて礼拝している……
+	;知力
+	IF ARG == 1
+		PRINTFORML 偶然女中が通りかかり、興味有り気に見つめた
+		PRINTFORMW %CALLNAME:TARGET%は礼拝が終わって立つと、後ろに居る女中に気が付きお辞儀をした
+		PRINTFORMW 女中に質問があるか聞くと頷いたので、満足するまで質問に答えた
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORMW 女中がじーっとその様子を眺めており、気配を察した%CALLNAME:TARGET%は礼拝を中断して声をかけた
+		PRINTFORMW どうやら何をしているのか疑問に思ったようで、%CALLNAME:TARGET%は軽く説明をした後礼拝に誘った
+		PRINTFORMW 用事があるからと断られたが会話は弾み、仲間と打ち解けられた気がした
+	;信仰
+	ELSEIF ARG == 4
+		PRINTFORML あまりに信心深く祈っているからか、通りかかった女中が盆を落として唖然とした
+		PRINTFORMW そして恐る恐る%CALLNAME:TARGET%の隣に座り、無我夢中で祈り始めた
+		PRINTFORMW 礼拝が終わると女中は胸を撫で下ろし、慌てて溢したお茶を掃除してその場を去った
+	ENDIF
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%が銅像を磨いていると、近くを掃除していた女中が声をかけてきた
+	;知力
+	IF ARG == 1
+		PRINTFORML 女中が銅像について質問をしたので、%CALLNAME:TARGET%が分かりやすく説明をすると
+		PRINTFORMW 女中は相槌を打ちながら話を聞き、知識の深さに感心した
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORMW %CALLNAME:TARGET%は手を止めずに挨拶をし、お互いの近況について話し合った
+		PRINTFORMW 会話は盛り上がっていき、仕事の愚痴や噂、それに君主への悪口にまで発展した
+		PRINTFORMW 時計の鐘の音が鳴ると共に雑談は終わり、女中はこの話は内緒にしてね、と言って口元に指を当てた
+	;信仰
+	ELSEIF ARG == 4
+		PRINTFORML どうやら銅像が気になったらしく、いくつかの質問を訊ねた
+		PRINTFORMW %CALLNAME:TARGET%は快く答えていき、銅像の歴史や蘊蓄についても語った
+		PRINTFORMW 粗方質問が出尽くすと、女中は笑顔を浮かべて去っていった
+	ENDIF
+ENDIF
+
+;ARGを対応する能力の文字に変換
+IF ARG == 1
+	STR = 知力
+ELSEIF ARG == 2
+	STR = 疎通
+ELSEIF ARG == 4
+	STR = 信仰
+ENDIF
+
+CALL DAILY_PALAM_0, LOCAL+1, "信仰", STR
+
+;---------------------------------------------------
+;淫妖イベント
+;---------------------------------------------------
+@MOVE_SISTER_6
+
+;淫妖の数値よって分岐
+;(300毎に)
+LOCAL = BASE:淫妖 / 300
+
+;何らかの力により淫乱化されてしまう
+IF LOCAL == 3
+	PRINTFORML 祈りを捧げていた%CALLNAME:TARGET%は、自身の貞操の無さが神の怒りを買ったらしく
+	PRINTFORMW 捧げ終わってから身体が疼きだし、頭の中が色事しか考えられなくなった
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%はふらついた足取りで銅像から離れると
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服に手を突っ込んで
+		ENDIF
+		PRINTFORMW 自ら胸を揉みしだき、通りかかった人から向けられる好奇の目を糧に身体を昂ぶらせた
+		PRINTFORML やがて感極まった%CALLNAME:TARGET%がその場に座り込んで背筋を震わせて達すると
+		PRINTFORMW 堪え切れなくなった役人達が一斉に襲い掛かり、責めに敏感に反応して言葉にならない声をあげた
+		
+		CALL INSERT, 2, 1
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML %CALLNAME:TARGET%は近くに居た役人を捕まえて押し倒すと
+		PRINTFORMW 色気を帯びた顔を近づけ、吐息を相手に吹きかけた
+		PRINTFORML 役人は現状を飲み込めずただただ暴れるだけだったが、しばらく経つと欲情し
+		PRINTFORMW 蕩けた少女を襲い返し、互いに悦びの声をあげた
+		
+		CALL INSERT, 2, 1
+	;それ以外
+	ELSE
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 着衣を解き、
+		ENDIF
+		PRINTFORM 目を瞑って
+		IF BASE:胸囲 >= 85
+			PRINTFORM たわわに実る
+		ELSE
+			PRINTFORM 
+		ENDIF
+		PRINTFORMW 胸の先端を弄り始めた
+		PRINTFORMW 必死に声を堪えるものの目尻には涙が浮かび、周囲に誰も居ない中一人くぐもった声を漏らし続けた
+	ENDIF
+;神前で犯される
+ELSEIF LOCAL == 2
+	;身体付きによって分岐
+	IF BODY_RIPEN(TARGET) >= 25
+		PRINTFORM 成熟した股体を持つ
+	ELSEIF BODY_RIPEN(TARGET) >= 15
+		PRINTFORM くびれができ始めた股体を持つ
+	ELSE
+		PRINTFORM まだ未熟でなだらかな身体付きをした
+	ENDIF
+	PRINTFORM %CALLNAME:TARGET%が一人で仏像を掃除していると、
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 臆せず曝け出した裸身
+	ELSE
+		PRINTFORM 衣服越しに見える身体つき
+	ENDIF
+	PRINTFORMW にそそられた役人達が一斉に襲い掛かり、手足を拘束した！
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%は艶めかしい表情を役人達に向け、媚びた声で行為を誘った
+		PRINTFORM そんな少女の様子を見た役人達は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 綺麗な素肌の上から
+		ELSE
+			PRINTFORM 衣服を乱雑に剥ぎ
+		ENDIF
+		PRINTFORMW 乱暴ながらも柔軟な愛撫をした
+		PRINTFORMW %CALLNAME:TARGET%は瞳を濡らし、自由が効かない股体を擦り合わせながら甘く喉を鳴らし続けた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML 最初は抵抗していた%CALLNAME:TARGET%だったが
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服越しに
+		ENDIF
+		PRINTFORML 執着に行われる愛撫で次第に欲情していき
+		PRINTFORM 終いには
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を肌蹴て
+		ENDIF
+		PRINTFORMW 自ら股を開いた
+		PRINTFORMW それからしばらくの間、薄暗い部屋で少女が目に涙を浮かべ、悦びの声をあげ続けた……
+	;それ以外
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は必死に声をあげて抵抗するが
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 艶のある肌を撫でられながら
+		ELSE
+			PRINTFORM 衣服の中に手を入れられて
+		ENDIF
+		PRINTFORMW 局部を弄られるにつれて徐々に声が艶を帯びていった
+		PRINTFORM やがて、首を振りながらも甘い声をあげるようになった小さい修道女は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を剥かれてから
+		ENDIF
+		PRINTFORMW 無理矢理挿れられ、一際大きな声をあげて果てた
+	ENDIF
+	CALL INSERT, 2, 1
+;御神酒を無理矢理飲まされ……
+ELSEIF LOCAL == 1
+	PRINTFORML %CALLNAME:TARGET%は礼拝が終わると御神酒に手を付けた
+	PRINTFORMW 杯一杯に注いで一気に飲み干すと、熱が喉から全身に伝わった……
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORM %CALLNAME:TARGET%はその場で
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服の上から
+		ENDIF
+		PRINTFORMW 胸を揉みしだき、荒い息をつくと共に苦しそうな声をあげた
+		PRINTFORM やがて堪え切れなくなった%CALLNAME:TARGET%は横になって
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を肌蹴て
+		ENDIF
+		PRINTFORMW 局部を弄り始め艶やかな声を周囲に響かせた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORM %CALLNAME:TARGET%は身体の欲求に答えるかのように
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を脱ぎ
+		ENDIF
+		PRINTFORMW 綺麗な裸身に手を添えた
+		PRINTFORMW 全身を優しく撫でる度に吐息は熱くなり、頬は赤味を増した
+		PRINTFORMW やがて小さく喘ぎ声を出しながら自慰に没頭していると、背筋を震わせ甲高い声をあげて達した
+	;それ以外
+	ELSE
+		PRINTFORMW 全身を襲う欲求に耐えきれなくなった%CALLNAME:TARGET%は、赤面して恐る恐る秘所に手を伸ばした
+		PRINTFORMW 秘所は既に濡れており、指が触れた瞬間痺れが走った
+		PRINTFORMW 背徳行為に及ぶ少女は、場所を考えずあられもない声をあげ続けた
+	ENDIF
+ELSE
+	PRINTFORML %CALLNAME:TARGET%はお祈りを終えると無性に身体が熱くなり
+	PRINTFORM 銅像にもたれかかって
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 
+	ELSE
+		PRINTFORM 衣服を肌蹴、
+	ENDIF
+	PRINTFORMW 身体を慰めた……
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW 罰あたりな少女は露出した太腿を銅像に擦りつけ、喉を震わせ甘い声をあげる
+		PRINTFORMW 度々後ろを振り返っては、何も居ない場所へ妖艶な視線を向けた
+		PRINTFORMW 吐息が荒くなり長髪が頻繁に揺れるようになったころ、少女は一際大きな蕩けた声をあげ、身体を震わせて達した
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORM 背徳的な少女は
+		;胸部が解放されているか全裸
+		IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 剥き出しの
+		ELSE
+			PRINTFORM 肌蹴て剥き出しになった
+		ENDIF
+		PRINTFORMW 胸を銅像に擦りつけ、禁じられた行為に没頭した
+		PRINTFORML 乳首がピンと尖り、股からは淫らな水音が鳴り響き
+		PRINTFORMW やがて少女は果て、息を荒げてその場にくず折れた
+	;それ以外
+	ELSE
+		PRINTFORM 自然と息が荒くなっていき、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 艶やかな裸身
+		ELSE
+			PRINTFORM 乱れる衣服から覗かせる素肌
+		ENDIF
+		PRINTFORMW が赤みを帯びる
+		PRINTFORMW 卑しい水音と押し殺した声が周囲に響く中、不埒な少女は全身を大きく震わせて達した
+	ENDIF
+ENDIF
+
+
+CALL DAILY_PALAM_6, LOCAL+1, "淫妖", "淫妖"
+
+;====================================================
+;シスター固有イベント
+;====================================================
+@SISTER_SPECIAL_EVENT
+PRINTFORML ～～信心離れた女性の深層　寂れた路地の家にて～～
+;1回目
+IF !CFLAG:特殊イベント／シスター
+	PRINTFORML 若い女性「教会の教え？　ふ、ふん。どうせ新興の宗教なのでしょう
+	PRINTFORML 　　　　　たかが数千年の歴史では私の心は揺るがせないわ
+	PRINTFORMW 　　　　　ああ、月夜見様はいずこへ……」
+	PRINTFORML 
+	PRINTFORML 若い女性はどこかへ去っていった
+	CALL SETCOLOR_ABL
+	PRINTFORMW シスターとしての能力を鍛えつつ民衆の評価も上げれば女性は信用してくれるかもしれない
+	RESETCOLOR
+;2回目
+ELSEIF CFLAG:特殊イベント／シスター == 1
+	PRINTFORML 若い女性「あら、また会ったわね。また信仰の押し売りに来たの？
+	PRINTFORML 　　　　　いいことを教えてあげる。宗教では人を穢れから救うことはできないのよ
+	PRINTFORML 　　　　　それができていれば今頃御婆様は……ああ、月夜見様がおられたなら助かったかもしれないのに……」
+;3回目
+ELSEIF CFLAG:特殊イベント／シスター == 2
+	PRINTFORML 若い女性「貴方もマメね。いいわ、とっておきの珍しい物をあげる
+	PRINTFORMW 　　　　　これは御婆様の形見なの
+	PRINTFORMW 　　　　　御婆様はかつて王宮に毎日お参りに行っていたのよ
+	PRINTFORML 　　　　　ところが、ある日帰ってきた御婆様はとても顔色が悪くて……
+	PRINTFORMW 　　　　　布団に寝かせたら懐からこの石が転げ落ちたの
+	PRINTFORMW 　　　　　結局御婆様の容態は回復せず、そのまま召されたわ……
+	PRINTFORML 　　　　　
+	PRINTFORMW 　　　　　……あら、いけない。身の上話を長々としてしまったわ
+	PRINTFORMW 　　　　　この石が役に立つか分からないけど、お守りとして使ってもらえると嬉しいわ
+	PRINTFORMW 　　　　　きっと御婆様も喜んでくださると思うし
+	PRINTFORML
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 　　　　　ワールブルクの石を手に入れた！
+	ITEM:ワールブルクの石 += 1
+	RESETCOLOR
+ENDIF
+CFLAG:特殊イベント／シスター += 1
+

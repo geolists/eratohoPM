@@ -1,0 +1,364 @@
+﻿;===================================================================
+;探索コマンド
+;===================================================================
+@EXPLORE
+
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTL [0] - 要請する
+ELSE
+	PRINTL [0] - 探索させる
+ENDIF
+
+IF !FLAG:王宮追放
+	PRINTL [1] - 資金を集める
+ELSE
+	PRINTL [1] - 待機する
+ENDIF
+PRINTL [2] - 身代金を払う
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	CALL EXPLORE_DO
+	IF RESULT == 1
+		RESTART
+	ENDIF
+ELSEIF RESULT == 1
+	CALL GATHER_MONEY
+	IF RESULT == 1
+		RESTART
+	ENDIF
+ELSEIF RESULT == 2
+	CALL DEF_RAN
+	IF RESULT == 1
+		RESTART
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+;----------------------------------------------
+;探索させる
+;----------------------------------------------
+@EXPLORE_DO
+#DIM SUC_PAR, 1
+#DIM GET_ITEM, 1
+
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTFORML 兵力Lv：{FLAG:兵力}
+	PRINTFORML 救出隊を組むことができます
+	PRINTFORML どのようにして集めますか？
+	PRINTL [0] - 兵士を集める　　　($15000)
+	PRINTL [1] - 緊急指令をかける　($35000　成功率が上がる)
+ELSE
+	PRINTFORML 捜索を依頼することができます
+	PRINTFORML どのようにして集めますか？
+	PRINTL [0] - 一般応募　　　　　($30000)
+	PRINTL [1] - 緊急指令をかける　($65000　成功率が上がる)
+ENDIF
+PRINTL [2] - やめる
+
+$INPUT_LOOP
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0 || RESULT == 1
+	IF ((MONEY < 15000 && RESULT == 0) || (MONEY < 35000 && RESULT == 1)) && !FLAG:王宮追放
+		PRINTL 所持金が足りません
+		GOTO INPUT_LOOP
+	ELSEIF (MONEY < 30000 && RESULT == 0) || (MONEY < 65000 && RESULT == 1) && FLAG:王宮追放
+		PRINTL 所持金が足りません
+		GOTO INPUT_LOOP
+	ENDIF
+	DRAWLINE
+	IF RESULT == 0
+		IF !FLAG:王宮追放
+			MONEY -= 15000
+		ELSE
+			MONEY -= 30000
+		ENDIF
+		PRINTFORML %CALLNAME:MASTER%は兵士を召集して救出隊を結成した！
+		PRINTFORML 救出隊は早急に支度を整えると、%CALLNAME:TARGET%の救出のため出陣した！
+	ELSEIF RESULT == 1
+		IF !FLAG:王宮追放
+			MONEY -= 35000
+		ELSE
+			MONEY -= 65000
+		ENDIF
+		PRINTFORML %CALLNAME:MASTER%は緊急指令で兵士をより多く召集して救出隊を結成した！
+		PRINTFORML 救出隊は早急に支度を整えると、%CALLNAME:TARGET%の救出のため出陣した！
+		LOCAL = 1
+		RESULT = 0
+	ENDIF
+	PRINTW 　　　　　・
+	PRINTW 　　　　　・
+	PRINTW 　　　　　・
+	
+	;王宮を追放されている場合は回数をカウントする
+	IF FLAG:王宮追放
+		FLAG:助けを頼んだ回数 += 1
+	ENDIF
+	
+	;成功率計算
+	IF !FLAG:王宮追放
+		SUC_PAR = 30 + 15 * FLAG:身代金要求回数 + 10 * FLAG:兵力 + 30 * LOCAL + 2 * FLAG:救出失敗回数
+	ELSE
+		SUC_PAR = 30 + 15 * FLAG:身代金要求回数 + 25 * LOCAL + 2 * FLAG:救出失敗回数 - 10 * CHECKSKILL(318)
+	ENDIF
+
+	;成功
+	IF SUC_PAR >= RAND:99 + 1
+		PRINTFORML 兵士達はぐったりとしている%CALLNAME:TARGET%を抱えて戻ってきた！
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW ＜%CALLNAME:TARGET%の救出に成功した！＞
+		IF CFLAG:服装 == -4
+			PRINTFORMW 一糸纏わぬ姿となってしまった%CALLNAME:TARGET%の身体に布切れを巻いた！
+			IF FLAG:布の痛み == 2
+				CALL DATA_CHANGE_CLOTHE, -3, "変更"
+			ELSEIF FLAG:布の痛み == 1
+				CALL DATA_CHANGE_CLOTHE, -2, "変更"
+			ELSE
+				CALL DATA_CHANGE_CLOTHE, -1, "変更"
+			ENDIF
+		ENDIF
+		CFLAG:モード = 0
+		FLAG:身代金要求回数 = 0
+		FLAG:見せしめ回数 = 0
+		FLAG:救出失敗回数 = 0
+		FLAG:経過ターン数 = 0
+		FLAG:見せしめ実行 = 0
+		FLAG:誘拐猶予 = 3
+		
+		;王宮を追放されていなければアイテムなどを得られる
+		IF FLAG:王宮追放
+			RESETCOLOR
+			BEGIN TURNEND
+			RETURN 0
+		ENDIF
+		
+		LOCAL = 50 * FLAG:兵力+50
+		
+		PRINTFORML 盗賊の勢力に{LOCAL}の打撃を与えた！
+		PRINTFORML その事が君主の耳に入り、君主は火消しに迫られることになった！
+		CALL CALCULATION_PALAM, LOCAL, "君主の権力値"
+		
+		;兵力Lvが高いと持って帰るアイテムも豪華になる
+		PRINTFORML 住処からアイテムを入手した
+		LOCAL:1 = FLAG:兵力 + (1 + RAND:4)
+		SELECTCASE RAND:5
+			CASE 0
+				LOCAL = 522
+				PRINTFORMW 桃の香りを{LOCAL:1}個入手した！
+			CASE 1
+				LOCAL = 523
+				PRINTFORMW 記憶水晶を{LOCAL:1}個入手した！
+			CASE 2
+				LOCAL = 524
+				PRINTFORMW 疎通のオーブを{LOCAL:1}個入手した！
+			CASE 3
+				LOCAL = 525
+				PRINTFORMW 月刊クックムーンを{LOCAL:1}個入手した！
+			CASE 4
+				LOCAL = 526
+				PRINTFORMW 清めのお香を{LOCAL:1}個入手した！
+		ENDSELECT
+		
+		;ガーターベルトを持っていない場合、20％の確率で入手
+		;過去の被害者の遺品
+		IF !RAND:5 && !ITEM:431
+			PRINTFORMW ガーターベルトを入手した！
+			ITEM:431 = 1
+		ENDIF
+		
+		ITEM:LOCAL += LOCAL:1
+		
+		
+		CALL CLOTHE_ABL, "属性"
+		;一緒に捕えられていた娘の親からお礼を貰える
+		;50％の確率でアイテム、残り50％はお金
+		PRINTFORML 一緒に捕えられていた娘の親からお礼を貰った
+		IF RAND:2
+			CALL SETCOLOR_MONEY
+			LOCAL = 4000 + 4000 * RAND:3
+			PRINTFORML 礼金として${LOCAL}貰った！
+			MONEY += LOCAL
+		ELSEIF GETBIT(RESULT, 2)
+			$RERANDAM_MAID
+			
+			IF !RAND:3 && !ITEM:404
+				GET_ITEM = 404
+			ELSEIF !RAND:2 && !ITEM:414
+				GET_ITEM = 414
+			ELSEIF !ITEM:424
+				GET_ITEM = 424
+			ELSEIF !ITEM:404 || !ITEM:414 || !ITEM:424
+				GOTO RERANDAM_MAID
+			ELSE
+				RESETCOLOR
+				RETURN 0
+			ENDIF
+			PRINTFORML %ITEMNAME:GET_ITEM%を入手した！
+			ITEM:GET_ITEM += 1
+		ELSEIF GETBIT(RESULT, 3)
+			$RERANDAM_SISTER
+			
+			IF !RAND:3 && !ITEM:405
+				GET_ITEM = 405
+			ELSEIF !RAND:2 && !ITEM:415
+				GET_ITEM = 415
+			ELSEIF !ITEM:425
+				GET_ITEM = 425
+			ELSEIF !ITEM:405 || !ITEM:415 || !ITEM:425
+				GOTO RERANDAM_SISTER
+			ELSE
+				RESETCOLOR
+				RETURN 0
+			ENDIF
+			PRINTFORML %ITEMNAME:GET_ITEM%を入手した！
+			ITEM:GET_ITEM += 1
+		ELSEIF GETBIT(RESULT, 4)
+			$RERANDAM_GOSICK
+			
+			IF !RAND:3 && !ITEM:406
+				GET_ITEM = 406
+			ELSEIF !RAND:2 && !ITEM:416
+				GET_ITEM = 416
+			ELSEIF !ITEM:426
+				GET_ITEM = 426
+			ELSEIF !ITEM:406 || !ITEM:416 || !ITEM:426
+				GOTO RERANDAM_GOSICK
+			ELSE
+				RESETCOLOR
+				RETURN 0
+			ENDIF
+			PRINTFORML %ITEMNAME:GET_ITEM%を入手した！
+			ITEM:GET_ITEM += 1
+		ELSEIF GETBIT(RESULT, 5)
+			$RERANDAM_WEDDING
+			
+			IF !RAND:3 && !ITEM:407
+				GET_ITEM = 407
+			ELSEIF !RAND:2 && !ITEM:417
+				GET_ITEM = 417
+			ELSEIF !ITEM:427
+				GET_ITEM = 427
+			ELSEIF !ITEM:407 || !ITEM:417 || !ITEM:427
+				GOTO RERANDAM_WEDDING
+			ELSE
+				RESETCOLOR
+				RETURN 0
+			ENDIF
+			PRINTFORML %ITEMNAME:GET_ITEM%を入手した！
+			ITEM:GET_ITEM += 1
+		ENDIF
+		RESETCOLOR
+	;失敗
+	ELSE
+		PRINTFORML 兵士達はげんなりとした表情をして戻ってきた
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW ＜%CALLNAME:TARGET%の救出に失敗した……＞
+		RESETCOLOR
+		;緊急指令をかけた場合は2回失敗した事として扱う
+		IF LOCAL == 1
+			FLAG:救出失敗回数 += 2
+		ELSE
+			FLAG:救出失敗回数 += 1
+		ENDIF
+	ENDIF
+	BEGIN TURNEND
+ELSEIF RESULT == 2
+	RETURN 1
+ENDIF
+
+
+;----------------------------------------------
+;資金を集める
+;----------------------------------------------
+@GATHER_MONEY
+#DIM GATHER_MONEY,1
+DRAWLINE
+
+IF !FLAG:王宮追放
+	GATHER_MONEY = 25000 + 5000 * FLAG:兵力
+	PRINTFORML 兵力Lvは{FLAG:兵力}なので、現時点では${GATHER_MONEY}を調達することができます。
+	PRINTL [0] - 集める
+	PRINTL [1] - やめる
+ELSE
+	PRINTFORML 日数を消費して%CALLNAME:TARGET%が解放されるのを待ちます
+	PRINTL 本当によろしいですか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+ENDIF
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	IF !FLAG:王宮追放
+		PRINTFORML %CALLNAME:MASTER%は${GATHER_MONEY}調達した！
+		MONEY += GATHER_MONEY
+	ENDIF
+	BEGIN TURNEND
+ELSEIF RESULT == 1
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;身代金を支払う
+;----------------------------------------------
+@DEF_RAN
+#DIM L_LOCAL, 1
+#DIM REC_MONEY, 1
+
+DRAWLINE
+;基本$100000で1年経つと$20000追加
+REC_MONEY = 100000 + 20000 * (FLAG:年数 - 1) - CFLAG:盗賊ムード*125
+PRINTFORML 盗賊達は%CALLNAME:MASTER%に身代金として${REC_MONEY}を要求してきた！
+PRINTFORML (所持金:${MONEY})
+PRINTL 
+PRINTL どうしますか？
+PRINTL [0] - 払う
+PRINTL [1] - 払わない
+
+$INPUT_LOOP
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	IF MONEY < REC_MONEY
+		PRINTFORML 所持金が足りない
+		GOTO INPUT_LOOP
+	ENDIF
+	PRINTFORML %CALLNAME:MASTER%は身代金として${REC_MONEY}を支払った！
+	MONEY -= REC_MONEY
+	PRINTL 
+	PRINTL -数日後-
+	PRINTFORMW %CALLNAME:TARGET%は無事%CALLNAME:MASTER%の元へ帰ってきた！
+	IF CFLAG:服装 == -4
+		PRINTFORMW 一糸纏わぬ姿となってしまった%CALLNAME:TARGET%の身体に布切れを巻いた！
+		IF FLAG:布の痛み == 2
+			CALL DATA_CHANGE_CLOTHE, -3, "変更"
+		ELSEIF FLAG:布の痛み == 1
+			CALL DATA_CHANGE_CLOTHE, -2, "変更"
+		ELSE
+			CALL DATA_CHANGE_CLOTHE, -1, "変更"
+		ENDIF
+	ENDIF
+	CFLAG:モード = 0
+	FLAG:身代金要求回数 = 0
+	FLAG:見せしめ回数 = 0
+	FLAG:救出失敗回数 = 0
+	FLAG:経過ターン数 = 0
+	FLAG:見せしめ実行 = 0
+	FLAG:誘拐猶予 = 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+

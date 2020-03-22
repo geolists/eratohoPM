@@ -1,0 +1,143 @@
+﻿;============================================================================
+;隠しテキスト
+;============================================================================
+@HIDDENTEXT,ARG
+DRAWLINE
+IF !ARG
+	PRINTFORMW 眩しい日差しが目に入る
+	PRINTFORML 私は気を失っていたのだろうか。瞼を擦りながら上体を起こす
+	PRINTFORMW すると、周りには灰色の柱が立ち、それを電線が伝っている景色が広がっていた
+	PRINTFORML 月の都の未来想像図としてこんな絵が描かれているのを見たことはあるが、実際に目で見たくはなかった
+	PRINTFORMW このような景色は、私の美的感覚とは合わない
+	PRINTL
+	PRINTFORML 鉄の塊が車輪の足を付けて高速で行き交い、見慣れない服を着た子供達が駆けていく
+	PRINTFORMW 行く宛てもなく彷徨っていると、目の前にそれなりの大きさを持つ公園が現れた
+	PRINTFORML それが変哲もないなら見逃していたが、大きな竹のオブジェが私の目を惹く
+	PRINTFORMW 竹は斜めに切られ、中に女の子が入っていたからだ
+	PRINTL
+	PRINTFORML このシンボルを見て連想したのは、王宮に居た姫君だ
+	PRINTFORML 姫君は3人いて、それぞれが個性的な少女だった
+	PRINTFORMW その中でも黒髪の姫君は取り分けて……
+	PRINTFORML 感傷に浸るのはよそう。公園に足を踏み入れ、中を回ってみる
+	PRINTFORMW 所々に点在する看板によると、どうやらこの公園は何らかの物語をモチーフとして建設された物らしい
+	PRINTFORMW おそらく、その物語の主役は入口のオブジェにある少女だろう
+	PRINTL
+	PRINTFORMW 物語の顛末を読み、私は懼れた
+	PRINTFORML 地上に堕とされた月人は長い時を過ごし、その後は再び引き取られる
+	PRINTFORMW しかし、その者に課せられる役割は"穢れの吸着役"なのだ
+	PRINTFORMW たまたま路地裏で目にしてしまった哀れな女性の姿が目に浮かぶ
+	PRINTFORMW あれが、あの黒髪の姫君が歩む……
+	PRINTFORML 私はその場に膝をつき、天を仰いだ
+	PRINTFORMW 涙が頬を伝い、砂地を濡らす
+	PRINTL
+	PRINTFORML 目を覚ました
+	PRINTFORMW 周囲を見渡すと見慣れた壁と日用品が目につく、どうやら夢を見ていたらしい
+	PRINTFORML しかし、こうはしていられない。私は彼女を救わなければならない
+	PRINTFORML 黒髪の姫君は既に処刑され、地上に堕とされた後なのだ
+	PRINTFORMW あれは誰かが私に事を授けてくれたのだろう。その主は私のご先祖様か、月夜見様か、あるいは――
+	PRINTFORML すぐに身支度を整え、残る2人の姫君である姉妹が住まう一室を目指した
+	PRINTFORMW あの姉妹には一つでも多くの事をしておかなければならない。近い内にもう会えなくなるのだから……
+ELSEIF ARG == 1
+	PRINTFORML ～～とある一室～～
+	PRINTFORML 輝夜「あら、こんな所から訪ねてくれるとは珍しい
+	PRINTFORML 　　　何か聞きたい事でもあるのかしら？」
+	PRINTFORML 
+	PRINTFORML [0] - どんなゲームなの？
+	PRINTFORML [1] - 何をすればいいの？
+	PRINTFORML [2] - 何かコツとかない？
+	PRINTFORML [3] - 帰ります
+	
+	CALL SENTAKUSHI, 4
+	
+	DRAWLINE
+	IF RESULT == 0
+		PRINTFORML 輝夜「特定の少女を数年間育てるゲームよ
+		PRINTFORML 　　　元となるゲームは非常に多い選択肢と複雑なパラメーターの作用が魅力的なゲームね
+		PRINTFORMW 　　　……ほ、他の魅力もあるけど、その……えーと……」
+	ELSEIF RESULT == 1
+		PRINTFORML 輝夜「どのように育てたいかを頭に思い浮かべ、その為に必要となる行動を取ればいいの
+		PRINTFORML 　　　意外に侮れないのが服装や躾、それに働き先ね
+		PRINTFORMW 　　　"継続は力なり"これ、肝に銘じておいても損はしないわ」
+	ELSEIF RESULT == 2
+		PRINTFORML 輝夜「金は天下の回り物よ。
+		PRINTFORML 　　　ここだけの話、各能力の伸びや気質への影響力は成長と共に少しずつ変わってくるから
+		PRINTFORML 　　　それを見極める事も大事でしょうね
+		PRINTFORMW 　　　それと、星座は得意不得意を決めるのに役立つから、どうしても駄目なら工夫するのもありかも知れないわね」
+	ELSE
+		PRINTFORMW 輝夜「そう？　それじゃ、また別の場所で待ってるわね」
+		RETURN 0
+	ENDIF
+	RESTART
+ELSEIF ARG == 2
+	PRINTFORMW 柔らかい日差しが永遠亭を照らす
+	PRINTFORMW 秋の風が竹を揺らし、黄色くなった葉を地面に落とした
+	PRINTFORML 
+	PRINTFORMW 永遠亭の庭はいつも通りの景色
+	PRINTFORMW 複数の兎が飛び交っているし、悪戯を企む兎がいる一方で、それに嵌る兎もいる
+	PRINTFORMW そして、その縁側でお茶を啜り景色を眺める少女がいた
+	PRINTFORMW 自慢の黒い髪の毛はすらっと伸び、廊下まで垂れ下がる
+	PRINTFORML 「いい天気ね。このまま寝てしまいそう……」
+	PRINTFORMW 膝元に置いた兎の頭を撫でながら、瞼をゆっくりと閉じていく
+	PRINTFORMW 日差しと秋の気候が織りなす程よい気候は彼女を微睡へと誘う
+	PRINTFORMW 頭をこくり、こくりと何度も頷かせ、眠気はいよいよ頂点へと上り詰めようとしていた
+	PRINTFORML 
+	PRINTFORMW 「輝夜？　そんな処で寝ては風邪をひきますよ」
+	PRINTFORMW 銀髪の女性が声をかけ、輝夜に毛布をかけた
+	PRINTFORMW 彼女の名は永琳。薬師として働き、人の病を診ている
+	PRINTFORML 「ふわぁ……ねえ、えーりん」
+	PRINTFORMW 輝夜は振り返り、眠たそうな声で永琳に尋ねた
+	PRINTFORMW 「なーに？　輝夜」
+	PRINTFORMW 「私ね、時々思うことがあるの」
+	PRINTFORMW 「一体何を思うのかしら」
+	PRINTFORMW いつもの彼女らしくない言葉に、永琳は首を傾げる
+	PRINTFORMW 「私には、どれ程の選択肢があったのかな……なんてね」
+	PRINTFORMW 永琳は瞳孔を収縮させ、目の前の少女が発した言葉を疑った
+	PRINTFORMW 選択肢。こんな言葉が彼女の口から出るとは到底信じられなかったからだ
+	PRINTFORMW そんなことを考える性格なら、そもそもあの薬に手を出さなかったのではないか？
+	PRINTFORML 「どうしてそんなことを思ったの？」
+	PRINTFORMW きっと突飛な思い付きだろう。彼女ならよくあることだ
+	PRINTFORMW そう自分に言い聞かせながら永琳は輝夜に訊いた
+	PRINTFORML 「ふふ、須臾が私を唆したの」
+	PRINTFORMW ああ、彼女が持つ"能力"のせいか。そう永琳は思い、胸をなでおろした
+	PRINTFORMW 須臾とはごく短い時間のこと
+	PRINTFORMW 彼女はその須臾を渡り歩く能力を持ち、その能力によって数多の可能性を見ることができてしまう
+	PRINTFORMW きっとそれで複数の世界を見て、そして考えてしまったのだろう
+	PRINTFORMW 過去の自分が持っていた可能性を
+	PRINTFORML 
+	PRINTFORMW これから見やるは須臾の欠片
+	PRINTFORMW 薬を飲む前――つまり、可能性がある程度収束される前の時代
+	PRINTFORMW 一体彼女の前にはどのような可能性が広がっていたのか
+	PRINTFORMW それを共に探っていこうではないか
+	PRINTFORMW そうすることで彼女だけでなく――……
+	PRINTFORML 
+	PRINTFORML 
+	PRINTFORMW メモはここで千切れている
+ELSEIF ARG == 3
+	PRINTFORML ～～？？？～～
+	PRINTFORML 永琳「こんな所に人が来るなんて……」
+	PRINTFORML 
+	PRINTFORML [0] - あなたは誰？
+	PRINTFORML [1] - 輝夜は何者なの？
+	PRINTFORML [2] - 須臾のカケラって何？
+	PRINTFORML [3] - 帰ります
+	
+	CALL SENTAKUSHI, 4
+	
+	DRAWLINE
+	IF RESULT == 0
+		PRINTFORMW 永琳「私？　八意　永琳ですけど、何かあるのでしょうか？」
+	ELSEIF RESULT == 1
+		PRINTFORMW 永琳「輝夜は輝夜でしょう？　他に何の意味を求めているのです？」
+		;PRINTFORMW 永琳「薬を飲まずに不満を紛らわす方法があればよかったのだけれど……」
+	ELSEIF RESULT == 2
+		PRINTFORML 永琳「須臾というのは10の-15乗の量のことよ
+		PRINTFORML 　　　一般的にはフェムトとも呼ばれているわね
+		PRINTFORML 　　　本題に戻るわ。須臾のカケラはそれぞれが違う輝きを放っていて、とても興味深いものなの
+		PRINTFORML 　　　いつかは全て集めてみたいと思っているわ」
+	ELSE
+		PRINTFORMW 永琳「ここに来ても面白い物は何もないわ」
+		RETURN 0
+	ENDIF
+	RESTART
+ENDIF
+

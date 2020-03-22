@@ -1,0 +1,180 @@
+﻿;==========================================
+;王宮侵入
+;姉妹や女中を攫う事ができる
+;==========================================
+@SIMAI_YUUKAI
+#DIM hantei, 1
+;とりあえず仮で変数名つける
+#DIM bairitu, 1
+#DIM charaiti, 1
+PRINTFORML %CALLNAME:TARGET%は王宮に忍び込んだ……
+PRINTL ・
+PRINTL ・
+PRINTL ・
+PRINTW 
+
+;基礎成功率は10+淫妖/100
+;情報量の1％も追加される
+hantei = 10 + BASE:淫妖 / 100 + FLAG:王宮情報 / 100
+
+;謎の魅力を持っているとLv1につき10％成功率アップ
+IF TALENT:謎の魅力
+	hantei += 10 * TALENT:謎の魅力
+ENDIF
+
+;成功した場合、女中か姉妹を連れ帰ってくる
+IF hantei >= RAND:99
+	CALL SETCOLOR_PALAMUP
+	IF RAND:2 && FLAG:攫った姉妹の数 != 2
+		bairitu = LIMIT(FLAG:年数, 1, 5)
+		IF FLAG:攫った姉妹の数 == 1
+			PRINTFORML 成功！　%CALLNAME:TARGET%は豊姫を袋詰めにして攫ってきた！
+			PRINTFORML ＜豊姫を手元に連れてきた！＞
+			ADDCHARA 3
+			
+			;ADDCHARAしたばかりなので
+			charaiti = CHARANUM-1
+			
+			BASE:charaiti:美麗 = 110 * bairitu
+			BASE:charaiti:知力 = 110 * bairitu
+			BASE:charaiti:疎通 = 170 * bairitu
+			BASE:charaiti:家事 = 90 * bairitu
+			BASE:charaiti:信仰 = 100 * bairitu
+			BASE:charaiti:体力 = 108 * bairitu
+			BASE:charaiti:淫妖 = 40 * bairitu
+			BASE:charaiti:堕落 = 0
+			
+			
+			BASE:charaiti:30 += bairitu + 2
+			BASE:charaiti:31 += 1
+			BASE:charaiti:32 += bairitu + 1
+			
+			
+			EXP:charaiti:美麗経験 = 46 * bairitu
+			EXP:charaiti:知力経験 = 62 * bairitu
+			EXP:charaiti:疎通経験 = 73 * bairitu
+			EXP:charaiti:家事経験 = 112 * bairitu
+			EXP:charaiti:信仰経験 = 68 * bairitu
+			EXP:charaiti:体力経験 = 65 * bairitu
+			EXP:charaiti:淫妖経験 = 12 * bairitu
+			
+			REPEAT 10
+				CALL PALAM_CONVERT, COUNT
+				LOCALS = %STR%
+				;現在の経験を記録
+				CFLAG:charaiti:("ターン開始時の経験／"+STR+"") = EXP:charaiti:(""+STR+"経験")
+			REND
+			
+			BASE:charaiti:気品 = 415
+			BASE:charaiti:プライド = 310
+			BASE:charaiti:感度 = 130
+			BASE:charaiti:話術 = 320
+			BASE:charaiti:常識 = 260
+			BASE:charaiti:思考力 = 400
+			BASE:charaiti:信仰心 = 370
+			BASE:charaiti:スタミナ = 390
+			BASE:charaiti:献身 = 0
+			BASE:charaiti:依存 = 0
+			CFLAG:charaiti:属性／姫様 = 100
+			CFLAG:charaiti:性格 = 4
+			CFLAG:charaiti:誕生日を迎えた回数 = FLAG:年数
+			BASE:charaiti:15 = 0
+			BASE:charaiti:16 = 145
+			BASE:charaiti:技能 = 0
+			BASE:charaiti:媚薬 = 0
+			BASE:charaiti:快楽動機づけ = 0
+			BASE:charaiti:貞操 = 100
+			BASE:charaiti:慰み者 = 0
+			BASE:charaiti:魔力 = 0
+			BASE:charaiti:信仰力 = 0
+			BASE:charaiti:君主の評価 = 200
+			BASE:charaiti:役人の評価 = 20
+			BASE:charaiti:民衆の評価 = 20
+			
+			TARGET = charaiti
+			
+		ELSE
+			PRINTFORML 成功！　%CALLNAME:TARGET%は依姫を袋詰めにして攫ってきた！
+			PRINTFORML ＜依姫を手元に連れてきた！＞
+			ADDCHARA 2
+
+			;ADDCHARAしたばかりなので
+			charaiti = CHARANUM-1
+			
+			BASE:charaiti:美麗 = 90 * bairitu
+			BASE:charaiti:知力 = 162 * bairitu
+			BASE:charaiti:疎通 = 110 * bairitu
+			BASE:charaiti:家事 = 45 * bairitu
+			BASE:charaiti:信仰 = 110 * bairitu
+			BASE:charaiti:体力 = 165 * bairitu
+			BASE:charaiti:淫妖 = 0
+			BASE:charaiti:堕落 = 0
+			
+			BASE:charaiti:30 += bairitu
+			BASE:charaiti:31 += -3
+			BASE:charaiti:32 += bairitu + 2
+			
+			EXP:charaiti:美麗経験 = 36 * bairitu
+			EXP:charaiti:知力経験 = 108 * bairitu
+			EXP:charaiti:疎通経験 = 57 * bairitu
+			EXP:charaiti:家事経験 = 28 * bairitu
+			EXP:charaiti:信仰経験 = 72 * bairitu
+			EXP:charaiti:体力経験 = 109 * bairitu
+			
+			REPEAT 10
+				CALL PALAM_CONVERT, COUNT
+				LOCALS = %STR%
+				;現在の経験を記録
+				CFLAG:charaiti:("ターン開始時の経験／"+STR+"") = EXP:charaiti:(""+STR+"経験")
+			REND
+			
+			BASE:charaiti:気品 = 410
+			BASE:charaiti:プライド = 420
+			BASE:charaiti:感度 = 30
+			BASE:charaiti:話術 = 293
+			BASE:charaiti:常識 = 388
+			BASE:charaiti:思考力 = 386
+			BASE:charaiti:信仰心 = 372
+			BASE:charaiti:スタミナ = 510
+			BASE:charaiti:献身 = 0
+			BASE:charaiti:依存 = 0
+			CFLAG:charaiti:属性／姫様 = 100
+			CFLAG:charaiti:性格 = 6
+			BASE:charaiti:15 = 0
+			BASE:charaiti:16 = 200
+			BASE:charaiti:技能 = 0
+			BASE:charaiti:媚薬 = 0
+			BASE:charaiti:快楽動機づけ = 0
+			BASE:charaiti:貞操 = 100
+			BASE:charaiti:慰み者 = 0
+			BASE:charaiti:魔力 = 0
+			BASE:charaiti:信仰力 = 0
+			BASE:charaiti:君主の評価 = 200
+			BASE:charaiti:役人の評価 = 20
+			BASE:charaiti:民衆の評価 = 20
+			
+			TARGET = charaiti
+			
+		ENDIF
+		FLAG:攫った姉妹の数 += 1
+		FLAG:保有してる娘 += 1
+		CALL DATA_CHANGE_CLOTHE, -3, "変更"
+		TARGET = 1
+	ELSE
+		PRINTFORML 成功！　%CALLNAME:TARGET%は女中に襲い掛かり
+		LOCAL = 5000 * 8
+		PRINTFORMW 懐から${LOCAL}を抜きだすと、身包みを剥いで路上に放置した！
+		MONEY += LOCAL
+	ENDIF
+	RESETCOLOR
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW 失敗してしまった……
+	PRINTFORML 警備員に抑えられた%CALLNAME:TARGET%は、一通り身体を堪能された後
+	LOCAL = 8000 * 10
+	PRINTFORMW 懐から${LOCAL}を抜きだされて路上に放り出された！
+	MONEY -= LOCAL
+	RESETCOLOR
+ENDIF
+BEGIN TURNEND
+

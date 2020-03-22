@@ -1,0 +1,79 @@
+﻿;===========================================
+;刀術スキル
+;ARG　リスト参照者
+;===========================================
+@KATANA_SKILL, ARG
+;使えるスキルの種類
+;0だと使える特技が無いと出して返す
+#DIM parm, 1
+
+VARSET LOCAL, 0
+$BACK_LOOP
+parm = 0
+DRAWLINE
+PRINTL [80] - 二刃斬り
+LOCAL:80 = 1
+PRINTL [81] - 凶殺陣
+LOCAL:81 = 1
+PRINTL [82] - 諸刃の剣術
+LOCAL:82 = 1
+DRAWLINE
+IF CFLAG:装備 == 565
+	PRINTL [303] - 夜の帳
+	LOCAL:303 = 1
+ENDIF
+DRAWLINE
+PRINTFORML [997] - 刀術特技の説明
+PRINTFORML [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT >= 80 && RESULT <= 89 && LOCAL:RESULT
+	CALLFORM KATANA_SKILL_{RESULT}
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF INRANGE(RESULT, 300, 310)
+	CALLFORM SPE_SKILL_{RESULT}
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 997
+	CALL SHOW_KATANA_SKILL
+	GOTO BACK_LOOP
+ELSEIF RESULT == 999
+	RETURN -1
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+;----------------------------------------------
+;刀術の説明
+;ARG　武士称号のレベル
+;----------------------------------------------
+@SHOW_KATANA_SKILL, ARG
+DRAWLINE
+PRINTFORML ○刀術一覧
+PRINTFORML 　精神統一　　物理　消費気力:0　　自分の気力を10％回復させる
+PRINTFORML 　二刃斬り　　物理　消費気力:4　　通常攻撃より少し高い威力で攻撃
+PRINTFORML 　凶殺陣　　　物理　消費気力:6　　攻撃が外れるまで連続で攻撃する(最大4発)
+;諸刃の剣術は武士称号Lv1以上限定
+IF CFLAG:称号レベル == 1 && CFLAG:称号属性 == 7
+	PRINTFORML 　諸刃の剣術　物理　消費気力:10％ 相手に与えたダメージの1/3が自分に跳ね返る
+ENDIF
+;雪辱の太刀は武士称号Lv2以上限定
+IF CFLAG:称号レベル == 2 && CFLAG:称号属性 == 7
+	PRINTFORML 　雪辱の太刀　物理　消費気力:35 相手にダメージを与えられなかった場合、相手の体力を一定量削る
+ENDIF
+;剣の舞は正道の武士Lv3以上限定
+IF CFLAG:称号レベル == 3 && CFLAG:称号属性 == 7 && CFLAG:称号アライメント == 0
+	PRINTFORML 　剣の舞　　　変化　消費気力:20 自分の攻撃を大幅に上げる
+ENDIF
+;騙し討ちは邪道の武士Lv3以上限定
+IF CFLAG:称号レベル == 3 && CFLAG:称号属性 == 7 && CFLAG:称号アライメント == 2
+	PRINTFORML 　騙し討ち　　変化　消費気力:10 相手の能力が上昇していると、威力が上がる
+ENDIF
+PRINTL 
+PRINTFORMW ※刀系の攻撃は粘性体にはほとんど効かないが、獣・悪魔に対して効き目がよい
+

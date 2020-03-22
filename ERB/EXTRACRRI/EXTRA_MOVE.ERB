@@ -1,0 +1,1107 @@
+﻿;=========================================================
+;課外活動
+;ターン終了時(休憩、誘拐時以外)に実施可能
+;活動ポイントを貯め、一定量溜まったらイベントと共に何らかの報酬を貰うことができる
+;
+;活動ポイントの計算式
+;教育終了時の残りCP×教育時に行った行動回数
+;教育以外のコマンドの場合は、残りCPは最大CPの1/4(小数点以下切り上げ)、行動回数は2回として計算を行う
+;
+;引数解説
+;ARGS	どのモードから呼び出されたか判別する(教育/その他)
+;ARG	今回の入手活動ポイント(補正前)
+;ARG:1	教育終了時までに行動した回数
+;=========================================================
+@EXTRA_MOVE, ARGS, ARG, ARG:1
+
+#DIM L_LOCAL, 1
+;最終的に入手する活動ポイントを格納する変数
+#DIM get_point, 1
+;現在選べる課外活動の項目数を記録するための変数
+#DIM now_menu, 1
+
+
+;下記2種の変数は、構文の可読性を上げるために使う
+;活動ポイントのIDを格納する変数
+#DIM id_point, 1
+;活動レベルのIDを格納する変数
+#DIM id_move, 1
+
+
+;初期化
+now_menu = 0
+
+FOR L_LOCAL, 0, 100
+	;名称呼び出し関数を呼び出し、CASEELSE(名称選択エラー)に入るまでの数をnow_menuに代入する
+	IF EXTRAMOVE_NAME(L_LOCAL) != "名称選択エラー"
+		now_menu += 1
+	ELSE
+		BREAK
+	ENDIF
+NEXT
+
+DRAWLINE
+PRINTFORML ～～課外活動～～
+PRINTFORML 以下の活動ポイントを入手しました
+CALL SETCOLOR_ABL
+IF ARGS == "教育"
+	PRINTFORML (活動ポイントは、教育終了時の残りCPによって変化します)
+	CALL CALU_EXTRAMOVE_POINT, ARG
+ELSEIF ARGS == "遊びに出かける"
+	PRINTFORML (今回は遊びに出かけたので、教育以外の行動を取った時より多めのポイントを入手します)
+	CALL CALU_EXTRAMOVE_POINT, ARG
+ELSE
+	PRINTFORML (今回は教育以外の行動を行ったので、一定量の活動ポイントを入手します)
+	CALL CALU_EXTRAMOVE_POINT, ARG
+ENDIF
+get_point = RESULT
+PRINTFORML 
+
+RESETCOLOR
+PRINTFORML 
+
+;-------------------------
+;↓以下、活動メニュー再帰時に呼び出される処理
+
+
+$BACK_LOOP_1
+PRINTFORM 入手活動ポイント:
+CALL SETCOLOR_ABL
+PRINTFORML {get_point}
+RESETCOLOR
+PRINTFORML 
+PRINTFORML 入手した活動ポイントを使って課外活動を行うことができます
+PRINTFORML 今回はどの活動を行いますか？
+;課外活動メニュー呼び出し変数を代入する
+FOR L_LOCAL, 0, now_menu
+	;課外活動の活動ポイントやレベルのIDを、それぞれid_pointやid_moveに格納する
+	id_move = GETNUM(CFLAG, "レベル／"+EXTRAMOVE_NAME(L_LOCAL)+"")
+	id_point = GETNUM(CFLAG, "活動ポイント／"+EXTRAMOVE_NAME(L_LOCAL)+"")
+	
+	;表示条件だけ満たしている場合or既に最大レベルに達している場合
+	IF EXTRAMOVE_CONDITION(L_LOCAL) == 1 || EXTRAMOVE_CONDITION(L_LOCAL) == 3
+		SETCOLOR 96,96,96
+		PRINTFORM [{L_LOCAL}] - %EXTRAMOVE_NAME(L_LOCAL), 28, LEFT%　Lv{CFLAG:id_move}
+		RESETCOLOR
+	;表示・開始条件を共に満たしている場合
+	ELSEIF EXTRAMOVE_CONDITION(L_LOCAL) == 2
+		PRINTFORM [{L_LOCAL}] - %EXTRAMOVE_NAME(L_LOCAL), 28, LEFT%　Lv{CFLAG:id_move}
+	ENDIF
+	
+	;レベル最大でない場合のみ、活動ポイントの進捗を表示する
+	IF EXTRAMOVE_CONDITION(L_LOCAL) != 3 && EXTRAMOVE_CONDITION(L_LOCAL) != 0
+		PRINTFORML 　活動ポイント:{CFLAG:id_point, 4}/{EXTRAMOVE_EXPTYPE(L_LOCAL, CFLAG:id_move)}
+	ELSE
+		PRINTL 
+	ENDIF
+NEXT
+DRAWLINE
+PRINTFORML [999] - 何もしない
+
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT <= now_menu && EXTRAMOVE_CONDITION(RESULT)
+	;LOCALに選択結果を避難させる
+	LOCAL = RESULT
+	
+	;選んだ活動メニューに応じた説明文を表示する
+	DRAWLINE
+	CALLFORM EXTRAMOVE_EXPLAIN_{LOCAL}
+	PRINTL 
+	
+	;まだ選択できない活動の場合
+	IF EXTRAMOVE_CONDITION(LOCAL) <= 1
+		PRINTFORMW 活動を開始するための条件を満たしていません
+		DRAWLINE
+		GOTO BACK_LOOP_1
+	;レベル最大の場合
+	ELSEIF EXTRAMOVE_CONDITION(LOCAL) == 3
+		PRINTFORMW これ以上、レベルを上げることはできません
+		DRAWLINE
+		GOTO BACK_LOOP_1
+	ENDIF
+	
+	;id_moveに、LOCALのレベルが格納されたCFLAGの番号を格納する
+	id_move = GETNUM(CFLAG, "レベル／"+EXTRAMOVE_NAME(LOCAL)+"")
+	
+	PRINTFORML この活動を行いますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		;活動メニューへの加算処理を行う
+		CALL EXTRAMOVE_ADDER, LOCAL, get_point, "表示"
+		
+		;累計活動ポイントが、レベルアップに必要な活動ポイントを超えた場合
+		IF CFLAG:("活動ポイント／"+EXTRAMOVE_NAME(LOCAL)+"") >= EXTRAMOVE_EXPTYPE(LOCAL, CFLAG:id_move)
+			CALL SETCOLOR_PALAMUP
+			PRINTFORM [%EXTRAMOVE_NAME(LOCAL)%]の活動レベルが上がった！
+			
+			;レベル上昇演出を入れる。(少しややこしい処理になるが)上昇処理の前に現在のレベルを表示して
+			PRINTFORM (Lv{CFLAG:id_move} → 
+			;活動ポイントを、現在要求されている活動ポイント分引く
+			CFLAG:("活動ポイント／"+EXTRAMOVE_NAME(LOCAL)+"") -= EXTRAMOVE_EXPTYPE(LOCAL, CFLAG:id_move)
+			;活動ポイントの減算を行ってから、レベルを上げる
+			CFLAG:id_move += 1
+			;レベル上昇後に、現在のレベルを表示する
+			PRINTFORML Lv{CFLAG:id_move})
+			RESETCOLOR
+			
+			;レベル上昇時のイベントを呼び出す
+			CALL EXTRAMOVE_LVUPEVENT, LOCAL, CFLAG:id_move
+			
+			;レベル上昇時の報酬を与える
+			CALL EXTRAMOVE_BONUS, LOCAL, CFLAG:id_move
+		;それ以外
+		ELSE
+			;そのまま終了処理を迎える
+		ENDIF
+	ELSE
+		;活動メニュー選択画面に戻る
+		GOTO BACK_LOOP_1
+	ENDIF
+ELSEIF RESULT == 999
+	;メッセージ無しで遷移
+ELSE
+	PRINTFORML 入力範囲外です
+ENDIF
+
+;==========================================
+;課外活動
+;名前呼び出し関数
+;(式中関数)
+;ARG　活動名
+;==========================================
+@EXTRAMOVE_NAME, ARG
+#FUNCTIONS
+
+
+SELECTCASE ARG
+	CASE 0
+		LOCALS = イナバの世話
+	CASE 1
+		LOCALS = 穢れの地への移住計画_その1
+	CASE 2
+		LOCALS = 庭の掃除
+	CASE 3
+		LOCALS = 穢れの地への移住計画_その2
+	CASE 4
+		LOCALS = 穢れの地への移住計画_その3
+	;選択肢に無い活動名の場合
+	CASEELSE
+		LOCALS = 名称選択エラー
+ENDSELECT
+
+
+RETURNF LOCALS
+
+;==========================================
+;課外活動
+;詳細データ呼び出し関数集
+;ARG　活動項目ID
+;==========================================
+
+;------------------------------------
+;活動開始条件
+;返り値
+;3：　既にレベル最大である
+;2：　表示条件、開始条件共に無し
+;1：　表示条件だけ満たしている
+;0：　表示条件も開始条件も満たしていない
+;------------------------------------
+@EXTRAMOVE_CONDITION, ARG
+#FUNCTION
+
+LOCAL = 0
+
+;活動レベルが最大値に達している場合、3を返す
+IF CFLAG:("レベル／"+EXTRAMOVE_NAME(ARG)+"") >= EXTRAMOVE_MAXLV(ARG)
+	LOCAL = 3
+ELSE
+	SELECTCASE ARG
+		;0:　イナバの世話
+		CASE 0
+			;王宮追放されている場合、表示も選択もできない
+			IF FLAG:王宮追放
+				LOCAL = 0
+			ELSE
+				LOCAL = 2
+			ENDIF
+		;1:　穢れの地への移住計画_その1
+		CASE 1
+			;王宮追放されている場合、表示も選択もできない
+			IF FLAG:王宮追放
+				LOCAL = 0
+			;知力が100未満の場合、表示はされるが選択はできない
+			ELSEIF BASE:知力 < 100
+				LOCAL = 1
+			ELSE
+				LOCAL = 2
+			ENDIF
+		;2:　庭の掃除
+		CASE 2
+			;王宮追放されている場合、表示も選択もできない
+			IF FLAG:王宮追放
+				LOCAL = 0
+			ELSE
+				LOCAL = 2
+			ENDIF
+		;3:　穢れの地への移住計画_その2
+		CASE 3
+			;王宮追放されている場合、表示も選択もできない
+			IF FLAG:王宮追放
+				LOCAL = 0
+			;穢れの地への移住計画_その1をクリアしていない場合、表示も選択もできない
+			ELSEIF CFLAG:レベル／穢れの地への移住計画_その1 < 5
+				LOCAL = 0
+			;知力が130未満の場合、表示はされるが選択はできない
+			ELSEIF BASE:知力 < 130
+				LOCAL = 1
+			ELSE
+				LOCAL = 2
+			ENDIF
+		;4:　穢れの地への移住計画_その3
+		CASE 4
+			;王宮追放されている場合、表示も選択もできない
+			IF FLAG:王宮追放
+				LOCAL = 0
+			;穢れの地への移住計画_その2をクリアしていない場合、表示も選択もできない
+			ELSEIF CFLAG:レベル／穢れの地への移住計画_その2 < 4
+				LOCAL = 0
+			;知力が160未満の場合、表示はされるが選択はできない
+			ELSEIF BASE:知力 < 160
+				LOCAL = 1
+			ELSE
+				LOCAL = 2
+			ENDIF
+	ENDSELECT
+ENDIF
+
+;最終的な結果を返り値とする
+RETURNF LOCAL
+
+;------------------------------------
+;最大レベル出力関数
+;最大レベルを返り値とする
+;------------------------------------
+@EXTRAMOVE_MAXLV, ARG
+#FUNCTION
+
+LOCAL = 0
+
+SELECTCASE ARG
+	;0:　イナバの世話
+	CASE 0
+		LOCAL = 3
+	;1:　穢れの地への移住計画_その1
+	CASE 1
+		LOCAL = 5
+	;2:　庭の掃除
+	CASE 2
+		LOCAL = 4
+	;3:　穢れの地への移住計画_その2
+	CASE 3
+		LOCAL = 4
+	;4:　穢れの地への移住計画_その3
+	CASE 4
+		LOCAL = 4
+ENDSELECT
+
+RETURNF LOCAL
+
+
+;------------------------------------
+;課外活動_レベルアップ時の文章
+;ARG　　活動項目
+;ARG:1　レベル
+;------------------------------------
+@EXTRAMOVE_LVUPEVENT, ARG, ARG:1
+
+DRAWLINE
+SELECTCASE ARG
+	;0:　イナバの世話
+	CASE 0
+		;レベル1
+		IF ARG:1 == 1
+			PRINTFORML 「これ？　イナバだけど？」
+			PRINTFORML 「庭に迷い込んできたの」
+			PRINTFORML 
+			PRINTFORMW %CALLNAME:TARGET%はイナバの頭を撫でながら答えた
+			PRINTFORMW 遠くから役人が見ていたらしく、翌日、%CALLNAME:MASTER%は役人からイナバの話題を持ちかけられた
+		;レベル2
+		ELSEIF ARG:1 == 2
+			PRINTFORML 「え？　イナバの世話をしていることが話題になっているの？」
+			PRINTFORML 「大したことはしてないのだけどね。ただ頭を撫でて餌付けしてるだけだから」
+			PRINTFORML 
+			PRINTFORML 役人から「躾はしっかりしてくれよ」とは言われたが
+			PRINTFORMW 餌付けすることについては特に咎められなかった
+			PRINTFORMW ……もしかすると、役人達はイナバ1匹に構っている余裕など無いのかもしれない
+		;レベル3
+		ELSEIF ARG:1 == 3
+			PRINTFORML 「……あの……イナバが私の足元から離れないの……」
+			PRINTFORML 「部屋で飼ってもいい？」
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%の足元には1匹のイナバが寄り付き、足首に頬を擦っている
+			PRINTFORMW 後日、%CALLNAME:MASTER%は役人の許可を取り、条件付きでイナバと触れ合う許可を得た
+		ENDIF
+	;1:　穢れの地への移住計画_その1
+	CASE 1
+		;レベル1
+		IF ARG:1 == 1
+			PRINTFORML 「あーあ、月は色々と不自由でつまらないわ」
+			PRINTFORMW 「……いや、そりゃ貴方にとっては色々と新鮮なのでしょうけどね……」
+			PRINTFORML 
+			PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と一緒に王宮の図書室に入り、本を読み漁っていた
+			PRINTFORML 幅広い分野の本が収められており、どれも決して退屈させる内容ではなかったが
+			PRINTFORMW どうやら%CALLNAME:TARGET%が求める物について書かれている本は無いらしい
+			PRINTFORML 
+			PRINTFORML 「ああ、あったあった、これよ」
+			PRINTFORML %CALLNAME:TARGET%は目を輝かせて%CALLNAME:MASTER%を呼ぶ
+			PRINTFORMW その本は背表紙が日に焼けており、ページの端も大分黄ばんでいる
+			PRINTFORML 「大分古い本なのよ。私の推測だと、この本に書かれてるはずなんだけど……」
+			PRINTFORMW %CALLNAME:TARGET%はペラペラとページを捲っていく
+			PRINTFORML 
+			PRINTFORML 「ほら、見て、この絵」
+			PRINTFORML そして、とあるページを開いた時に手を止め、挿絵を指差した
+			PRINTFORMW そこには羽衣を纏った女性が描かれている
+			PRINTFORML 「これはね。私達が生まれる遥か昔に穢れの地に降りた人物なのよ」
+			PRINTFORMW 名前は知らないけどね、と彼女は言う。内容を読んでも名称不詳と書かれており、どのような人物なのか見当が付かない
+			PRINTFORML 
+			PRINTFORML 「こういうのを見たら、穢れの地に降りて生活するのもいいかなって思わない？」
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%ににじり寄り、耳元で囁く
+			PRINTFORML 穢れの地で生活する
+			PRINTFORMW 目の前にいる少女は、月の民にとって最大の禁忌を犯そうとしている
+		;レベル2
+		ELSEIF ARG:1 == 2
+			PRINTFORML 「穢れの地って、月とは結構文化が違うらしいのよね」
+			PRINTFORML 再び図書室に来た%CALLNAME:TARGET%と%CALLNAME:MASTER%
+			PRINTFORMW %CALLNAME:TARGET%が読んでいる本は、穢れの地に関する噂話を集めた本である
+			PRINTFORML 「こんな化け物がいるだなんて、本当なのかしら……」
+			PRINTFORMW %CALLNAME:TARGET%は得体の知れない化け物の挿絵を見て、額に汗を掻いている
+			PRINTFORML 
+			PRINTFORML 「さて、そろそろ本格的に探してみようかしら」
+			PRINTFORMW 図書室から出た%CALLNAME:TARGET%は意欲に満ち溢れた表情で言った
+			PRINTFORML 「……何をしようとしているか分からない、って？」
+			PRINTFORML 「ふふ、惚けるのもやめましょうよ。穢れの地に住む方法を考えるのよ」
+			PRINTFORML 「……まだ本気じゃないから、とりあえず探してみるだけでいいから、ね？　いいでしょう？」
+			PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべ、%CALLNAME:MASTER%の手を引っ張った
+		;レベル3
+		ELSEIF ARG:1 == 3
+			PRINTFORML %CALLNAME:TARGET%と%CALLNAME:MASTER%は、都から離れた辺境にいる
+			PRINTFORML 辺りには背が高い草が生えており、都では見かけない虫が沢山飛んでいる
+			PRINTFORMW ぬかるんだ足元に気をつけながら、草原の奥へ進んでいく
+			PRINTFORML 「とても歩きにくいわ……こんな所に、本当にあるのかしらね……」
+			PRINTFORML %CALLNAME:TARGET%は額に汗を掻きながら言った
+			PRINTFORMW %CALLNAME:MASTER%は都で噂話を集め、%CALLNAME:TARGET%に教えたのだ
+			PRINTFORMW その噂話とは、穢れの地に隠れていくために必要な物に関する噂である
+			PRINTFORML 「解脱の歯車……持っているだけで理から外れる力を持つらしいけど、そんなすごい物がこんな所に落ちているとは思えないわ……」
+			PRINTFORMW 解脱の歯車がこの地にあるらしい。という噂話ではあったが、中々成果が挙がらない
+			PRINTFORML 
+			PRINTFORML そして夕暮れになった
+			PRINTFORMW 結局解脱の歯車はおろか、手がかりすら見つからなかった
+			PRINTFORML 「……まあ、今回は残念だったわね。また他の噂話も集めてきて？」
+			PRINTFORMW 今日は御馳走を振舞ってね。と%CALLNAME:TARGET%は笑顔を浮かべながら言う
+			PRINTFORMW 物は見つからなくても、こうして二人で過ごす時間そのものが宝物なのかもしれない
+		;レベル4
+		ELSEIF ARG:1 == 4
+			PRINTFORML 「次は湖なのね」
+			PRINTFORML 次に来たのは湖である。
+			PRINTFORMW 月にはいくつかの湖があり、今回来たのは滅多に人が来ない湖である
+			PRINTFORML 「どうして噂話というのは、こういう誰も来ない場所ばかりを挙げるのかしら……」
+			PRINTFORMW おそらく嘘だとバレないようにするためなのだろう
+			PRINTFORMW なんて思いながらも、%CALLNAME:MASTER%は%CALLNAME:TARGET%と共に探索を続けた
+			PRINTFORML 
+			PRINTFORMW 結局、今回も目当ての物は見つからなかった
+			PRINTFORML 「本当にあるのかしらね……解脱の歯車」
+			PRINTFORMW そうそう、今日はアイスが食べたい。と%CALLNAME:TARGET%は言う
+			PRINTFORML %CALLNAME:MASTER%は色々と思いながらも頷き、二人は帰路についた
+			PRINTFORMW 夕暮れは眩しく、湖の水面を暁色に染めている
+		;レベル5
+		ELSEIF ARG:1 == 5
+			PRINTFORML 「今度は期待してもいいのかしら？」
+			PRINTFORML 寂れた森を訪れた二人
+			PRINTFORML 疎らに立っている建物は塗装が剥がれ、苔がびっしりとついている
+			PRINTFORMW これらは月の都が今より華やかだった頃に建てられたものであり、様相が変わった今となっては少し寂しさを感じてしまう
+			PRINTFORML 「"茶屋「夢の湖」"ねえ……この店の主は今頃どうしているのでしょうね」
+			PRINTFORMW 薄茶色に染まった看板を見つめながら、%CALLNAME:TARGET%は小さく声を漏らした
+			PRINTFORML 
+			PRINTFORML 「あ、この店怪しそうじゃない？」
+			PRINTFORML 森の奥に進んだ二人、ここまで来ると日差しはほとんど差し込まない
+			PRINTFORML 足跡も二人以外の物は見当たらない。恐らく誰も足を踏み入れなかったのだろう
+			PRINTFORMW そんな未開の地で%CALLNAME:TARGET%は指を差した
+			PRINTFORMW 「"珍品館"……見るからに怪しそうでしょう？」
+			PRINTFORML 口の端を緩ませる%CALLNAME:TARGET%。あからさまな名前が逆に怪しいが、他に手がかりもない
+			PRINTFORMW とりあえず入ってみることにした
+			PRINTFORML 
+			PRINTFORML 「うわあ……蜘蛛の巣だらけね……」
+			PRINTFORMW 薄暗い建物の中は、無数の蜘蛛が巣を張っている
+			PRINTFORML 「どこを見ればいいのかな……って、あら」
+			PRINTFORMW 脇にある小部屋に、奇妙な色をした歯車が置かれていた
+			PRINTFORMW 近づいて詳しく見てみると、書籍に載っていた特徴と一致している
+			PRINTFORMW 間違いない。これが――
+			PRINTFORML 
+			CALL SETCOLOR_ABL
+			PRINTFORMW 解脱の歯車を手に入れた！
+			RESETCOLOR
+			FORCEWAIT
+			PRINTFORML 
+			PRINTFORML 「本当に手に入れられるとは思わなかったわ」
+			PRINTFORMW 目を輝かせながら言う%CALLNAME:TARGET%
+			PRINTFORML 「さーて、次のお宝も探さなくちゃね」
+			PRINTFORML %CALLNAME:TARGET%は意気込んだ後に、今度は湖の魚を使った御造りを食べたい。と漏らした
+			PRINTFORMW 本当に探す気はあるのだろうか……
+		ENDIF
+	;2:　庭の掃除
+	CASE 2
+		;レベル1
+		IF ARG:1 == 1
+			PRINTFORML 「誰かに頼まれたのか、って？」
+			PRINTFORMW 誰も起きていない時間から掃除に励む%CALLNAME:TARGET%に、%CALLNAME:MASTER%は声をかけた
+			PRINTFORML 「そんなことはないわ」
+			PRINTFORML %CALLNAME:TARGET%は笑顔を浮かべて返事をする
+			PRINTFORMW 役人に仕事でも押し付けられたかと思ったが、ただの杞憂だったようだ
+			PRINTFORML 「朝早くから掃除すると気持ちいいのよね。空気は綺麗だし、静かだし、朝日も拝めるし……」
+			PRINTFORMW 遠方を見つめると、地平線から朝日が頭を見せている
+			PRINTFORML 「あ、そうだ。せっかくだから、貴方も掃除しない？」
+			PRINTFORMW %CALLNAME:TARGET%は箒を差し出した
+			PRINTFORML 「私の分は後で取ってくるから平気よ。一緒に掃除して朝日を見つめましょう？」
+			PRINTFORMW %CALLNAME:TARGET%は屈託のない笑顔を浮かべている
+		;レベル2
+		ELSEIF ARG:1 == 2
+			PRINTFORML 「あら、おはよう」
+			PRINTFORMW 王宮の庭。朝日が昇りきる前の時間なだけあって、少し肌寒い
+			PRINTFORML 「掃除しに来たのね。偉いわ」
+			PRINTFORMW %CALLNAME:TARGET%は得意気な表情を浮かべる。元々は%CALLNAME:TARGET%が勧めてきたことなのだが
+			PRINTFORML 「私は西側を掃除するから、貴方は東側を掃除してね」
+			PRINTFORMW %CALLNAME:TARGET%はそう言って、そそくさと西側へ姿を消してしまった
+			PRINTFORMW 空を見上げると、そこには星がうっすらと輝いていた
+		;レベル3
+		ELSEIF ARG:1 == 3
+			PRINTFORML 「さあ、今日もがんばりましょう」
+			PRINTFORMW %CALLNAME:TARGET%の声に合わせて、%CALLNAME:MASTER%は箒を上げた
+			PRINTFORML 「今日は箒使わないけどね」
+			PRINTFORMW なぜそれを先に言わなかったのか
+			PRINTFORML 
+			PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%と一緒に、装飾品を磨いている
+			PRINTFORMW 庭に飾られている装飾品は金色なのだが、少しくすんでいた
+			PRINTFORML 「ほら、これを磨くと……綺麗ね……」
+			PRINTFORML 磨いた後に輝く金色を見て、%CALLNAME:TARGET%は言葉を失った
+			PRINTFORMW まさか、こんなに綺麗になるとは思っていなかったらしい
+			PRINTFORML 
+			PRINTFORMW 	結局、日が暮れるまで装飾品を磨き続けた
+			PRINTFORML 「美しかったわ。あんなに綺麗になるのね」
+			PRINTFORML %CALLNAME:TARGET%は感嘆の声を漏らす
+			PRINTFORMW 結構疲労感が残る作業ではあったが、こんな表情が見られるのであれば悪くはないかもしれない
+		;レベル4
+		ELSEIF ARG:1 == 4
+			PRINTFORML 「ふふ、私達が頑張って掃除したおかげで――」
+			PRINTFORMW 王宮の庭の真ん中で、%CALLNAME:TARGET%は両手を大きく広げた
+			PRINTFORML 「庭が、こーんなに綺麗になりました！」
+			PRINTFORMW 満面の笑み。辺りを見渡すと、装飾品は金色の光を放っているし、落ち葉やゴミが溜まっている場所もない
+			PRINTFORML 
+			PRINTFORML 「私の無茶に付き合ってくれてありがとうね。%CALLNAME:MASTER%」
+			PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の頬に軽く口づけをした
+			PRINTFORML 「また何か思いついたら協力してね？」
+			PRINTFORMW 次は何を思いつくのだろうか……
+		ENDIF
+	;3:　穢れの地への移住計画_その2
+	CASE 3
+		;レベル1
+		IF ARG:1 == 1
+			PRINTFORML 「この前の宝探し、とても楽しかったわね」
+			PRINTFORML 昼下がり。%CALLNAME:MASTER%が椅子に座ってくつろいでいると、%CALLNAME:TARGET%が袖を掴んで話しかけてきた
+			PRINTFORMW 「……でね、また宝探しをしたくなったから、他の宝物について調べたのよ」
+			PRINTFORML %CALLNAME:TARGET%は袖から巻物を取り出し、%CALLNAME:MASTER%に見せる
+			PRINTFORML 瞳はきらきらと輝いていて、声も弾んでいる。恐らくまた宝探しをしたいのだろう
+			PRINTFORML 本来の目的は地上に移住することで、宝探しではなかったはずだが……
+			PRINTFORML 「ね、今度行きましょうよ。ほらほら、早速準備しましょう？」
+			PRINTFORML %CALLNAME:MASTER%の袖を引っ張り準備をねだる%CALLNAME:TARGET%
+			PRINTFORML 半ば押し切られるような形で、今度の休みに探索に出かけることになった
+			PRINTFORMW 果たして、次はどこに行くのだろうか……
+		;レベル2
+		ELSEIF ARG:1 == 2
+			PRINTFORML 「さて、次は何の本を読もうかしら……」
+			PRINTFORMW %CALLNAME:TARGET%は自分の背丈より高い本棚を見つめ、顎に手を当てて悩んでいる
+			PRINTFORML 王宮の図書館に来た%CALLNAME:MASTER%と%CALLNAME:TARGET%
+			PRINTFORML 以前%CALLNAME:TARGET%は「他の宝物について調べた」と言っていたが、どうして今再び調べ物をしているのか
+			PRINTFORMW それは数時間前に遡る
+			PRINTFORML 
+			PRINTFORML 「次の宝物はね。"徳の量子電池"というのよ」
+			PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた%CALLNAME:MASTER%
+			PRINTFORML 「"量子電池"って聞いたことある？　なんでも板1枚でできていて、積み重ねるとものすごい力が出せるらしいわ」
+			PRINTFORML 「電池のことはよく分からないんだけど、さすがに板1枚ではできてないのよね？」
+			PRINTFORML %CALLNAME:TARGET%の問いかけに%CALLNAME:MASTER%は頷いた
+			PRINTFORML 王宮に入る前はあまりに貧しくて電池を使う機会はなかったが、王宮に来てからはたまに見るようになった
+			PRINTFORMW ただ、その時見た電池はどれもそこそこ太い棒状の形をしていた
+			PRINTFORML 「でね、一時は持て囃されてたんだけど、ある日突然作れなくなったらしいの。原因はね――」
+			PRINTFORMW %CALLNAME:TARGET%は挿絵を指差す。絵には、大勢の兵士が神に槍を突き刺す様子が描かれている
+			PRINTFORML 
+			PRINTFORML 「神殺しがされた場所って結構多いのね……」
+			PRINTFORMW %CALLNAME:TARGET%は本棚から視線を外し、背伸びをした
+			PRINTFORMW %CALLNAME:TARGET%の部屋で見たあの挿絵は、"神殺し"がされていた場面であった
+			PRINTFORMW 君主が即位した後、各地で神殺しがされたのだ
+			PRINTFORML 「月で起こる現象は精霊が管理していて、その現象は人の手で利用することはできても、中身を弄ることはできないのよね」
+			PRINTFORMW しかし、神が死ねば話は別である
+			PRINTFORML 「だから君主は神を殺して、神が管理していた現象を手中に納めようとした――科学を発展させるためね」
+			PRINTFORMW 次に%CALLNAME:TARGET%が手に取ったのは黒いカバーの本。題名は"科学と信仰について"
+			PRINTFORMW ページをパラパラと開いていき、とあるページに差し掛かったところでハッとして止めた
+			PRINTFORML 「ここよ！　ねえ、%CALLNAME:MASTER%！　次はここに行きましょう！」
+			PRINTFORMW %CALLNAME:MASTER%を手招き、ページを見るように誘う
+			PRINTFORML %CALLNAME:MASTER%がページを見ると、場所について大体の見当がついた
+			PRINTFORMW 次の休みにはこの地へ行こう。そう決めた二人であった
+		;レベル3
+		ELSEIF ARG:1 == 3
+			PRINTFORML 「お前だな。廃墟に行こうとしているのは」
+			PRINTFORML ある日、%CALLNAME:MASTER%の下に役人が訪れた
+			PRINTFORMW 目元の皺の深さは、彼が乗り超えてきた修羅場を彷彿とさせる
+			PRINTFORMW 彼は今、その皺を深める表情をして、鋭い眼で%CALLNAME:MASTER%を睨みつける
+			PRINTFORML 「悪いことは言わん。廃墟に行くのはやめろ」
+			PRINTFORMW 役人は手を払う仕草をしながら言う。%CALLNAME:MASTER%が理由を問いかけると、役人は天井を見上げながら、静かに語り始めた
+			PRINTFORML 
+			PRINTFORMW ――数年前
+			PRINTFORML 俺は、友人と一緒に廃墟を探索したんだ
+			PRINTFORMW 理由は金稼ぎのためだ
+			PRINTFORML その廃墟では水銀を金に換える技術を研究していたらしくてな
+			PRINTFORMW 生成過程で生じた金が少しは残ってるんじゃないかと思ったんだ
+			PRINTFORML それで、俺らは施設に来たんだが、いざ来てみると思った以上に何もなかったんだよ
+			PRINTFORMW 方々がぶっ壊れているだけで、金らしいものは見つからなかった
+			PRINTFORMW そうして諦めていたら、友人が何かの下敷きになってる金を見つけて、俺らは喜んだんだ
+			PRINTFORML これでしばらくの間、金に不自由なく暮らせる！　そう思っていたんだ
+			PRINTFORMW まあ、間違ってはいなかったさ、その時はな……
+			PRINTFORML 
+			PRINTFORML 役人は天井を見つめたまま、小さな声で語る
+			PRINTFORMW 「あの後、友人は変になっちまった……「もう、俺は何もしたくない」って言うんだよ」
+			PRINTFORMW 「廃墟を探索する前は、金を手に入れたら一緒に役人試験を受けようという話をしていたのにさ」
+			PRINTFORML 「それ以来、俺らは疎遠になっちまった……」
+			PRINTFORMW 役人は俯き、掌を強く握る
+			PRINTFORMW しばらくした後、%CALLNAME:MASTER%を見つめ、強い口調で忠告した
+			PRINTFORML 「だから、廃墟を探索するのは止めた方がいい。お前らが大切なものを失うぞ」
+			PRINTFORML 「……後はお前ら次第だ。自分で決めろ」
+			PRINTFORMW 役人は%CALLNAME:MASTER%の顔を見た後、何かを察したような表情を浮かべ、部屋を出ていった
+			PRINTFORML 本当に廃墟を探索すべきなのだろうか。と躊躇はするが
+			PRINTFORMW %CALLNAME:TARGET%と二人なら何とかなるだろう、とは思う
+		;レベル4
+		ELSEIF ARG:1 == 4
+			PRINTFORML -徳の量子電池　研究日誌-
+			PRINTFORML おかしい。昨日まで起こっていた現象が起こらなくなった
+			PRINTFORML 分量を間違えたわけでもない。研究員達を数十人集めてチェックも行わせたが、間違いは見つからなかった
+			PRINTFORML 私の手法は昨日と変わりないはずだ。間違いもない
+			PRINTFORML 一体何があったのだ
+			PRINTFORML 
+			PRINTFORMW 月の都から遠く離れたある研究所を訪れた%CALLNAME:MASTER%と%CALLNAME:TARGET%
+			PRINTFORML ピッシリと苔が付いた壁、硝子が割れた棚
+			PRINTFORMW 放置されてから随分と経つのだろう。研究所はすっかり野良の者達に荒らされている
+			PRINTFORML %CALLNAME:TARGET%は錆ついた研究装置や本を見つけては%CALLNAME:MASTER%を呼び出し、嬉しそうに質問をする
+			PRINTFORML 
+			PRINTFORML 「でね、この箱はスイッチを押すと……わわっ」
+			PRINTFORML そして、%CALLNAME:TARGET%が装置のスイッチを押した時、バタンと大きな音がして%CALLNAME:TARGET%は飛び上がった
+			PRINTFORMW 近くにあった壁が開き、奥から階段が現れたではないか
+			PRINTFORML 「行きましょう。きっとこの先に何かがあるわ」
+			PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の手を取りながら階段を下りていく
+			PRINTFORML 
+			PRINTFORML 扉で密閉されていたからか、地下は地上より綺麗だった
+			PRINTFORMW 壁や装置に苔や錆がついた形跡が無く、まるで今でも人がいるかのようだ
+			PRINTFORMW とはいえ、窓一つなく照明装置もないこの空間は薄暗く、足元に何があるか分からない
+			PRINTFORMW 明かりを灯して注意深く進む二人
+			PRINTFORMW その奥で、妙に明るい部屋を見つける
+			PRINTFORMW 部屋の中央には台座があり、薄い板が鎮座している
+			PRINTFORMW 「これが量子電池……」
+			PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%に見つめられ、頷く
+			PRINTFORMW 「やったわ。これで2つ目ね！」
+			PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の手を握り、部屋を出ていった
+			PRINTFORML 
+			PRINTFORML 二人が去った後の部屋に、青紫の煙が浮かび、暗い声が微かに響く
+			PRINTFORML "この部屋の宝を取ったな"
+			PRINTFORML "その願い、いつまで続くか、楽しみだ……"
+		ENDIF
+	;4:　穢れの地への移住計画_その3
+	CASE 4
+		;レベル1
+		IF ARG:1 == 1
+			PRINTFORMW ついに穢れの地に降りた%CALLNAME:TARGET%
+			PRINTFORMW 目新しい景色を目の当たりにして感嘆の言葉をあげると、周囲に人影が次々と現れた
+			PRINTFORML 「月から人間が降りてきたぞ」
+			PRINTFORML 「この世の人間じゃねえな。怖い怖い」
+			PRINTFORML 「衣を剥ぎ取ってしまえ！　皆の妾とするのだ！」
+			PRINTFORML %CALLNAME:TARGET%を地上の民が取り囲む
+			PRINTFORMW 民達は%CALLNAME:TARGET%ににじり寄り、衣服に手をかけ――
+			PRINTFORML 
+			PRINTFORML 「はっ……！　……って、なんだ、夢か……」
+			PRINTFORML 寝床から飛び上がる%CALLNAME:TARGET%
+			PRINTFORMW 額には汗が浮かび、顔面は少し青くなっている
+			PRINTFORML 「本当に夢だったの……？」
+			PRINTFORML 頭に掌を当て、夢の内容を思い返す
+			PRINTFORML 夢に出てきた地上の民達の汚らわしい肌、ヒビだらけの爪、そして砂埃で汚れた衣服
+			PRINTFORMW それらが鮮明に脳裏に浮かんでしまう。その鮮明さは、まるで実際にその場面に居合わせたかのようだ
+			PRINTFORML 
+			PRINTFORML 「うーん……やっぱり、地上に移住するのやめようかな……」
+			PRINTFORMW %CALLNAME:TARGET%は胸に手をあて、しばらくの間俯いた
+		;レベル2
+		ELSEIF ARG:1 == 2
+			PRINTFORML 「へー、%CALLNAME:MASTER%がそんな情報を持ってくるなんて、珍しいわね」
+			PRINTFORML %CALLNAME:TARGET%は、珍しく自分から秘宝の情報を持ってきた%CALLNAME:MASTER%に感心している
+			PRINTFORML だが、どこか他人事のように聞いており、違和感を感じる
+			PRINTFORMW 以前の%CALLNAME:TARGET%なら喜んで飛びついたはずだ
+			PRINTFORML 「私ね。もう地上に行くのはやめたのよ。あんな場所穢らわしいし……」
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%から視線を外して言う
+			PRINTFORMW 一体何があったのか問い詰めると、%CALLNAME:TARGET%は自信無さ気な口調で話し始めた
+			PRINTFORML 「怖い夢を見たのよ。穢れの地に移り住んだら、元々住んでいた民達に襲われて……」
+			PRINTFORMW 夢じゃないか、と説得する%CALLNAME:MASTER%であったが、%CALLNAME:TARGET%は首を横に振り続ける
+			PRINTFORML 穢れの地に移り住もうと言い出したのは元々%CALLNAME:TARGET%だったので、別に頓挫しても何とも思わないが
+			PRINTFORMW 悪夢を引き摺るのは、今後のことを考えるとあまりよくない
+			PRINTFORMW 何かいい方法はないだろうか……
+		;レベル3
+		ELSEIF ARG:1 == 3
+			PRINTFORML 休日の昼間。大通りを歩く%CALLNAME:MASTER%と%CALLNAME:TARGET%
+			PRINTFORML %CALLNAME:TARGET%は未だに悪夢を引き摺っており、秘境探しのことを一切口にしなくなった
+			PRINTFORMW せめて気分転換にと、%CALLNAME:MASTER%は%CALLNAME:TARGET%を連れ出したのであった
+			PRINTFORML 
+			PRINTFORML 「まさか再び姿を目にするとは……ありがたや」
+			PRINTFORML 老婆が%CALLNAME:TARGET%に近づき、両手を合わせて拝み始めた
+			PRINTFORMW 突然の出来事に驚く%CALLNAME:TARGET%と%CALLNAME:MASTER%
+			PRINTFORMW 「あの……誰かと間違われていませんか？」
+			PRINTFORMW %CALLNAME:TARGET%が恐る恐る尋ねると、老婆ははっとした表情をして言った
+			PRINTFORML 「ほお……すまないのう。雰囲気が月夜見様に似ていたもので、つい……」
+			PRINTFORML 「月夜見様に似ていたということは、月夜見様に会ったことがあるのですか？」
+			PRINTFORML 「おお！　あるぞ！　なんといってもわしは月夜見様と一緒に研究しておったからな！」
+			PRINTFORMW %CALLNAME:TARGET%が老婆に尋ねると、老婆は嬉しそうに言った
+			PRINTFORML 「もしかして、お主は廃墟で何か珍しい物を手に入れてはおらぬか？」
+			PRINTFORML 「珍しい物といえば、これでしょうか……」
+			PRINTFORMW %CALLNAME:TARGET%が懐から電池と歯車を取り出すと、老婆は声を張り上げた
+			PRINTFORML 「それじゃそれじゃ！　懐かしいのう。月夜見様の雰囲気を感じるわい」
+			PRINTFORML 「昔は月夜見様と一緒に研究されてたということは、今はどこにいるか知ってます？」
+			PRINTFORML 「いや、知らぬな。月夜見様は神殺しが起こった後「私が何とかしてみせる」と言った後、
+			PRINTFORML 　わしらの前から姿を消したのじゃ」
+			PRINTFORMW その後の失踪騒ぎは知っておろう？　と老婆は目で語りかける
+			PRINTFORML 「わしらは信じておるよ。月夜見様ならどんな困難があっても乗り越えられる、と」
+			PRINTFORMW %CALLNAME:TARGET%は老婆の目を見つめ、何か考え事をしている……
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%は老婆と別れた後、%CALLNAME:MASTER%に言った
+			PRINTFORML 「……私、やっぱり秘宝探しを続けるわ」
+			PRINTFORML 「月夜見様が頑張ってるなら、悪夢見たぐらいで諦めるのが情けなくなったの」
+			PRINTFORML %CALLNAME:TARGET%はけろっとした笑顔を浮かべている
+			PRINTFORMW 理由は分からないが、悪夢から醒めたならいいことだろう
+			
+			
+			;以下、長いので没
+			;PRINTFORML 商店街を歩く%CALLNAME:MASTER%と%CALLNAME:TARGET%
+			;PRINTFORML %CALLNAME:TARGET%は未だに悪夢を引き摺っており、秘境探しのことを一切口にしなくなった
+			;PRINTFORMW せめて気分転換させようと思い、%CALLNAME:MASTER%は%CALLNAME:TARGET%を連れ出したのであった
+			;PRINTFORML 
+			;PRINTFORML %CALLNAME:TARGET%の顔を見ると、%CALLNAME:TARGET%はすぐに視線を逸らした
+			;PRINTFORMW このままでは外出した意味がないとは思うものの、中々会話のきっかけは思い浮かばないのであった
+			;PRINTFORML 
+			;PRINTFORML そんな微妙なやりとりをしていると、正面から来た老婆が、%CALLNAME:TARGET%を見て拝み始めた
+			;PRINTFORMW 「はあ……ありがたや……」
+			;PRINTFORML 老婆の様子に首を傾げる%CALLNAME:TARGET%
+			;PRINTFORML どうやら知り合いではないらしい
+			;PRINTFORML 
+			;PRINTFORML 「あ……あの、誰かと間違われてませんか？」
+			;PRINTFORML %CALLNAME:TARGET%が訪ねると、老婆は%CALLNAME:TARGET%の両手を握り、信心深そうに語る
+			;PRINTFORML 「いえいえ、そなたの雰囲気……とても月夜見様に似ておるのじゃ」
+			;PRINTFORML 「月夜見様……に……？」
+			;PRINTFORMW 老婆の言葉に%CALLNAME:TARGET%ははっとした表情をする
+			;PRINTFORMW 「本当じゃぞ。その不思議な雰囲気が特に」
+			;PRINTFORML 「うーん……褒められているのかな……」
+			;PRINTFORMW %CALLNAME:TARGET%は首を傾げた
+			;PRINTFORML 「貴方、どこかで精霊が憑く物を手に入れなかったかの？」
+			;PRINTFORML 「精霊が憑く物？」
+			;PRINTFORML 「そうじゃ。精霊の加護によってつくられた物のことじゃ。
+			;PRINTFORMW 　昔はそういう物の開発が盛んだったのだが、今の君主が就いてからはすっかり廃れてしまってのう」
+			;PRINTFORMW 老婆の言葉で%CALLNAME:TARGET%は何かに気付き、懐から電池を取り出した
+			;PRINTFORML 「もしかして、これがそうだったりする？」
+			;PRINTFORMW 老婆は電池を見て驚き、声をあげた
+			;PRINTFORML 
+			;PRINTFORML 「おおおお……それじゃ、精霊の輝きを帯びておる」
+			;PRINTFORMW 老婆は感嘆の声をあげ、ただ震えている
+			;PRINTFORML 「精霊の……輝き？」
+			;PRINTFORMW 困惑して聞く%CALLNAME:TARGET%に、老婆は返答する
+			;PRINTFORML 「そうじゃ。お主には分からぬか？　この仄かな輝きが」
+			;PRINTFORMW 老婆は、首を傾げる%CALLNAME:TARGET%を気にせずに話を続けた
+			;PRINTFORML 「あれは大分昔じゃったのう……
+			;PRINTFORML 　当時、わしは施設で働いておったのじゃ
+			;PRINTFORML 　精霊から力を借りて物を作るためにな
+			;PRINTFORML 　精霊と交信する必要があったのじゃが、その際に動いてくれたのが月夜見様であった
+			;PRINTFORMW 　あの方は精霊と交信して、力を借りる交渉をしてくださったのじゃ」
+			;PRINTFORML 「月夜見ってそんなことまでしていたのね」
+			;PRINTFORML 「これこれ。月夜見"様"じゃぞ
+			;PRINTFORML 　まあよい、月夜見様は突然姿を隠されてしまったが
+			;PRINTFORML 　お主のような者がおるなら、月の都はまだ安泰じゃのう
+			;PRINTFORML 　ほっほっほ」
+			;PRINTFORML 「おっと、別にわしはお主に月夜見様の代わりを努めろとは言っておらんからの
+			;PRINTFORML 　お主の道はお主で決めるのじゃ。それじゃあの」
+			;PRINTFORMW 老婆は%CALLNAME:TARGET%の肩を叩き、笑いながら去っていった
+			;PRINTFORML 「行っちゃった……」
+			;PRINTFORMW %CALLNAME:TARGET%は呆然とした後、%CALLNAME:MASTER%に振り向いた
+			;PRINTFORML 「私、秘境探しを続けることにするわ
+			;PRINTFORML 　悪夢は見たけど、%CALLNAME:MASTER%がいれば何とかなりそうな気がするもの」
+			;PRINTFORMW そう言い放つ%CALLNAME:TARGET%の瞳には、強い意志が籠っていた
+			
+			;↓シナリオと合っていないので、下記文章は没
+			;PRINTFORML 「私、ぐやちゃんが地上に移住するの反対するわ」
+			;PRINTFORML 「輝夜さんが地上に移り住む？　まあ、いいのではないでしょうか。
+			;PRINTFORML 　お姉様が兎のぬいぐるみに話しかけるのをやめてくれるでしょうし……」
+			;PRINTFORML 「ん？　毎晩ぐやちゃんのこと聞いてくるの誰だっけ？　兎の帽子作ってほしいって遠まわしに言ったの誰だっけ？」
+			;PRINTFORML 「し、知りませんよ……夢の中に住む漠にでも聞いてください」
+		;レベル4
+		ELSEIF ARG:1 == 4
+			PRINTFORML 「あったあった。ここが秘境ね」
+			PRINTFORML %CALLNAME:TARGET%は秘境を指差した
+			PRINTFORMW 建物は苔に覆われており、壁の色や模様が分からない
+			PRINTFORML 苔の匂いが鼻を突く。この景色といい匂いといい、まるで屋外の森林にいるようだ
+			PRINTFORML 「ここでは穢れが無い気体が作られていたらしいわ」
+			PRINTFORMW %CALLNAME:TARGET%は本の一文を指差し、言った
+			PRINTFORML 「月より穢れが無い地があってね
+			PRINTFORML 　本来は死んだ者のみが辿り着けるらしいのだけど
+			PRINTFORML 　たまたま、死後の世界と行き来できる精霊がいて
+			PRINTFORML 　その精霊の力を借りて作られたのが、穢れの無い気体……
+			PRINTFORMW 　つまり、"無穢の気体"であるようね」
+			PRINTFORML ……と本に書いてあったー、と言って笑う%CALLNAME:TARGET%
+			PRINTFORMW 心なしか、笑顔が眩しく見えた
+			PRINTFORML 
+			PRINTFORML 「わぁ、思ったより綺麗ね……」
+			PRINTFORML 秘境の内部は荒らされた形跡が無く、
+			PRINTFORMW まるで人が去った時から時が止まっているようだ
+			PRINTFORML 「この部屋が怪しそうね」
+			PRINTFORML %CALLNAME:TARGET%が苔が着いてない扉を見て呟いた
+			PRINTFORMW 苔だらけの環境でこの綺麗さを維持していることに、何かの気配を感じる
+			PRINTFORML 「中に入ってみましょう。……え？　入れるのかって？　大丈夫よ……ほらね」
+			PRINTFORMW %CALLNAME:TARGET%が扉を押すと、簡単に開いた
+			PRINTFORML 「きっと私は選ばれているのよ。さあ、中に入りましょう？」
+			PRINTFORML 
+			PRINTFORML 部屋の中はまるで別世界のようだ
+			PRINTFORML 壁には苔が一切着いておらず、床にも埃が積もっていない
+			PRINTFORMW まるで他の施設からこの部屋だけ持ってきたかのような雰囲気を感じさせる
+			PRINTFORML 「ねえ、見て！　あれが"穢れがない気体"じゃない？」
+			PRINTFORML %CALLNAME:TARGET%が指差した先に台座があり、台座には透明の瓶が浮いている
+			PRINTFORMW 瓶を持ち上げると、まるで何も入っていないかのように軽かった
+			PRINTFORML 「……。本当に入っているのかしらね？」
+			PRINTFORMW %CALLNAME:TARGET%が怪訝に思っていると、目の前にある壁が光り、文字が浮かび出した
+			PRINTFORML 
+			PRINTFORML ～～この地を訪れた者へ～～
+			PRINTFORML ついに、貴方は秘宝を3つ集めたようですね。おめでとうございます
+			PRINTFORML 私は夢の世界を管理している者です
+			PRINTFORML さて、秘宝を集めてる最中、悪夢を見ませんでしたか？
+			PRINTFORML 実は秘宝には「秘宝を集める者が夢を叶えようとすると、悪夢を見せて妨害する」呪いがかけられているのです
+			PRINTFORML 神殺しのせいで秘宝開発を妨げられた研究員が、夢を操る神にこの呪いをお願いしたんです
+			PRINTFORMW あなたの夢が何であるかは分かりませんが、恐らく叶えられると思いますよ
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%はしばらくして
+			PRINTFORML 「なるほど……面白い仕掛けね」
+			PRINTFORML と言い、笑みを浮かべた
+			PRINTFORMW 悪夢の原因がはっきりとして、憂いが消えたことで安心したのだろう
+			PRINTFORML 
+			PRINTFORMW 何はともあれ、これで穢れの地で住む準備は整った
+			PRINTFORML 
+			CALL SETCOLOR_ABL
+			PRINTFORMW 「新天地エンド」のグッドエンド条件を達成した！
+			RESETCOLOR
+			
+			
+			;以下、方針転換のため没
+			;PRINTFORML ～～この地を訪れた者へ～～
+			;PRINTFORML この部屋に入ることができた、ということは、恐らく貴方にはある程度の実力があるのだろう
+			;;PRINTFORML 気体を管理するこの部屋は、本質的に穢れを纏う者は入れないようになっているのだ
+			;PRINTFORML 私は月夜見。かつては精霊の力を借りて新たな物を開発する活動の手助けをしていた者だ
+			;PRINTFORML まあ、君主が今の地位についてからは精霊が次々に殺され、研究も全く進められなくなったのだが……
+			;PRINTFORML 
+			;PRINTFORML だが、これだけは忘れないでほしい
+			;PRINTFORML 精霊殺しで挫折した研究員達だが、かつては様々な困難があっても立ち向かってきたのだ
+			;PRINTFORML だから、このメッセージを見た者も、何か目指していることがあるなら諦めずに挑んでほしい
+			;PRINTFORML このメッセージが他の者に見られている時、私はすでに姿を消していると思うが
+			;PRINTFORMW 君主に支配された状況を打開する方法はあきらめずに探していくつもりだ
+			;PRINTFORML 
+			;PRINTFORML 少しの静寂の後、%CALLNAME:TARGET%は口を開いた
+			;PRINTFORML 「」
+			;PRINTFORML 声には戸惑いが混じっている。恐らくここで月夜見の言葉を見るとは思わなかったのだろう
+		ENDIF
+ENDSELECT
+
+;------------------------------------
+;課外活動_レベルアップ時の報酬
+;ARG　　活動項目
+;ARG:1　レベル
+;------------------------------------
+@EXTRAMOVE_BONUS, ARG, ARG:1
+
+CALL SETCOLOR_PALAMUP
+SELECTCASE ARG
+	;0:　イナバの世話
+	CASE 0
+		IF ARG:1 == 1
+			CALL CALCULATION_PALAM, 10, "役人の評価"
+		ELSEIF ARG:1 == 2
+			CALL CALCULATION_PALAM, 20, "役人の評価"
+		ELSEIF ARG:1 == 3
+			PRINTFORML 部屋飼いイナバを手に入れた！
+			ITEM:部屋飼いイナバ += 1
+		ENDIF
+	;1:　穢れの地への移住計画_その1
+	CASE 1
+		IF ARG:1 == 1
+			CALL CALCULATION_PALAM, 5, "知力"
+		ELSEIF ARG:1 == 2
+			CALL CALCULATION_PALAM, 7, "知力"
+		ELSEIF ARG:1 == 3
+			CALL CALCULATION_PALAM, 10, "知力"
+		ELSEIF ARG:1 == 4
+			CALL CALCULATION_PALAM, 13, "知力"
+		ELSEIF ARG:1 == 5
+			ITEM:解脱の歯車 += 1
+		ENDIF
+	;2:　庭の掃除
+	CASE 2
+		IF ARG:1 == 1
+			CALL CALCULATION_PALAM, 5, "家事"
+		ELSEIF ARG:1 == 2
+			CALL CALCULATION_PALAM, 10, "家事"
+		ELSEIF ARG:1 == 3
+			CALL CALCULATION_PALAM, 12, "家事"
+		ELSEIF ARG:1 == 4
+			CALL CALCULATION_PALAM, 15, "家事"
+			
+			LOCAL:1 = 5
+			PRINTFORML 主人への友好度が{LOCAL:1}上がった！
+			CFLAG:主人への友好度 += LOCAL:1
+			CALL UP_STATUS
+		ENDIF
+	;3:　穢れの地への移住計画_その2
+	CASE 3
+		IF ARG:1 == 1
+			CALL CALCULATION_PALAM, 7, "知力"
+		ELSEIF ARG:1 == 2
+			CALL CALCULATION_PALAM, 9, "知力"
+		ELSEIF ARG:1 == 3
+			CALL CALCULATION_PALAM, 12, "知力"
+		ELSEIF ARG:1 == 4
+			CALL CALCULATION_PALAM, 15, "知力"
+		ELSEIF ARG:1 == 5
+			ITEM:徳の量子電池 += 1
+		ENDIF
+	;4:　穢れの地への移住計画_その3
+	CASE 4
+		IF ARG:1 == 1
+			CALL CALCULATION_PALAM, 12, "知力"
+		ELSEIF ARG:1 == 2
+			CALL CALCULATION_PALAM, 15, "知力"
+		ELSEIF ARG:1 == 3
+			CALL CALCULATION_PALAM, 18, "知力"
+		ELSEIF ARG:1 == 4
+			ITEM:無穢の気体 += 1
+		ENDIF
+ENDSELECT
+PRINTFORMW 
+
+RESETCOLOR
+
+;=================================================
+;課外活動_説明文
+;=================================================
+
+@EXTRAMOVE_EXPLAIN_0
+PRINTFORML ○イナバの世話
+PRINTFORML 　王宮に住みついたイナバを世話します
+CALL SETCOLOR_ABL
+PRINTFORML 　　最大Lv：3
+PRINTFORML 　活動報酬：役人の評価、アイテム「？？？」
+PRINTFORML 　活動条件：%CALLNAME:TARGET%が王宮に住んでいること
+RESETCOLOR
+
+
+@EXTRAMOVE_EXPLAIN_1
+PRINTFORML ○穢れの地への移住計画_その1
+PRINTFORML 　穢れの地に移住する方法を探します
+CALL SETCOLOR_ABL
+PRINTFORML 　　最大Lv：5
+PRINTFORML 　活動報酬：知力、アイテム「解脱の歯車」
+PRINTFORML 　活動条件：知力100以上
+RESETCOLOR
+
+@EXTRAMOVE_EXPLAIN_2
+PRINTFORML ○庭の掃除
+PRINTFORML 　王宮の庭を掃除します
+CALL SETCOLOR_ABL
+PRINTFORML 　　最大Lv：4
+PRINTFORML 　活動報酬：家事
+PRINTFORML 　活動条件：%CALLNAME:TARGET%が王宮に住んでいること
+RESETCOLOR
+
+@EXTRAMOVE_EXPLAIN_3
+PRINTFORML ○穢れの地への移住計画_その2
+PRINTFORML 　穢れの地に移住する方法を探します
+CALL SETCOLOR_ABL
+PRINTFORML 　　最大Lv：5
+PRINTFORML 　活動報酬：知力、アイテム「徳の量子電池」
+PRINTFORML 　活動条件：知力130以上
+RESETCOLOR
+
+@EXTRAMOVE_EXPLAIN_4
+PRINTFORML ○穢れの地への移住計画_その3
+PRINTFORML 　穢れの地に移住する方法を探します
+CALL SETCOLOR_ABL
+PRINTFORML 　　最大Lv：4
+PRINTFORML 　活動報酬：知力、アイテム「無穢の気体」
+PRINTFORML 　活動条件：知力160以上
+RESETCOLOR
+
+;==========================================
+;課外活動_レベルアップに必要な活動ポイント_算出関数
+;
+;ARG　	活動項目
+;ARG:1	活動項目のレベル
+;==========================================
+@EXTRAMOVE_EXPTYPE, ARG, ARG:1
+#FUNCTION
+
+;1.25乗の数値を格納するための変数
+#DIM sqrt_point, 1
+
+;LOCALの初期化
+VARSET LOCAL, 0
+
+;達成難度設定
+;1:達成難度(低)　2:達成難度(中)　3:達成難度(高)
+SELECTCASE ARG
+	;0:　イナバの世話
+	CASE 0
+		LOCAL = 1
+	;1:　穢れの地への移住計画_その1
+	CASE 1
+		LOCAL = 3
+	;2:　庭の掃除
+	CASE 2
+		LOCAL = 2
+	;3:　穢れの地への移住計画_その2
+	CASE 3
+		LOCAL = 3
+	;4:　穢れの地への移住計画_その3
+	CASE 4
+		LOCAL = 3
+ENDSELECT
+
+
+;sqrt_pointには、Lv×1.25乗の計算結果を代入する
+;小数点第二位までの値を計算に使うために、元の値に10000を乗算する
+;(平方根を取ると100になるので問題ない)
+sqrt_point = SQRT(10000*(ARG:1+1))
+sqrt_point = SQRT(100*sqrt_point)
+sqrt_point = MAX((ARG:1+1) * sqrt_point, 1)
+
+;基礎経験値
+SELECTCASE LOCAL
+	;達成難度(低)
+	CASE 1
+		LOCAL:1 = 50
+	;達成難度(中)
+	CASE 2
+		LOCAL:1 = 70
+	;達成難度(高)
+	CASE 3
+		LOCAL:1 = 100
+	;未設定、及び想定されていない値が入る場合
+	CASEELSE
+		LOCAL:1 = -1000
+ENDSELECT
+
+;計算式：基礎値×Lv^1.25
+;(sqrt_pointには本来取るべき値の100倍の数値が代入されているので、100で除算する)
+LOCAL:1 = LOCAL:1 * sqrt_point / 100
+
+RETURNF LOCAL:1
+
+
+
+;==========================================
+;活動ポイント算出関数
+;残りCP×(10+行動回数×5)/10
+;ARG　残りCP
+;==========================================
+@CALU_EXTRAMOVE_POINT,ARG
+
+;活動ポイントにかかる補正値を計算する
+TRYCALL EFFECT_EXTRAMOVE_POINT, ARG
+
+RETURN RESULT
+
+;==========================================
+;活動ポイント補正
+;ARG　補正がかかる前の活動ポイント
+;==========================================
+@EFFECT_EXTRAMOVE_POINT,ARG
+
+;固定入手値を格納する変数
+#DIM get_holdpoint, 1
+
+;5回以上の場合は、数が増えるにつれ補正が大きくなる
+SELECTCASE MAXBASE:行動回数-BASE:行動回数
+	CASE 5
+		PRINTFORML 行動回数ボーナス(×1.3)
+		LOCAL = 130
+	CASE 6
+		PRINTFORML 行動回数ボーナス(×1.5)
+		LOCAL = 150
+	CASE 7
+		PRINTFORML 行動回数ボーナス(×1.7)
+		LOCAL = 170
+	CASEELSE
+		LOCAL = 100
+ENDSELECT
+
+ARG = ARG*LOCAL/100
+
+
+;愛情経験に応じてボーナスを貰える
+IF EXP:愛情経験 >= 100
+	get_holdpoint = 5
+ELSEIF EXP:愛情経験 >= 70
+	get_holdpoint = 4
+ELSEIF EXP:愛情経験 >= 40
+	get_holdpoint = 3
+ELSEIF EXP:愛情経験 >= 20
+	get_holdpoint = 2
+ELSEIF EXP:愛情経験 >= 10
+	get_holdpoint = 1
+ELSE
+	get_holdpoint = 0
+ENDIF
+
+IF get_holdpoint
+	PRINTFORML 愛情経験ボーナス　+{get_holdpoint}
+	ARG += get_holdpoint
+ENDIF
+
+RETURN ARG
+
+;==========================================
+;活動ポイント加算処理
+;ARG	補正がかかる前の活動ポイントのID
+;ARG:1	加算する活動ポイント
+;ARGS	加算ポイントの表示/非表示を設定する。"表示"が代入された場合のみ、加算ポイントの表示を行う
+;==========================================
+@EXTRAMOVE_ADDER, ARG, ARG:1, ARGS
+
+;処理が分かりづらくなるので、計算処理はLOCALで行う
+LOCAL = CFLAG:("活動ポイント／"+EXTRAMOVE_NAME(ARG)+"")
+LOCAL:1 = CFLAG:("レベル／"+EXTRAMOVE_NAME(ARG)+"")
+
+IF ARGS == "表示"
+	PRINTFORM 活動ポイント:{LOCAL}　→　
+	CALL SETCOLOR_PALAMUP
+	LOCAL += ARG:1
+	PRINTFORML {MIN(LOCAL, EXTRAMOVE_EXPTYPE(ARG, LOCAL:1))}
+	RESETCOLOR
+	;レベルアップに必要な活動ポイントに足りない場合のみ、次のレベルに達するために必要な活動ポイントを表示する
+	IF LOCAL < EXTRAMOVE_EXPTYPE(ARG, LOCAL:1)
+		PRINTFORMW 次のレベルまで残り　{EXTRAMOVE_EXPTYPE(ARG, LOCAL:1)-LOCAL}
+	ENDIF
+ENDIF
+
+;計算結果をCFLAGに戻す
+CFLAG:("活動ポイント／"+EXTRAMOVE_NAME(ARG)+"") = LOCAL
+
+RETURN 0
+

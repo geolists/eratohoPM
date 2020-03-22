@@ -1,0 +1,171 @@
+﻿;======================================================
+;囮調査
+;夜遊びの球の影響下のみ使用可能
+;能力上昇アイテムや武者修行用アイテムが手に入る
+;======================================================
+@NIGHT_DECOY
+
+PRINTFORML %NAME_THIEF()%に捕まり、アイテムを入手します
+PRINTL 使用すると半月が経過し、調査に失敗すると……
+PRINTL 
+PRINTL 実行しますか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は%NAME_THIEF()%達にわざと捕まり、内情を探ることにした……
+
+	;成功率は50％
+	IF !RAND:2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 成功！
+		PRINTFORML %CALLNAME:TARGET%は無事に帰ってきた！
+		RESETCOLOR
+		
+		CALL NIGHT_DECOY_GET_ITEM
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は、%NAME_THIEF()%達から逃げることができなかった……
+		RESETCOLOR
+		
+		CALL DECOY_FAILURE
+		
+		;40％の確率で[落書き]付与
+		;(失敗する確率は50％なので、20%の確率で取得できる)
+		IF RAND:10 <= 3
+			PRINTFORML %NAME_THIEF()%は%CALLNAME:TARGET%の身体に落書きを書き加えた
+			CALL SETCOLOR_ABL
+			PRINTFORML %CALLNAME:TARGET%は[落書き]を得た
+			RESETCOLOR
+			
+			TALENT:落書き = 8
+		ENDIF
+		
+		PRINTFORML 散々%NAME_THIEF()%に弄ばれた%CALLNAME:TARGET%は、
+		PRINTFORMW ボロボロの姿で路地裏に放り出された
+	ENDIF
+
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+;--------------------------------------------
+;入手アイテム決定処理
+;--------------------------------------------
+@NIGHT_DECOY_GET_ITEM
+
+;入手するアイテムID
+#DIM get_item, 1
+
+;50％：強化アイテム×2個
+;30％：武者修行用アイテム
+;20％：職業専用アイテム
+
+IF RAND(1, 100) <= 50
+	get_item = 522 + RAND:5
+	LOCAL = 2
+ELSEIF RAND(1, 50) <= 30
+	get_item = 601 + RAND:2
+	LOCAL = 1
+ELSE
+	;アクセサリーの部位をRANDで分ける
+	SELECTCASE RAND:3
+		CASE 0
+			get_item = 404 + RAND:4
+		CASE 1
+			get_item = 414 + RAND:4
+		CASE 2
+			get_item = 424 + RAND:4
+	ENDSELECT
+	LOCAL = 1
+ENDIF
+
+PRINTFORML %ITEMNAME:get_item%を{LOCAL}個手に入れた！
+
+ITEM:get_item += LOCAL
+
+RETURN 0
+
+
+;--------------------------------------------
+;失敗時
+;5パターン用意して飽きないようにする
+;--------------------------------------------
+@DECOY_FAILURE
+
+SELECTCASE RAND:5
+	CASE 0
+		PRINTFORML %CALLNAME:TARGET%は衣服を脱がされ、四肢を縛られた状態で後ろから突かれている
+		PRINTFORML 球の力により淫らな身体と化した%CALLNAME:TARGET%は、
+		PRINTFORML あられもない声をあげ、性交を愉しんでいる
+		PRINTFORMW 最終的に精液を膣内に注ぎ込まれ、%CALLNAME:TARGET%は恍惚とした表情を浮かべている
+		
+		CALL INSERT, 1, 1, 0
+		CALL CALCULATION_INYOU, 11, 1
+		CALL CAL_CHASTE, 1, "下降"
+	CASE 1
+		PRINTFORML %CALLNAME:TARGET%は全裸に首輪の恰好で野外に出され、物乞いを強要された
+		PRINTFORML 浮浪者が%CALLNAME:TARGET%を見つけると、息を荒くして%CALLNAME:TARGET%を押し倒し、秘部を突く
+		PRINTFORML 浮浪者のたどたどしい性交が、%CALLNAME:TARGET%に焦らすような快楽を与え、心も体も少しずつ蕩かしていく
+		PRINTFORML 焦らすような刺激で頭がやられてしまった%CALLNAME:TARGET%は、浮浪者を見つける度に自ら四つん這いになり、
+		PRINTFORMW 「イカせてください……」とせがむようになった
+		
+		CALL INSERT, 1, 1, 0
+		CALL CALCULATION_INYOU, 10, 1
+		CALL CAL_CHASTE, 3, "下降"
+	CASE 2
+		PRINTFORML %CALLNAME:TARGET%は%NAME_THIEF()%達の宴会に呼ばれた
+		PRINTFORML 宴が盛り上がると、%NAME_THIEF()%はとある遊戯を開催した
+		PRINTFORMW それは「%CALLNAME:TARGET%の身体を触り、声を漏らしたら酒を飲ませる」という遊戯である
+		PRINTFORML 
+		PRINTFORML %CALLNAME:TARGET%は胸を弄られると声をあげ、酒が注がれ
+		PRINTFORML 秘部を触られると声をあげ、酒が注がれる……
+		PRINTFORML 酒が思考力を奪い、益々声をあげやすくなり、更に酒が注がれる……
+		PRINTFORMW この悪循環により%CALLNAME:TARGET%の思考は蕩かされ、行為も過激な物へ変わっていく
+		PRINTFORML 
+		PRINTFORML 最終的に、%CALLNAME:TARGET%は%NAME_THIEF()%に跨り
+		PRINTFORMW 口も秘所も指や一物で犯されながら、しきりに性交をねだるようになった……
+		
+		CALL INSERT, 1, 1, 0
+		CALL CALCULATION_INYOU, 12, 1
+		CALL CAL_CHASTE, 2, "下降"
+		
+		PRINTFORMW 精飲経験 + 8
+		EXP:精飲経験 += 8
+	CASE 3
+		PRINTFORML %CALLNAME:TARGET%は全裸に剥かれ、目隠しされた状態で壁に拘束された
+		PRINTFORML %NAME_THIEF()%は、媚薬を浸けた筆で%CALLNAME:TARGET%の胸や股間を撫で、
+		PRINTFORML %CALLNAME:TARGET%の反応を愉しむ
+		PRINTFORML 視界が遮られることによって触覚が過敏になり、少しずつ吐息が荒くなり、肌に汗が滲んでいく
+		PRINTFORML %NAME_THIEF()%は生暖かい媚薬を股間に垂らし、もう秘部が濡れてるぞと嘘をつくと
+		PRINTFORMW %CALLNAME:TARGET%の身体は更に火照り、漏らす言葉が艶を帯びた
+		PRINTFORML 
+		PRINTFORML 心も身体もねっとりと蕩かされた%CALLNAME:TARGET%は、%NAME_THIEF()%が近づく度に腰を浮かし
+		PRINTFORML 淫らな言葉で性交をせがむようになった
+		PRINTFORML しかし、結局%NAME_THIEF()%に犯されることがないまま野外に放り出されてしまった
+		PRINTFORMW その後、%CALLNAME:TARGET%は一心不乱に自身の身体を弄り、溜まりに溜まった性欲を発散させたのは言うまでもない……
+		
+		CALL CALCULATION_INYOU, 8, 1
+		CALL CAL_CHASTE, 3, "下降"
+	CASE 4
+		PRINTFORML %CALLNAME:TARGET%は衣服を奪われ、全裸での生活を強要された
+		PRINTFORML %CALLNAME:TARGET%が動く度、%NAME_THIEF()%達の視線が胸や股間に突き刺さる
+		PRINTFORML 異性に四六時中視線を注がれると、いくら穢れた者とは言え、羞恥で顔が紅潮してしまう
+		PRINTFORML 夕食の時間になると、%CALLNAME:TARGET%の食べ物に薬を混ぜられ
+		PRINTFORML 薬で蕩かされた%CALLNAME:TARGET%は、%NAME_THIEF()%に何度も犯され、
+		PRINTFORMW 上下の口を精液で満たされるのであった……
+		
+		CALL INSERT, 1, 1, 0
+		CALL CALCULATION_INYOU, 11, 1
+		CALL CAL_CHASTE, 4, "下降"
+		
+		PRINTFORMW 精飲経験 + 6
+		EXP:精飲経験 += 6
+ENDSELECT
+
+
+

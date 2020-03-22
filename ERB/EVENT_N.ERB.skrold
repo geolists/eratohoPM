@@ -1,0 +1,2723 @@
+﻿;================================================================================
+;日常イベント
+;ターン終了時に発生
+;================================================================================
+@EVENT_N
+#DIM PAR,1
+#DIM GET_MONEY, 1
+#DIM yuukai, 1
+#DIM GET_ABL, 1
+#DIM HOSEI, 1
+#DIM EXP_BONUS, 1
+#DIM L_LOCAL, 1
+#DIM B_INYOU, 1
+#DIM hantei, 1
+
+;イベント前の淫妖の値を記録
+B_INYOU = EXP:淫妖経験
+
+
+;治療フラグが立っている場合、日常イベントをスキップ
+IF FLAG:治療
+	FLAG:治療 = 0
+ENDIF
+
+;誘拐されていない場合、誘拐判定を通る
+;2年目の4月までは誘拐されない
+
+yuukai = 0
+FOR COUNT, 1, FLAG:攫った姉妹の数+2
+	IF CFLAG:COUNT:モード == 2
+		yuukai += 1
+	ENDIF
+NEXT
+
+;風紀の自然治癒
+IF !HANTEI_JYOTYUU()
+	FLAG:王宮内の風紀 = LIMIT(FLAG:王宮内の風紀+3, 0, 100)
+ELSE
+	FLAG:王宮内の風紀 = LIMIT(FLAG:王宮内の風紀-HANTEI_JYOTYUU(), 0, 100)
+ENDIF
+
+;女中の態度を変化させる
+;女中服に含まれていない意匠の態度は2減少させる
+FOR L_LOCAL, 0, 5
+	IF FLAG:JYOTYUU_ELE(L_LOCAL)
+		FLAG:JYOTYUU_ATTI(L_LOCAL) = LIMIT(FLAG:JYOTYUU_ATTI(L_LOCAL)+4*FLAG:JYOTYUU_ELE(L_LOCAL)/100, 0, 50)
+	ELSE
+		FLAG:JYOTYUU_ATTI(L_LOCAL) = LIMIT(FLAG:JYOTYUU_ATTI(L_LOCAL)-2, 0, 50)
+	ENDIF
+NEXT
+
+;娼婦態度は風紀と淫妖要素によって左右される
+FLAG:女中態度／娼婦 = LIMIT(FLAG:女中態度／娼婦+(100-FLAG:王宮内の風紀)/10+HANTEI_JYOTYUU(), 0, 100)
+
+DRAWLINE
+;食事方針によって効果が変わる
+IF CFLAG:モード == 2
+	PRINTFORML 盗賊に誘拐されている%CALLNAME:TARGET%は、あって無いような量の食事を無理矢理食べさせられている……
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML スタミナが1下がった……
+	RESETCOLOR
+	BASE:スタミナ -= 1
+	BASE:栄養値 -= 2
+ELSE
+	;住み込み
+	IF CFLAG:モード == 4
+		PRINTFORML %CALLNAME:TARGET%は仕送りされたご飯を食べている
+	ELSE
+		PRINTFORML %CALLNAME:MASTER%と%CALLNAME:TARGET%は毎日食事を摂っている
+	ENDIF
+	SELECTCASE CFLAG:食事方針
+		CASE 2
+			PRINTFORML 考えられない位豪華な料理を前に、%CALLNAME:TARGET%は満面の笑みを浮かべている
+		CASE 1
+			PRINTFORML 祝い事で作りそうな程豪華な料理に、%CALLNAME:TARGET%は喜んでいる
+		CASE 0
+			IF CFLAG:モード == 2
+				PRINTFORML %CALLNAME:MASTER%と%CALLNAME:TARGET%で協力して作った料理を二人は味わった
+			ELSE
+				PRINTFORML 一般的な王宮の料理を二人は味わった
+			ENDIF
+		CASE -1
+			PRINTFORML やや量が少ない料理を、%CALLNAME:TARGET%は「自分と教育係のため」と自分に言い聞かせながら食べている
+		CASE -2
+			PRINTFORML 考えられないくらい量を減らした料理を二人はひもじい思いをしながら食べきった……
+	ENDSELECT
+	BASE:栄養値 += 2*CFLAG:食事方針
+	IF CFLAG:食事方針 >= 1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML スタミナが{CFLAG:食事方針*2}上がった！
+	ELSEIF CFLAG:食事方針
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML スタミナが{-1*CFLAG:食事方針*2}下がった……
+	ENDIF
+	BASE:スタミナ = LIMIT(BASE:スタミナ+CFLAG:食事方針*2, 0, 600)
+	RESETCOLOR
+ENDIF
+
+;母乳体質の場合、たまに母乳を噴出する
+;溜めた淫妖経験が多くなると確率が上がる
+IF TALENT:母乳体質 && RAND:99+1 <= FLAG:差異／淫妖*2
+	DRAWLINE
+	;誘拐時は盗賊のムードを上げてしまう
+	IF FLAG:モード == 2
+		PRINTFORML %CALLNAME:TARGET%は感極まった声をあげ、胸の頂上から母乳を滴らせた
+		PRINTFORML 突然の出来事と淫らな様子に周囲の盗賊達は一層盛り上げってしまった……
+		
+		;ムード
+		CFLAG:盗賊ムード += 30
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は突っ張った胸を絞り、艶やかな声を漏らしながら絞った
+		PRINTFORML 胸先からは母乳が滴り落ちていく……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 禁断のミルクを手に入れた！
+		ITEM:禁断のミルク += 1
+	ENDIF
+ENDIF
+RESETCOLOR
+
+;誘拐猶予期間中でないなら、盗賊の誘拐判定処理を行う
+IF !FLAG:誘拐猶予
+	IF CFLAG:盗賊撃退依頼
+		DRAWLINE
+		PRINTFORML 兵士達は王宮の周りをうろつく盗賊達を撃退した！
+		PRINTFORM 盗賊接近値:{CFLAG:盗賊接近値}　→　
+		CFLAG:盗賊接近値 = MAX(CFLAG:盗賊接近値-(150+50*FLAG:兵力), 0)
+		PRINTFORML {CFLAG:盗賊接近値}
+		CFLAG:盗賊撃退依頼 = 0
+	;住み込みで働いている場合、誘拐されない
+	ELSEIF !yuukai && (FLAG:年数 > 2 || (FLAG:年数 == 2 && DAY > 4)) && !(DAY == 1 && TIME == 0) && CFLAG:モード != 4
+		CALL YUUKAI_HANTEI
+		;誘拐された場合、以後のイベントはスキップする
+		IF RESULT == 1
+			RETURN 0
+		ENDIF
+	ELSEIF (FLAG:年数 != 1 || (FLAG:年数 >= 2 && DAY > 4)) && CFLAG:モード == 2
+		CALL YUUKAI
+		RETURN 0
+	ENDIF
+;誘拐猶予期間中
+ELSEIF FLAG:誘拐猶予
+	FLAG:誘拐猶予 -= 1
+ENDIF
+
+;怪我した時も、以下のイベントはスキップする
+;長期間治療の場合もスキップする
+IF GETBIT(CFLAG:体調, 0) || GETBIT(CFLAG:体調, 3)
+	RETURN 0
+ENDIF
+
+;-------------------------------------------------------------------以下、誘拐時は機能せず
+DRAWLINE
+;半裸or全裸の衣服を着ていると、役人が賄賂でお金を渡してくれる
+IF CFLAG:服装 <= -1 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11)
+	;美麗が200以上ある時のみ貰える
+	IF BASE:美麗 >= 200
+		;全裸の場合、貰えるお金が$1000増える
+		;全裸
+		IF CFLAG:服装 <= -1 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2)
+			LOCAL = 1500
+		;半裸
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+			LOCAL = 500
+		ENDIF
+		
+		PRINTFORM 役人は%CALLNAME:TARGET%の
+		;全裸
+		IF CFLAG:服装 <= -1 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2)
+			PRINTFORM 裸身を曝け出した格好
+		;半裸
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+			PRINTFORM あられもなく素肌を曝け出した恰好
+		ENDIF
+		PRINTFORML に見惚れ、こっそりとお金を渡してきた……
+		
+		;貰えるお金：　1000×美麗/300 + 300×0～3
+		LOCAL += 1000 * (BASE:美麗/300) + (300 * RAND:4)
+		
+		CALL SETCOLOR_MONEY
+		PRINTFORML ${LOCAL}を手に入れた！
+		MONEY += LOCAL
+		RESETCOLOR
+	;美麗200未満の場合、一応イベントが仕組まれているヒントとしてメッセージは出しておく
+	ELSE
+		PRINTFORM 役人は%CALLNAME:TARGET%の
+		;全裸
+		IF CFLAG:服装 <= -1 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2)
+			PRINTFORM 裸身を曝け出した格好
+		;半裸
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+			PRINTFORM あられもなく素肌を曝け出した恰好
+		ENDIF
+		PRINTFORML に目を奪われている……
+		CALL SETCOLOR_ABL
+		PRINTFORML %CALLNAME:TARGET%が更に見目美しくなると、何かいいことが起こるかもしれない
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+;特殊技能(お転婆や依代など)の処理
+;(関数はERB直下の「SPECIAL_TALENT.ERB」内に格納)
+CALL SPECIAL_TALENT
+
+;前提条件：純狐イベント発生フラグが立っている
+;対象が輝夜で、且つまだ純化されていない場合、純化の光イベントが発生する
+IF CFLAG:純狐フラグ && TALENT:輝夜 && !TALENT:純化 && RAND:99 <= 2
+	CALL JUNKO_ELEMENT_EVENT
+ENDIF
+
+
+;[純狐の虜]が付いている場合、純狐による調教モードを呼び出す
+IF TALENT:純狐の虜
+	CALL TRAIN_JUNKO
+ENDIF
+
+LOCAL = 0
+;現在の月が行楽服属性と一致する場合、33％の確率でやる気が+1
+;(月指定と二重で一致する場合、57％になる)
+IF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, SEASON(DAY))) && !RAND:3
+	LOCAL = 1
+ELSE
+	IF (CFLAG:服装 >= 0 && GETBIT(DITEMTYPE:(CFLAG:服装):30, DAY+4)) && !RAND:3
+		LOCAL = 1
+	ENDIF
+ENDIF
+
+IF LOCAL
+	DRAWLINE
+	PRINTFORML 季節に適した服装が、%CALLNAME:TARGET%の心を奮い立たせる……
+	PRINTFORMW %CALLNAME:TARGET%のやる気が1上がった！
+	CFLAG:やる気 = MIN(CFLAG:やる気+1, 8)
+	LOCAL = 0
+ENDIF
+
+;目立ちやすさ/4+8の確率で発生する(最高で16％？)
+CALL CONSPI, TARGET
+
+;突発的な日常イベント
+IF RAND:99+1 <= RESULT+8
+	CALL EVENT_NORMAL
+ENDIF
+
+
+;目立ちやすさ/8の確率で発生する(最高で4％？)
+CALL CONSPI, TARGET
+
+IF TARGET == 0 && RAND:99+1 <= RESULT/8 && !CFLAG:妊娠 && BASE:アライメント >= 100
+	DRAWLINE
+	PRINTFORML ～～謎の童～～
+	PRINTFORML ややっ！　君はとても綺麗だね！
+	PRINTL 
+	PRINTFORML 要件なんだが、君の子としてこの世に産まれ出てもいいかな？
+	PRINTFORMW 私も人間となってこの世に恩恵をもたらしたいんだ！
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		$FORK
+		PRINTFORML ありがとう！　恩に着るよ！
+		PRINTFORMW 童は霊魂となり、%CALLNAME:TARGET%の胸部に入り込んだ！
+		
+		;金の子を孕む
+		CFLAG:妊娠 = 1
+		CFLAG:妊娠経過日 = 0
+		CFLAG:妊娠対象 = 4
+	ELSEIF RESULT == 1
+		PRINTFORML そうか……仕方ないよね
+		PRINTFORMW 童は姿を消した……
+	ENDIF
+ENDIF
+
+;1/2の確率で発生
+IF !RAND:2
+	CALL CLASS_MOVE
+ENDIF
+
+;とりあえず快楽動機づけを4減らす
+BASE:快楽動機づけ = LIMIT(BASE:快楽動機づけ-4, 0, 400)
+
+;女中服を着ている場合、風紀によって輝夜自身が影響を受ける
+IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):13 && CFLAG:モード != 4
+	DRAWLINE
+	IF FLAG:女中態度／娼婦 >= 50 && PUB_MORAL(0)
+		LOCAL = 12
+		
+		PRINTFORML いつの間にか気を失っていた%CALLNAME:TARGET%が目を覚ますと
+		PRINTFORMW 目の前では大勢の女中が見知らぬ男達と交わっていた
+		PRINTFORMW 如何わしい壁画や周囲に置かれた器具を見て、思わず目を背ける
+		
+		;淫乱
+		IF CFLAG:性格 == -1
+			PRINTFORM %CALLNAME:TARGET%は
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 
+			ELSE
+				PRINTFORM 自ら衣服を肌蹴て
+			ENDIF
+			PRINTFORMW 胸を弄りながら股を開き、秘裂を指で開いた……
+			PRINTFORML 男に太腿を持たれ激しく突かれると、%CALLNAME:TARGET%は悦びの声をあげて腰をくねらせた
+			PRINTFORMW 美しい長髪は散らばり、顔にかかっている
+		;アライメントが100より高いor貞操が50以上
+		ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+			PRINTFORML 目の前に居た男から、腰を退いて後ずさりしたがすぐに壁に達してしまい
+			
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORMW そのまま手足を組み敷かれて縄で括られると、裸身に触れられた
+			;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+			ELSEIF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORMW 剥き出しになった局部を跳ねさせて抵抗するも、衣服を肌蹴させられ手足を縛られた
+			ELSE
+				PRINTFORMW 身体を跳ねさせて抵抗するも、衣服を肌蹴させられ手足を縛られた
+			ENDIF
+			;感度が300以上
+			IF BASE:感度 >= 300
+				PRINTFORML 身体を愛撫されていくにつれて、胸の先端は尖り、秘裂も濡れていった
+				PRINTFORMW 脳裏に様々な感情が入り乱れ、訳も分からぬまま声をあげ腰を絡ませた……
+			ELSE
+				PRINTFORML 苦悶の表情を浮かべ、拒絶の言葉を何度も発するが
+				PRINTFORMW 異常な状況と恐怖心のせいか、秘裂は湿り気を帯び始めていた……
+			ENDIF
+		ELSE
+			PRINTFORM %CALLNAME:TARGET%は諦めの表情を浮かべ、
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 裸身のまま四つん這いになって男の元へ這い寄り、
+			;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+			ELSEIF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORM 露出の多い衣服を少し肌蹴て男を誘惑しつつ
+			ELSE
+				PRINTFORM 衣服を肌蹴、艶を帯びた声で誘い
+			ENDIF
+			PRINTFORMW 潤んだ目で見つめた
+			
+			PRINTFORMW 感化された男は、勢いよく%CALLNAME:TARGET%を押し倒すと
+
+			;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+			IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORMW 剥き出しになった局部を弄り、甘い声をあげさせた
+			ELSE
+				PRINTFORMW 衣服を剥ぎ、胸を揉みしだきながら秘裂に指を挿し入れた
+			ENDIF
+			PRINTFORMW %CALLNAME:TARGET%は何度も達して背筋を震わせ、気絶するまで男を愉しませた……
+		ENDIF
+		CALL INSERT, 2, 1
+	ELSEIF PUB_MORAL(0)
+		LOCAL = 11
+		
+		PRINTFORML %CALLNAME:TARGET%は、大勢の女中が潤んだ瞳をして役人達と交わっている場面に遭遇した
+		;淫乱
+		IF CFLAG:性格 == -1
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 
+			ELSE
+				PRINTFORM 自ら衣服を肌蹴て
+			ENDIF
+			PRINTFORMW 他の女中と交わっている役人に後ろから手を回し、蕩けた声をして胸を押しつけた……
+		;アライメントが100より高いor貞操が50以上
+		ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+			PRINTFORMW おぞましい光景に怖気づいて逃げようとしたが、あっさりと役人に捕まり押し倒された
+			
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORMW 重なった身体から、暴れる純白な裸身を覗かせる
+			;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+			ELSEIF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORM 露出があまりにも多い服装を責められながら、衣服を肌蹴させられた
+			ELSE
+				PRINTFORMW 抵抗の甲斐虚しく、%CALLNAME:TARGET%は衣服を肌蹴させられた
+			ENDIF
+			;感度が300以上
+			IF BASE:感度 >= 300
+				PRINTFORML 身体を優しく撫でられると、上擦った声を漏らしながら身体を跳ねさせ
+				PRINTFORMW 役人に罵倒されながらも前後不覚となった状態で蕩けた声をあげた……
+			ELSE
+				PRINTFORML 最初の内は悲鳴をあげ、拒絶の反応を示したが
+				PRINTFORMW 意思とは異なり、身体は火照り秘裂は愛液を滴らせる……
+			ENDIF
+		ELSE
+			PRINTFORM %CALLNAME:TARGET%は
+			;マイクロミニor半裸以上or乞食/淫魔属性の衣服
+			IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORM 剥き出しの太腿から
+			ELSE
+				PRINTFORM 衣服に手を潜らせ、
+			ENDIF
+			PRINTFORMW 濡れそぼった秘裂と
+			
+			;胸露出or半裸以上
+			IF CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):11)
+				PRINTFORM 
+			ELSE
+				PRINTFORM 衣服越しに
+			ENDIF
+			PRINTFORMW 尖らせた胸に手を当てて、その場で自慰をし始めた
+			
+			PRINTFORMW 胸を尖らせ、熱を帯びた吐息を吐いた
+			PRINTFORM 役人に罵倒されながら押し倒されると、
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORMW 白い裸身を絡ませた
+			ELSE
+				PRINTFORMW 衣服を肌蹴て受け入れた
+			ENDIF
+		ENDIF
+		CALL INSERT, 2, 1
+	ELSEIF PUB_MORAL(1)
+		LOCAL = 9
+		
+		PRINTFORMW 役人達による交流会とは名ばかりの乱交騒ぎが開催された
+		PRINTFORM %CALLNAME:TARGET%は
+		;淫乱
+		IF CFLAG:性格 == -1
+			PRINTFORML 濡れた瞳をして周囲を見つめて吐息を熱くし
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 
+			ELSE
+				PRINTFORM 衣服を肌蹴て
+			ENDIF
+			PRINTFORMW その場に腰を降ろし、股を開いて秘裂を指で開いた……
+		;アライメントが100より高いor貞操が50以上
+		ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+			PRINTFORM 逃げようとしたが、あっさりと役人に捕まってしまい
+			;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+			IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORM 、身だしなみを責められながら
+				;全裸
+				IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+					PRINTFORMW 剥き出しの裸身を跳ねさせた
+				ELSE
+					PRINTFORMW 衣服を肌蹴させられた
+				ENDIF
+			ELSE
+				PRINTFORMW 衣服を肌蹴させられた
+			ENDIF
+			;感度が300以上
+			IF BASE:感度 >= 300
+				PRINTFORML %CALLNAME:TARGET%も最初は首を振って嫌がっていたが、身体が熱を帯びて秘裂が濡れ胸の先端が尖り出すにつれて
+				PRINTFORMW 周りの媚声に押され、股から力を抜き媚声をあげはじめた……
+			ELSE
+				PRINTFORMW %CALLNAME:TARGET%は首を振って悲鳴をあげ、拒絶の反応を示した
+			ENDIF
+		ELSE
+			;胸露出or半裸以上
+			IF CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):11)
+				PRINTFORM 
+			ELSE
+				PRINTFORM 衣服越しに
+			ENDIF
+			PRINTFORMW 胸を尖らせ、熱を帯びた吐息を吐いた
+			PRINTFORMW 役人に身体を抑えられると、%CALLNAME:TARGET%は艶を帯びた声をあげて受け入れた
+		ENDIF
+		CALL INSERT, 2, 1
+	ELSEIF PUB_MORAL(2)
+		PRINTFORMW %CALLNAME:TARGET%は、女中が役人に襲われている場面に遭遇した
+		;裸エプロン50％以上orマイクロミニ
+		IF FLAG:女中服／裸エプロン >= 50 && FLAG:女中服のスカート == 3
+			PRINT 剥き出しの太腿を
+		ELSE
+			PRINT 衣服を肌蹴させられ、太腿を
+		ENDIF
+		PRINTFORML 露出して悲鳴をあげている女中を見ると
+		
+		;1/2の確率で自分がやられる
+		IF !RAND:2
+			LOCAL = 7
+			
+			PRINTFORM %CALLNAME:TARGET%は
+			;淫乱
+			IF CFLAG:性格 == -1
+				PRINTFORM 吐息に熱を帯びさせ、
+				;全裸
+				IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+					PRINTFORM 
+				ELSE
+					PRINTFORM 衣服を肌蹴て
+				ENDIF
+				PRINTFORMW 襲われている女中に背中から抱きつき、尖り始めている胸の突起を弄った……
+			;アライメントが100より高い＆\or貞操が50以上
+			ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+				PRINTFORM 悲しそうな目を向け、涙を飲んで振り返らずにその場を去った
+			ELSE
+				;マイクロミニor半裸以上or乞食/淫魔属性の衣服
+				IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+					PRINTFORM 剥き出しの太腿に
+				ELSE
+					PRINTFORM 衣服の下で太腿に
+				ENDIF
+				PRINTFORMW 愛液を伝らせ、
+				
+				;胸露出or半裸以上
+				IF CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):11)
+					PRINTFORM 剥き出しになった胸の
+				ELSE
+					PRINTFORM 衣服越しに胸の
+				ENDIF
+				PRINTFORMW 尖った先端に手を当てつつその場を去った
+			ENDIF
+		ELSE
+			LOCAL = 5
+			
+			PRINTFORMW %CALLNAME:TARGET%はその場を去ろうとしたが、他の役人に後ろから羽交い締めにされた！
+			PRINTFORM %CALLNAME:TARGET%は
+			;淫乱
+			IF CFLAG:性格 == -1
+				PRINTFORM 吐息に熱を帯びさせ、
+				;マイクロミニor半裸以上or乞食/淫魔属性の衣服
+				IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+					PRINTFORM 剥き出しの
+				ELSE
+					PRINTFORM 
+				ENDIF
+				PRINTFORMW 太腿を擦り合わせて後ろに居る役人を誘った……
+				PRINTFORMW 役人に身体を愛撫されると、身体を痙攣させて蕩けた声をあげた
+			;アライメントが100より高いor貞操が50以上
+			ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+				PRINTFORM 悲鳴をあげるが、
+				;マイクロミニor胸露出or半裸以上or乞食/淫魔属性の衣服
+				IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+					PRINTFORMW 性を剥き出しにした身だしなみであることを責められ
+					;半裸以上or乞食/淫魔属性の衣服
+					IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11)
+						PRINTFORMW た
+					ELSE
+						PRINTFORMW 、衣服を肌蹴させられた
+					ENDIF
+				ELSE
+					PRINTFORMW 構わず衣服を肌蹴させられた
+				ENDIF
+				;感度が300以上
+				IF BASE:感度 >= 300
+					PRINTFORMW 身体を優しく愛撫されるにつれ、股を濡らし胸を尖らせる身体に%CALLNAME:TARGET%は涙を流して首を振った
+				ELSE
+					PRINTFORMW 廊下に響く女中の声に%CALLNAME:TARGET%が混じるのに、そう時間はかからなかった……
+				ENDIF
+			ELSE
+				PRINTFORML 全身をくまなく愛撫され
+				;マイクロミニor半裸以上or乞食/淫魔属性の衣服
+				IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+					PRINTFORM 剥き出しの太腿
+				ELSE
+					PRINTFORM 衣服の下で太腿
+				ENDIF
+				PRINTFORMW に愛液を伝らせ、
+				
+				;胸露出or半裸以上
+				IF CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):1 == 2 || DITEMTYPE:(CFLAG:服装):11)
+					PRINTFORM 剥き出しになった胸
+				ELSE
+					PRINTFORM 衣服越しに胸
+				ENDIF
+				PRINTFORMW も尖らせて身体を痙攣させ、長髪を散らして可愛らしい声をあげた……
+			ENDIF
+			CALL INSERT, 2, 1
+		ENDIF
+	ELSEIF PUB_MORAL(3)
+		LOCAL = 3
+		
+		PRINTFORML %CALLNAME:TARGET%は役人とすれ違うたびに身体を触れられた
+		;淫乱
+		IF CFLAG:性格 == -1
+			PRINTFORM %CALLNAME:TARGET%は身体を火照らせ、
+			
+			CALL CLOTHE_ABL, "属性"
+			;マイクロミニor半裸以上or乞食/淫魔属性の衣服
+			IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):0 == 2 || DITEMTYPE:(CFLAG:服装):11))
+				PRINTFORM 剥き出しの太腿に
+			ELSE
+				PRINTFORM 衣服の下で太腿に
+			ENDIF
+			PRINTFORMW 愛液を伝らせた
+		;アライメントが100より高いor貞操が50以上
+		ELSEIF BASE:アライメント > 100 || BASE:貞操 >= 50
+			PRINTFORMW 振り向いて睨みつけた頃には、役人は何もなかったかのように歩いていた……
+		ELSE
+			PRINTFORM %CALLNAME:TARGET%は触れられる度に腰をくねらせ
+			;貞操が50未満
+			IF BASE:貞操 < 50
+				PRINTFORML 、物欲しそうな目をして振り向いた
+			ELSE
+				PRINTFORML た
+			ENDIF
+		ENDIF
+		
+	ENDIF
+	IF !(PUB_MORAL(4) || PUB_MORAL(5))
+		CALL CALCULATION_INYOU, LOCAL, 90
+		PRINTFORM 淫妖:{BASE:淫妖}　→　
+		BASE:淫妖 += RESULT
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW {BASE:淫妖}
+		RESETCOLOR
+	ENDIF
+ELSE
+	;娼婦態度が50以上の場合、娼婦として出稼ぎに出される
+	IF FLAG:女中態度／娼婦 >= 50
+		DRAWLINE
+		PRINTL 最近、王宮内で見かける女中の数が減っているように感じる
+		PRINTW どこかへ出稼ぎに行っているのだろうか……
+	;風紀が乱れている場合、ひどさに応じてメッセージを出す
+	ELSEIF PUB_MORAL(0)
+		DRAWLINE
+		PRINT 王宮内では
+		IF HANTEI_JYOTYUU() >= 6
+			PRINT 淫らな格好をした
+		ENDIF
+		PRINTL 女中達が役人達と交わって媚声をあげている
+		PRINTL 廊下を通る度に、衣服を肌蹴て交わっている最中の場面やぐったりとしている女中達と頻繁にすれ違った
+		PRINTW 女中達の瞳に理性の光は籠っておらず、潤んだ目つきでこちらを見つめていた……
+	ELSEIF PUB_MORAL(1)
+		DRAWLINE
+		PRINTW 王宮内では役人達による交流会とは名ばかりの性交騒ぎが開催されていた
+		PRINTL 首を振って腰を退いている女中達も、欲望に滾った役人達に次々と捕われ宴に参加させられた
+		PRINTW 王宮内から悲鳴と媚声が絶える時はない
+	ELSEIF PUB_MORAL(2)
+		DRAWLINE
+		PRINTFORMW %CALLNAME:MASTER%が廊下を通るたびに、役人が女中と交わっている場面に遭遇した
+		PRINTL 女中の悲鳴と助けを求める声を聞くに、どうやら無理矢理させられているようだ
+		PRINTFORMW 立場上役人に反抗できない%CALLNAME:MASTER%は、悲しそうな目を向けて去った……
+	ELSEIF PUB_MORAL(3)
+		DRAWLINE
+		PRINTL 女中達は役人達の行いに悩まされている……
+		PRINTW 廊下ですれ違う度に身体を触られる事例も発生しており、王宮内の風紀が少し怪しい……
+	ELSEIF PUB_MORAL(4)
+		DRAWLINE
+		PRINTW 王宮内の雰囲気が少し乱れ始めているように感じる……
+	ENDIF
+ENDIF
+
+
+;民衆の評価が300以上の場合
+IF BASE:民衆の評価 >= 300
+	;400以上の場合、布が貰える
+	;確率は評価-400×0.05%だけ増える(最大5％)
+	IF BASE:民衆の評価 >= 400 && RAND:100 <= 5+(BASE:民衆の評価-400)/20
+		PRINTFORML %CALLNAME:TARGET%が都の道を歩いていると、向こうから民が歩いてきた
+		PRINTFORML 手には大きな布を持っており、対面した際にお辞儀をして渡してきた
+		PRINTFORML 民曰く、日頃からお世話になっている礼であるとの事だった
+		LOCAL = 550+RAND:4
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %ITEMNAME:LOCAL%を手に入れた！
+		ITEM:LOCAL += 1
+	;400未満の場合、あるいは上のランダムに漏れた場合、普通のアイテムが貰える
+	;確率は2％+(評価-300)/20
+	ELSEIF RAND:100 <= 2+(BASE:民衆の評価-300)/20
+		PRINTFORML %CALLNAME:TARGET%が都の道を歩いていると、対面した民からお礼の品を貰った
+		
+		;能力上昇アイテムが貰える
+		LOCAL = 522+RAND:5
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %ITEMNAME:LOCAL%を手に入れた！
+		ITEM:LOCAL += 1
+	ENDIF
+	RESETCOLOR
+;民衆の評価が5以下の場合
+ELSEIF BASE:民衆の評価 <= 5 && BASE:慰み者 && !RAND:2 && !(CFLAG:職業 == 0 || CFLAG:職業 == 99)
+	IF BASE:慰み者 >= 150
+		PRINTFORMW %CALLNAME:TARGET%が働き先から戻る道中で都の民に話しかけられた。
+		PRINTFORML %CALLNAME:TARGET%が顔を向けたその時、その民は%CALLNAME:TARGET%の身体を抑え
+		PRINTFORMW その淫らな身体を視線で舐め回すように見ながら、両手を縛った。
+		PRINTFORML そして、身動きができない状態で%CALLNAME:TARGET%は複数の男と上下の口で交わされる事となった。
+		PRINTFORMW くぐもった悲鳴が辺りに漏れるが、行き交う人の声で掻き消され、聴こえそうにはない。
+		PRINTFORML
+		PRINTFORMW しばらくして解放された%CALLNAME:TARGET%は身体を震わせ、秘裂から白が混じった液体を垂らしている。
+		
+		CALL INSERT, 2, 1
+		
+		LOCAL = 6
+		LOCAL:1 = 4
+		LOCAL:2 = 12
+		
+		
+	ELSEIF BASE:慰み者 >= 100
+		PRINTFORMW %CALLNAME:TARGET%が働き先から戻る道中で都の民に話しかけられた。
+		PRINTFORML %CALLNAME:TARGET%が顔を向けたその時、その民は%CALLNAME:TARGET%の身体を抑え
+		PRINTFORMW その淫らな身体を視線で舐め回すように見ながら、両手を縛った。
+		PRINTFORML そして、身動きができない状態で%CALLNAME:TARGET%は男と交わされる事となった。
+		PRINTFORML
+		PRINTFORMW しばらくして解放された%CALLNAME:TARGET%はぐったりとし、股間からは精液が垂れている。
+		
+		CALL INSERT, 2, 1
+		
+		LOCAL = 5
+		LOCAL:1 = 3
+		LOCAL:2 = 10
+	ELSEIF BASE:慰み者 >= 50
+		PRINTFORMW %CALLNAME:TARGET%が働き先から戻る道中で都の民に話しかけられた。
+		PRINTFORML %CALLNAME:TARGET%が顔を向けたその時、その民は%CALLNAME:TARGET%の身体を抑え
+		PRINTFORML 身動きができない状態で%CALLNAME:TARGET%は待ち構えていた他の民に全身を弄り回され
+		PRINTFORML 最初の民に一物を口に突っ込まれ、奉仕を強要された。
+		PRINTFORML
+		PRINTFORMW しばらくして解放された%CALLNAME:TARGET%はその場に坐した状態で俯き、地面を涙や愛液で濡らしている
+		
+		LOCAL = 4
+		LOCAL:1 = 2
+		LOCAL:2 = 7
+	ELSEIF BASE:慰み者 >= 25
+		PRINTFORMW %CALLNAME:TARGET%が働き先から戻る道中で都の民に話しかけられた。
+		PRINTFORML %CALLNAME:TARGET%が顔を向けたその時、その民は%CALLNAME:TARGET%の身体を抑え
+		PRINTFORML 待ち構えていた他の民と共に全身を弄り回った。
+		PRINTFORML
+		PRINTFORMW しばらくして解放された%CALLNAME:TARGET%は倒れた状態で全身を震わせ、濡れた秘裂から液体を沁み出させた
+		
+		LOCAL = 3
+		LOCAL:1 = 1
+		LOCAL:2 = 5
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%が働き先から戻る道中で都の民に話しかけられた。
+		PRINTFORML %CALLNAME:TARGET%が顔を向けたその時、その民は%CALLNAME:TARGET%の身体を抑え
+		PRINTFORML 開発された敏感な箇所を弄った。
+		PRINTFORML
+		PRINTFORMW しばらくして解放された%CALLNAME:TARGET%は荒い息をつき、全身から汗を沁み出させた。
+		
+		
+		LOCAL = 2
+		LOCAL:1 = 1
+		LOCAL:2 = 3
+	ENDIF
+	
+	PRINTFORML 淫妖経験 + {LOCAL}
+	CALL CALC_IMP, LOCAL:1
+	CALL COMMON_ABLUP, "淫妖", LOCAL:2, "WAIT"
+ENDIF
+
+CALL CLOTHE_ABL, "属性"
+;女中たちの服の意匠が、現在着ている服と一致する場合、属性値や経験が上昇する
+IF FLAG:女中服／メイド >= 25 && GETBIT(RESULT, 2)
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は女中達の働く姿に共感を覚えている……
+	SETCOLOR 128, 255, 128
+	LOCAL = 8 * FLAG:女中服／メイド / 100
+	
+	PRINTFORML 家事経験 + {LOCAL}
+	EXP:家事経験 += LOCAL
+	RESETCOLOR
+	
+	;女中服の場合、属性補正が2倍になる
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):13
+		CALL CHANGE_ELEMENT, 2
+	ELSE
+		CALL CHANGE_ELEMENT, 1
+	ENDIF
+ENDIF
+
+;各種イベントの発生確率
+;美麗、知力、疎通、淫妖でそれぞれ25％ずつ所持
+;(堕落は誘拐がその役割を持つ)
+;各種補正の+1につき+15％　-1につき-15％の補正がかかる
+
+;REPEAT入れ子とか他人からすれば読みづらいことこの上無い
+;しかし、仕方ない
+
+;各能力毎に行う
+REPEAT 4
+	IF COUNT == 3
+		LOCAL = 8
+	ELSE
+		LOCAL = COUNT
+	ENDIF
+	;初期化
+	PAR = 0
+	CALL PALAM_CONVERT, LOCAL
+	LOCALS = %STR%
+	
+	;該当するステータスの補正処理
+	;該当するステータスは+-15％の振れ幅なのに対し、それ以外は+-5％の振れ幅なためこうなった
+	FOR COUNT:1, 0, 4, 1
+		IF COUNT:1 == 3
+			LOCAL:2 = 8
+		ELSE
+			LOCAL:2 = COUNT:1
+		ENDIF
+		
+		CALL PALAM_CONVERT, LOCAL:2
+		LOCALS:1 = %STR%
+		
+		CALL CLOTHE_ABL, LOCALS
+		IF COUNT == COUNT:1
+			FLAG:("発生率／"+LOCALS+"") = 25 + 15 * RESULT
+		ELSE
+			PAR += RESULT
+		ENDIF
+	NEXT
+	
+	FLAG:("発生率／"+LOCALS+"") -= 5 * PAR
+	;PRINTFORML %LOCALS%{FLAG:("発生率／"+LOCALS+"")}
+	IF FLAG:("発生率／"+LOCALS+"") < 0
+		FLAG:("発生率／"+LOCALS+"") = 0
+	ELSEIF FLAG:("発生率／"+LOCALS+"") > 100
+		FLAG:("発生率／"+LOCALS+"") = 100
+	ENDIF
+REND
+
+CALL CLOTHE_ABL, "属性"
+;淫妖イベントは全裸持ちか娼婦属性の服でないと発生しない
+IF CFLAG:服装 >= 0 && !GETBIT(RESULT, 7) && !DITEMTYPE:(CFLAG:服装):11 && BASE:慰み者 < 100
+	FLAG:発生率／淫妖 = 0
+ENDIF
+
+;風紀が乱れている場合、淫妖イベントの発生率が上昇する
+IF FLAG:王宮内の風紀 < 100
+	LOCAL = 100 - FLAG:王宮内の風紀
+	FLAG:発生率／美麗 = LIMIT(FLAG:発生率／美麗 - LOCAL, 0, 100)
+	FLAG:発生率／知力 = LIMIT(FLAG:発生率／知力 - LOCAL, 0, 100)
+	FLAG:発生率／疎通 = LIMIT(FLAG:発生率／疎通 - LOCAL, 0, 100)
+	FLAG:発生率／淫妖 = LIMIT(FLAG:発生率／淫妖 + LOCAL, 0, 100)
+ENDIF
+
+;役人の脅しが効いている場合、淫妖イベント以外発生しなくなる
+IF FLAG:役人の脅し
+	FLAG:発生率／美麗 = 0
+	FLAG:発生率／知力 = 0
+	FLAG:発生率／疎通 = 0
+	FLAG:発生率／淫妖 = 100
+ENDIF
+
+DRAWLINE
+;特殊状態だと、特殊イベントにのみ分岐
+IF TALENT:娼婦 || CFLAG:モード == 4
+	
+;各種属性の服を着ているか、対応した素質を持っているかで分岐
+ELSEIF TALENT:メイド || GETBIT(RESULT, 2)
+	CALL MOVE_MAID
+ELSEIF TALENT:シスター || GETBIT(RESULT, 3)
+	CALL MOVE_SISTER
+ELSEIF TALENT:ゴスロリ || GETBIT(RESULT, 4)
+	CALL MOVE_GOTHIC
+ELSEIF TALENT:花嫁 || GETBIT(RESULT, 5)
+	CALL MOVE_WEDDING
+ELSEIF TALENT:淫魔 || GETBIT(RESULT, 6)
+	;CALL MOVE_SUCCUBUS
+;割り振った確率を元にイベント発生判定を行う
+
+;美麗イベント
+ELSEIF FLAG:発生率／美麗 >= RAND:99 + 1
+	CALL EVENT_BIREI
+;知力イベント
+ELSEIF FLAG:発生率／美麗 != 100 && FLAG:発生率／知力 >= RAND:(99 - FLAG:発生率／美麗) + 1
+	CALL EVENT_TIRYOKU
+;疎通イベント
+ELSEIF (FLAG:発生率／美麗 + FLAG:発生率／知力) != 100 && FLAG:発生率／疎通 >= RAND:(99 - FLAG:発生率／美麗 - FLAG:発生率／知力) + 1
+	CALL EVENT_SOTUU
+;淫妖イベント
+ELSEIF (FLAG:発生率／美麗 + FLAG:発生率／知力 + FLAG:発生率／疎通) != 100 && FLAG:発生率／淫妖 >= RAND:(99 - FLAG:発生率／美麗 - FLAG:発生率／知力 - FLAG:発生率／疎通) + 1
+	CALL EVENT_INYOU
+	CALL PLAYTHING
+	
+	IF FLAG:役人の脅し
+		;穢れ加算処理
+		CALL CALC_IMP, 1
+	ENDIF
+ENDIF
+
+;入浴剤処理
+IF CFLAG:日用品／入浴剤
+	CALL BATHING
+ENDIF
+
+;他の魂が入っている場合、ここで処理を行う
+IF CFLAG:魂の状態
+	CFLAG:魂経過ターン += 1
+	IF CFLAG:魂経過ターン >= 7
+		CALL RESETSOUL, CFLAG:魂の状態
+	ELSE
+		CALL SOUL_N, CFLAG:追加魂
+	ENDIF
+ENDIF
+
+;悪魔のお香を装着している場合、現在の堕落の1/20だけ疲労が回復する
+IF OTHER_ACC(501)
+	DRAWLINE
+	PRINTFORML 悪魔のお香が%CALLNAME:TARGET%を包む……
+	PRINTFORM 疲労度: {BASE:ストレス}　→　
+	BASE:ストレス -= 10
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML {BASE:ストレス}
+	RESETCOLOR
+	PRINTFORML 堕落経験 + 10
+	EXP:堕落経験 += 10
+	CALL UP_STATUS
+ENDIF
+
+;妖しい装置
+IF OTHER_ACC(502)
+	DRAWLINE
+	LOCAL = 14
+	
+	CALL CALCULATION_INYOU, LOCAL, 90
+	
+	
+	PRINTFORML %CALLNAME:TARGET%に着けられた妖しい装置が物静かに体液を採取する……
+
+	IF LOCAL <= 0
+		LOCAL = 1
+	ENDIF
+	PRINTFORML 淫妖経験 + 4
+	EXP:淫妖経験 += 4
+	
+	PRINTFORM 淫妖: {BASE:淫妖}　→　
+	BASE:淫妖 += LOCAL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	
+	;所持金の増加
+	LOCAL:1 = LOCAL * 30
+	CALL SETCOLOR_MONEY
+	PRINTFORML 所持金が${LOCAL:1}増加した！
+	RESETCOLOR
+	
+	BASE:淫乱 += 3 + (5 - FLAG:年数)
+	RESETCOLOR
+	CALL UP_STATUS
+ENDIF
+
+;バイブを装着している場合、ストレスや淫妖に変化が
+IF OTHER_ACC(500)
+	DRAWLINE
+	LOCAL = 11
+	
+	CALL CALCULATION_INYOU, LOCAL, 90
+	LOCAL = RESULT
+	
+	IF !TALENT:処女
+		PRINTFORML %CALLNAME:TARGET%はバイブを挿入したまま日々を過ごしている……
+		;淫妖が80以上入る場合
+		IF LOCAL >= 80
+			PRINTFORML 甘美な刺激にたまらず声をあげ、何度かその場にへたり込んだ
+		;40以上
+		ELSEIF LOCAL >= 40
+			PRINTFORML 股間に来る刺激の強さで、時折身体を揺らして小さく甘い声を漏らしてしまう
+		;20以上
+		ELSEIF LOCAL >= 20
+			PRINTFORML 股間から若干心地よさが滲みだし、息が荒くなっている
+		;その他
+		ELSE
+			PRINTFORML 股間の違和感に常にイライラしていたようだ
+		ENDIF
+		
+		IF LOCAL <= 0
+			LOCAL = 1
+		ENDIF
+	ELSE
+		PRINTFORM %CALLNAME:TARGET%は初めてであるにも関わらずバイブを挿入しろと言われ、
+		IF CFLAG:主人への友好度 >= 60
+			PRINTFORML 顔を真っ赤にしている……
+			CALL LOST_VIRGIN, 0
+		ELSE
+			PRINTFORML 納得できず、何度も首を振った……
+			CALL LOST_VIRGIN, 1
+		ENDIF
+		
+		;処女なので、快楽値が0.75倍される
+		TIMES LOCAL, 0.75
+		
+		;淫妖が80以上入る場合
+		IF LOCAL >= 80
+			PRINTFORML 甘美な刺激にたまらず声をあげ、何度かその場にへたり込んだ
+		;40以上
+		ELSEIF LOCAL >= 40
+			PRINTFORML 股間に来る刺激の強さで、時折身体を揺らして小さく甘い声を漏らしてしまう
+		;20以上
+		ELSEIF LOCAL >= 20
+			PRINTFORML 股間から若干心地よさが滲みだし、息が荒くなっている
+		;その他
+		ELSE
+			PRINTFORML 股間の違和感に常にイライラしていたようだ
+		ENDIF
+		
+		IF LOCAL <= 0
+			LOCAL = 1
+		ENDIF
+	ENDIF
+	PRINTFORML 淫妖経験 + 6
+	EXP:淫妖経験 += 6
+	
+	PRINTFORM 淫妖: {BASE:淫妖}　→　
+	BASE:淫妖 += LOCAL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	PRINTFORM 疲労度: {BASE:ストレス}　→　
+	LOCAL = 5 - LOCAL / 4
+	IF LOCAL < 0
+		CALL SETCOLOR_PALAMDOWN
+	ELSE
+		CALL SETCOLOR_PALAMUP
+	ENDIF
+	BASE:ストレス += LOCAL
+	PRINTFORMW {BASE:ストレス}
+	
+	CALL CLOTHE_ABL, "淫妖"
+	BASE:快楽動機づけ += LIMIT(BASE:快楽動機づけ+2*RESULT, 0, 400)
+	
+	BASE:淫乱 += 5 + (5 - FLAG:年数)
+	RESETCOLOR
+	CALL UP_STATUS
+ENDIF
+DRAWLINE
+
+;アナルバイブを装着している場合、ストレスや淫妖に変化が
+IF OTHER_ACC(507)
+	DRAWLINE
+	LOCAL = 16
+	
+	CALL CALCULATION_INYOU, LOCAL, 120
+	LOCAL = RESULT
+	
+	IF !TALENT:処女
+		PRINTFORML %CALLNAME:TARGET%はアナルバイブを挿入したまま日々を過ごしている……
+		;淫妖が80以上入る場合
+		IF LOCAL >= 80
+			PRINTFORML 甘美な刺激にたまらず声をあげ、何度かその場にへたり込んだ
+		;40以上
+		ELSEIF LOCAL >= 40
+			PRINTFORML 尻に来る刺激の強さで、時折身体を揺らして小さく甘い声を漏らしてしまう
+		;20以上
+		ELSEIF LOCAL >= 20
+			PRINTFORML 尻から若干心地よさが滲みだし、息が荒くなっている
+		;その他
+		ELSE
+			PRINTFORML 尻の違和感に常にイライラしていたようだ
+		ENDIF
+		
+		IF LOCAL <= 0
+			LOCAL = 1
+		ENDIF
+	ELSE
+		PRINTFORM %CALLNAME:TARGET%は処女であるにも関わらずバイブを挿入しろと言われ、
+		IF CFLAG:主人への友好度 >= 60
+			PRINTFORML 顔を真っ赤にしている……
+		ELSE
+			PRINTFORML 納得できず、何度も首を振った……
+		ENDIF
+		
+		;処女だが、むしろ快楽値が1.25倍される
+		TIMES LOCAL, 1.25
+		
+		;淫妖が80以上入る場合
+		IF LOCAL >= 80
+			PRINTFORML 甘美な刺激にたまらず声をあげ、何度かその場にへたり込んだ
+		;40以上
+		ELSEIF LOCAL >= 40
+			PRINTFORML 尻に来る刺激の強さで、時折身体を揺らして小さく甘い声を漏らしてしまう
+		;20以上
+		ELSEIF LOCAL >= 20
+			PRINTFORML 尻から若干心地よさが滲みだし、息が荒くなっている
+		;その他
+		ELSE
+			PRINTFORML 尻の違和感に常にイライラしていたようだ
+		ENDIF
+		
+		IF LOCAL <= 0
+			LOCAL = 1
+		ENDIF
+	ENDIF
+	PRINTFORML 淫妖経験 + 8
+	EXP:淫妖経験 += 8
+	
+	PRINTFORM 淫妖: {BASE:淫妖}　→　
+	BASE:淫妖 += LOCAL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	PRINTFORM 疲労度: {BASE:ストレス}　→　
+	LOCAL = 10 - LOCAL / 2
+	IF LOCAL < 0
+		CALL SETCOLOR_PALAMDOWN
+	ELSE
+		CALL SETCOLOR_PALAMUP
+	ENDIF
+	BASE:ストレス += LOCAL
+	PRINTFORMW {BASE:ストレス}
+	
+	;穢れ+1
+	CALL CALC_IMP, 1
+	
+	CALL CLOTHE_ABL, "淫妖"
+	BASE:快楽動機づけ += LIMIT(BASE:快楽動機づけ+2*RESULT, 0, 400)
+	
+	BASE:淫乱 += 10 + (5 - FLAG:年数)
+	RESETCOLOR
+	CALL UP_STATUS
+ENDIF
+DRAWLINE
+
+;淫魔属性の衣装を着ている場合、堕落が入る
+IF CFLAG:属性 & 1p6
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%が身に着けている%ITEMNAME:(CFLAG:服装)%が身体を蝕む……
+	PRINTFORM 堕落：{BASE:堕落}　→　
+	BASE:堕落 += CFLAG:属性強度 + (CFLAG:属性／淫魔 / 10)
+	PRINTFORMW {BASE:堕落}
+ENDIF
+
+;[傷物]を持っている場合、ターン終了時に堕落が1％+1入る
+IF TALENT:傷物
+	DRAWLINE
+	PRINTFORML 理不尽な理由で純潔を失った%CALLNAME:TARGET%は、心の中に邪な考えを募らせていく……
+	PRINTFORM 堕落：{BASE:堕落}　→　
+	BASE:堕落 += BASE:堕落 / 100 + 1
+	PRINTFORMW {BASE:堕落}
+	
+	CALL UP_STATUS
+ENDIF
+
+
+;[娼婦]を持っている場合、ターン終了時に堕落と淫妖の入手と引き換えにお金を稼いでくる
+IF TALENT:娼婦
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は夜な夜な都へ出かけ、性の交わりと引き換えに金貨を稼ぐ日々を過ごした……
+	PRINTL 
+	PRINTFORM 淫妖：{BASE:淫妖}　→　
+	;堕落と淫妖が10％+30増加
+	BASE:淫妖 += BASE:淫妖 * 10 / 100 + 30
+	PRINTFORML {BASE:淫妖}
+	PRINTFORM 堕落：{BASE:堕落}　→　
+	BASE:堕落 += BASE:堕落 * 10 / 100 + 30
+	PRINTFORML {BASE:堕落}
+	GET_MONEY = 5000 + 2000 * RAND:5 + 10 * BASE:淫妖
+	MONEY += GET_MONEY
+	PRINTFORMW ${GET_MONEY}入手した！
+	
+	CALL UP_STATUS
+ENDIF
+
+;賭博師はここで処理
+IF FLAG:主人の前職 == 3
+	CALL MASTER_WORK_RESULT
+ENDIF
+
+;労働結果処理
+;休憩している時は主人が働きに出かける
+;(賭博師はいつでも働きに出る)
+IF (FLAG:休養 && FLAG:主人の前職 != 3) || CFLAG:モード == 4
+	CALL MASTER_WORK_RESULT
+ELSEIF CFLAG:職業 >= 1 && !CFLAG:隷属首輪 && !FLAG:休養
+	CALL WORK_RESULT
+	;愛情経験が70以上ある場合、主人も働きに出ることができる
+	IF EXP:愛情経験 >= 70
+		CALL MASTER_WORK_RESULT, "手伝い"
+	ENDIF
+ELSE
+	;愛情経験が70以上ある場合、主人も働きに出ることができる
+	IF EXP:愛情経験 >= 70
+		CALL MASTER_WORK_RESULT, "手伝い"
+	ENDIF
+ENDIF
+
+;休憩フラグ解消
+FLAG:休養 = 0
+
+;[依存]を持っている場合、ターン終了時に主人への友好度が5入る
+IF TALENT:依存
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は、%CALLNAME:MASTER%の事が頭から離れないようだ……
+	PRINTFORML 主人への友好度： +5
+	CFLAG:主人への友好度 += 5
+	;PRINTFORMW {CFLAG:主人への友好度}
+ENDIF
+
+DRAWLINE
+;バスト限度を胸囲が超えている場合、一定確率で衣服の胸元が弾け胸が露出してしまう
+CALL CLOTHE_BUSTSIZE, CFLAG:服装
+IF RESULT+1 <= BASE:胸囲
+	;一定確率で胸元が弾け、慰み者値を1上昇させてしまう
+	;(疎通経験が上昇するコマンドの場合、代わりに3上昇する)
+	IF RAND:99+1 <= LOCAL:2
+		PRINTFORML 衣服の胸元が破けた！
+		IF TFLAG:疎通経験
+			PRINTFORML 周囲の人間が一斉に%CALLNAME:TARGET%に視線を向ける
+			PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にし、胸元を隠してその場を去った……
+			LOCAL:3 = 3
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にして胸元を隠した
+			PRINTFORML 時折目につく周囲の視線が痛い……
+			LOCAL:3 = 1
+		ENDIF
+		BASE:慰み者 = LIMIT(BASE:慰み者+LOCAL:3, 0, 200)
+	ENDIF
+ENDIF
+
+CALL CLOTHE_ABL, "属性"
+
+;胸部下着を着けていない場合、胸囲によって淫妖と経験が入る
+IF !CFLAG:胸部下着 && !NUDE(TARGET) && !GETBIT(RESULT, 6) && !GETBIT(RESULT, 7) && CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):1 != 2
+	;最低でも70は必要
+	IF BASE:胸囲 >= 70
+		DRAWLINE
+		PRINTFORML %CALLNAME:TARGET%は胸が服の布地と擦れることにより、時折顔を紅く染めた……
+		;胸囲85以上の場合
+		IF BASE:胸囲 >= 85
+			LOCAL = 5
+			LOCAL:1 = 4
+		;胸囲80以上
+		ELSEIF BASE:胸囲 >= 80
+			LOCAL = 4
+			LOCAL:1 = 3
+		;胸囲75以上
+		ELSEIF BASE:胸囲 >= 75
+			LOCAL = 3
+			LOCAL:1 = 1
+		ELSE
+			LOCAL = 2
+			LOCAL:1 = 1
+		ENDIF
+		
+		CALL CALCULATION_INYOU, LOCAL, 90
+		
+		IF LOCAL <= 0
+			LOCAL = 1
+		ENDIF
+		PRINTFORML 淫妖経験 + {LOCAL:1}
+		EXP:淫妖経験 += LOCAL:1
+		
+		PRINTFORM 淫妖: {BASE:淫妖}　→　
+		BASE:淫妖 += RESULT
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:淫妖}
+		RESETCOLOR
+		
+		CALL CLOTHE_ABL, "淫妖"
+		BASE:快楽動機づけ += LIMIT(BASE:快楽動機づけ+1*RESULT, 0, 400)
+	ENDIF
+ENDIF
+
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;胸部解放属性の衣服を着ている場合、堕落と堕落経験が入る
+IF CFLAG:服装 >= 0 && !GETBIT(RESULT, 6) && !GETBIT(RESULT, 7) && DITEMTYPE:(CFLAG:服装):1 == 2
+	DRAWLINE
+	IF CFLAG:胸部下着
+		PRINTFORML %CALLNAME:TARGET%は下着一枚しか纏っていない胸部に集まる視線を感じ
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は胸を露出して生活することに羞恥を感じ
+	ENDIF
+	PRINTFORML 顔を真っ赤に染めている……
+	PRINTL 
+	
+	;胸囲が80以上
+	IF BASE:胸囲 >= 80
+		LOCAL = 10
+		LOCAL:1 = 5
+	;70以上
+	ELSEIF BASE:胸囲 >= 70
+		LOCAL = 5
+		LOCAL:1 = 3
+	ELSE
+		LOCAL = 2
+		LOCAL:1 = 2
+	ENDIF
+	
+	PRINTFORML 堕落経験 + {LOCAL}
+	EXP:堕落経験 += LOCAL
+	
+	;経験補正
+	EXP_BONUS = EXP:堕落経験 / 40
+	;衣装補正
+	IF CFLAG:補正／堕落
+		HOSEI = 100 + 25 * CFLAG:補正／堕落
+		GET_ABL = SOURCE:堕落 * HOSEI / 100
+	ELSE
+		GET_ABL = SOURCE:堕落
+	ENDIF
+	
+	;媚薬状態の場合、+1される
+	IF CFLAG:媚薬状態
+		GET_ABL += 1
+	ENDIF
+	
+	;素養補正
+	;気品、プライドが関わる
+	;アライメントも関わる
+	;信仰心でマイナス補正がかかる
+	LOCAL:3 = (600 - BASE:信仰心 - ((BASE:アライメント - 100) * 3))
+	
+	IF LOCAL:3 < 0
+		LOCAL:3 = 0
+	ENDIF
+	
+	GET_ABL = (GET_ABL + BASE:淫妖 / 400) * (LOCAL:3 / 350) + (GET_ABL * (BASE:気品 + BASE:プライド) / 600)
+	
+	;補正をかける
+	CALL REVISION_INYOU, GET_ABL
+	GET_ABL = RESULT
+	
+	;媚薬状態の場合、数値が2倍になる
+	;（最高で3倍）
+	IF CFLAG:媚薬状態
+		GET_ABL *= 2
+	ENDIF
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 堕落: {BASE:堕落} + {GET_ABL} → 
+	BASE:堕落 += GET_ABL
+	PRINTFORML {BASE:堕落}
+	
+	;調教モードでない場合、経験に応じて評価が下がる
+	IF CFLAG:モード != 2
+		LOCAL = LOCAL * 3 / 2
+		PRINTFORML 評価が{LOCAL}下がった
+		CFLAG:評価 -= LOCAL
+	ENDIF
+	
+	CALL PLAYTHING
+	PRINTW 
+ENDIF
+
+;躾方針が叱る以外の場合
+IF CFLAG:躾方針 && BASE:思考力 < 560 && CFLAG:モード != 4
+	DRAWLINE
+	;基準値を算出しておく(失敗度)
+	LOCAL = (600 - BASE:思考力) / 50
+	
+	;折檻
+	IF CFLAG:躾方針 == 1
+		PRINTFORML %CALLNAME:MASTER%は躾として%CALLNAME:TARGET%に折檻を与えた
+		
+		;基準値が12以上
+		IF LOCAL >= 12
+			PRINTFORMW %CALLNAME:TARGET%は虚ろな目をして折檻を受けた。身体には無数の傷跡が残っている
+		;基準値が8以上
+		ELSEIF LOCAL >= 8
+			PRINTFORMW %CALLNAME:TARGET%は怯えた目を向け、折檻に対して悲痛な声をあげた
+		;基準値が4以上
+		ELSEIF LOCAL >= 4
+			PRINTFORMW %CALLNAME:TARGET%は不満そうな目を向け、折檻に対して抵抗を試みた
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は自分の失敗を認め、抵抗無く折檻を受けた
+		ENDIF
+		
+		LOCAL *= 3
+		
+		PRINTFORML 堕落経験 + {LOCAL}
+		EXP:堕落経験 += LOCAL
+		
+		PRINTFORM 隷属: {BASE:隷属}　→　
+		BASE:隷属 += LOCAL
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:隷属}
+		RESETCOLOR
+	;快楽を与える
+	ELSEIF CFLAG:躾方針 == 2
+		PRINTFORM %CALLNAME:MASTER%は躾として
+		
+		IF LOCAL >= 12
+			PRINT 失敗しかしておらず、甘い声で謝る
+		ELSEIF LOCAL >= 11
+			PRINT 頻繁に失敗を犯す
+		ELSEIF LOCAL >= 8
+			PRINT たまに失敗を犯す
+		ELSEIF LOCAL >= 4
+			PRINT 慣れない事で失敗を犯す
+		ELSE
+			PRINT 滅多に失敗を犯さない
+		ENDIF
+		PRINTFORML %CALLNAME:TARGET%に背後から局部に手を回し、弄った
+		
+		LOCAL:1 = 0
+		;胸部下着を着けていない時に淫妖ソースがある
+		;(全裸属性があるor乞食・淫魔属性の衣装は補正無し)
+		IF !CFLAG:胸部下着 && !GETBIT(CFLAG:属性, 6) && !GETBIT(CFLAG:属性, 7) && CFLAG:服装 >= 0 && !DITEMTYPE:(CFLAG:服装):11 && FLAG:モード != 2 && FLAG:モード != 1
+			PRINTFORM 衣服の中に手を差し入れ、下着を着けていない胸に手をやると%CALLNAME:TARGET%は
+			
+			;基準値が12以上
+			IF LOCAL >= 12
+				PRINTFORML 目を濡らして蕩けた表情を浮かべた
+			;基準値が11以上
+			ELSEIF LOCAL >= 11
+				PRINTFORML 顔を真っ赤に染めた
+			;基準値が8以上
+			ELSEIF LOCAL >= 8
+				PRINTFORML 目を閉じて冷たい手の感触を堪えた
+			;基準値が4以上
+			ELSEIF LOCAL >= 4
+				PRINTFORML 下着を着けさせてもらえない事に対して愚痴を漏らした
+			;それ以外
+			ELSE
+				PRINTFORML 目を逸らした
+			ENDIF
+			
+			LOCAL:1 = 1
+		ENDIF
+		
+		;基準値が12以上
+		IF LOCAL >= 12
+			PRINTFORMW %CALLNAME:TARGET%は悦びに満ちた目を向け、蕩けた声をあげた
+		;基準値が11以上
+		ELSEIF LOCAL >= 11
+			PRINTFORMW %CALLNAME:TARGET%は頬を真っ赤に染め、責めに対して喘いで股体を反らした
+		;基準値が8以上
+		ELSEIF LOCAL >= 8
+			PRINTFORMW %CALLNAME:TARGET%は怯えた目を向け、責めに対してくぐもった声を漏らした
+		;基準値が4以上
+		ELSEIF LOCAL >= 4
+			PRINTFORMW %CALLNAME:TARGET%は不満そうな目を向け、責めに対して時折身体を震わせた
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は自分の失敗を認め、責めに応じて身体を揺らした
+		ENDIF
+		
+		IF LOCAL:1
+			LOCAL = LOCAL * 130 / 100
+		ENDIF
+		
+		;素養補正
+		;気品が関わる
+		;革命者を付けている場合、能力による伸びの減衰が無くなる
+		IF CHECKSKILL(319)
+			GET_ABL = LOCAL * BASE:気品 / 180
+		ELSE
+			GET_ABL = LOCAL * BASE:気品 / 180 * (100 - (BASE:美麗 / 300 * 30)) / 100
+		ENDIF
+		
+		;高飛車の場合、上昇値が2倍になる
+		IF CFLAG:性格 == 2
+			GET_ABL *= 2
+		;真面目の場合、上昇値が半減
+		ELSEIF CFLAG:性格 == 1
+			GET_ABL /= 2
+		ENDIF
+		
+		IF GET_ABL <= 0
+			GET_ABL = 0
+		ENDIF
+		
+		PRINTFORML 美麗経験 + {LOCAL/2}
+		EXP:美麗経験 += LOCAL / 2
+		
+		PRINTFORM 美麗: {BASE:美麗}　→　
+		BASE:美麗 += GET_ABL
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:美麗}
+		RESETCOLOR
+		
+		CALL CALCULATION_INYOU, LOCAL, 80,
+		
+		PRINTFORML 淫妖経験 + {LOCAL}
+		EXP:淫妖経験 += LOCAL
+		
+		PRINTFORM 淫妖: {BASE:淫妖}　→　
+		BASE:淫妖 += RESULT
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW {BASE:淫妖}
+		RESETCOLOR
+		
+		CALL CLOTHE_ABL, "淫妖"
+		BASE:快楽動機づけ += LIMIT(BASE:快楽動機づけ+1*RESULT, 0, 400)
+	;解決案を与える
+	ELSEIF CFLAG:躾方針 == 3
+		PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%に解決案を教えた
+		
+		;(半ば説教に近いので)輝夜が抱く主人への友好度/40とアライメントの合計が50を越えていないと失敗する
+		hantei = CFLAG:主人への友好度/40 + BASE:アライメント
+		
+		;(経験補正率、標準値は4(4で１倍になる))
+		;LOCAL:1　知力経験＆知力入手値
+		IF hantei < 50
+			PRINTFORML %CALLNAME:TARGET%は教えられた事に不満を覚えたようだ……
+			
+			;知力経験と知力の入手値を1/4にする
+			LOCAL:1 = 1
+			
+			;依存とやる気を減らす
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML やる気が下がった……
+			RESETCOLOR
+			CFLAG:やる気 = LIMIT(CFLAG:やる気-1, 1, 10)
+			PRINTFORM 依存 {BASE:依存}　→　
+			BASE:依存 = LIMIT(BASE:依存-LOCAL, 0, MAXBASE:依存)
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML {BASE:依存}
+			RESETCOLOR
+		ELSEIF hantei < 100
+			PRINTFORML %CALLNAME:TARGET%は教えられた事を渋々受け入れた
+			
+			;入手値を1/2にする
+			LOCAL:1 = 2
+		ELSEIF hantei < 150
+			PRINTFORML %CALLNAME:TARGET%は教えられた事に従って行動した
+			
+			;入手値を等倍にする
+			LOCAL:1 = 4
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は教えられた事に進んで取り組み、解決した事で笑顔を浮かべている
+			
+			;入手値を1.5倍にする
+			LOCAL:1 = 5
+		ENDIF
+		
+		;入手値は失敗回数×2×入手値/4
+		GET_ABL = LIMIT(LOCAL*2*LOCAL:1/4, 1, LOCAL*2*LOCAL:1/4)
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 知力経験 + {GET_ABL}
+		EXP:知力経験 += GET_ABL
+		RESETCOLOR
+		CALL CALCULATION_PALAM, GET_ABL, "知力"
+		
+		
+		
+	;優しく諭す
+	ELSEIF CFLAG:躾方針 == 4
+		PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%を優しく諭した……
+		
+		;このコマンドだけ失敗回数が関係無い、疎通と依存が上がる
+		GET_ABL = 3
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 疎通経験 + {GET_ABL}
+		EXP:疎通経験 += GET_ABL
+		RESETCOLOR
+		CALL CALCULATION_PALAM, GET_ABL, "疎通"
+		
+		PRINTFORM 依存 {BASE:依存}　→　
+		BASE:依存 = LIMIT(BASE:依存+GET_ABL*2, 0, MAXBASE:依存)
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:依存}
+		RESETCOLOR
+		
+		;20％の確率で貞操とアライメントが下がる
+		IF !RAND:5
+			CALL CALCULATION_PALAM, 1, "アライメント"
+			CALL CAL_CHASTE, 1, "下降"
+			
+		ENDIF
+		
+	;夜の街に放置
+	ELSEIF CFLAG:躾方針 == 5
+		PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%を露出が多い格好で夜の街に放置した
+		PRINTFORML 夜の街を屯する者達が%CALLNAME:TARGET%を狙う……
+		;貞操によって分岐
+		
+		;100以上
+		IF BASE:貞操 >= 100
+			PRINTFORML %CALLNAME:TARGET%は首を横に振って拒絶の姿勢を見せたが、身体に刻まれた快楽が理性を蕩けさせた
+			
+			LOCAL:1 = 3
+		;50以上
+		ELSEIF BASE:貞操 >= 50
+			PRINTFORML %CALLNAME:TARGET%は相手の腰に足を絡ませ、愉悦を味わおうとしている
+			
+			LOCAL:1 = 5
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は股を開いて相手を誘い、媚声をあげて交わっている
+			
+			LOCAL:1 = 8
+		ENDIF
+		
+		CALL CALCULATION_INYOU, LOCAL:1, 80
+		
+		PRINTFORM 淫妖: {BASE:淫妖}　→　
+		BASE:淫妖 += RESULT
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW {BASE:淫妖}
+		RESETCOLOR
+		CALL CAL_CHASTE, 2, "下降"
+	ENDIF
+;思考力が高い場合、失敗を犯さなかったメッセージを出す
+ELSEIF CFLAG:躾方針 && BASE:思考力 >= 560
+	PRINTFORML %CALLNAME:TARGET%は機転を生かし、失敗を犯さなかった
+	PRINTFORMW どうやら培った思考力の賜物らしい
+ENDIF
+
+;ロープ付き首輪
+IF CFLAG:隷属首輪
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は行事が無い時は首輪を着けられ、ロープによって繋がれ部屋に幽閉されている……
+	PRINTFORML 堕落経験 + 5
+	EXP:堕落経験 += 5
+	
+	PRINTFORM 隷属: {BASE:隷属}　→　
+	BASE:隷属 += 50
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:隷属}
+	RESETCOLOR
+ENDIF
+
+;偶数の月はやる気-1
+IF !(DAY %2) && CFLAG:やる気 >= 6
+	PRINTFORML やる気が元の鞘に収まっていきます
+	CFLAG:やる気 -= 1
+ENDIF
+
+;怠惰状態中にやる気が5未満の場合、やる気が1回復する
+IF CFLAG:怠惰 && CFLAG:やる気 < 5
+	CFLAG:やる気 += 1
+	IF CFLAG:やる気 >= 5
+		DRAWLINE
+		SETCOLOR 255,160,128
+		PRINTFORML %CALLNAME:TARGET%の怠惰状態が解消した！
+		RESETCOLOR
+		CFLAG:怠惰 = 0
+		MAXBASE:行動回数 += 2
+	ENDIF
+ENDIF
+
+;やる気が0以下になると怠惰状態になる
+IF CFLAG:やる気 <= 0 && !CFLAG:怠惰
+	PRINTFORML %CALLNAME:TARGET%は切迫した習慣によりやる気を無くしたようだ……
+	SETCOLOR 128,128,255
+	PRINTFORML %CALLNAME:TARGET%は怠惰状態になった……
+	RESETCOLOR
+	CFLAG:怠惰 = 1
+	MAXBASE:行動回数 -= 2
+ENDIF
+
+;ストレス50未満だと3ヶ月に1回やる気が上がる
+IF BASE:ストレス < 50 && !(DAY % 3) && CFLAG:やる気 < 5 && !CFLAG:怠惰
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML やる気が少し回復した！
+	RESETCOLOR
+	CFLAG:やる気 += 1
+ENDIF
+
+;自慰判定をして、達成した場合自慰を行う
+IF SELF_COM(TARGET)
+	DRAWLINE
+	PRINTFORM %CALLNAME:TARGET%は
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORM 何も悪いと思わずに、
+		LOCAL = 8
+	ELSEIF BASE:貞操 >= 150
+		PRINTFORM 恥ずかしがりながら、
+		LOCAL = 3
+	ELSE
+		PRINTFORM 堪え切れず、
+		LOCAL = 5
+	ENDIF
+	PRINTFORML 自分の秘裂に指を挿しながら胸の突起を弄り、自ら快楽を貪った
+	
+	;感度で分岐
+	IF BASE:感度 >= 500
+		PRINTFORML %CALLNAME:TARGET%は溜まらないといった様子で膝を立て、甘い声を上げ続けた……
+	ELSEIF BASE:感度 >= 300
+		PRINTFORML %CALLNAME:TARGET%は腰を跳ねさせ、顔にかかった黒髪が汗で顔に貼りついた
+	ELSEIF BASE:感度 >= 200
+		PRINTFORML %CALLNAME:TARGET%は太腿を擦り合わせながら可愛い声を上げた
+	ELSEIF BASE:感度 >= 100
+		PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にして、滲み出た愛液で指を濡らした
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は熱い吐息を漏らし、股で手を挟んだ……
+	ENDIF
+	
+	;素養補正
+	;感度が関わる
+	IF CFLAG:性格 == -1
+		GET_ABL = (LOCAL + BASE:淫妖 / 300) * BASE:感度 / 60
+	ELSE
+		GET_ABL = (LOCAL + BASE:淫妖 / 300) * BASE:感度 / 90
+	ENDIF
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	
+	;補正をかける
+	CALL REVISION_INYOU, LOCAL
+	LOCAL = RESULT
+	
+	PRINTFORML 淫妖経験 + 4
+	EXP:淫妖経験 += 4
+	
+	PRINTFORM 淫妖: {BASE:淫妖}　→　
+	BASE:淫妖 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	
+	;CALL CLOTHE_ABL, "淫妖"
+	;BASE:快楽動機づけ += 2 * RESULT
+	CALL PLAYTHING
+	
+	RESETCOLOR
+	CALL UP_STATUS
+ENDIF
+
+;淫行の習わし
+IF TALENT:淫行の習わし
+	IF BASE:アライメント >= 100
+		;淫妖が800以上
+		IF BASE:淫妖 >= 800
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%に跨り、肩に両手を乗せ、そのまま上体を預けた……
+			PRINTFORML %CALLNAME:TARGET%の熱が籠った吐息が、%CALLNAME:MASTER%の顔に当たる
+			PRINTFORMW 何度も口づけをされては身体を擦られ、勃った乳首の感触を感じた
+			
+			LOCAL = 4
+		;淫妖が500以上
+		ELSEIF BASE:淫妖 >= 500
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の手を持ち、自分の局部に宛がった
+			PRINTFORML そして、そのまま局部を擦り、吐息を荒げていく
+			PRINTFORMW あまりに突飛な行為に唖然としていると、%CALLNAME:TARGET%は紅潮した顔を向け、そのまま口を合わせてきた……
+			
+			LOCAL = 3
+		;淫妖が200以上
+		ELSEIF BASE:淫妖 >= 200
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の横に座り、顔を持って口づけしてきた
+			PRINTFORML 舌で腔内を弄られ、その気はなかった%CALLNAME:MASTER%も徐々に昂ぶっていく
+			PRINTFORMW しばらく後に顔を離した時、互いの顔は紅潮していた
+			
+			LOCAL = 2
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の手を何度も握っては離している
+			PRINTFORMW 行為の意図が分からない。恥ずかしいのだろうか……
+			
+			LOCAL = 1
+		ENDIF
+	ELSE
+		;淫妖が800以上&貞操20以下
+		IF BASE:淫妖 >= 800 && BASE:貞操 <= 20
+			PRINTFORML %CALLNAME:TARGET%は裏通りに行き、数人の役人に声をかけた
+			PRINTFORML どうやらこの場所は役人達が隠れて禁じられた行為を行う場所であるらしい
+			PRINTFORML %CALLNAME:TARGET%は熱が籠った声で役人達を褒めながら、全身を弄られた
+			PRINTFORMW 薄暗い通りに、少女の媚声が響き渡る……
+			
+			LOCAL = -4
+		;淫妖が500以上%貞操50以下
+		ELSEIF BASE:淫妖 >= 500 && BASE:貞操 <= 50
+			PRINTFORML %CALLNAME:TARGET%は都の大通りから外れた小路に入った
+			PRINTFORML そして粗暴な見た目をした男性に声をかけ、行為を条件にお金をねだった
+			PRINTFORMW 男性は快く了承し、%CALLNAME:TARGET%を押し倒した
+			
+			LOCAL = -3
+		;淫妖が200以上&貞操100以下
+		ELSEIF BASE:淫妖 >= 200 && BASE:貞操 <= 80
+			PRINTFORML %CALLNAME:TARGET%は都の如何わしい通りに入った
+			PRINTFORML そして見た目が貧相な男性に声をかけ、お金をねだった
+			PRINTFORMW 男性は身体を触らせてくれることを交換条件にし、%CALLNAME:TARGET%は快諾した
+			
+			LOCAL = -2
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%に、身体を触らせる代わりにお金が欲しいと言った
+			PRINTFORML %CALLNAME:MASTER%はその言動を咎めるが、%CALLNAME:TARGET%は聞く耳を持たない
+			PRINTFORMW 仕方がないので%CALLNAME:TARGET%の身体を触り、お金をあげた
+			
+			LOCAL = -1
+		ENDIF
+	ENDIF
+	
+	;分岐によって報酬を変える
+	IF LOCAL >= 1
+		CALL SETCOLOR_PALAMUP
+		SELECTCASE LOCAL
+			CASE 4
+				PRINTFORML 愛情経験+5
+				PRINTFORML 淫妖経験+2
+				
+				EXP:愛情経験 += 5
+				EXP:淫妖経験 += 2
+			CASE 3
+				PRINTFORML 愛情経験+4
+				PRINTFORML 淫妖経験+2
+				
+				EXP:愛情経験 += 4
+				EXP:淫妖経験 += 2
+			CASE 2
+				PRINTFORML 愛情経験+2
+				PRINTFORML 淫妖経験+2
+				
+				EXP:愛情経験 += 2
+				EXP:淫妖経験 += 2
+			CASE 1
+				PRINTFORML 愛情経験+1
+				
+				EXP:愛情経験 += 1
+		ENDSELECT
+	ELSE
+		CALL SETCOLOR_PALAMUP
+		SELECTCASE LOCAL
+			CASE -4
+				LOCAL:1 = 15000
+				
+				PRINTFORML 淫妖経験+5
+				PRINTFORML ${LOCAL:1}を手に入れた！
+				CALL CALCULATION_PALAM, 3, "役人の評価"
+				
+				EXP:淫妖経験 += 5
+				MONEY += LOCAL:1
+			CASE -3
+				LOCAL:1 = 10000
+				
+				PRINTFORML 淫妖経験+3
+				PRINTFORML ${LOCAL:1}を手に入れた！
+				
+				EXP:淫妖経験 += 3
+				MONEY += LOCAL:1
+			CASE -2
+				LOCAL:1 = 5000
+				
+				PRINTFORML 淫妖経験+2
+				PRINTFORML ${LOCAL:1}を手に入れた！
+				
+				EXP:淫妖経験 += 2
+				MONEY += LOCAL:1
+			CASE -1
+				LOCAL:1 = 1000
+				
+				PRINTFORML 淫妖経験+2
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML ${LOCAL:1}消費した！
+				
+				EXP:淫妖経験 += 2
+				MONEY -= LOCAL:1
+		ENDSELECT
+	ENDIF
+	
+	
+	;処理終了時にLOCALをリセットする
+	LOCAL = 0
+	LOCAL:1 = 0
+	RESETCOLOR
+ENDIF
+
+;文章力
+IF CHECKSKILL(315)
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は文章を書き、周囲の人と交流を図った……
+	PRINTFORM 疎通:{BASE:疎通}　→　
+	BASE:疎通 += 3
+	IF BASE:疎通 > 1000
+		BASE:疎通 = 1000
+	ENDIF
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:疎通}
+	RESETCOLOR
+ENDIF
+
+DRAWLINE
+IF !FLAG:王宮追放
+	;警備による収入補正は2年目の4月以降にしかかからない
+	IF (FLAG:年数 == 2 && DAY >= 4) || FLAG:年数 >= 3
+		LOCAL = 2000 + FLAG:補正予算額 - (4000 * FLAG:警備 * (1 - CHECKSKILL(318)) - 1000 * CHECKSKILL(311)) + FLAG:評価レベル * 300
+		
+		;厳重な警備の場合、追加でコストが$10000かかる
+		IF FLAG:警備 == 1
+			LOCAL -= 10000
+		ENDIF
+	ELSE
+		LOCAL = 2000 + FLAG:補正予算額 + FLAG:評価レベル * 300
+	ENDIF
+	
+	;食事方針による補正
+	LOCAL -= 2000*CFLAG:食事方針
+	
+	;外交で撃破した人数だけ500追加される
+	LOCAL += 500 * FLAG:外交撃破数
+	
+	;精神と時の間を付けている場合、コストとして$8000かかる
+	IF CHECKSKILL(321)
+		LOCAL -= 8000
+	ENDIF
+	
+	;時間生産の術を付けている場合、コストとして$12000かかる
+	IF CHECKSKILL(322)
+		LOCAL -= 12000
+	ENDIF
+	
+	IF LOCAL > 0
+		CALL SETCOLOR_MONEY
+		PRINTFORML 教育費として${LOCAL}が支給された！
+		RESETCOLOR
+		MONEY += LOCAL
+	ELSE
+		LOCAL *= -1
+		PRINTFORML 教育費として${LOCAL}を消費した！
+		RESETCOLOR
+		MONEY -= LOCAL
+	ENDIF
+	
+	;所持金がマイナスになった
+	IF MONEY < 0
+		MONEY = 0
+		CALL EXILE_KINGDOM, 2
+	ENDIF
+ELSEIF TALENT:娼婦
+	CALL CON_SEIKATSU
+	;誘拐中は半分になる
+	IF CFLAG:モード == 2
+		LOCAL = RESULT / 2
+	ELSE
+		LOCAL = RESULT
+	ENDIF
+	
+	;食事方針による補正
+	LOCAL += 2000*CFLAG:食事方針
+	
+	PRINTFORML 生活費として${LOCAL}を消費した！
+	MONEY -= LOCAL
+ENDIF
+;資源管理
+IF CHECKSKILL(313)
+	CALL SETCOLOR_MONEY
+	;55に変えるのもあり
+	LOCAL = MONEY / 40
+	PRINTFORML 所持金を運用することにより${LOCAL}獲得した！
+	RESETCOLOR
+	MONEY += LOCAL
+ENDIF
+
+;支配者
+IF CHECKSKILL(317)
+	CALL SETCOLOR_MONEY
+	LOCAL = 2000
+	PRINTFORML 他人を利用することにより${LOCAL}獲得した！
+	RESETCOLOR
+	MONEY += LOCAL
+ENDIF
+
+;心理学
+IF CHECKSKILL(312)
+	IF BASE:アライメント > 100
+		PRINTFORML %CALLNAME:TARGET%は他人の心に配慮した振る舞いを行った……
+		PRINTFORM 疎通:{BASE:疎通}　→　
+		BASE:疎通 += 5
+		IF BASE:疎通 > 1000
+			BASE:疎通 = 1000
+		ENDIF
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:疎通}
+		RESETCOLOR
+	ELSEIF BASE:アライメント < 100
+		PRINTFORML %CALLNAME:TARGET%は他人の弱みに付け込んで金銭を徴収した……
+		PRINTFORM 疎通:{BASE:疎通}　→　
+		BASE:疎通 -= 8
+		IF BASE:疎通 < 0
+			BASE:疎通 = 0
+		ENDIF
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML {BASE:疎通}
+		RESETCOLOR
+		CALL SETCOLOR_MONEY
+		LOCAL = 3000
+		PRINTFORML ${LOCAL}獲得した！
+		RESETCOLOR
+		MONEY += LOCAL
+	ENDIF
+ENDIF
+
+;慰み者が増加していない場合、3減らす
+;半裸の場合は変化無し
+;全裸の場合は1増加する
+;男勝りの場合、上記の処理が終わってから1減らす
+IF BASE:慰み者 <= BASE:変化前の慰み者 && CFLAG:モード != 2
+	CALL CLOTHE_ABL, "属性"
+	
+	;全裸or娼婦/淫妖属性の衣服の場合
+	IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2)
+		BASE:慰み者 = LIMIT(BASE:慰み者+1, 0, MAXBASE:慰み者)
+	;半裸の場合
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+		
+	;それ以外
+	ELSE
+		BASE:慰み者 = LIMIT(BASE:慰み者-3, 0, MAXBASE:慰み者)
+	ENDIF
+	
+	IF CFLAG:性格 == 6
+		BASE:慰み者 = LIMIT(BASE:慰み者-1, 0, MAXBASE:慰み者)
+	ENDIF
+ENDIF
+
+;慰み者が200以上(最大値)で王宮から追放されておらず
+;淫妖が1000以上ある場合
+IF BASE:慰み者 >= 200 && !FLAG:王宮追放 && BASE:淫妖 >= 1000 && FLAG:断った回数／役人 < 4 && !TALENT:淫魔 && CFLAG:職業 != 99
+	CALL IN_HAREM
+ENDIF
+
+;罠が仕掛けられている場合、特殊処理に入る
+;スマートな条件式が思い付かなかったので、淫魔の場合飛ばす事にする
+IF TALENT:淫魔
+	CALL TRAP_TURN
+ENDIF
+
+;現在の淫妖経験を先ほど記録した数と比較し、差異分を娼婦・花魁経験振り分けにかける
+LOCAL = EXP:淫妖経験 - B_INYOU
+CALL HANTEI_INYOU, LOCAL
+
+;TARGET外のキャラが誘拐されている場合、そのキャラの誘拐判定を行う
+FOR COUNT, 1, FLAG:攫った姉妹の数+2
+	IF CFLAG:COUNT:モード == 2
+		LOCAL = TARGET
+		TARGET = COUNT
+		CALL YUUKAI
+		TARGET = LOCAL
+	ENDIF
+NEXT
+
+
+;教育を実施したというフラグを消す
+TFLAG:教育 = 0
+
+RETURN 0
+
+;-------------------------------------------------------------------
+;誘拐判定
+;-------------------------------------------------------------------
+@YUUKAI_HANTEI
+#DIM YUUKAI, 1
+#DIM L_LOCAL, 1
+
+VARSET LOCAL, 0
+
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～盗賊の行動～
+RESETCOLOR
+PRINTFORML %CALLNAME:TARGET%を誘拐するため、盗賊達が機会を伺っている……
+;猛侵攻が5％の確率で発生する
+IF !RAND:5
+	PRINTFORML 盗賊達は一気に%CALLNAME:TARGET%に接近した！
+	LOCAL = 1
+ENDIF
+
+
+PRINTFORM 盗賊接近値 {CFLAG:盗賊接近値}　→
+
+CALL CLUC_YUUKAI,LOCAL
+PRINTFORML 　{CFLAG:盗賊接近値}
+
+
+;接近値が最大値の8割以上ある場合、君主の影響力を削る事ができる
+IF CFLAG:盗賊接近値 >= MAX_APPROACH_HIZOKU()*8/10
+	PRINTFORML 盗賊が%CALLNAME:TARGET%を監視するようになってから
+	PRINTFORML 君主は頻繁に外出している。何か用事があるのだろうか……
+	CALL SETCOLOR_PALAMUP
+	LOCAL = 10
+	PRINTFORML 君主の権力値が{LOCAL}下がった！
+	FLAG:君主の権力値 -= LOCAL
+	RESETCOLOR
+ENDIF
+
+PRINTFORML 盗賊接近値({CFLAG:盗賊接近値}/{MAX_APPROACH_HIZOKU()})
+PRINTFORM [
+CALL SETCOLOR_ABL
+FOR L_LOCAL, 0, CFLAG:盗賊接近値*60/MAX_APPROACH_HIZOKU()
+	PRINTFORM %UNICODE(0x258A)%
+NEXT
+;空白担当
+FOR L_LOCAL, 0, (MAX_APPROACH_HIZOKU()-CFLAG:盗賊接近値)*60/MAX_APPROACH_HIZOKU()
+	SETCOLOR 0,0,0
+	PRINTFORM %UNICODE(0x258A)%
+NEXT
+RESETCOLOR
+PRINTL ]
+
+
+IF CFLAG:盗賊接近値 >= MAX_APPROACH_HIZOKU()
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 盗賊達は%CALLNAME:TARGET%を誘拐する準備が整ったようです……
+	RESETCOLOR
+	IF !FLAG:王宮追放
+		PRINTFORMW %CALLNAME:TARGET%が王宮を歩いていると、突然後ろから口と目を塞がれた！
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%が道を歩いていると、突然後ろから口と目を塞がれた！
+	ENDIF
+	PRINTFORMW 謎の人物はそのまま%CALLNAME:TARGET%の口に布を当てて気絶させると
+	PRINTFORMW そのままどこかへ連れ去ってしまった……
+	CALL SETCOLOR_BAD
+	PRINTFORMW ＜%CALLNAME:TARGET%が誘拐された！＞
+	RESETCOLOR
+	;誘拐モードへ
+	CFLAG:モード = 2
+	;誘拐蓄積値をリセット
+	CFLAG:誘拐蓄積値 = 0
+	;盗賊接近値もリセット
+	CFLAG:盗賊接近値 = 0
+	
+	FLAG:誘拐回数 += 1
+	
+	;念の為に初期化
+	FLAG:救出失敗回数 = 0
+	
+	;面倒なのでここで初期化
+	CFLAG:盗賊ムード = 0
+	
+	BASE:理性 = MAXBASE:理性
+	
+	LOADGLOBAL
+	;誘拐回数+1
+	GLOBAL:504 += 1
+	SAVEGLOBAL
+	
+	RETURN 1
+ENDIF
+
+RETURN 0
+
+;-------------------------------------------------------------------
+;盗賊接近値　上昇値計算
+;ARG　急接近フラグ
+;-------------------------------------------------------------------
+@CLUC_YUUKAI, ARG
+#DIM YUUKAI, 1
+
+YUUKAI = 0
+;兵力Lv1*20だけ減少させる
+YUUKAI = -20*FLAG:兵力
+
+
+;厳重に警備している場合、減少値を2倍にする
+IF FLAG:警備 == 1
+	YUUKAI *= 2
+;警備していない場合は1/2
+ELSEIF FLAG:警備 == -1
+	YUUKAI /= 2
+ENDIF
+
+
+;基礎上昇値を投入
+YUUKAI += 50+20*FLAG:年数
+
+;誘拐度が上昇している場合、接近値を追加
+;（10刻み）
+IF TFLAG:誘拐度 >= 1
+	YUUKAI += 10 * TFLAG:誘拐度
+	TFLAG:誘拐度 = 0
+ENDIF
+
+;服装による補正／堕落がある場合
+CALL CLOTHE_ABL, "堕落"
+IF RESULT >= 1
+	YUUKAI += 10 * RESULT
+ENDIF
+
+;淫妖補正は補正低め
+CALL CLOTHE_ABL, "淫妖"
+IF RESULT >= 1
+	YUUKAI += 5 * RESULT
+ENDIF
+
+;溜まっている淫妖の10％が追加
+;(最大+10)
+YUUKAI += BASE:淫妖 / 100
+
+;目立ちやすさ補正
+;目立ちやすさの1/2の値を目立ちやすさによる上昇の基礎値とする
+CALL CONSPI, TARGET
+LOCAL = RESULT/2
+;PRINTFORML 目立ちやすさ補正:{LOCAL}
+
+;半壊の場合は+10
+;全壊の場合は+15
+;布切れの場合は+20
+IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 1
+	YUUKAI += 10
+ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 1
+	YUUKAI += 15
+ELSEIF CFLAG:服装 < 0
+	YUUKAI += 20
+ENDIF
+
+;社交的の場合、誘拐判定が1.25倍になる
+IF CFLAG:性格 == 3
+	YUUKAI = YUUKAI*5/4
+ENDIF
+
+;警戒を解いている場合、上昇量が2倍になる
+IF FLAG:警備 == -1
+	YUUKAI *= 2
+;厳重な警備の場合、上昇量が1/2になる
+ELSEIF FLAG:警備 == 1
+	YUUKAI /= 2
+ENDIF
+
+;急接近フラグが立っている場合、フラグ一つにつき2倍になる
+IF ARG
+	YUUKAI = YUUKAI * (1+ARG)
+ENDIF
+
+
+CFLAG:盗賊接近値 = MAX(CFLAG:盗賊接近値+YUUKAI, 0)
+
+
+;-------------------------------------------------------------------
+;盗賊接近値　最大数定義
+;本来はBASEでやるべきなんだろうが、誘拐蓄積値がCFLAGなのでそれに合わせる
+;-------------------------------------------------------------------
+@MAX_APPROACH_HIZOKU
+#FUNCTION
+
+LOCAL = 1000
+
+RETURNF LOCAL
+
+
+;-------------------------------------------------------------------
+;誘拐時の処理
+;ARG　 誘拐されたタイミング　0:日常　1:修行時
+;ARG:1 救出にかかる日数(基本的には草むら以外階層*2日かかる(最大15日))
+;-------------------------------------------------------------------
+@YUUKAI
+#DIM REC_MONEY, 1
+#DIM MISESIME, 1
+DRAWLINE
+FLAG:経過ターン数 += 1
+PRINTFORML 経過ターン数:{FLAG:経過ターン数}
+
+CALL CLOTHE_ABL, "属性"
+
+;退魔のお祓い棒を持っていてアライメントが+の場合、撃退する
+IF (CFLAG:日用品／その他 == 432 || CFLAG:日用品／その他2 == 432) && BASE:アライメント > 100
+	PRINTFORML %CALLNAME:TARGET%が持つ退魔のお祓い棒が光り輝く……
+	PRINTFORMW 盗賊達は%CALLNAME:TARGET%から後ずさりをし、逃げるようにしてその場を立ち去った
+	CFLAG:モード = 0
+	FLAG:身代金要求回数 = 0
+	FLAG:見せしめ回数 = 0
+	FLAG:救出失敗回数 = 0
+	FLAG:経過ターン数 = 0
+	FLAG:見せしめ実行 = 0
+	FLAG:誘拐猶予 = 3
+	RETURN 0
+ELSEIF !(FLAG:経過ターン数 % 6)
+	;娼婦の場合、ここで解放する
+	IF TALENT:娼婦
+		PRINTFORML 満足した盗賊達は、ぐったりとしている%CALLNAME:TARGET%の懐から金銭を抜き出し
+		PRINTFORML 近場の道端に放置した……
+		MONEY -= 20000
+		IF MONEY < 0
+			MONEY = 0
+		ENDIF
+		IF CFLAG:服装 == -4
+			IF FLAG:布の痛み == 2
+				CALL DATA_CHANGE_CLOTHE, -3, "変更"
+			ELSEIF FLAG:布の痛み == 1
+				CALL DATA_CHANGE_CLOTHE, -2, "変更"
+			ELSE
+				CALL DATA_CHANGE_CLOTHE, -1, "変更"
+			ENDIF
+		ENDIF
+		CFLAG:モード = 0
+		FLAG:身代金要求回数 = 0
+		FLAG:見せしめ回数 = 0
+		FLAG:救出失敗回数 = 0
+		FLAG:経過ターン数 = 0
+		FLAG:見せしめ実行 = 0
+		FLAG:誘拐猶予 = 3
+		RETURN 0
+	ENDIF
+;3回目以降の誘拐では、3ターン目から25％の確率で服を剥いて首輪をかける
+;(淫魔や乞食属性のある服は剥かない)
+;(全裸属性の服も剥かない)
+ELSEIF FLAG:経過ターン数 >= 3 && FLAG:誘拐回数 >= 3 && !NUDE(TARGET) && !(GETBIT(RESULT, 6) || GETBIT(RESULT, 7)) && CFLAG:服装 != -4 && 25 >=  RAND:99 + 1
+	;着ている服が[全壊]状態の場合
+	IF DITEMTYPE:(CFLAG:服装):14 == 2
+		PRINTFORML 盗賊達は、%CALLNAME:TARGET%の身体に僅かに残っている%ITEMNAME:(CFLAG:服装)%を綺麗に取り除き
+		;10％の確率で呪詛の布切れを着せる
+		IF !RAND:9
+			PRINTFORMW 代わりに近場に捨てられてあった呪詛の布切れを着せた！
+			LOCAL = 14
+			ITEM:14 = 1
+		ELSE
+			PRINTFORMW 代わりに首輪をかけた！
+			LOCAL = -4
+		ENDIF
+		ITEM:(CFLAG:服装) = 0
+		CALL RESET_REMODEL, CFLAG:服装
+		CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+	;半壊の場合
+	ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+		PRINTFORML 盗賊達は、%CALLNAME:TARGET%が着ている%ITEMNAME:(CFLAG:服装)%をビリビリに破いた！
+		PRINTFORML 首や手足に僅かに残る%ITEMNAME:(CFLAG:服装)%は、もはや衣服としての機能を果たしていない……
+		DITEMTYPE:(CFLAG:服装):14 = 2
+		DITEMTYPE:(CFLAG:服装):11 = 2
+	ELSE
+		PRINTFORML 盗賊達は、%CALLNAME:TARGET%が着ている%ITEMNAME:(CFLAG:服装)%を破き、素肌の大部分を露出させた！
+		DITEMTYPE:(CFLAG:服装):14 = 1
+		DITEMTYPE:(CFLAG:服装):11 = 1
+	ENDIF
+;20％の確率で媚薬を飲ませる
+;ターンが経過するごとに確率が5％ずつ上昇する
+;高飛車の場合、50％の確率で飲まされる
+ELSEIF (CFLAG:性格 == 2 && (RAND:(99 + 1) <= (45 + FLAG:経過ターン数))) || (RAND:(99 + 1) <= (20 + FLAG:経過ターン数))
+	PRINTFORML 盗賊達は、%CALLNAME:TARGET%に無理矢理媚薬を飲ませた！
+	;科学知識を付けている場合、効果無し
+	IF CHECKSKILL(314)
+		PRINTFORML しかし、%CALLNAME:TARGET%は科学の知識を生かして媚薬の効果を抑えた！
+	;最悪の目覚めを着けている場合、消費して効果を防ぐ
+	ELSEIF CFLAG:日用品／その他 == 503 || CFLAG:日用品／その他2 == 503
+		PRINTFORML しかし、%CALLNAME:TARGET%は最悪の目覚めを使い、媚薬の効果を抑えた！
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 最悪の目覚めは溶けて無くなった！
+		ITEM:503 -= 1
+		LOCAL = FINDELEMENT(CFLAG, 503, 264, 266)
+		CFLAG:LOCAL = 0
+		RESETCOLOR
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の身体は疼き、しきりに太腿を擦り合わせ始めた
+		BASE:媚薬 += 10 + BASE:媚薬 / 2
+		IF CFLAG:媚薬状態 != 2
+			CFLAG:媚薬状態 = 1
+		ENDIF
+		IF BASE:媚薬 > MAXBASE:媚薬 && CFLAG:媚薬状態 != 2
+			BASE:媚薬 = MAXBASE:媚薬
+			PRINTFORML 
+			CALL OVERDOSE_BIYAKU
+		ENDIF
+	ENDIF
+ELSE
+	;行動が武士の場合、戦闘をして逃げ出す事ができる
+	IF GETBIT(CFLAG:習慣職業／行動, 8) && CFLAG:盗賊ムード >= 100 && BASE:理性
+		PRINTFORML 盗賊達は舞い上がり、隙を見せている
+		PRINTFORML 周囲の空気と嗅がされた香りのせいで身体が鈍い……
+		PRINTFORMW 盗賊達を襲いますか？
+		PRINTL 
+		PRINTL [0] - 襲う
+		PRINTL [1] - 襲わない
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML 盗賊達は驚き、戦闘態勢を取るのに時間がかかっている！
+			
+			CALL SET_STATUS, 1
+			CALL HEALING, 1
+			
+			;欲情状態にする
+			TFLAG:500 |= 1p0
+			
+			;減らされた理性の割合分を欲情に加算する
+			TFLAG:506 = LIMIT(TFLAG:524*(BASE:理性*100/MAXBASE:理性)/100, 0, TFLAG:524)
+			
+			CALL BATTLE, LOCAL, 0, 0, 0, FLAG:年数*4+RAND:5, 1
+			
+			;勝った場合
+			IF RESULT == 1
+				PRINTFORML %CALLNAME:TARGET%は盗賊達を撃退した！
+				PRINTFORMW 地上を目指して戻る事にしました
+				
+				TFLAG:最深部の階層 = 13
+				TFLAG:現在の階層 = 13
+				TFLAG:ダンジョンレベル = DUNGEON_LV(99)
+				CALL MENU_QUEST, LOCAL
+				
+				IF RESULT == 1
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML %CALLNAME:MASTER%の元に%CALLNAME:TARGET%が戻ってきた！
+					RESETCOLOR
+					
+					CFLAG:モード = 0
+					FLAG:身代金要求回数 = 0
+					FLAG:見せしめ回数 = 0
+					FLAG:救出失敗回数 = 0
+					FLAG:経過ターン数 = 0
+					FLAG:見せしめ実行 = 0
+					FLAG:誘拐猶予 = 3
+					RETURN 0
+				ENDIF
+				
+			;負けた場合
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は再び拘束されてしまった……
+				;着ている服が[全壊]状態の場合
+				IF DITEMTYPE:(CFLAG:服装):14 == 2
+					PRINTFORML 盗賊達は、%CALLNAME:TARGET%の身体に僅かに残っている%ITEMNAME:(CFLAG:服装)%を綺麗に取り除き
+					;10％の確率で呪詛の布切れを着せる
+					IF !RAND:9
+						PRINTFORMW 代わりに近場に捨てられてあった呪詛の布切れを着せた！
+						LOCAL = 14
+						ITEM:14 = 1
+					ELSE
+						PRINTFORMW 代わりに首輪をかけた！
+						LOCAL = -4
+					ENDIF
+					ITEM:(CFLAG:服装) = 0
+					CALL RESET_REMODEL, CFLAG:服装
+					CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+				;半壊の場合
+				ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+					PRINTFORML 盗賊達は、%CALLNAME:TARGET%が着ている%ITEMNAME:(CFLAG:服装)%をビリビリに破いた！
+					PRINTFORML 首や手足に僅かに残る%ITEMNAME:(CFLAG:服装)%は、もはや衣服としての機能を果たしていない……
+					DITEMTYPE:(CFLAG:服装):14 = 2
+					DITEMTYPE:(CFLAG:服装):11 = 2
+				ELSE
+					PRINTFORML 盗賊達は、%CALLNAME:TARGET%が着ている%ITEMNAME:(CFLAG:服装)%を破き、素肌の大部分を露出させた！
+					DITEMTYPE:(CFLAG:服装):14 = 1
+					DITEMTYPE:(CFLAG:服装):11 = 1
+				ENDIF
+				
+				PRINTFORML 盗賊達は、%CALLNAME:TARGET%に無理矢理媚薬を飲ませた！
+				;科学知識を付けている場合、効果無し
+				IF CHECKSKILL(314)
+					PRINTFORML しかし、%CALLNAME:TARGET%は科学の知識を生かして媚薬の効果を抑えた！
+				;最悪の目覚めを着けている場合、消費して効果を防ぐ
+				ELSEIF CFLAG:日用品／その他 == 503 || CFLAG:日用品／その他2 == 503
+					PRINTFORML しかし、%CALLNAME:TARGET%は最悪の目覚めを使い、媚薬の効果を抑えた！
+					CALL SETCOLOR_PALAMDOWN
+					PRINTFORML 最悪の目覚めは溶けて無くなった！
+					ITEM:503 -= 1
+					LOCAL = FINDELEMENT(CFLAG, 503, 264, 266)
+					CFLAG:LOCAL = 0
+					RESETCOLOR
+				ELSE
+					PRINTFORML %CALLNAME:TARGET%の身体は疼き、しきりに太腿を擦り合わせ始めた
+					BASE:媚薬 += 10 + BASE:媚薬 / 2
+					IF CFLAG:媚薬状態 != 2
+						CFLAG:媚薬状態 = 1
+					ENDIF
+					IF BASE:媚薬 > MAXBASE:媚薬 && CFLAG:媚薬状態 != 2
+						BASE:媚薬 = MAXBASE:媚薬
+						PRINTFORML 
+						CALL OVERDOSE_BIYAKU
+					ENDIF
+				ENDIF
+				
+				;盗賊ムード+40
+				CFLAG:盗賊ムード += 40
+				
+				;理性-20
+				CALL CALCULATION_PALAM, 20, "理性"
+			ENDIF
+			
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は再び機会を伺う事にした……
+		ENDIF
+	;脱出術Lv2がある場合、33％の確率で脱出する
+	ELSEIF CHECKSKILL(324) && !RAND:3
+		PRINTFORMW %CALLNAME:TARGET%は盗賊達の隙を見計らい、脱出した！
+		CFLAG:モード = 0
+		FLAG:身代金要求回数 = 0
+		FLAG:見せしめ回数 = 0
+		FLAG:救出失敗回数 = 0
+		FLAG:経過ターン数 = 0
+		FLAG:見せしめ実行 = 0
+		FLAG:誘拐猶予 = 3
+		RETURN 0
+	;脱出術Lv1がある場合、20％の確率で脱出する
+	ELSEIF CHECKSKILL(323) && !RAND:5
+		PRINTFORMW %CALLNAME:TARGET%は盗賊達の隙を見計らい、脱出した！
+		CFLAG:モード = 0
+		FLAG:身代金要求回数 = 0
+		FLAG:見せしめ回数 = 0
+		FLAG:救出失敗回数 = 0
+		FLAG:経過ターン数 = 0
+		FLAG:見せしめ実行 = 0
+		FLAG:誘拐猶予 = 3
+		RETURN 0
+	;淫魔の場合
+	ELSEIF TALENT:淫魔
+		;淫魔技巧によって分岐
+		IF ABL:淫魔技巧 >= 3
+			PRINTFORML %CALLNAME:TARGET%は盗賊を完全に手に取り、精力を吸い取った！
+			PRINTFORMW 盗賊達はげっそりとした顔をして倒れている……
+			
+			LOCAL = 100
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME*TARGET%は{LOCAL}の精力を得た
+			MAXBASE:精力 += LOCAL
+			
+			;王宮を追放されている場合、情報を聞き出せる
+			IF !CFLAG:媚薬状態 && FLAG:王宮追放
+				LOCAL = 20 + 30 * TALENT:謎の魅力
+				FLAG:王宮情報 += 20 + 30 * TALENT:謎の魅力
+				IF TALENT:娼婦
+					TIMES LOCAL, 1.50
+				ENDIF
+				PRINTFORML 情報を{LOCAL}聞きだした！
+			ENDIF
+			RESETCOLOR
+			
+			CFLAG:モード = 0
+			FLAG:身代金要求回数 = 0
+			FLAG:見せしめ回数 = 0
+			FLAG:救出失敗回数 = 0
+			FLAG:経過ターン数 = 0
+			FLAG:見せしめ実行 = 0
+			FLAG:誘拐猶予 = 3
+			RETURN 0
+		ELSEIF ABL:淫魔技巧 == 2
+			PRINTFORMW %CALLNAME:TARGET%は盗賊を押し倒し、一物を咥えて無理矢理精力を吸い取った……
+		ELSEIF ABL:淫魔技巧 == 1
+			PRINTFORML %CALLNAME:TARGET%は盗賊に手足を抑えられながらも
+			PRINTFORMW 嬲られている中でできるだけ精力を吸い取ろうとした……
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は淫魔の身でありながらも
+			PRINTFORMW 盗賊達に為す術もなく嬲られている……
+		ENDIF
+	;理性が0の場合、自らねだるようになる
+	ELSEIF !BASE:理性
+		PRINTFORML %CALLNAME:TARGET%は堪え切れなくなったのか自ら秘裂を指で開き、相手の性交を強請った
+		PRINTFORMW その蕩けた瞳に光は籠っていない……
+		CFLAG:盗賊ムード += 50
+	ELSE
+		;盗賊ムードにより分岐
+		IF CFLAG:盗賊ムード >= 1000
+			PRINTFORMW 盗賊達はよってたかって%CALLNAME:TARGET%を嬲り、悦びの表情を浮かべて身体を震わせる姿を見て責めの手を強めた……
+		ELSEIF CFLAG:盗賊ムード >= 800
+			PRINTFORMW 盗賊達は大騒ぎしながら%CALLNAME:TARGET%を嬲り、警戒を忘れて盛り上がっている
+		ELSEIF CFLAG:盗賊ムード >= 600
+			PRINTFORMW 盗賊達は%CALLNAME:TARGET%を罵り、反応を見て愉しんでいる……
+		ELSEIF CFLAG:盗賊ムード >= 400
+			PRINTFORMW 盗賊達は%CALLNAME:TARGET%をしきりに触り、身体をねじる姿に興奮している……
+		ELSEIF CFLAG:盗賊ムード >= 200
+			PRINTFORMW 盗賊達は%CALLNAME:TARGET%の姿を見て盛り上がっている……
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は盗賊達に嬲られている……
+		ENDIF
+	ENDIF
+ENDIF
+
+;バイブを装着している場合
+IF OTHER_ACC(500) && OTHER_ACC(507)
+	PRINTFORML 盗賊達は%CALLNAME:TARGET%の両穴に挿入されたバイブを弄り
+	PRINTFORMW 身体を震わせる姿を見て罵倒を浴びせた
+	;ムード+60
+	CFLAG:盗賊ムード += 60
+	
+	;理性-20
+	CALL CALCULATION_PALAM, 20, "理性"
+ELSEIF OTHER_ACC(507)
+	PRINTFORML 盗賊達は%CALLNAME:TARGET%の尻穴に挿入されたバイブを弄り
+	PRINTFORMW 身体を震わせる姿を見て罵倒を浴びせた
+	;ムード+30
+	CFLAG:盗賊ムード += 30
+	
+	;理性-10
+	CALL CALCULATION_PALAM, 10, "理性"
+ELSEIF OTHER_ACC(500)
+	PRINTFORML 盗賊達は%CALLNAME:TARGET%の尻穴に挿入されたバイブを弄り
+	PRINTFORMW 身体を震わせる姿を見て罵倒を浴びせた
+	;ムード+30
+	CFLAG:盗賊ムード += 20
+	
+	;理性-5
+	CALL CALCULATION_PALAM, 5, "理性"
+ENDIF
+
+;初期化
+BASE:行動回数 = MAXBASE:行動回数
+BASE:ＣＰ = MAXBASE:ＣＰ
+
+;堕落の数値によって行動を決める
+
+$LOOP
+DRAWLINE
+
+;理性が0
+IF !BASE:理性
+		SELECTCASE RAND:2
+			CASE 0
+				;堕落によって分岐
+				;見せしめ輪姦
+				IF BASE:堕落 >= 300
+					LOCAL = 231
+				;見せしめ強姦
+				ELSE
+					LOCAL = 230
+				ENDIF
+			CASE 1
+				;騎乗位
+				LOCAL = 222
+		ENDSELECT
+;盗賊ムードが1000以上でまだ刺青を入れられていない場合
+ELSEIF CFLAG:盗賊ムード >= 1000 && !TALENT:刺青
+	LOCAL = 233
+;盗賊ムードが600以上でまだ染髪されていない場合
+ELSEIF CFLAG:盗賊ムード >= 600 && !CFLAG:髪色
+	LOCAL = 232
+;盗賊ムードが400以上or堕落が150以上
+ELSEIF CFLAG:盗賊ムード >= 400 || BASE:堕落 >= 150
+	SELECTCASE RAND:4
+		;性交
+		CASE 0
+			LOCAL = 220
+		;野外性交
+		CASE 1
+			LOCAL = 221
+			;穢れ加算処理
+			CALL CALC_IMP, 1
+		;焦らし
+		CASE 2
+			LOCAL = 223
+		;目隠し責め
+		CASE 3
+			LOCAL = 224
+	ENDSELECT
+;盗賊ムードが200以上
+ELSEIF CFLAG:盗賊ムード >= 200
+	SELECTCASE RAND:4
+		;指挿し入れ
+		CASE 0
+			LOCAL = 210
+		;フェラチオ
+		CASE 1
+			LOCAL = 211
+		;精液を飲ませる
+		CASE 2
+			LOCAL = 212
+		;目隠し放置
+		CASE 3
+			LOCAL = 213
+	ENDSELECT
+;上記の判定を満たさなかった場合、基礎コマンドへ
+ELSE
+	SELECTCASE RAND:4
+		;愛撫
+		CASE 0
+			LOCAL = 200
+		;キス
+		CASE 1
+			LOCAL = 201
+		;痴態見学
+		CASE 2
+			LOCAL = 202
+		;目隠しプレイ
+		CASE 3
+			LOCAL = 203
+	ENDSELECT
+ENDIF
+
+VARSET SOURCE, 0
+SELECTCOM = LOCAL
+CALLFORM COM{LOCAL}_T
+CALL SOURCE_CALCURATE
+CALL EVENTCOMEND_T
+
+;穢れ加算処理
+CALL CALC_IMP, 1
+
+;輝夜の淫妖によって分岐
+;1000以上
+IF BASE:淫妖 >= 2000
+	CFLAG:盗賊ムード += 35
+ELSEIF BASE:淫妖 >= 1500
+	CFLAG:盗賊ムード += 30
+ELSEIF BASE:淫妖 >= 900
+	CFLAG:盗賊ムード += 25
+ELSEIF BASE:淫妖 >= 600
+	CFLAG:盗賊ムード += 20
+ELSEIF BASE:淫妖 >= 300
+	CFLAG:盗賊ムード += 15
+ELSE
+	CFLAG:盗賊ムード += 10
+ENDIF
+
+;服が布切れか全裸の場合　ムードが4増加する
+IF CFLAG:服装 < 0 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2)
+	CFLAG:盗賊ムード += 4
+;半裸の場合は+2
+ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+	CFLAG:盗賊ムード += 2
+ENDIF
+
+;全壊の場合　+3
+IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 2
+	CFLAG:盗賊ムード += 3
+;半壊の場合　+2
+ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 1
+	CFLAG:盗賊ムード += 2
+ENDIF
+
+;性格が高飛車の場合、ムード+3
+IF CFLAG:性格 == 2
+	CFLAG:盗賊ムード += 3
+ENDIF
+
+;媚薬状態の場合、+2
+IF CFLAG:媚薬状態 == 1
+	CFLAG:盗賊ムード += 2
+ENDIF
+
+;小麦色なら+4
+IF CFLAG:肌の色 == 2
+	CFLAG:盗賊ムード += 4
+;薄茶色なら+2
+ELSEIF CFLAG:肌の色 == 1
+	CFLAG:盗賊ムード += 2
+ENDIF
+
+;動物耳がある場合、+3
+IF TALENT:動物耳
+	CFLAG:盗賊ムード += 3
+ENDIF
+
+;理性を10減らす(補正はかかる)
+CALL CALCULATION_PALAM, 10, "理性"
+
+;行動回数が0になってるなら終了
+IF BASE:行動回数 <= 0
+	;理性が0だった場合、回復する
+	IF !BASE:理性
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の瞳に光が戻った！
+		BASE:理性 = MAXBASE:理性/2
+		RESETCOLOR
+	ENDIF
+	
+	FLAG:見せしめ実行 = 0
+	DRAWLINE
+	CALL CHANGE_ELEMENT, CFLAG:属性強度
+	
+	IF CFLAG:媚薬状態 == 1
+		CFLAG:媚薬状態 = 0
+	ENDIF
+	
+	;淫魔なら経験を増やす
+	IF TALENT:淫魔
+		EXP:淫魔経験 += 1
+	ENDIF
+	CALL CHECK_SUC_SKILL
+	
+	;媚薬を飲んでいない場合、情報を聞き出せる
+	IF !CFLAG:媚薬状態 && FLAG:王宮追放
+		FLAG:王宮情報 += 20 + 30 * TALENT:謎の魅力
+	ENDIF
+	RETURN 0
+ELSE
+	GOTO LOOP
+ENDIF
+
+RETURN 0
+

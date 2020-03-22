@@ -1,0 +1,388 @@
+﻿;==================================================
+;オープニング
+;==================================================
+@OPENING
+DRAWLINE
+IF FLAG:特殊ゲーム == 1
+	PRINTFORML 王宮に住まう%CALLNAME:MASTER%は、捨てられていた妖精の幼子が罠にかかっているのを見つけました
+	PRINTFORMW 丁寧に罠を解き、抱えて王宮へと走ると、いつの間にか幼子の姿が消えていました
+	PRINTL
+	PRINTFORML ――あれから数年後
+	PRINTFORMW 相変わらず王宮へ勤めている%CALLNAME:MASTER%は、更衣室で身支度を整えていた
+	PRINTFORML 
+	PRINTFORML ちょんっ
+	PRINTFORMW 指で軽く腰を突かれ、屈んでみると訳の分からぬ空間に飛ばされた
+	PRINTFORMW 周囲を見渡すと姫君が暮らす一室のようだ
+	PRINTFORML 
+	PRINTFORML 「あら、お久しぶりですね」
+	PRINTFORMW 黒髪を伸ばした妖精がお辞儀をした
+	PRINTFORML 「あの時、貴方に助けてもらった妖精です。名前はスターサファイアです」
+	PRINTFORML 「突然ですが、私をこの王宮のお姫様に育ててくださいっ」
+	PRINTFORMW 唐突に突きつけられた要件に%CALLNAME:MASTER%は反応に困った
+	PRINTFORML 「孤立していそうな姫君は捕えて拘束してありますっ」
+	PRINTFORMW 「お金に困るのなら彼女を使ってお金を稼いでください♪」
+	PRINTFORML 
+	PRINTFORMW 訳が分からないが、とにかくやってみるしかなさそうだ
+ELSE
+	PRINTL 月の都――
+	PRINTL 地球から姿を隠し、先進的な文化を築く都である
+	PRINTW これは、とある少女を巡る物語である
+	PRINTL 
+	PRINTW ここは王宮の中にある、とある一室。
+	PRINTL 「ふふ、あなたの噂は聞かせてもらったわ」
+	PRINTL 目の前に座る黒髪の姫君は顎に指を置き、前に屈んでじっとあなたを見つめている。
+	PRINTW 彼女が着ているゆったりとした服は振袖を思わせる長い袂が特徴的であり、明かりによって桃色の生地が光沢を出している。
+	PRINTW そして彼女の最大の特徴は長い黒髪だろう。
+	PRINTW 地面に触れそうなぐらい長く、肩に当たった髪は身体の線に沿ってしなやかに曲がっている。
+	PRINTL 「出目が芳しくないのに最終選考に残ったの、貴方だけだったらしいわね」
+	PRINTFORMW この場に居られること、それはとても幸運なことだった
+	PRINTFORMW 職を失い、唯一の血筋である両親は失踪した。頼れる知人もいない
+	PRINTFORMW 明日を生きられるか分からない。そんな状況で教育係に選抜されたことはとても幸運であった
+	PRINTL 「まあ、私は教育係なんて別にいらなかったのだけど……兎さえ撫でられればそれでよかったし」
+	PRINTL まだ話の途中だというのに姫君は頬杖をついてそっぽを向いた。
+	PRINTW 彼女の目線の先には真っ白な体毛に覆われた兎の絵が飾られている。
+	PRINTL 「でも、あの王宮が私のためにわざわざ教育係を選んでくれたのだもの。貴方に頼ってみようかしらね」
+	PRINTL 「王宮がわざわざこんなことをするだなんて、少し怪しいけど……」
+	PRINTW あなたが口を挟む暇も無く目の前の姫様は好き勝手に物を言った。
+	PRINTL 
+	PRINTW 「え？　名前？」
+	PRINTW 「……そういえばまだ話してなかったわ。不覚ね」
+	PRINTW 「私の名前は蓬莱山　輝夜。よろしくね」
+	PRINTL 
+	PRINTL 「これから数年間、お世話になります♪」
+	PRINTW 輝夜は頭を下げて深くお辞儀をした
+	PRINTL 
+	PRINTL 　　　　◆　　　　◆　　　　◆　　　　◆
+	PRINTL 
+	PRINTW 階上に立つのは君主。月の都を治める長である
+	PRINTW 君主は窓越しに二人の様子を眺め、呟いた
+	PRINTW 「これであいつの処理に困らなくなるな……」
+	PRINTL 「ふん、愚か者め。私の真意を知らずに喜びおって……」
+	PRINTL 「素人を教育係に宛がった事から察してほしかったものだがな……」
+	PRINTW 君主は窓に背を向け、口を横に広げて含みのある笑みを浮かべた
+	PRINTW 教育係を募集するよう指示を出したのは彼である。一体何を企んでいるのだろうか
+	PRINTW 「まあよい、そうしていられるのも今の内だけだ。覚悟しておけ……」
+	PRINTL 
+	PRINTL 果たして、二人を待ち受ける運命や如何に……
+	PRINTW 
+	
+	;↓(2015/03/27)長すぎるのでは？
+	;これはゲームであって小説ではない。書き直し
+;	PRINTL 時代は現代から遥か昔へと遡る
+;	PRINTW 当時の月の都では発展が停滞の兆しを見せており、景気が低迷していた
+;	PRINTW 従来の政権での政策も奮わず、民衆は希望を失い絶望を重ねていた
+;	PRINTL そんな時、新たな人物が頭角を現して民衆の支持を集め、君主になったのだ
+;	PRINTW 新たな君主は公約として"全ての民に幸福な暮らしを！"を掲げ、制度改革を急速に進めていた
+;	PRINTW この君主の働きかけにより、少しずつではあるが民衆の暮らしは好転し始めた
+;	PRINTL 
+;	PRINTL 新たな君主が就いてから３年後……
+;	PRINTW 王宮はとある告知を月の都に張り出した
+;	PRINTL 
+;	PRINTL 
+;	DRAWLINE
+;	PRINTL ～～求む！　教育係！～～
+;	PRINTL 私たち王族は教育係の不足に悩まされています！
+;	PRINTL 我こそは！　と思われた方は是非王宮までお越しください。
+;	DRAWLINE
+;	PRINTL 
+;	PRINTFORMW この告知を見たのが%CALLNAME:MASTER%である
+;	PRINTFORML 少し前に働き先を無くし、途方に暮れていたのだ
+;	PRINTFORML 数年前に両親が姿を消しており、頼れる相手も居ない
+;	PRINTFORMW 唯一、好景気の兆しが見え始めていた事が不幸中の幸いであろうか
+;	PRINTL 
+;	PRINTW この触れを見たあなたは急いで王宮へと向かい、面接を受けた。
+;	PRINTL 待合室に入ると、破格の待遇とは裏腹に応募者は二人しか居なかった
+;	PRINTW 先述した噂や、破格の待遇で逆に警戒されたのだろうか
+;	PRINTL 
+;	PRINTL もう一人の応募者とは銀髪を結った気品がある女性であったが
+;	PRINTW その女性を退け、あなたは教育係に採用された！
+;	PRINTL 
+;	PRINTFORML 女性は別れ際に%CALLNAME:MASTER%に振り向き、微笑んだ
+;	PRINTL 「おめでとう。私は王宮の資料室に居るから。分からない事があったら来てね」
+;	PRINTW どうやら王宮勤めだったらしい。
+;	PRINTFORML %CALLNAME:MASTER%はその女性と握手をし、部屋を去る女性に手を振った
+;	PRINTFORMW 王宮と何も関わりが無い%CALLNAME:MASTER%にとって心強い味方ができた
+;	PRINTL 
+;	PRINTL そして、今日は姫君との対面日
+;	PRINTW あなたは来賓の間に通され、姫君と対面することになった……
+;	PRINTL 
+;	PRINTL 「あら？　あなたが私の教育係となる人？」
+;	PRINTL 目の前に座る黒髪の姫君は顎に指を置き、前に屈んでじっとあなたを見つめている。
+;	PRINTL ゆったりとした服は振袖を思わせる長い袂が特徴的であり、明かりによって桃色の生地が光沢を出している。
+;	PRINTW 長い黒髪は地面に触れそうなぐらい長く、肩にかかった髪は身体の線にしなやかに沿っている。
+;	PRINTW その容姿は気品溢れる女性らしく見えるが、身体つきや態度から未熟さが伺える
+;	PRINTL 「教育係が宛がわれるなんて、ようやく私も随分と期待されるようになったのね」
+;	PRINTL 「これからどんな生活が始まるのかしら、楽しみだわ」
+;	PRINTW あなたが口を挟む暇も無く目の前の姫様は好き勝手に物を言った。
+;	PRINTL 
+;	PRINTL 「基本、貴方が私に会う日は私の裁量によって決められるの」
+;	PRINTW 姫君は袖口で口を抑え、流し目でこちらを見ている。
+;	PRINTL 「例えばだけど、私に気に入られると、私に会える時間は伸びるでしょうね」
+;	PRINTL 「……あ、もちろん私はそんなに厭らしい女性じゃないから。安心してよ」
+;	PRINTW 少女は手を横に振った
+;	PRINTL 
+;	PRINTW 「え？　名前？」
+;	PRINTW 「……そういえばまだ話してなかったわ。不覚ね」
+;	PRINTW 「私の名前は蓬莱山　輝夜。よろしくね」
+;	PRINTL 
+;	PRINTL 「これから数年間、お世話になります♪」
+;	PRINTW 輝夜は頭を下げて深くお辞儀をした
+;	PRINTL 
+;	PRINTL 　　　　◆　　　　◆　　　　◆　　　　◆
+;	PRINTL 
+;	PRINTW 階上に立つ王族の君主は窓越しに二人の様子を眺めていた
+;	PRINTW 「これであいつの処理に困らなくなるな……」
+;	PRINTL 「ふん、愚か者め。私の真意を知らずに喜びおって……」
+;	PRINTL 「素人を教育係に宛がった事から察してほしかったものだがな……」
+;	PRINTW 君主は窓に背を向け、口を横に広げて含みのある笑みを浮かべた
+;	PRINTW 「まあよい、そうしていられるのも今の内だけだ。覚悟しておけ……」
+;	PRINTL 
+;	PRINTL 果たして、二人を待ち受ける運命や如何に……
+;	PRINTW 
+ENDIF
+
+DRAWLINE
+
+
+;==================================================
+;チュートリアル
+;==================================================
+@TUTORIAL
+$BACK_LOOP
+DRAWLINE
+PRINTL [0] - ゲームの目的
+PRINTL [1] - ステータスの意味
+PRINTL [2] - ワンポイントアドバイス
+PRINTL 
+PRINTL [3] - チュートリアルを終える
+
+CALL SENTAKUSHI, 4
+
+IF RESULT == 0
+	CALL PURPOSE
+ELSEIF RESULT == 1
+	CALL EXPLAIN_STATUS
+ELSEIF RESULT == 2
+	CALL ADVICE
+ELSEIF RESULT == 3
+	RETURN 0
+ENDIF
+
+RESTART
+
+;--------------------------------------------------
+;ゲームの目的
+;--------------------------------------------------
+@PURPOSE
+DRAWLINE
+PRINTFORML [0] - このゲームの目的
+PRINTL [1] - 誘拐から身を守れ！
+PRINTL [2] - ゲームオーバーの条件
+PRINTL [3] - エンディングの分岐条件
+PRINTL [4] - 戻る
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML このゲームの目的は、%CALLNAME:TARGET%を君主の魔の手から守り、独り立ちさせることです
+	PRINTFORML ※独り立ちとは、6年目の1月を迎えることを指す
+	PRINTFORML 
+	PRINTFORML 具体的には
+	PRINTFORML 1.%CALLNAME:TARGET%の能力を上げ、よりよい立場に就けるようにする
+	PRINTFORML 2.君主を失脚させ、%CALLNAME:TARGET%を王宮内で解放させる
+	PRINTFORML の２点です
+	PRINTFORML 1.は簡単ですね。%CALLNAME:TARGET%の能力を上げ、なるべく能力が高い状態で独り立ちさせてあげましょう
+	PRINTFORML 最初から持っている職業服に着替えさせれば、初期職業である姫様以外の職業に就いて独り立ちすることも可能です
+	PRINTFORML 2.はいくつかの手段があり、そのきっかけは自分で見つける必要があります。
+	PRINTFORML 例えばですが、綿月姉妹は王宮内において高い影響力を持っており、王宮の内情に踏み込める可能性があります。
+	PRINTFORML 姉妹と仲良くして損は無いでしょう。
+	PRINTFORML 
+	PRINTFORML どちらの方法を取るにしても、一番大切なのは能力を鍛える事です。
+	PRINTFORMW "芸は身を助ける"という諺を肝に銘じて行動してください。
+	
+	;PRINTFORML 冒頭でも触れたように、このゲームの目的は%CALLNAME:TARGET%を５年間育成することです。
+	;PRINTFORML ～を達成すればクリア！　という明確な条件は無いので
+	;PRINTFORML 各自やりたい事を見つけて行動を行ってください。
+	;PRINTFORML 
+	;PRINTFORML 大まかな方針だけ説明すると、現在のVerでは属性毎にエンディングが別れています。
+	;PRINTFORMW ですので、様々なエンディングを見たい方は各属性に特化した育成をされると幸いです。
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は2年目のある時期から時折盗賊達の魔の手によって誘拐されるようになります。
+	PRINTFORML 誘拐されてしまうとターン終了時毎に調教を受ける事になり
+	PRINTFORML 淫妖・堕落が溜まり、育成に支障をきたす事になります。
+	PRINTFORMW そうした不利益を被る前に救出しましょう
+ELSEIF RESULT == 2
+	DRAWLINE
+	PRINTFORML 主なゲームオーバーの条件は次の２点となります。
+	PRINTFORML 1.淫妖が1000に達する
+	PRINTFORML 2.盗賊に誘拐され、堕落が1000に達する
+	PRINTL 
+	PRINTFORML 君主は%CALLNAME:TARGET%を消す為に手段を選ばず接触してきます。
+	PRINTFORML 例えば、役人がセクハラ体質なのも君主の意向が汲み取られた結果と言えます。
+	PRINTFORML また、月の都は穢れを嫌います。穢れは命の誕生に関わる行為も含まれていますので
+	PRINTFORMW %CALLNAME:TARGET%をそういう行為に過度に嵌らせると……
+	;PRINTFORML 月の都の内情について軽く説明しましょう。
+	;PRINTFORMW 月の都は白黒はっきり別れた、いわゆる管理社会と呼ばれる構造になっています。
+	;PRINTFORML 白の部分は穢れを嫌う表社会が担っています。
+	;PRINTFORML そして、黒の部分は弾かれた穢れが溜まる裏社会が担っています。
+	;PRINTFORMW 規律により表社会を弾かれた者や、そもそも堅苦しい規律を疎く思った者達が集まり作り上げた社会です。
+	;PRINTFORML 
+ELSEIF RESULT == 3
+	DRAWLINE
+	PRINTFORML エンディングは主に下記の条件で分岐します
+	PRINTFORML ・%CALLNAME:TARGET%の能力の内、最も高い能力の数値で分岐
+	PRINTFORML 　(最も高い能力の能力Lvに応じて分岐する)
+	PRINTFORMW ・イベントによって特殊な条件を満たした場合、特殊エンドに分岐
+
+
+ELSEIF RESULT == 4
+	RETURN 0
+ENDIF
+
+RESTART
+
+;--------------------------------------------------
+;ステータス解説
+;--------------------------------------------------
+@EXPLAIN_STATUS
+DRAWLINE
+PRINTL [0] - 美麗
+PRINTL [1] - 知力
+PRINTL [2] - 疎通
+PRINTL [3] - 家事
+PRINTL [4] - 信仰
+PRINTL [5] - 体力
+PRINTL [6] - 淫妖
+PRINTL [7] - 堕落
+DRAWLINE
+PRINTL [8] - 各気質の仕様について
+PRINTL [9] - 技能ポイントの稼ぎ方
+PRINTL [10] - 戻る
+
+CALL SENTAKUSHI, 11
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の魅力を表します
+	PRINTFORMW この数値が高いとコンテストで良い成績を残しやすい等の恩恵を受けます
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%のロジックや発想力を表します
+	PRINTFORMW 直接的な関係があるわけではないのですが、この数値が伸びやすいと技能ポイントも溜まりやすい状態となります
+ELSEIF RESULT == 2
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の他人と会話する能力を表します
+	PRINTFORMW 綿月姉妹と会話する際に必要となる場合があります
+ELSEIF RESULT == 3
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の家事に対するノウハウや技巧を表します
+	PRINTFORMW 高いと生活費が若干下がります
+ELSEIF RESULT == 4
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の信仰の深さを表します
+	PRINTFORMW この数値と密着に関係する信仰心は、淫妖・堕落を上げにくくする作用があります
+ELSEIF RESULT == 5
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の体力を表します
+	PRINTFORMW 武者修行時のパラメーターに大きく関わっている他に、高いと教育時に疲労度が上がりにくくなります
+ELSEIF RESULT == 6
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の性欲や性知識、それに身体の開発度を表します。
+	PRINTFORML 艶やかな仕草や身体で他者の興味を惹き、主に武者修行や周囲の支持を集める上で有利に動くことができます
+	PRINTFORML しかし、1000に達するとゲームオーバーになるので注意してください。
+	PRINTFORMW 夜伽や調教によって溜まる事が多いです。
+ELSEIF RESULT == 7
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%が調教により異常な価値観や性癖を覚醒させられていくと上昇します。
+	PRINTFORML 1000に達するとゲームオーバーになるので注意してください。
+	PRINTFORMW 主に調教によって溜まります。
+ELSEIF RESULT == 8
+	DRAWLINE
+	PRINTFORML ・そもそも気質って何？
+	PRINTFORML 気質とは、気品、プライド、感度、話術、常識、
+	PRINTFORML 思考力、信仰心、献身、依存、スタミナの10種類の数値のことです
+	PRINTFORML 1ヶ月が経過するごとに変化します。
+	PRINTFORML 
+	PRINTFORML ・どんな作用があるの？
+	PRINTFORML パラメーターの伸びに影響します。
+	PRINTFORML 気質の数値が高くなると、その気質に応じたパラメーターの伸びがよくなります。
+	PRINTL 
+	PRINTFORML ・何が原因で変化するの？
+	PRINTFORML 経験を獲得すると、経験に応じた気質が変化します。
+	PRINTFORML 
+	PRINTFORML また、経験は積むにつれて影響が大きくなっていきます。
+	PRINTFORMW 例えば、知力経験10の時と知力経験200の時とでは気質に与える影響が違ってくるというわけです。
+ELSEIF RESULT == 9
+	DRAWLINE
+	PRINTFORML 技能ポイントは「教育」中のコマンド「技能学習」で入手することができます
+	PRINTFORMW 技能ポイントは%CALLNAME:TARGET%の知力の伸びやすさに応じて、入手量が変化します
+
+ELSEIF RESULT == 10
+	RETURN 0
+ENDIF
+
+RESTART
+
+;--------------------------------------------------
+;アドバイス
+;--------------------------------------------------
+@ADVICE
+DRAWLINE
+PRINTL [0] - 有利になりたければ資金を稼げ！
+PRINTL [1] - 場合によっては衣装に頼ることも大事
+PRINTL [2] - パラメーターは気質→数値の順に上昇する
+PRINTL [3] - スキルに手を出そう
+PRINTL [4] - 能力を鍛えるとできる事が増える
+PRINTL [5] - 最初は1つの能力に絞って育てよう
+PRINTL [6] - 戻る
+
+CALL SENTAKUSHI, 7
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML このゲームではとにかく所持金が物を言います。
+	PRINTFORML 買い物だけでなく、他の行為を受ける際にも必要となるからです。
+	PRINTFORML 例えば誘拐時に救出隊を呼ぶ時や、一気に疲労度を回復できる旅行にも必要だったりします。
+	PRINTL 
+	PRINTFORML ちなみに、手持ちの衣装は売ることができますので
+	PRINTFORMW お金に困った時は検討してみてください。
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML 衣装はパラメーターの成長に補正がかかります。
+	PRINTFORMW 気質の伸びにも影響を与えるので、どうしても伸ばしたい能力があれば頼ってみましょう。
+ELSEIF RESULT == 2
+	DRAWLINE
+	PRINTFORML パラメーターの伸びは気質に影響されます。
+	PRINTFORML そして経験を積む→気質が変化する→伸びがよくなる。といった流れで%CALLNAME:TARGET%は成長します
+	PRINTFORMW 気質を伸ばしたい方は、各種経験を積むようにしましょう。それに対応して気質が変化します。
+ELSEIF RESULT == 3
+	DRAWLINE
+	PRINTFORML スキルは様々な効能があり、いずれも教育に有利に働くものばかりです。
+	PRINTFORML 中には特定のスキルを習得していると新たに習得できるスキルもあるので、色々試してみましょう。
+	PRINTL 
+	PRINTFORMW ちなみに、技能ポイントは知力を伸ばす方向で教育していると伸びやすくなっています
+ELSEIF RESULT == 4
+	DRAWLINE
+	PRINTFORML 鍛えた能力はどこで使うの？　ただの観賞用？
+	PRINTFORML そんな事はありません。能力が一定の条件を満たすと行動が追加されます
+	PRINTFORML また、美麗はコンテストで上位に入りやすくなるというメリットを持っており
+	PRINTFORMW 体力は教育時の疲労蓄積抑制や武者修行時のパラメーター上昇に大きく関わっています
+ELSEIF RESULT == 5
+	DRAWLINE
+	PRINTFORML 能力の鍛え方には下記2通りの方法があります
+	PRINTFORML 1.全ての能力を満遍なく育てる
+	PRINTFORML 2.1つの能力をある程度鍛えた後、別の能力を鍛える
+	PRINTFORML 
+	PRINTFORM 効率の良さを考え、
+	CALL SETCOLOR_ABL
+	PRINTFORML 2.の方法で能力を鍛えることをオススメします
+	RESETCOLOR
+	PRINTFORML 理由は、能力の高さに応じた恩恵は、その能力の高さに比例して大きくなるからです
+	PRINTFORMW とはいえ900以上まで上げる必要はありません。最初はは300以上を目安に鍛えてみましょう
+ELSEIF RESULT == 6
+	RETURN 0
+ENDIF
+
+RESTART

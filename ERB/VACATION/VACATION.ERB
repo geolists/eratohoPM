@@ -1,0 +1,989 @@
+﻿;=====================================================
+;遊びにでかける
+;(四季の山は地上の変化を体験すべく作られた場所)
+;(ダンジョンもある)
+;=====================================================
+@VACATION
+#DIM newyear, 1
+#DIM L_LOCAL, 1
+
+newyear = 0
+DRAWLINE
+PRINTFORML ～～王宮の出口～～
+PRINTFORML 見張り兵「遊びに出かけられるのですね
+SELECTCASE RAND:8
+	CASE 0
+		PRINTFORML 　　　　　四季の山は本来月に無い四季を楽しむことができる不思議な施設です
+		PRINTFORML 　　　　　興味があれば是非」
+	CASE 1
+		PRINTFORML 　　　　　こうした活動では気質が行動に影響を与える事があるみたいです
+		PRINTFORML 　　　　　姫様が取る行動に目を凝らして、どの気質が影響してるか考えてみると楽しいかも知れません」
+	CASE 2
+		PRINTFORML 　　　　　月には四季が無いのですが、何故か水温は四季に応じて変化するんですよね
+		PRINTFORML 　　　　　という訳で6～8月以外は遊泳を禁止しております。悪しからず」
+	CASE 3
+		PRINTFORML 　　　　　姫様に下賤な経験をさせたくないのであれば、繁華街はお勧め致しません
+		PRINTFORML 　　　　　そもそも、そうした経験が無ければやる気も何も捗りませんので、お勧めは致しません」
+	CASE 4
+		PRINTFORML 　　　　　元旦は姫様の元へ行かれるのですか？　……ほう、それならよかった
+		PRINTFORM 　　　　　元旦、つまり
+		CALL SETCOLOR_ABL
+		PRINTFORM 1月の前半
+		RESETCOLOR
+		PRINTFORML にはぜひこちらへいらしてください。神社へ案内する事ができます」
+	CASE 5
+		PRINTFORML 　　　　　我々衛兵団は君主の影響下にない独立組織です
+		PRINTFORML 　　　　　絶対権力者が兵力まで従えると手に負えなくなりますからね……
+		PRINTFORML 　　　　　それはそうとして、私も遊びにでかけたいです。特に繁華街へ」
+	CASE 6
+		PRINTFORML 　　　　　繁華街は遊技場や踊り場があるだけで、決していかがわしい施設があるわけではないのです
+		PRINTFORML 　　　　　……というのは建前での話で、実際には法の目を掻い潜った施設も少数存在します
+		PRINTFORML 　　　　　他に支障が出るので完全な取り締まりというのはできません」
+	CASE 7
+		PRINTFORML 　　　　　実は私にも娘が居たのですよ
+		PRINTFORML 　　　　　休む間も無く学業に専念させていたら蒸発してしまいましたがね……
+		PRINTFORML 　　　　　人間、ほどほどのやる気と休養は必要なのです。お気をつけて」
+ENDSELECT
+PRINTFORML 
+PRINTFORML [0] - 近所の砂浜　　水温の都合により、6～8月以外は遊泳を禁止しています
+PRINTFORML [1] - 繁華街　　　　……別に指図する気はありませんが、お気をつけて
+PRINTFORML [2] - 四季の山　　　季節に沿って四季が変化します。……季節の頃合いですか？　雰囲気で察してください
+;2年目以降の1月1日のみ可能
+IF FLAG:年数 != 1 && DAY == 1 && TIME == 0
+	PRINTFORML [3] - 神社　　　　　新年を迎えたのでお参りに行くのはどうでしょう？
+	newyear = 1
+ENDIF
+PRINTFORML [9] - やめる　　　　また都合のいい時に来てください
+
+$INPUT_LOOP
+INPUT
+
+IF INRANGE(RESULT, 0, 3)
+	IF RESULT == 3 && !newyear
+		PRINTFORML 元旦ではありません
+		GOTO INPUT_LOOP
+	ENDIF
+	FLAG:遊びにでかける場所 = RESULT
+	TFLAG:おみくじ = 0
+	CALL VACATION_MOVE
+	IF RESULT == 1
+		DRAWLINE
+		PRINTFORML 見張り兵「楽しまれましたか？　こうして姫様と親睦を深めるのも時としては大事な事です」
+		RETURN 1
+	ENDIF
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+
+;=============================================================================
+;遊びにでかける　行動選択
+;=============================================================================
+@VACATION_MOVE
+#DIM lim, 1
+#DIM mood, 1
+#DIM L_LOCAL, 1
+
+IF FLAG:王宮追放
+	lim = 6
+ELSE
+	lim = 4
+ENDIF
+TFLAG:興味事 = RAND:3
+TFLAG:レベル／探索 = 1
+TFLAG:レベル／自由行動 = 1
+TFLAG:レベル／スキンシップ = 1
+FLAG:ムード = 0
+FLAG:聞き込み値 = 0
+$TURN_BACK
+DRAWLINE
+PRINTFORML 相手の意見を聞き出し、興味が惹かれている事を行うと良い事あるかも！？
+PRINTFORML 場所：%VACATION_NAME(FLAG:遊びにでかける場所)%　残り{lim}回
+PRINTFORM ムード:
+FOR L_LOCAL, 0, FLAG:ムード/100
+	SETCOLOR 255, 196, 128
+	PRINTFORM %UNICODE(0x2661)% 
+NEXT
+PRINTL 
+PRINTFORM %CALLNAME:TARGET%の興味事:
+IF FLAG:聞き込み値 >= 100
+	SELECTCASE TFLAG:興味事
+		CASE 0
+			PRINTFORML 探索
+		CASE 1
+			PRINTFORML 自由行動
+		CASE 2
+			PRINTFORML スキンシップ
+	ENDSELECT
+ELSE
+	PRINTFORML 不明
+ENDIF
+PRINTL 
+RESETCOLOR
+PRINTFORML どの行動を行いますか？
+PRINTFORML [0] - 探索する　　　　　　　　　　Lv{TFLAG:レベル／探索}
+PRINTFORML [1] - 自由に行動させる　　　　　　Lv{TFLAG:レベル／自由行動}
+PRINTFORML [2] - スキンシップを行う　　　　　Lv{TFLAG:レベル／スキンシップ}
+PRINTFORML [3] - 相手の意見を聞き出す
+;遊びにでかけるコマンドの使用感を確かめてから考える
+;PRINTFORML [4] - 説得して意見を変えさせる
+PRINTFORML [4] - 帰る
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 4
+	PRINTL 本当に帰りますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORML 外出先から帰る事にした
+		CALL KOJO_VACATION
+		RETURN 1
+	ELSE
+		GOTO TURN_BACK
+	ENDIF
+ELSE
+	LOCAL = RESULT
+	CALL VACATION_EVENT, RESULT
+	IF LOCAL <= 3
+		;主人への友好度を(行動レベル)分上げる
+		CALL SETCOLOR_PALAMUP
+		LOCAL:1 = TFLAG:("レベル／"+VACATION_MOVENAME(TFLAG:興味事)+"")+FLAG:ムード/100
+		
+		;友好度補正
+		CALL CALC_VACATION_MASTER_LOVE, LOCAL:1
+		LOCAL:1 = RESULT
+		
+		PRINTFORML 主人への友好度が{LOCAL:1}上がった！
+		CFLAG:主人への友好度 += LOCAL:1
+		
+		;愛情経験補正
+		LOCAL:1 = TFLAG:("レベル／"+VACATION_MOVENAME(TFLAG:興味事)+"")+FLAG:ムード/100
+		
+		CALL CALC_VACATION_LOVE_EXP, LOCAL:1
+		LOCAL:1 = RESULT
+		
+		PRINTFORML 愛情経験 + {LOCAL:1}
+		EXP:愛情経験 += LOCAL:1
+		CALL UP_STATUS
+		
+		RESETCOLOR
+		
+		IF TFLAG:興味事 == LOCAL
+			IF TFLAG:("レベル／"+VACATION_MOVENAME(TFLAG:興味事)+"") < 3
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %CALLNAME:TARGET%が興味を抱いている事と一致した！
+				PRINTFORML %VACATION_MOVENAME(TFLAG:興味事)%の行動レベルが上がった！
+				TFLAG:("レベル／"+VACATION_MOVENAME(TFLAG:興味事)+"") += 1
+				RESETCOLOR
+			ENDIF
+		ENDIF
+		
+		lim -= 1
+		IF lim >= 1
+			GOTO TURN_BACK
+		ELSE
+			PRINTL 時間が来ました
+			PRINTW 外出先から帰ります
+			RETURN 1
+		ENDIF
+	ENDIF
+ENDIF
+
+;-----------------------------------------------
+;行動内容と、その結果
+;ARG　　行動分類
+;-----------------------------------------------
+@VACATION_EVENT, ARG
+
+DRAWLINE
+
+SELECTCASE ARG
+	;探索する
+	CASE 0
+		;探索場所によって呼び出すイベントを変える
+		CALL VACATION_EXPLORE
+	;自由に行動させる
+	CASE 1
+		;探索場所によって呼び出すイベントを変える
+		CALL VACATION_PLACEEVENT
+	;スキンシップを行う
+	CASE 2
+		;レベルが上がると行為が深くなる
+		;Lv2で淫妖+1され、Lv3で淫妖経験+2される
+		SELECTCASE TFLAG:レベル／スキンシップ
+			CASE 1
+				PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%の頭を撫でた……
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 主人への友好度が追加で1上がった！
+				CFLAG:主人への友好度 += 1
+			CASE 2
+				PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と互いに身体を撫で合った……
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 主人への友好度が追加で2上がった！
+				CFLAG:主人への友好度 += 2
+				RESETCOLOR
+				
+				PRINTFORM 淫妖:{BASE:淫妖}　→　
+				BASE:淫妖 += 1
+				CALL SETCOLOR_PALAMUP
+				PRINTFORMW {BASE:淫妖}
+				RESETCOLOR
+			CASE 3
+				PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と口づけを行い、互いに舌を絡ませた……
+				
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 主人への友好度が追加で2上がった！
+				CFLAG:主人への友好度 += 2
+				RESETCOLOR
+				PRINTFORML 淫妖経験 + 2
+				EXP:淫妖経験 += 2
+				
+				PRINTFORM 淫妖:{BASE:淫妖}　→　
+				BASE:淫妖 += 2
+				CALL SETCOLOR_PALAMUP
+				PRINTFORMW {BASE:淫妖}
+				RESETCOLOR
+		ENDSELECT
+		FLAG:ムード += 40+BASE:依存/10
+		RESETCOLOR
+	;相手の意見を聞き出す
+	CASE 3
+		PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%の意見を聞き出す事にした……
+		FLAG:聞き込み値 += WILLPOWER()
+		;100以上になればメッセージを変える
+		IF FLAG:聞き込み値 >= 100
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW %CALLNAME:TARGET%の意見が分かった！
+			RESETCOLOR
+		ELSEIF WILLPOWER() >= 34
+			PRINTFORML %CALLNAME:TARGET%は、自分の意見について少ししか話さなかった
+			PRINTFORMW もう少し時間をかけて聞き出したほうがよさそうだ
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は、自分の意見について少ししか話さなかった
+			PRINTFORMW もう少し相手が%CALLNAME:MASTER%に依存しないとあまり話してくれそうにない……
+		ENDIF
+	;説得して意見を変えさせる
+	CASE 4
+		
+ENDSELECT
+
+;-----------------------------------------------
+;探索の結果
+;-----------------------------------------------
+@VACATION_EXPLORE
+SELECTCASE FLAG:遊びにでかける場所
+	;近所の砂浜
+	CASE 0
+		IF INRANGE(DAY, 6, 8)
+			PRINTFORML %CALLNAME:TARGET%と一緒に海に入り、素潜りを行った！
+			;体力/20(最大50％)+50％でアイテムを見つける
+			IF LIMIT(BASE:体力/20, 0, 50)+50 >= RAND:99+1
+				PRINTFORML 海底で光る物を見つけた！
+				
+				CALL SETCOLOR_PALAMUP
+				;入手アイテムリストを出す
+				CALL VACATION_ITEMLIST, FLAG:遊びにでかける場所, TFLAG:レベル／探索
+				ITEM:RESULT += RESULT:1
+				PRINTFORML %ITEMNAME:RESULT%を{RESULT:1}つ手に入れた！
+			ELSE
+				PRINTFORML 限界が来たのか、水上に顔を出した
+				PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に海中の様子を嬉しそうに伝える
+			ENDIF
+		ELSE
+			;夏以外だと50％の確率でアイテムを見つける
+			PRINTFORML %CALLNAME:TARGET%と一緒に砂浜を歩いた……
+			IF !RAND:2
+				PRINTFORML 何か物を見つけた！
+				
+				CALL SETCOLOR_PALAMUP
+				;入手アイテムリストを出す
+				CALL VACATION_ITEMLIST, FLAG:遊びにでかける場所, TFLAG:レベル／探索
+				ITEM:RESULT += RESULT:1
+				PRINTFORML %ITEMNAME:RESULT%を{RESULT:1}つ手に入れた！
+			ELSE
+				PRINTFORML 何か光る物を見つけた！
+				
+				CALL SETCOLOR_MONEY
+				LOCAL = 200+RAND:10*100+TFLAG:レベル／探索
+				MONEY += LOCAL
+				PRINTFORML ${LOCAL}を手に入れた！
+			ENDIF
+		ENDIF
+	;繁華街
+	CASE 1
+		;50％の確率でアイテムを見つける
+		PRINTFORML %CALLNAME:TARGET%と一緒に探索を行った……
+		IF !RAND:2
+			PRINTFORML 何か物を見つけた！
+			
+			CALL SETCOLOR_PALAMUP
+			;入手アイテムリストを出す
+			CALL VACATION_ITEMLIST, FLAG:遊びにでかける場所, TFLAG:レベル／探索
+			ITEM:RESULT += 1
+			PRINTFORML %ITEMNAME:RESULT%を手に入れた！
+			
+		ELSE
+			PRINTFORML 何か光る物を見つけた！
+			
+			CALL SETCOLOR_MONEY
+			LOCAL = 200+RAND:10*100+TFLAG:レベル／探索
+			MONEY += LOCAL
+			PRINTFORML ${LOCAL}を手に入れた！
+		ENDIF
+	;山
+	CASE 2
+		;50％の確率でアイテムを見つける
+		PRINTFORML %CALLNAME:TARGET%と一緒に探索を行った……
+		IF !RAND:2
+			PRINTFORML 何か物を見つけた！
+			
+			CALL SETCOLOR_PALAMUP
+			;入手アイテムリストを出す
+			CALL VACATION_ITEMLIST, FLAG:遊びにでかける場所, TFLAG:レベル／探索
+			ITEM:RESULT += 1
+			PRINTFORML %ITEMNAME:RESULT%を手に入れた！
+		ELSE
+			PRINTFORML 何か光る物を見つけた！
+			
+			CALL SETCOLOR_MONEY
+			LOCAL = 200+RAND:10*100+TFLAG:レベル／探索
+			MONEY += LOCAL
+			PRINTFORML ${LOCAL}を手に入れた！
+		ENDIF
+	;神社
+	CASE 3
+		;50％の確率でアイテムを見つける
+		PRINTFORML %CALLNAME:TARGET%と一緒に探索を行った……
+		IF !RAND:2
+			PRINTFORML 何か物を見つけた！
+			
+			CALL SETCOLOR_PALAMUP
+			;入手アイテムリストを出す
+			CALL VACATION_ITEMLIST, FLAG:遊びにでかける場所, TFLAG:レベル／探索
+			ITEM:RESULT += 1
+			PRINTFORML %ITEMNAME:RESULT%を手に入れた！
+		ELSE
+			PRINTFORML 何か光る物を見つけた！
+			
+			CALL SETCOLOR_MONEY
+			LOCAL = 200+RAND:10*100+TFLAG:レベル／探索
+			MONEY += LOCAL
+			PRINTFORML ${LOCAL}を手に入れた！
+		ENDIF
+ENDSELECT
+RESETCOLOR
+
+
+;-----------------------------------------------
+;自由行動時のイベント
+;
+;イベント一覧
+;・近所の砂浜　6～8月は海に入ることができる。それ以外は浜辺で物拾いをする
+;・繁華街　　　いつでも栄えているが、最も栄えるのは12月
+;・神社　　　　1月のみ行くことができる。おみくじで大吉をひくと換金アイテムが貰える
+;・山　　　　　冬は栄養値-2+スタミナ+5。春は疲労度5～10回復。夏は体力経験+2～5。秋は疲労度-25されるが栄養値+3
+;-----------------------------------------------
+@VACATION_PLACEEVENT
+#DIM L_LOCAL, 1
+
+SELECTCASE FLAG:遊びにでかける場所
+	;近所の砂浜
+	;体力や知力、時折疎通が問われる
+	CASE 0
+		IF !INRANGE(DAY, 6, 8)
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW %CALLNAME:TARGET%は海に入った！
+					;スタミナ/10+30％で成功する
+					IF (BASE:スタミナ/10+30) >= RAND:99+1
+						PRINTFORML 優雅に泳ぎ、岩礁にたどり着いた！
+						PRINTFORML %CALLNAME:TARGET%は達成感に浸り、気分が高揚している
+						
+						CALL SETCOLOR_PALAMUP
+						;やる気が上昇する
+						CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+						PRINTFORMW やる気が上がった！
+					ELSE
+						PRINTFORML そこそこ泳ぎ、砂浜に戻ってきた
+						PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に向けて嬉しそうな顔を浮かべながら感想を伝えた
+					ENDIF
+				CASE 1
+					PRINTFORMW %CALLNAME:TARGET%は砂浜に身体を寝かせ、照り付ける日差しを楽しんだ
+					;ムードが200以上だと25％の確率で友好度+5
+					IF FLAG:ムード >= 200
+						PRINTFORML その様子を見て、%CALLNAME:MASTER%は一緒に横になり、緩やかな会話を楽しんだ
+						PRINTFORML 雰囲気がよかったおかげか、会話が捗った
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 主人への友好度が5上がった！
+						CFLAG:主人への友好度 += 5
+					ELSE
+						
+					ENDIF
+			ENDSELECT
+			RESETCOLOR
+			BASE:栄養値 -= 1
+		ELSE
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW %CALLNAME:TARGET%と一緒に砂浜を歩き、波が打ち寄せる様を眺めた
+					;思考力/15+30％でやる気が1上昇する
+					IF (BASE:思考力/15+30) >= RAND:99+1
+						PRINTFORML %CALLNAME:TARGET%は色々な情景が頭に浮かび、なんだか心が軽くなった気がした！
+						
+						CALL SETCOLOR_PALAMUP
+						;やる気が上昇する
+						CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+						PRINTFORMW やる気が上がった！
+					ELSE
+						PRINTFORML 相変わらず波は青い……
+						PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に笑顔を向けている
+					ENDIF
+				CASE 1
+					PRINTFORMW %CALLNAME:TARGET%は砂に絵を描き始めた……
+					;(思考力+話術)/30+30％でやる気が1上昇する
+					IF ((BASE:知力+BASE:話術)/30+30) >= RAND:99+1
+						PRINTFORML 高い思考力と的確な指示の甲斐あって%CALLNAME:TARGET%は綺麗な絵を完成させた！
+						
+						CALL SETCOLOR_PALAMUP
+						;やる気が上昇する
+						CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+						PRINTFORMW やる気が上がった！
+					ELSE
+						PRINTFORML 絵を完成させ、%CALLNAME:MASTER%に見るように勧めた
+						PRINTFORMW %CALLNAME:TARGET%は額を拭い、潮風が長髪を揺らしている
+					ENDIF
+			ENDSELECT
+			RESETCOLOR
+		ENDIF
+	;繁華街
+	;知力や疎通、それに美麗の経験が手に入るが
+	;淫妖経験を入手してしまう事がある
+	CASE 1
+		SELECTCASE RAND:2
+			CASE 0
+				PRINTFORMW %CALLNAME:TARGET%は煌びやかな踊り場に入った……
+				;(気品+話術)/25+30％で成功する
+				IF ((BASE:気品+BASE:話術)/25+30) >= RAND:99+1
+					PRINTFORML %CALLNAME:TARGET%は舞踊を行い、多くの客を魅了した！
+					
+					CALL SETCOLOR_PALAMUP
+					;美麗経験が手に入る
+					PRINTFORMW 美麗経験　+　{2+TFLAG:レベル／探索}
+					EXP:美麗経験 += 2+TFLAG:レベル／探索
+					RESETCOLOR
+				ELSE
+					PRINTFORML そこそこ盛り上がった！
+					PRINTFORMW %CALLNAME:TARGET%は長い髪を振りながら戻ってきた
+				ENDIF
+			CASE 1
+				PRINTFORML %CALLNAME:TARGET%は怪しい酒場に入った……
+				;基本的には淫妖経験+3
+				;(思考力+話術+感度)/25+30％で疎通
+				IF ((BASE:知力+BASE:話術)/25+30) >= RAND:99+1
+					PRINTFORMW %CALLNAME:TARGET%は他の客との会話で盛り上がった！
+					
+					CALL SETCOLOR_PALAMUP
+					;疎通経験が手に入る
+					PRINTFORMW 疎通経験　+　{2+TFLAG:レベル／探索}
+					EXP:疎通経験 += 2+TFLAG:レベル／探索
+				ELSE
+					PRINTFORML そこそこ盛り上がった！
+					PRINTFORMW %CALLNAME:TARGET%は長い髪を振りながら戻ってきた
+				ENDIF
+				RESETCOLOR
+				PRINTFORML しかし、心無い客が%CALLNAME:TARGET%の身体を撫でた……
+				PRINTFORMW 淫妖経験　+　3
+				EXP:淫妖経験 += 3
+		ENDSELECT	;山
+	;12～2月　冬
+	;3～6月 　春
+	;7～8月 　夏
+	;9～11月　秋
+	;季節によって異なる
+	;冬は栄養値-2+スタミナ+5。春は疲労度5～10回復。夏は体力経験+2～5。秋は疲労度-25されるが栄養値+3
+	CASE 2
+		;冬：栄養値-1＆スタミナ+2
+		IF INRANGE(DAY, 0, 2) || DAY == 12
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW %CALLNAME:TARGET%は雪だるまを作った！
+					;(スタミナ+プライド)/30+30％で成功する
+					;(成功すると美麗経験+1)
+					IF (BASE:スタミナ+BASE:プライド)/30+30 >= RAND:99+1
+						PRINTFORML 非常に出来栄えのいい雪だるまができた！
+						PRINTFORML スタミナとやり遂げる意思が結晶した結果だ
+						PRINTFORML %CALLNAME:TARGET%は満足気に自慢している
+						
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 美麗経験 + {1+TFLAG:レベル／探索}
+						
+						;美麗経験+1+Lv
+						EXP:美麗経験 += 1+TFLAG:レベル／探索
+						
+					ELSE
+						PRINTFORML 雪だるまが完成した！
+						PRINTFORML %CALLNAME:TARGET%は努力の結晶を指差し、%CALLNAME:MASTER%に見るように促している
+					ENDIF
+				CASE 1
+					PRINTFORMW %CALLNAME:TARGET%は雪の野山を駆け回った！
+					;スタミナ/20+30％で成功する
+					;(成功すると体力経験+1)
+					IF BASE:スタミナ/20+30 >= RAND:99+1
+						PRINTFORML 随分と色々な所を駆け回ったようだ
+						PRINTFORML %CALLNAME:TARGET%は汗を掻きながらも笑顔を浮かべている
+						
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 体力経験 + {1+TFLAG:レベル／探索}
+						
+						;体力経験+1+Lv
+						EXP:体力経験 += 1+TFLAG:レベル／探索
+						
+					ELSE
+						PRINTFORMW %CALLNAME:TARGET%は楽しそうだ！
+					ENDIF
+			ENDSELECT
+			BASE:栄養値 -= 1
+			BASE:スタミナ = MIN(BASE:スタミナ+2, 600)
+		ELSEIF INRANGE(DAY, 9, 11)
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW %CALLNAME:TARGET%は落ち葉を被って遊んでいる
+					;50％の確率で成功する
+					IF !RAND:2
+						PRINTFORML 幸運にも色鮮やかな落ち葉を見つけたようだ
+						PRINTFORML %CALLNAME:TARGET%は笑顔を浮かべている
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 美麗経験 + {1+TFLAG:レベル／探索}
+						
+						;美麗経験+1+Lv
+						EXP:美麗経験 += 1+TFLAG:レベル／探索
+						
+						;やる気が上昇する
+						CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+						PRINTFORMW やる気が上がった！
+						
+					ELSE
+						PRINTFORML ひとしきり遊び、%CALLNAME:TARGET%は%CALLNAME:MASTER%の元へ戻ってきた
+						PRINTFORMW 頭に付いている落ち葉を取ってやると%CALLNAME:TARGET%は笑顔を浮かべ、礼の言葉を述べた
+					ENDIF
+				CASE 1
+					PRINTFORMW %CALLNAME:TARGET%は団栗を拾い集めている
+					;献身/20+30％の確率で成功する
+					;(成功すると家事経験+1)
+					IF BASE:献身/20+30 >= RAND:99+1
+						PRINTFORML 大小様々な団栗を使い、小さな飾り物を作った
+						PRINTFORML %CALLNAME:TARGET%は出来に満足しているようだ
+						
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 家事経験 + {1+TFLAG:レベル／探索}
+						
+						;家事経験+1+Lv
+						EXP:家事経験 += 1+TFLAG:レベル／探索
+						
+					ELSE
+						PRINTFORMW %CALLNAME:TARGET%は団栗を%CALLNAME:MASTER%に見せ、笑みを浮かべている
+					ENDIF
+			ENDSELECT
+			BASE:栄養値 += 2
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW 栄養がある物を口にし、疲労度が少し回復した
+			RESETCOLOR
+			BASE:ストレス = MAX(BASE:ストレス-5, 0)
+		;春と夏は同じイベント
+		ELSE
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORMW %CALLNAME:TARGET%は草原の間を駆ける虫を追いかけた
+					;(スタミナ+思考力)/30+30％の確率で成功する
+					IF !RAND:2
+						PRINTFORML 何度も追いかけた結果、行動の一部始終を観察することができた！
+						PRINTFORML %CALLNAME:TARGET%は笑顔を浮かべている
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 知力経験 + {1+TFLAG:レベル／探索}
+						EXP:知力経験 += 1+TFLAG:レベル／探索
+						
+					ELSE
+						PRINTFORML %CALLNAME:TARGET%は額の汗を拭いながら戻ってきた
+						PRINTFORMW 虫は途中で見失ったようだがとても楽しかったらしい
+					ENDIF
+				CASE 1
+					PRINTFORMW %CALLNAME:TARGET%は緑々しく染められた景色を眺めている
+					;信仰心/20+30％の確率で成功する
+					;(成功すると信仰と疎通経験+1)
+					IF BASE:信仰心/20+30 >= RAND:99+1
+						PRINTFORML 神々しさのあまり、心を奪われてしまった
+						PRINTFORML 通りかかった人に心情を述べ、%CALLNAME:TARGET%は信心の尊さに触れ、満足している
+						
+						CALL SETCOLOR_PALAMUP
+						PRINTFORMW 疎通経験 + {1+TFLAG:レベル／探索}
+						PRINTFORMW 信仰経験 + {1+TFLAG:レベル／探索}
+						
+						;疎通経験+1+Lv
+						;信仰経験+1+Lv
+						EXP:疎通経験 += 1+TFLAG:レベル／探索
+						EXP:信仰経験 += 1+TFLAG:レベル／探索
+					ELSE
+						PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%を招き、一緒に空を眺めた
+					ENDIF
+			ENDSELECT
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW 生い茂る草木を眺め、疲労度が少し回復した！
+			RESETCOLOR
+			BASE:ストレス = MAX(BASE:ストレス-2, 0)
+		ENDIF
+	;神社
+	;信仰経験が溜まる
+	;1回目はおみくじで固定だが、それ以降は境内を散策する
+	CASE 3
+		;御神籤
+		IF !TFLAG:おみくじ
+			PRINTFORML %CALLNAME:TARGET%はおみくじを引いた……
+			;10％の確率で大吉
+			IF RAND:99+1 <= 10
+				CALL SETCOLOR_MONEY
+				PRINTFORML ☆☆大吉を引いた！☆☆
+				;やる気+3
+				;疲労度-20
+				;市民の評価+40
+				;感度以外の気質+10
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML やる気が上がった！
+				PRINTFORML 疲労度が20回復した！
+				PRINTFORML 民衆の評価が40上がった！
+				PRINTFORML 感度以外の気質が上昇した！
+				
+				CFLAG:やる気 = LIMIT(CFLAG:やる気+3, 0, 10)
+				BASE:ストレス = MAX(BASE:ストレス-20, 0)
+				BASE:民衆の評価 = MIN(BASE:民衆の評価+40, MAXBASE:民衆の評価)
+				FOR L_LOCAL, 40, 51
+					IF L_LOCAL != 42
+						BASE:L_LOCAL += MIN(BASE:L_LOCAL+10, 600)
+					ENDIF
+				NEXT
+			;40％の確率で中吉
+			ELSEIF RAND:89+1 <= 40
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 中吉を引いた！
+				;やる気+2
+				;疲労度-10
+				
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML やる気が上がった！
+				PRINTFORML 疲労度が10回復した！
+				
+				CFLAG:やる気 = LIMIT(CFLAG:やる気+2, 0, 10)
+				BASE:ストレス = MAX(BASE:ストレス-10, 0)
+			;35％の確率で小吉
+			ELSEIF RAND:49+1 <= 35
+				PRINTFORML 小吉を引いた
+				;やる気+1
+				;疲労度-10
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML やる気が上がった！
+				PRINTFORML 疲労度が10回復した！
+				
+				CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+				BASE:ストレス = MAX(BASE:ストレス-10, 0)
+			;10％の確率で凶
+			ELSEIF RAND:14+1 <= 10
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 凶を引いた……
+				
+				;やる気-1
+				;-$10000
+				
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML やる気が下がった……
+				PRINTFORML $10,000落とした
+				
+				CFLAG:やる気 = LIMIT(CFLAG:やる気-1, 0, 10)
+				MONEY -= 10000
+			;5％の確率で大凶
+			ELSE
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 大凶を引いた……
+				
+				;やる気-2
+				;-$40000
+				
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML やる気が下がった……
+				PRINTFORML $40,000落とした
+				
+				CFLAG:やる気 = LIMIT(CFLAG:やる気-2, 0, 10)
+				MONEY -= 40000
+			ENDIF
+			TFLAG:おみくじ = 1
+		ELSE
+			SELECTCASE RAND:2
+				CASE 0
+					PRINTFORML %CALLNAME:TARGET%は甘酒を貰った
+					PRINTFORMW 仄かな甘さが気に入ったらしく、%CALLNAME:MASTER%に御猪口を差し出し勧めてきた
+					
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 疲労度が5回復した！
+					
+					BASE:ストレス = MAX(BASE:ストレス-5, 0)
+				CASE 1
+					PRINTFORML %CALLNAME:TARGET%は
+					PRINTFORMW 仄かな甘さが気に入ったらしく、%CALLNAME:MASTER%に御猪口を差し出した
+					
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML やる気が上がった！
+					
+					CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 0, 10)
+			ENDSELECT
+		ENDIF
+		RESETCOLOR
+ENDSELECT
+RESETCOLOR
+
+;-----------------------------------------------
+;入手アイテムリスト
+;ARG:1　場所
+;ARG:2　レベル
+;-----------------------------------------------
+@VACATION_ITEMLIST, ARG:1, ARG:2
+
+LOCAL:1 = 1
+SELECTCASE ARG:1
+	;近所の砂浜
+	CASE 0
+		SELECTCASE ARG:2
+			CASE 1
+				;60％　各種能力上昇アイテム×1
+				;40％　牡蠣(美麗経験+1　＆　疲労度-10)
+				IF RAND:99+1 <= 60
+					LOCAL = 522+RAND:5
+				ELSE
+					LOCAL = 541
+				ENDIF
+			CASE 2
+				;30％　各種能力上昇アイテム×1
+				;25％　各種能力上昇アイテム×2
+				;25％　牡蠣(美麗経験+1　＆　疲労度-10)×1
+				;10％　牡蠣(美麗経験+1　＆　疲労度-10)×2
+				;10％　人魚の涙
+				IF RAND:99+1 <= 30
+					LOCAL = 522+RAND:5
+				ELSEIF RAND:69+1 <= 25
+					LOCAL = 522+RAND:5
+					LOCAL:1 = 2
+				ELSEIF RAND:44+1 <= 25
+					LOCAL = 541
+				ELSEIF RAND:19+1 <= 10
+					LOCAL = 541
+					LOCAL:1 = 2
+				ELSE
+					LOCAL = 542
+				ENDIF
+			CASE 3
+				;ランダム性はあまり強くしたくなかったので、粘りたくならない設計にしました
+				;(2％でハートの鱗が入手できる設定なら、わざわざ頑張らないはず)
+				;35％　各種能力上昇アイテム×2
+				;25％　牡蠣(美麗経験+1　＆　疲労度-10)×2
+				;20％　人魚の涙
+				;18％　各種トリビア
+				;2％　 ハートの鱗
+				IF RAND:99+1 <= 35
+					LOCAL = 522+RAND:5
+					LOCAL:1 = 2
+				ELSEIF RAND:64+1 <= 25
+					LOCAL = 541
+					LOCAL:1 = 2
+				ELSEIF RAND:39+1 <= 20
+					LOCAL = 542
+				ELSEIF RAND:19+1 <= 18
+					IF !RAND:6
+						LOCAL = 810
+					ELSEIF !RAND:5
+						LOCAL = 811
+					ELSEIF !RAND:4
+						LOCAL = 812
+					ELSEIF !RAND:3
+						LOCAL = 815
+					ELSEIF !RAND:2
+						LOCAL = 816
+					ELSE
+						LOCAL = 817
+					ENDIF
+				ELSE
+					LOCAL = 542
+				ENDIF
+			ENDSELECT
+	;繁華街
+	CASE 1
+		SELECTCASE ARG:1
+			CASE 1
+				;60％　各種能力上昇アイテム×1
+				;40％　妊娠検査薬
+				IF RAND:99+1 <= 60
+					LOCAL = 522+RAND:5
+				ELSE
+					LOCAL = 529
+				ENDIF
+			CASE 2
+				;30％　各種能力上昇アイテム×1
+				;25％　各種能力上昇アイテム×2
+				;25％　妊娠検査薬
+				;20％　気づきの種
+				IF RAND:99+1 <= 30
+					LOCAL = 522+RAND:5
+				ELSEIF RAND:69+1 <= 25
+					LOCAL = 522+RAND:5
+					LOCAL:1 = 2
+				ELSEIF RAND:44+1 <= 25
+					LOCAL = 529
+				ELSE
+					LOCAL = 821
+				ENDIF
+			CASE 3
+				;ランダム性はあまり強くしたくなかったので、粘りたくならない設計にしました
+				;(2％でハートの鱗が入手できる設定なら、わざわざ頑張らないはず)
+				;35％　各種能力上昇アイテム×2
+				;25％　ジェルクリーナー
+				;20％　退魔の松明
+				;18％　各種トリビア
+				;2％　 ハートの鱗
+				IF RAND:99+1 <= 35
+					LOCAL = 522+RAND:5
+					LOCAL:1 = 2
+				ELSEIF RAND:64+1 <= 25
+					LOCAL = 601
+				ELSEIF RAND:39+1 <= 20
+					LOCAL = 602
+				ELSEIF RAND:19+1 <= 18
+					IF !RAND:6
+						LOCAL = 810
+					ELSEIF !RAND:5
+						LOCAL = 811
+					ELSEIF !RAND:4
+						LOCAL = 812
+					ELSEIF !RAND:3
+						LOCAL = 815
+					ELSEIF !RAND:2
+						LOCAL = 816
+					ELSE
+						LOCAL = 817
+					ENDIF
+				ELSE
+					LOCAL = 542
+				ENDIF
+			ENDSELECT
+	;四季の山&神社
+	;CASE 2
+	CASEELSE
+		;レベルが上昇すると、入手できるアイテムの個数も増える
+		
+		;30％　おいしい水
+		;30％　各種能力上昇アイテム
+		;25％　癒しのオーラ
+		;20％　気づきの種
+		IF RAND:99+1 <= 30
+			LOCAL = 543
+		ELSEIF RAND:69+1 <= 25
+			LOCAL = 522+RAND:5
+		ELSEIF RAND:44+1 <= 25
+			LOCAL = 822
+		ELSE
+			LOCAL = 821
+		ENDIF
+		
+		LOCAL:1 = 1+TFLAG:レベル／探索
+	;神社
+	;CASE 3
+		
+ENDSELECT
+
+;PRINTFORML LOCAL {LOCAL}
+
+;LOCAL:1は個数を示す
+RETURN LOCAL, LOCAL:1
+
+;-----------------------------------------------
+;意志力出力
+;式中関数
+;-----------------------------------------------
+@WILLPOWER
+#FUNCTION
+
+;計算式は　依存/20+ムード+友好度/70(友好度加算は最大20)
+;100になったら開示される
+LOCAL = BASE:依存/20 + FLAG:ムード + MIN(CFLAG:主人への友好度/70, 20)
+
+RETURNF LOCAL
+
+
+;------------------------------------------------
+;行動の名前
+;ARG　数値
+;------------------------------------------------
+@VACATION_MOVENAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+SIF LOCALS == ""
+	SPLIT "探索_自由行動_スキンシップ", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------------------
+;遊びにでかける場所
+;ARG　数値
+;------------------------------------------------
+@VACATION_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 4
+SIF LOCALS == ""
+	SPLIT "近所の砂浜_繁華街_四季の山_神社", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------------------
+;遊びに出かける_愛情経験入手値補正
+;ARG　入手基礎値
+;------------------------------------------------
+@CALC_VACATION_LOVE_EXP, ARG
+
+;基礎値をLOCALに代入
+LOCAL = ARG
+
+;2年目までは入手値+2
+IF FLAG:年数 <= 2
+	LOCAL += 2
+	PRINTFORML 年数補正：愛情経験(追加)+2
+ENDIF
+
+RETURN LOCAL
+
+;------------------------------------------------
+;遊びに出かける_主人への友好度入手値補正
+;ARG　入手基礎値
+;------------------------------------------------
+@CALC_VACATION_MASTER_LOVE, ARG
+
+;基礎値をLOCALに代入
+LOCAL = ARG
+
+;LOCAL:1はリセットしておく
+LOCAL:1 = 0
+
+;愛情経験によって入手値に補正をかける
+IF EXP:愛情経験 >= 100
+	LOCAL:1 = 2
+ELSEIF EXP:愛情経験 >= 50
+	LOCAL:1 = 1
+ENDIF
+
+;補正がかかった場合、補正がかかった旨のメッセージを表示する
+IF LOCAL:1
+	LOCAL += LOCAL:1
+	PRINTFORML 愛情経験補正：主人への友好度 +{LOCAL:1}
+ENDIF
+
+RETURN LOCAL
+

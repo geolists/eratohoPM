@@ -1,0 +1,1015 @@
+﻿;調教対象選択(eratohoR+ 1.31)
+@CHANGE_TARGET
+IF TARGET >= 0
+	PRINT 現在の育成対象：
+	PRINTFORML %CALLNAME:TARGET%
+ENDIF
+PRINTL 誰に焦点を当てますか？
+R = 1
+CALL LIFE_LIST
+PRINTFORML  [100]戻る
+
+$INPUT_LOOP
+INPUT
+IF RESULT == 100
+	RETURN 0
+ELSEIF RESULT < 1 || RESULT >= CHARANUM
+	IF RESULT == 0
+		PRINTFORML 主人公は育成対象に選べません
+	ELSE
+		PRINTFORML 対象外です
+	ENDIF
+	GOTO INPUT_LOOP
+
+ELSEIF RESULT != 1 && !CFLAG:(RESULT):対象選択可能
+	PRINTFORML そのキャラは育成対象に選ぶ事ができません
+	GOTO INPUT_LOOP
+ELSE
+	SIF CFLAG:RESULT:12 > 0
+		GOTO INPUT_LOOP
+	C = RESULT
+ENDIF
+
+SIF C != 0
+	TARGET = C
+SIF TARGET == ASSI
+	ASSI = -1
+
+@SELECT_ASSI
+PRINT 現在
+IF ASSI >= 0
+	PRINTFORML [{ASSI}]%NAME:ASSI%が助手
+ELSE
+	PRINTFORML 助手はいません
+ENDIF
+PRINTL 誰を助手にしますか？(現在の助手は☆)
+
+PRINTFORML   [ 0]助手なし
+REPEAT CHARANUM
+	TFLAG:COUNT = 0
+	;0（主人公）とASSI以外は排除
+	SIF COUNT == MASTER
+		CONTINUE
+	SIF CFLAG:COUNT:1 < 2
+		CONTINUE
+	SIF CFLAG:COUNT:12 > 0
+		CONTINUE
+	SIF RESULT == 1
+		CONTINUE
+	IF COUNT == ASSI
+		PRINT ☆
+	ELSE
+		PRINT 　
+	ENDIF
+	IF COUNT<10
+		PRINTFORM [ {COUNT}]
+	ELSE
+		PRINTFORM [{COUNT}]
+	ENDIF
+	CALL ARRANGE_CHARANAME
+	IF COUNT == ASSI
+		PRINT 　　　　　
+	ELSEIF ISASSI:COUNT == 1
+		PRINT [元助手] 
+	ELSE
+		PRINT [未経験] 
+	ENDIF
+	PRINTFORM %ABLNAME:2%Lv{ABL:COUNT:2} %ABLNAME:11%Lv{ABL:COUNT:11} %ABLNAME:17%Lv{ABL:COUNT:17} 
+	SIF TALENT:COUNT:81
+		PRINT 両刀
+	PRINTFORML 
+REND
+PRINTFORML  [100]戻る
+
+$INPUT_LOOP
+INPUT
+IF RESULT == 100
+	RETURN 0
+ELSEIF RESULT == 0
+	ASSI = -1
+	RETURN 0
+ELSEIF RESULT < 0 || RESULT >= CHARANUM
+	GOTO INPUT_LOOP
+ELSEIF RESULT == MASTER
+	GOTO INPUT_LOOP
+ELSEIF CFLAG:RESULT:12 > 0
+	GOTO INPUT_LOOP
+ELSEIF CFLAG:RESULT:1 < 2
+	GOTO INPUT_LOOP
+ELSE
+	C = RESULT
+	SIF RESULT == 1
+		GOTO INPUT_LOOP
+ENDIF
+
+ASSI = C
+CALL ASSI_CHANGE
+ISASSI:ASSI = 1
+SIF ASSI == TARGET
+	TARGET = -1
+
+
+@LIFE_LIST
+DRAWLINE
+PRINTFORML 　[0]%NAME:MASTER%(主人公)
+DRAWLINE
+REPEAT CHARANUM
+	;主人公と助手対象と調教中キャラは排除
+	SIF COUNT == MASTER
+		CONTINUE
+	
+	;攫ってきた姉妹は陥落させないと選択できない
+	IF COUNT != 1 && !CFLAG:COUNT:対象選択可能
+		SETCOLOR 96,96,96
+	ENDIF
+	
+	PRINTFORML [{COUNT}] - %CALLNAME:COUNT%
+	
+	RESETCOLOR
+	;PRINTL 
+REND
+
+;ステータス表示
+@SHOW_CHARADATA
+#DIM PAGE, 1
+#DIM L_LOCAL, 1
+
+;DRAWLINE
+;PRINTFORML %CALLNAME:TARGET%の所持日用品
+;PRINTFORM 髪飾り:　
+;IF !CFLAG:日用品／髪飾り
+;	PRINTFORML 花びらの髪飾り
+;ELSE
+;	PRINTFORML %ITEMNAME:(CFLAG:日用品／髪飾り)%
+;ENDIF
+;PRINTFORM 靴:　　　
+;IF !CFLAG:日用品／靴
+;	PRINTFORML 絹の靴下
+;ELSE
+;	PRINTFORML %ITEMNAME:(CFLAG:日用品／靴)%
+;ENDIF
+;PRINTFORM 入浴剤:　
+;IF !CFLAG:日用品／入浴剤
+;	PRINTFORML なし
+;ELSE
+;	PRINTFORML %ITEMNAME:(CFLAG:日用品／入浴剤)%
+;ENDIF
+;PRINTFORM 本:　　　
+;IF !CFLAG:日用品／本
+;	PRINTFORML 月の戒律本（簡略版）
+;ELSE
+;	PRINTFORML %ITEMNAME:(CFLAG:日用品／本)%
+;ENDIF
+DRAWLINE
+;PRINTFORML [1] - %CALLNAME:1%
+;IF FLAG:攫った姉妹の数 >= 1
+;	PRINTFORML [2] - %CALLNAME:2%
+;ENDIF
+;IF FLAG:攫った姉妹の数 >= 2
+;	PRINTFORML [3] - %CALLNAME:3%
+;ENDIF
+
+PRINTFORML ～～姿見の前～～
+PRINTFORML この姿見は覗き込んだ者の能力や気質等を曝け出す力を持つ
+PRINTL 
+PRINTFORML 誰の能力を見ますか？
+
+FOR L_LOCAL, 1, FLAG:保有してる娘+2
+	PRINTFORML [{L_LOCAL}] - %CALLNAME:L_LOCAL%
+NEXT
+
+PRINTFORML [100]戻る
+
+$INPUT_LOOP
+INPUT
+IF RESULT == 100
+	RETURN 0
+ELSEIF RESULT < 0 || RESULT >= CHARANUM
+	GOTO INPUT_LOOP
+ENDIF
+
+;ページ数の初期化
+PAGE = 1
+
+;本来のTARGETをLOCALに退避させる
+LOCAL = TARGET
+TARGET = RESULT
+
+;Tにステータス閲覧対象の変数を入れる
+T = RESULT
+
+;ページ送り関連のループを挟む
+$INPUT_LOOP_PAGE
+
+PRINTL ･･･････････････････････････････････････････････････････････････････････････････
+PRINTFORM %CALLNAME:TARGET%　　
+CALL SHOW_RACE
+
+CALL SHOW_INFO, PAGE
+;ページ送りに対応
+IF RESULT == 9
+	TARGET = LOCAL
+	RESTART
+ELSE
+	PAGE = RESULT
+	GOTO INPUT_LOOP_PAGE
+ENDIF
+
+;大人数対応キャラ購入処理
+;代わりに購入金額の設定＆処理が煩雑になる諸刃の剣、素人にはオススメ出来ない
+;ついでに過去のセーブデータとの互換性もなくなりますし、見栄えも悪い
+;あとフラグ1000番台を使うので注意
+;(TFLAG:0～100は調教関係ない上、調教開始時にリセットされるので無問題）
+
+;変更点
+;TFLAG:200番台を利用してリストの前詰めを実行
+;購入したキャラが直接加入するように、購入処理のあたりを変更
+
+@CHARA_BUY
+
+TFLAG:100 = 0
+
+REPEAT 100
+	TFLAG:COUNT = ITEMSALES:COUNT
+	ITEMSALES:COUNT = 0
+REND
+
+CALL CHARA_LIST
+REPEAT 30
+	A = COUNT + TFLAG:100 * 30 + 200
+	B = TFLAG:A
+		ITEMSALES:B = 1
+REND
+
+ITEMSALES:0 = 0
+
+CALL CHARA_BUY_SHOW
+
+$INPUT_LOOP
+INPUT
+IF RESULT == 1
+	IF TFLAG:100 > 0
+		CALL CHARA_LIST
+		REPEAT 30
+			A = COUNT + TFLAG:100 * 30 + 200 - 30
+			B = TFLAG:A
+			ITEMSALES:B = 1
+		REND
+		TFLAG:100 -= 1
+	ENDIF
+	;バグ対策。キャラ上限を超えるとITEMSALES:0が登録されるので
+	ITEMSALES:0 = 0
+
+	CALL CHARA_BUY_SHOW
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 9
+	;最大ページ数と比較、ページ数変動の際は
+	IF TFLAG:100 < 3
+		CALL CHARA_LIST
+		REPEAT 30
+			A = COUNT + TFLAG:100 * 30 + 200 + 30
+			B = TFLAG:A
+			ITEMSALES:B = 1
+		REND
+		TFLAG:100 += 1
+	ENDIF
+	;バグ対策。キャラ上限を超えるとITEMSALES:0が登録されるので
+	ITEMSALES:0 = 0
+
+	CALL CHARA_BUY_SHOW
+	GOTO INPUT_LOOP
+ENDIF
+;購入しないなら戻る,[RESULT > 100+**]の**はREPEAT数と同じくキャラ数以上の適当な数値
+IF (RESULT < 100 || RESULT > 100 + 100)
+	CALL CHARA_BUY_AFTER
+	RETURN 0
+ENDIF
+
+;C = キャラナンバー
+C = RESULT + 1 - 100
+D = RESULT + 1000 - 100
+E = RESULT + 5000 - 100
+F = RESULT + 2300 - 100
+;購入済みor購入不可＝フラグ値が0なら再入力
+SIF FLAG:D == 0
+	GOTO INPUT_LOOP
+;キャラ解説を入れる
+FLAG:9 = C
+CALL CHARA_MANUAL
+;いいえを選ぶと再入力
+IF FLAG:9 == 0
+	CALL CHARA_BUY_SHOW
+	GOTO INPUT_LOOP
+ELSE
+	FLAG:9 = 0
+ENDIF
+;フラグ値＝売値が所持金より多いなら再入力
+IF MONEY < FLAG:D
+	PRINTL 金額が足りません
+	
+	CALL CHARA_BUY_SHOW
+	GOTO INPUT_LOOP
+ENDIF
+;上記処理を抜けてきた＝購入可能で所持金が売値以上
+MONEY -= FLAG:D
+FLAG:D = 0
+FLAG:E = 1
+ADDCHARA C
+TARGET = CHARANUM-1
+CALL CHARA_BUY_AFTER
+;服装の初期化
+CALL CLOTHES_INITIALIZE
+RETURN 0
+
+@CHARA_BUY_SHOW
+DRAWLINE
+PRINTV DAY
+PRINT 日目
+IF TIME == 0
+	PRINTL (昼)
+ELSE
+	PRINTL (夜)
+ENDIF
+PRINTFORM (所持金:${MONEY})　難易度:
+IF FLAG:4 == 1
+	PRINTL EASY
+ELSEIF FLAG:4 == 2
+	PRINTL NORMAL
+ELSEIF FLAG:4 == 3
+	PRINTL HARD
+ENDIF
+SIF TARGET >= 0
+	PRINTFORML 奴隷:%NAME:TARGET%
+PRINTFORML 主人:%NAME:MASTER%
+SIF ASSI >= 0
+	PRINTFORML 助手:%NAME:ASSI%
+
+PRINT_SHOPITEM
+
+DRAWLINE
+PRINT 　page
+PRINTV TFLAG:100
+PRINT 　[1]前のページ
+PRINTC [0]購入しない
+PRINTC [9]後のページ
+PRINTL 
+
+@CHARA_BUY_AFTER
+
+REPEAT 30
+	A = COUNT + TFLAG:100 * 30 + 100
+	ITEMSALES:A = 0
+REND
+
+REPEAT 200
+	ITEMSALES:COUNT = 0
+REND
+REPEAT 100
+	ITEMSALES:COUNT = TFLAG:COUNT
+	TFLAG:COUNT = 0
+REND
+
+
+
+RETURN 0
+
+
+@CHARA_LIST
+F = 0
+REPEAT 100
+	A = COUNT + 100
+	ITEMSALES:A = 0
+	F = COUNT + 200
+	TFLAG:F = 0
+REND
+
+CALL CHARA_PRICE
+
+F = 200
+REPEAT 100
+	E = COUNT + 1000
+	IF FLAG:E > 0
+		TFLAG:F = E - 1000 + 100
+		F += 1
+	ENDIF
+REND
+
+@CHARA_PRICE
+FLAG:1000 = 1000
+FLAG:1001 = 1000
+FLAG:1002 = 500
+FLAG:1003 = 500
+FLAG:1004 = 500
+FLAG:1005 = 1500
+FLAG:1006 = 500
+FLAG:1007 = 1500
+FLAG:1008 = 5000
+FLAG:1009 = 10000
+FLAG:1010 = 10000
+FLAG:1011 = 1000
+FLAG:1012 = 1200
+FLAG:1013 = 1500
+FLAG:1014 = 500
+FLAG:1015 = 1500
+FLAG:1016 = 1500
+FLAG:1017 = 1500
+FLAG:1018 = 5000
+FLAG:1019 = 10000
+FLAG:1020 = 5000
+FLAG:1021 = 10000
+FLAG:1022 = 5000
+FLAG:1023 = 500
+FLAG:1024 = 1000
+FLAG:1025 = 1500
+FLAG:1026 = 1000
+FLAG:1027 = 5000
+FLAG:1028 = 10000
+FLAG:1029 = 10000
+FLAG:1030 = 10000
+FLAG:1031 = 2000
+FLAG:1032 = 1000
+FLAG:1033 = 5000
+FLAG:1034 = 5000
+FLAG:1035 = 10000
+FLAG:1036 = 800
+FLAG:1037 = 800
+FLAG:1038 = 1000
+FLAG:1039 = 1200
+FLAG:1040 = 1000
+FLAG:1041 = 5000
+FLAG:1042 = 10000
+FLAG:1043 = 10000
+FLAG:1044 = 500
+FLAG:1045 = 500
+FLAG:1046 = 500
+FLAG:1047 = 1000
+FLAG:1048 = 1200
+FLAG:1049 = 1200
+FLAG:1050 = 10000
+FLAG:1051 = 10000
+FLAG:1052 = 5000
+FLAG:1053 = 10000
+FLAG:1054 = 500
+FLAG:1055 = 1000
+FLAG:1056 = 2000
+FLAG:1057 = 5000
+FLAG:1058 = 10000
+FLAG:1059 = 5000
+FLAG:1060 = 5000
+FLAG:1061 = 10000
+FLAG:1062 = 2000
+FLAG:1063 = 2000
+FLAG:1064 = 10000
+FLAG:1065 = 10000
+FLAG:1066 = 1000
+FLAG:1067 = 500
+FLAG:1068 = 5000
+FLAG:1069 = 5000
+FLAG:1070 = 10000
+FLAG:1071 = 10000
+FLAG:1072 = 5000
+FLAG:1073 = 2000
+FLAG:1074 = 10000
+FLAG:1075 = 2000
+FLAG:1076 = 5000
+
+REPEAT 100
+	A = 5000 + COUNT
+	B = 1000 + COUNT
+	SIF FLAG:A == 1
+		FLAG:B = 0
+REND
+
+;キャラ購入時に解説を入れる
+@CHARA_MANUAL
+PRINT 奴隷番号00
+SIF FLAG:9 < 10
+	PRINT 0
+PRINTVL FLAG:9
+PRINTL 
+IF FLAG:9 == 1
+	PRINTL 【博麗 霊夢】
+	PRINTL 幻想郷のはずれにある博麗神社に住む紅白の巫女
+	PRINTL 明るく楽観的だが、他人への関心がほぼない淡白な性格である
+	PRINTL 性知識に疎く貞操観念にも乏しい為、調教を進めるのは容易と考えられる
+	PRINTL しかし、その淡白さ故、ある程度以上に屈服させるのは困難かもしれない
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 2
+	PRINTL 【霧雨 魔理沙】
+	PRINTL 魔法の森に一人で住んでいる普通の魔法使い
+	PRINTL 竹を割ったような性格をしており、性知識は乏しいが好奇心は人一倍
+	PRINTL 豪快な性格に見えて、実は人なつっこい繊細な少女のようだ
+	PRINTL 職業柄、魔法薬の調合に長けている
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 3
+	PRINTL 【ルーミア】
+	PRINTL 住所不定の気ままな妖怪で闇を操る能力がある
+	PRINTL 割とトボケた性格をしており、何を考えているか良くわからない
+	PRINTL 性知識はほとんど無いが、元来の素直な性格のおかげで調教には困らない
+	PRINTL 駆け出しの調教師でもなんとかなるだろう
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 4
+	PRINTL 【大妖精】
+	PRINTL 湖に住んでいる名も無き妖精
+	PRINTL 周りの妖精より力が強いため、大妖精と呼ばれている
+	PRINTL かなり臆病で、男に対しては特に顕著である
+	PRINTL 性の知識にはやや疎い様だが、従順にして教え込めばよいだろう
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 5
+	PRINTL 【チルノ】
+	PRINTL 湖をテリトリーにしている氷の妖精
+	PRINTL 妖精としては現在確認されている中でもっとも強い力を持つ
+	PRINTL そのせいか実に生意気な性格をしており、調教の時には注意が必要
+	PRINTL 性知識は全く無いと言っても過言ではない
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 6
+	PRINTL 【紅 美鈴】
+	PRINTL 湖の傍の紅い屋敷、紅魔館の門番
+	PRINTL 気を操る能力を持ち、拳法を使う中国風の妖怪である
+	PRINTL 楽観的な性格に似合わず、ガードはかなり硬めであるので注意が必要である
+	PRINTL 性経験はそこそこあり、スタイルもよい
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 7
+	PRINTL 【小悪魔】
+	PRINTL 紅魔館の図書室に住みついている名も無き悪魔
+	PRINTL 力はそこまで強くないため小悪魔と呼ばれている
+	PRINTL 生意気でいたずら好きな者や従順で献身的な者など性格は個体によって様々である
+	PRINTL 性的な知識は、どの個体も豊富なようだ
+	PRINTL 種族：悪魔
+ELSEIF FLAG:9 == 8
+	PRINTL 【パチュリー・ノーレッジ】
+	PRINTL 紅魔館の大図書館の主で豊富な知識と多彩な属性の魔法を操る生粋の魔女
+	PRINTL 寡黙かつ引き篭もりがちで魔法以外への興味関心は薄いが、経験事態はいくらかあるようだ
+	PRINTL 身体能力が著しく低い上に喘息持ちである事が確認されており、過酷な調教は危険だろう
+	PRINTL しかし、その豊富な知識は調教の役に立つことだろう
+	PRINTL 種族：魔法使い
+ELSEIF FLAG:9 == 9
+	PRINTL 【十六夜 咲夜】
+	PRINTL 人の身でありながら紅魔館で働く、完全で瀟洒なメイド
+	PRINTL 性格は暢気で献身的に見えるが、プライドの高さと気丈な心を内包しているようだ
+	PRINTL 主であるレミリアに仕える以前の経歴は一切不明である
+	PRINTL しかし、性経験が年齢の割に豊富なことから、凄惨な過去を持つ可能性もある
+	PRINTL 精神的に打たれ強く、気の知れた相手でなければ調教は難しいことだろう
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 10
+	PRINTL 【レミリア･スカーレット】
+	PRINTL 永遠に紅い幼き月、の二つ名を持つ紅魔館の主にして吸血鬼
+	PRINTL 見た目は幼女だが幻想郷でも屈指の力を有し、性格は幼稚かつ傲慢である
+	PRINTL さらに吸血鬼としての気位が高く、自己中心的なサディストでもある
+	PRINTL しかし、気を許した相手との距離は近く、性的にも関係を持ちやすい傾向にあるようだ
+	PRINTL 生粋のサディスト故か、調教を行う側に非常に向いた気質を有している
+	PRINTL 種族：吸血鬼
+ELSEIF FLAG:9 == 11
+	PRINTL 【フランドール・スカーレット】
+	PRINTL 気がふれているらしいレミリアの妹
+	PRINTL 普段は外に顔を出すことは滅多に無いらしい
+	PRINTL 性知識に乏しいため、姉よりも懐柔しやすい
+	PRINTL 同じ吸血鬼故か、姉と良く似た気質を有している
+	PRINTL 種族：吸血鬼
+ELSEIF FLAG:9 == 12
+	PRINTL 【レティ・ホワイトロック】
+	PRINTL 冬の忘れ物という二つ名を持つ冬の妖怪
+	PRINTL 本調子で無いのか、やや体力の回復が遅いようである
+	PRINTL 経験はそこそこあるので、調教は難しくないだろう
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 13
+	PRINTL 【橙】
+	PRINTL 普段妖怪の山に棲んでいる猫又の娘で、スキマ妖怪の式の式
+	PRINTL 性格は幼く、性的なことに関心があるが、性経験は殆ど無い
+	PRINTL マタタビ（媚薬）で強引に懐柔してみるのもよいだろう
+	PRINTL 種族：化猫
+ELSEIF FLAG:9 == 14
+	PRINTL 【アリス・マーガトロイド】
+	PRINTL 七色の人形遣いの二つ名を持つ、魔法の森に住む魔法使い
+	PRINTL 気が強くプライドが高い性格故に、反抗的でなかなか気を許さない
+	PRINTL 性経験は皆無らしいが自慰行為に耽る様子は多く確認されている
+	PRINTL また、同性への興味も伺え、薬に関する知識も豊富に持っている
+	PRINTL 種族：魔法使い
+ELSEIF FLAG:9 == 15
+	PRINTL 【リリーホワイト】
+	PRINTL 春を告げる妖精で、幻想郷に春を伝えて回ると言われている
+	PRINTL 春の陽気のような見た目と性格で、普段はとても従順で大人しく、献身的である
+	PRINTL 清純で温厚な性格のため、調教には苦労しないことだろう
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 16
+	PRINTL 【リリカ・プリズムリバー】
+	PRINTL 人妖問わず人気のある騒霊楽団プリズムリバー三姉妹三女
+	PRINTL 担当は主に鍵盤楽器全般に打楽器など、その器用さは楽器だけには留まらない
+	PRINTL また性知識は豊富なようなのだが、どうやら姉妹唯一の処女らしい
+	PRINTL テクニシャンとなる素質に未だ開かれぬ蕾
+	PRINTL どのような花を咲かせるかは調教者次第だろう
+	PRINTL 種族：騒霊
+ELSEIF FLAG:9 == 17
+	PRINTL 【メルラン・プリズムリバー】
+	PRINTL 人妖問わず人気のある騒霊楽団プリズムリバー三姉妹次女
+	PRINTL 担当は主に管楽器全般、特にトランペットをこよなく愛する
+	PRINTL 躁病の気があり、明るすぎる性格から性に対しても非常に解放的
+	PRINTL 環境に慣れさえすれば調教者をリードすらしてくれるだろう
+	PRINTL 種族：騒霊
+ELSEIF FLAG:9 == 18
+	PRINTL 【ルナサ・プリズムリバー】
+	PRINTL 人妖問わず人気のある騒霊楽団プリズムリバー三姉妹長女で楽団リーダー
+	PRINTL 担当は主に弦楽器全般、特にヴァイオリンをこよなく愛する
+	PRINTL 大人しく落ち着いた性格で荒げた声を上げることもない
+	PRINTL 無抵抗そのものだが心は頑なであり、一筋縄にはいかないだろう
+	PRINTL 種族：騒霊
+ELSEIF FLAG:9 == 19
+	PRINTL 【魂魄 妖夢】
+	PRINTL 冥界のお屋敷、白玉楼に仕える庭師にして半人前の剣士
+	PRINTL 実直で真面目な性格をしており、性経験に疎く誘惑にも強い
+	PRINTL しかし、精神面での未熟さが残っているので、付け入る隙は多いと思われる
+	PRINTL 種族：半人半霊
+ELSEIF FLAG:9 == 20
+	PRINTL 【西行寺 幽々子】
+	PRINTL 白玉楼の主にして冥界を管理する幽雅な亡霊の姫君
+	PRINTL 根っからの天衣無縫でとらえどころの無い言動が特徴である
+	PRINTL 性経験はそこそこだが、割と開放的な様子が伺える
+	PRINTL 柔らかな雰囲気とその裏に隠された高貴さに惑わされないように注意するとよいだろう
+	PRINTL 種族：亡霊
+ELSEIF FLAG:9 == 21
+	PRINTL 【八雲 藍】
+	PRINTL スキマ妖怪の式にして、本人も伝説に名高い九尾の狐
+	PRINTL 気位が高く、誇り高い性格をしているが、立場が上の者には従順で献身的になる
+	PRINTL 妖狐として活躍していた時代の名残か、性経験は豊富であるため付け入る隙はあることだろう
+	PRINTL 種族：妖狐
+ELSEIF FLAG:9 == 22
+	PRINTL 【八雲 紫】
+	PRINTL 幻想郷でも最高ランクの力を持つスキマ妖怪
+	PRINTL 頭脳明晰かつ人を食ったような性格から、人妖問わずに恐れられている
+	PRINTL 精神、肉体ともに非常に強固で、調教は難航することだろう
+	PRINTL しかし、妖怪の賢者とも呼ばれる彼女の持つ知識、技術は計り知れない
+	PRINTL 博麗の巫女の所在を気にしている節があるようだ
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 23
+	PRINTL 【伊吹 萃香】
+	PRINTL 失われたはずの鬼にして、小さな百鬼夜行
+	PRINTL 気位が高く、大酒飲みで毒舌家で豪快だが誠実な性格をしている
+	PRINTL 見た目は幼げだが、意外にも性経験はそこそこあるようだ
+	PRINTL 性的にも大らかなので、陥落は非常に容易だと思われる
+	PRINTL 種族：鬼
+ELSEIF FLAG:9 == 24
+	PRINTL 【リグル・ナイトバグ】
+	PRINTL 夜に煌く蛍の妖怪で沢山の蟲を統率することが出来る
+	PRINTL やや生意気な性格をしているが、意外にも従順でおとなしい
+	PRINTL 少女らしからぬ中性的風貌のためか、性的な経験、知識には乏しいようだ
+	PRINTL どうも両性具有の素質を有しているようである
+	PRINTL 種族：妖蟲
+ELSEIF FLAG:9 == 25
+	PRINTL 【ミスティア・ローレライ】
+	PRINTL 人を鳥目にする夜雀という妖怪
+	PRINTL 歌を歌うのが好きで、いつも歌っている、性的な知識は皆無のようだ
+	PRINTL とても素直でいう事を良く聞くので、奉仕が得意かもしれない
+	PRINTL 良い声でさえずってくれるためか、クライアントの人気は高い
+	PRINTL 種族：夜雀
+ELSEIF FLAG:9 == 26
+	PRINTL 【上白沢 慧音】
+	PRINTL 幻想郷の歴史に詳しい半獣、人里では教師をしているらしい
+	PRINTL 弱みを握っているものの、普段はかなり硬いらしい
+	PRINTL 夜になると文字通りのケダモノになるとの噂もあるが、真偽は不明
+	PRINTL 種族：ワーハクタク
+ELSEIF FLAG:9 == 27
+	PRINTL 【因幡 てゐ】
+	PRINTL 幻想郷にある迷いの竹林を根城にする妖怪兎
+	PRINTL 自称因幡の素兎との事だが、当人は黒髪なので嘘だろう
+	PRINTL 生意気な性格をしているので、中々いう事を聞いてはくれないだろう
+	PRINTL しかし、相手に幸せをもたらす能力があるとのことで、クライアントの人気は非常に高い
+	PRINTL 種族：妖獣
+ELSEIF FLAG:9 == 28
+	PRINTL 【鈴仙・優曇華院・イナバ】
+	PRINTL 月から逃げてきたという兎だが、眉唾物である
+	PRINTL とても臆病な性格で見る者の嗜虐心をそそるのは天性の素質かもしれない
+	PRINTL 性的な経験はそこそこで、特に同性との関係が深いようだ
+	PRINTL 異性に対する嫌悪感が強いので、女性の調教師ならば調教は難しくないだろう
+	PRINTL 種族：玉兎
+ELSEIF FLAG:9 == 29
+	PRINTL 【八意 永琳】
+	PRINTL 月の頭脳と謳われた不老不死の天才薬師とのことだが、眉唾物である 
+	PRINTL 主に絶対の忠誠を誓っており、弟子のことも気に掛けているようだ
+	PRINTL 精神的に堅固で薬に対する耐性も持つが、男女問わず性経験が豊富である
+	PRINTL その噂に違わぬ知識や技術は助手としてこの上ない人材になるだろう
+	PRINTL 種族：月人
+ELSEIF FLAG:9 == 30
+	PRINTL 【蓬莱山 輝夜】
+	PRINTL とある伝説に名を残す不老不死の姫君らしいが、眉唾物である
+	PRINTL しかし、気質は姫そのもので高貴かつプライドが高く身持ちは堅い
+	PRINTL 性知識が全く無いわけではなく、誰かに閨の作法くらいは教わっているようだ
+	PRINTL 極度の男性不信のようなので、女性の調教師でないと厳しいことだろう
+	PRINTL 種族：月人
+ELSEIF FLAG:9 == 31
+	PRINTL 【藤原 妹紅】
+	PRINTL 齢1000年を越す不老不死の蓬莱人らしいが、これまた眉唾物である
+	PRINTL 寡黙で擦れた性格の裏には反抗的で激情的な面が見え隠れしている
+	PRINTL 特に男性に対しては非常に反発が強く、その性経験の凄惨さが伺える
+	PRINTL 下手な調教では自身にトラウマを残しかねず、玄人向けの奴隷である
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 32
+	PRINTL 【射命丸 文】
+	PRINTL 妖怪の山に住む鴉天狗の一人で、文々。新聞という新聞を発行している
+	PRINTL 狡猾な上に頭の回転も速いので、騙されないようにしっかり屈服させねばならない
+	PRINTL 閉鎖的な組織に属しているためか性経験はそこそこあるようで、性には大らかである
+	PRINTL そのため、相手の言い分に惑わされず逆に好奇心をくすぐってやれば調教は難しくないだろう
+	PRINTL 種族：鴉天狗
+ELSEIF FLAG:9 == 33
+	PRINTL 【メディスン・メランコリー】
+	PRINTL 鈴蘭畑にうち捨てられた人形との事だが、傍目には人形には見えない
+	PRINTL 身体のつくりも人間のそれとなんら変わらぬ見た目をしており、肌触りも本物である
+	PRINTL 見た目通り子供のような性格をしており、少々怖がりなところがある
+	PRINTL 年齢はとても若いらしく、性的な知識・経験はほぼ無いと思われる
+	PRINTL 種族：人形
+ELSEIF FLAG:9 == 34
+	PRINTL 【風見 幽香】
+	PRINTL 古くから幻想郷に住んでいる花を操る妖怪で、その力は非常に強力
+	PRINTL 柔らかな見た目と裏腹に非常に苛虐的な性格をしており、他人を見下している節がある
+	PRINTL 性経験はそこそこあるようで、気に入れば男でも女でも構わないようだ
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 35
+	PRINTL 【小野塚 小町】
+	PRINTL 三途の川の渡し守をやっている死神とのことだが、真偽は不明
+	PRINTL 短気というわけではないが、江戸っ子気質でサバサバとした性格である
+	PRINTL 性に関しても意外と奔放な節があり、経験もそれなりにあるようだ
+	PRINTL また、生意気な態度とは裏腹に、どうもマゾヒスト的な素質もあるようである
+	PRINTL 種族：死神
+ELSEIF FLAG:9 == 36
+	PRINTL 【四季映姫・ヤマザナドゥ】
+	PRINTL 本人曰く、幻想郷担当の地獄の裁判長
+	PRINTL 眉唾な情報ではあるが、言葉の端々にどこか信じざるを得ない妙な力がある
+	PRINTL 性知識も経験も乏しいようにみえるが、その精神は達観した聖人と言える程に硬い
+	PRINTL 相応の準備をしなければ、調教は非常に苦労するだろう
+	PRINTL 種族：閻魔
+ELSEIF FLAG:9 == 37
+	PRINTL 【秋 静葉】
+	PRINTL 秋姉妹とよばれる幻想郷に住む神様で、紅葉をつかさどる姉
+	PRINTL とてもおとなしく控えめな性格だが、意外とプライドは高いようである
+	PRINTL 性的な経験も妹に比べてかなり控えめな様である
+	PRINTL 大人しく清楚で、紅葉の神という事でクライアントの人気は高い
+	PRINTL 種族：紅葉神
+ELSEIF FLAG:9 == 38
+	PRINTL 【秋 穣子】
+	PRINTL 秋姉妹とよばれる幻想郷に住む神様で、豊穣をつかさどる妹
+	PRINTL 姉に比べ性的なことに開放的で、経験もそこそこ豊富である
+	PRINTL どうやらかなりのスキモノらしく、相手が同性であっても厭わないようだ
+	PRINTL 種族：豊穣神
+ELSEIF FLAG:9 == 39
+	PRINTL 【鍵山 雛】
+	PRINTL 幻想郷中の厄を集め、厄流しを請け負う流し雛の神様
+	PRINTL 性経験はあまり無いようだが、性に対して排他的な感情を抱いているようだ
+	PRINTL 駆け出しの調教師では幾分辛いだろう
+	PRINTL 種族：厄神
+ELSEIF FLAG:9 == 40
+	PRINTL 【河城 にとり】
+	PRINTL 妖怪の山に住んでいるという河童のエンジニア
+	PRINTL 性経験は殆ど無いが、性知識はそこそこあり、興味津々なようである
+	PRINTL また技術者という職業柄とても器用であり、飲み込みも早い
+	PRINTL どうやら人間を好いているようなので、労することは特に無いと思われる
+	PRINTL 種族：河童
+ELSEIF FLAG:9 == 41
+	PRINTL 【犬走 椛】
+	PRINTL 妖怪の山を警備して回る白狼天狗
+	PRINTL 生真面目な性格をしているが、狼というより犬のように従順で人懐っこい
+	PRINTL 性に関しては硬い考え方のようで、性経験・性知識はあまり無いようだ
+	PRINTL 種族：白狼天狗
+ELSEIF FLAG:9 == 42
+	PRINTL 【東風谷 早苗】
+	PRINTL 妖怪の山に引っ越してきたばかりという、神社に住む巫女
+	PRINTL とても貞淑な思考の持ち主のようだが、興味もあるようだ
+	PRINTL 経験は殆ど無いが、否定的でもないので調教はそこまで難しく無いだろう
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 43
+	PRINTL 【八坂 神奈子】
+	PRINTL 妖怪の山に引っ越してきた守矢の神社の祭神
+	PRINTL 威風堂々とした姿勢と、ある種豪快で奔放な性格が妙に魅力的である
+	PRINTL だが、見た目とは裏腹に、性に関しては硬く生半可な調教では揺るがないことだろう
+	PRINTL しかし、それ故に性奴隷としてのスペックは非常に高いといえる
+	PRINTL 種族：国津神
+ELSEIF FLAG:9 == 44
+	PRINTL 【洩矢 諏訪子】
+	PRINTL 妖怪の山に引っ越してきた守矢の神社の祭神とのこと
+	PRINTL その容姿と奔放かつ明るい性格からか、クライアントの人気は非常に高い
+	PRINTL 性的の経験は豊富で、開放的なので調教はそこまで難しくは無いだろう
+	PRINTL 種族：土着神
+ELSEIF FLAG:9 == 45
+	PRINTL 【サニーミルク】
+	PRINTL 光の三妖精と呼ばれる悪戯好きな妖精、三妖精の中ではリーダー格のようである
+	PRINTL 明るく快活で妖精らしい妖精、好奇心いっぱいで尚且つおつむが弱いので簡単に騙せる
+	PRINTL 妖精はタフな生き物であるが、この個体は日光を浴びると元気になるという
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 46
+	PRINTL 【ルナチャイルド】
+	PRINTL 光の三妖精と呼ばれる悪戯好きな妖精
+	PRINTL 落ち着いた物腰、悲観的な思考を見せるなど妖精らしくない面が多少見受けられる
+	PRINTL だがやはり子供のように無邪気なので多少のことをしても怒ったりしないだろう
+	PRINTL 月光の妖精で月の光を浴びると元気になるためか、夜間起きていることが多い
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 47
+	PRINTL 【スターサファイア】
+	PRINTL 光の三妖精と呼ばれる悪戯好きな妖精
+	PRINTL 何を考えているのかよくわからない、掴み所のない性格
+	PRINTL それに加え悪戯好きな妖精らしく、小悪魔的な少女らしさを兼ね備えている
+	PRINTL 妖精なのですぐ体力が回復するため、多少ハードな調教にもついてこれるだろう
+	PRINTL 種族：妖精
+ELSEIF FLAG:9 == 48
+	PRINTL 【稗田 阿求】
+	PRINTL 稗田阿礼という人物の生まれ変わりで、阿礼乙女と呼ばれる少女
+	PRINTL 生まれつき身体が弱いらしく、ハードな調教に向いていない
+	PRINTL 一度見たものを忘れないらしいので、飲み込みはとても早いだろう
+	PRINTL 性経験は全く無いが、知識はかなりあると思われる
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 49
+	PRINTL 【宇佐見 蓮子】
+	PRINTL 見た目通り普通の少女、どうやら幻想郷の住人ではないらしい
+	PRINTL のんきな性格をしており、性経験はわずかに持っている
+	PRINTL 仲の良い友人が居るらしく、気にかけている節がある
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 50
+	PRINTL 【マエリベリー・ハーン】
+	PRINTL 見た目通り普通の少女、どうやら幻想郷の住人ではないらしい
+	PRINTL しっかりとした性格をしているが、言動はふわふわと掴み所が無い
+	PRINTL 仲の良い友人が居るらしく、気にかけている節がある
+	PRINTL 種族：人間
+ELSEIF FLAG:9 == 51
+	PRINTL 【魅魔】
+	PRINTL 元は博麗神社に取り憑いた悪霊だが、最近は行方がわからなくなっていた
+	PRINTL 随分と不敵な性格をしており、プライドは人一倍あるようだ
+	PRINTL 性的な知識には意外にも疎く、経験もあまり無いようである
+	PRINTL 種族：悪霊
+ELSEIF FLAG:9 == 52
+	PRINTL 【神綺】
+	PRINTL 厳密には幻想郷ではないが、魔界の創造主とのこと
+	PRINTL 実に穏やかな性格をしているが、その実力は本物である
+	PRINTL 幾多の子を創造したためか、知識と経験はそれなりにあるようだ
+	PRINTL 幻想郷に住んでいるという娘の事を心配しているらしい
+	PRINTL 種族：魔界神
+ELSEIF FLAG:9 == 53
+	PRINTL 【永江 衣玖】
+	PRINTL 雲中を漂う龍宮の使いで、空気に敏感らしくどんな所でもすぐに馴染む
+	PRINTL しかし身持ちは硬く、柔らかな物腰とは裏腹に貞操感は硬い
+	PRINTL 上手く馴染ませれば献身的に尽くしてくれることだろう
+	PRINTL 種族：竜宮の使い
+ELSEIF FLAG:9 == 54
+	PRINTL 【比那名居 天子】
+	PRINTL 本人は自らを天人だと称しているがそれにしてはあまりにも俗っぽい
+	PRINTL 高いプライドとそれに相応した教養はあるが、精神的にはかなり幼い
+	PRINTL 箱入り娘だったせいか、性的なことに関しては興味を強く持っている
+	PRINTL 最初こそ生意気さに手を焼くだろうが、一度軌道に乗ってしまえば自分から堕ちてくれるだろう
+	PRINTL 種族：天人くずれ
+ELSEIF FLAG:9 == 55
+	PRINTL 【キスメ】
+	PRINTL 釣瓶落としの怪、桶にちょこんと入り込んだ姿が愛らしく童女のような外観をしている
+	PRINTL その格好から容易に察することが出来る通り恥ずかしがり屋で、また怖がりでもある
+	PRINTL そんな彼女に優しく接してやるか、脅してモノにするかは調教者次第だろう
+	PRINTL 性的な経験がほとんど無く、知識も薄いのか非常に大人しく言うことも素直に聞く
+	PRINTL 種族：釣瓶落とし
+ELSEIF FLAG:9 == 56
+	PRINTL 【黒谷 ヤマメ】
+	PRINTL 地下に封印された妖怪、地上の我々には嫌われ者の蜘蛛の怪だが地下では人気者
+	PRINTL 性的経験は豊富な方であり閉鎖された地下にいたからか、好奇心は旺盛な模様
+	PRINTL ただその能力故薬や毒に対して強い耐性を持っている
+	PRINTL 能力のえげつなさ、おぞましいイメージとは裏腹に明るくとっつきやすい娘である
+	PRINTL 種族：土蜘蛛
+ELSEIF FLAG:9 == 57
+	PRINTL 【水橋 パルスィ】
+	PRINTL 地上と地下を結ぶ縦穴の守護をやっている橋姫、恐ろしく嫉妬深い
+	PRINTL その性格か能力かはたまた両方が災いしたのか男性経験は無い模様
+	PRINTL とりあえず何をやってもまず嫌われる覚悟はしておいた方がいいだろう
+	PRINTL 性的な事に関して決して興味が無いわけではなく、むしろ病み付きになる可能性が高い
+	PRINTL 種族：橋姫
+ELSEIF FLAG:9 == 58
+	PRINTL 【星熊 勇儀】
+	PRINTL 幻想郷から地下に移住した鬼、その気概などからは大物らしさを感じられる
+	PRINTL たくましく豊満な肉体の見た目通り人智を越えたタフさを誇る
+	PRINTL 豪放磊落な性格で例え寝所の技であろうと、自分を屈服させた者は認める気概を持っている
+	PRINTL 種族：鬼
+ELSEIF FLAG:9 == 59
+	PRINTL 【古明地 さとり】
+	PRINTL 地霊殿に住む少女、心を読む能力を持つ妖怪であり、その格は高い
+	PRINTL 能力ゆえに他者に疎まれ、他人の心から得た豊富な知識とは裏腹に性経験は乏しい
+	PRINTL 調教師としては彼女の能力は喉から手が出るほど欲しい力であると言える
+	PRINTL 種族：さとり
+ELSEIF FLAG:9 == 60
+	PRINTL 【火焔猫 燐】
+	PRINTL 死体を持ち去る火車という妖怪、地霊殿の主であるさとりのペットらしい
+	PRINTL 同じ化猫や、地霊殿の住人と仲がよく、基本的に楽観的で人懐っこい
+	PRINTL 経験は無いものの、精液等の汚臭に耐性があるため、調教には苦労しないだろう
+	PRINTL 種族：火車
+ELSEIF FLAG:9 == 61
+	PRINTL 【霊烏路 空】
+	PRINTL 火焔猫 燐と同じく、地霊殿の主であるさとりのペットである地獄鴉
+	PRINTL 自信過剰なため、かなり生意気で反抗的、さらに性経験も特にない
+	PRINTL また、物覚えも悪いが、好奇心旺盛で調教には然程苦労することはないだろう
+	PRINTL 種族：地獄鴉 with 八咫烏
+ELSEIF FLAG:9 == 62
+	PRINTL 【古明地 こいし】
+	PRINTL 地霊殿の主、さとりの妹だという少女、妹だけあって種族も『さとり』
+	PRINTL 本来、『さとり』は心を読む能力を持つはずだが、彼女は心の眼を閉ざしてしまったという
+	PRINTL 性格はいたって素直で、性的経験も浅いためか興味津々なので、調教は難しくないだろう
+	PRINTL 種族：さとり
+ELSEIF FLAG:9 == 63
+	PRINTL 【森近 霖之助】
+	PRINTL 小道具屋「香霖堂」の店主である。人間と妖怪のハーフである
+	PRINTL 霊夢のお払い棒や巫女服、魔理沙のミニ八卦炉なども彼が手がけている
+	PRINTL 性格は極めて冷静で思慮深い
+	PRINTL 種族：半人半妖
+ELSEIF FLAG:9 == 64
+	PRINTL 【レイセン】
+	PRINTL 紆余曲折の末に綿月姉妹のペットとして仕えることになった玉兎
+	PRINTL レイセンという名前はそのときに与えられた
+	PRINTL 種族：玉兎
+ELSEIF FLAG:9 == 65
+	PRINTL 【綿月 豊姫】
+	PRINTL 綿月姉妹の姉で、天性の幸運を持っているという
+	PRINTL 鈴仙・優曇華院・イナバの以前の飼い主である
+	PRINTL 天真爛漫な性格であるが、地上の者を見下しているような気がする
+	PRINTL 種族：月人
+ELSEIF FLAG:9 == 66
+	PRINTL 【綿月 依姫】
+	PRINTL 綿月姉妹の妹で、頭がよく切れるという
+	PRINTL 地上人の月面侵攻に備えて、玉兎たちの戦闘訓練を担当している
+	PRINTL 生真面目な性格であり、地上の者を見下していると思われる
+	PRINTL 種族：月人
+ELSEIF FLAG:9 == 67
+	PRINTL 【ナズーリン】
+	PRINTL ネズミの妖怪で、探し物を探す生粋のダウザーらしい
+	PRINTL 少年のような口調と生意気な態度は手を焼くことだろう
+	PRINTL しかし、態度こそ生意気だが、快楽には素直な傾向が見られる
+	PRINTL 種族：妖怪ネズミ
+ELSEIF FLAG:9 == 68
+	PRINTL 【多々良 小傘】
+	PRINTL 忘れられた傘が妖怪化した九十九神の一種のからかさお化けである
+	PRINTL 人を驚かせるだけの妖怪だが、方法が古臭いため余り怖くない
+	PRINTL 意外に臆病で威厳がないので、好みに合わせて調教しやすいだろう
+	PRINTL 種族：からかさお化け
+ELSEIF FLAG:9 == 69
+	PRINTL 【雲居 一輪】
+	PRINTL 白蓮を慕う妖怪で入道を扱うことができるらしい
+	PRINTL 要領はいいものの、根は真面目なので言うことを聞かせるには骨が折れるだろう
+	PRINTL やや豪胆な印象があるが、身持ちは固いので時間をかける必要がある
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 70
+	PRINTL 【村紗 水蜜】
+	PRINTL 白蓮を慕う妖怪で、水難事故にあった幽霊が妖怪化したものらしい
+	PRINTL 聖輦船の船長を務め、真面目ながら狡猾な面も持つ
+	PRINTL 性経験は薄く、精神的には人間並みなので、調教の難易度は低いだろう
+	PRINTL 種族：舟幽霊
+ELSEIF FLAG:9 == 71
+	PRINTL 【寅丸 星】
+	PRINTL 白蓮を慕う妖怪で毘沙門天の使い、縁起がよいらしい
+	PRINTL 真面目で人望が厚い人格者なので、簡単には屈しないと考えられる
+	PRINTL 性経験はそこそこあるようだが、生真面目なのでやや苦労するだろう
+	PRINTL 種族：妖怪
+ELSEIF FLAG:9 == 72
+	PRINTL 【聖 白蓮】
+	PRINTL 伝説の僧侶の姉らしい、妖怪から慕われる魔法使いである
+	PRINTL 人間と妖怪の平等を訴え、あらゆる存在に慈悲を与える聖母のような性格をしている
+	PRINTL 意志が非常に堅固で性と無縁であったため、陥落させるのは難しいだろう
+	PRINTL 種族：魔法使い
+ELSEIF FLAG:9 == 73
+	PRINTL 【封獣 ぬえ】
+	PRINTL 正体不明の妖怪“鵺”の少女で、謂れに応じて自在に姿を変えるらしい
+	PRINTL 人前に姿を現すことが少なく、性格は捻くれているが、白蓮は慕っているらしい
+	PRINTL その捻くれた性格から手を焼く可能性はあるが、調教事態はそこまで困難ではないだろう
+	PRINTL なお、体の感度が稀に変動することがあるらしい
+	PRINTL 種族：鵺
+ELSEIF FLAG:9 == 74
+	PRINTL 【姫海棠 はたて】
+	PRINTL 妖怪の山に住む鴉天狗の一人、花果子念報という新聞を発行している
+	PRINTL 頭の悪そうな口調をしているが、時折頭の切れる面も見せるので油断はできない
+	PRINTL ややインドア派らしく、天狗の中では性経験はそれほど多くは無い
+	PRINTL 内なる欲望を開花させるまではやや苦労するだろう
+	PRINTL また、同種族である射命丸文は互いに強く意識しているようだ
+	PRINTL 種族：鴉天狗
+ELSEIF FLAG:9 == 75
+	PRINTL 【茨木 華扇】
+	PRINTL 妖怪の山に住む仙人、元は鬼だと囁かれているが実態は不明である
+	PRINTL たびたび人間に忠告をしているせいか、精神的にはかなり強い
+	PRINTL また、身体的にも強いため、調教は簡単に進まないだろう
+	PRINTL その名から、酒呑童子とは深い関係があると推定される
+	PRINTL 種族：仙人
+ELSEIF FLAG:9 == 76
+	PRINTL 【幽谷 響子】
+	PRINTL 命蓮寺に住み着く妖怪の小間使い
+	PRINTL 快活な少女であり、声がでかいからか体力が高い
+	PRINTL 仏門の知識はそこそこだが、性経験は乏しいようだ
+	PRINTL 世話になっている命蓮寺の関係者のことを慕っているようだ
+	PRINTL 種族：山彦
+ELSEIF FLAG:9 == 77
+	PRINTL 【宮古 芳香】
+	PRINTL 命蓮寺の墓地に現れたキョンシー、操り主を守るための戦士らしい
+	PRINTL 体は非常に硬い、逆に脳は柔らかすぎると難儀な体質のゾンビ
+	PRINTL 色々と疑問は残るが、一応性行為は可能である
+	PRINTL 無知で阿呆な娘が好みならば、一考の余地はあるだろう
+	PRINTL 種族：キョンシー
+ENDIF
+PRINTL 
+PRINTL 購入しますか？
+PRINTL [0]はい
+PRINTL [1]いいえ
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 1
+	FLAG:9 = 0
+ELSEIF RESULT != 0
+	GOTO INPUT_LOOP
+ENDIF
+

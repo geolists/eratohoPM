@@ -1,0 +1,312 @@
+﻿;=======================================================================
+;人攫い
+;適当に人を攫う
+;
+;ARG　デバッグフラグ　1：デバッグ
+;=======================================================================
+@SNATCH, ARG
+DRAWLINE
+PRINTFORML 娘を攫います
+CALL SETCOLOR_ABL
+PRINTFORML 半月が経過します
+PRINTFORML 同時に3人までしか攫えません。既に3人攫っている場合は、売る等して場所を確保してください
+RESETCOLOR
+PRINTL よろしいですか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	SELECTCASE RAND:2
+		CASE 0
+			PRINT 里の娘
+			LOCAL = 0
+		CASE 1
+			PRINT 貴族の娘
+			LOCAL = 1
+		;以下、未実装
+		CASE 2
+			PRINT メイド
+			LOCAL = 2
+		CASE 3
+			PRINT ゴスロリ
+			LOCAL = 3
+		CASE 3
+			PRINT 巫女
+			LOCAL = 4
+	ENDSELECT
+	PRINTFORML を見つけた！
+	
+	IF !ARG
+		FLAG:特殊戦闘 = 2
+		CALL SET_STATUS, 1
+		CALL HEALING, 1
+		CALL BATTLE, 300+LOCAL, 0, 0, 0, 1+RAND:5
+		FLAG:特殊戦闘 = 0
+	ENDIF
+	
+	IF RESULT == 2 || ARG
+		;現在誘拐している娘が5人(綿月姉妹含めて)
+		IF FLAG:保有してる娘-FLAG:攫った姉妹の数 == 3
+			PRINTFORML 既に里娘を3人誘拐しており、これ以上匿う事はできない……
+			PRINTFORMW %CALLNAME:TARGET%は娘を放置し、この場を去った
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は娘を攫う事に成功した！
+			FLAG:保有してる娘 += 1
+			ADDCHARA 3
+			CALL SET_SNATCH_STATUS, LOCAL, FLAG:保有してる娘+1
+		ENDIF
+	ELSEIF RESULT == 0
+		
+	ELSE
+		IF TFLAG:敵の数 >= 2
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML %CALLNAME:TARGET%は匪賊に捕まってしまった！
+			RESETCOLOR
+			CALL CATCH_HIZOKU, 2, 0
+			IF !RESULT
+				RETURN 1
+			ENDIF
+		ELSE
+			PRINTL 危うく負けてしまうところだった……
+		ENDIF
+	ENDIF
+	
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+;=======================================================================
+;人攫いした娘の初期能力設定
+;適当に人を攫う
+;ARG　　娘の種類
+;ARG:1　セットするキャラの番号
+;=======================================================================
+@SET_SNATCH_STATUS, ARG, ARG:1
+#DIM L_LOCAL, 1
+#DIM TAG, 1
+
+;対象の値をTAGに退避させる(二次変数無しで扱う為)
+TAG = ARG:1
+
+NO:TAG = 99
+TALENT:TAG:豊姫 = 0
+
+;共通ステータス
+BASE:TAG:美麗 = 60
+BASE:TAG:知力 = 60
+BASE:TAG:疎通 = 60
+BASE:TAG:家事 = 60
+BASE:TAG:信仰 = 60
+BASE:TAG:体力 = 60
+BASE:TAG:淫妖 = 0
+BASE:TAG:堕落 = 0
+
+
+BASE:TAG:30 = 69
+BASE:TAG:31 = 66
+BASE:TAG:32 = 71
+
+CALL RAND_NAME, ARG
+CALLNAME:TAG = %RESULTS%
+NAME:TAG = %RESULTS%
+
+EXP:TAG:美麗経験 = 0
+EXP:TAG:知力経験 = 0
+EXP:TAG:疎通経験 = 0
+EXP:TAG:家事経験 = 0
+EXP:TAG:信仰経験 = 0
+EXP:TAG:体力経験 = 0
+EXP:TAG:淫妖経験 = 0
+
+REPEAT 10
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	
+	;背徳、淫妖、堕落経験は弾く
+	IF STR == "背徳" || STR == "淫妖" || STR == "堕落" || STR == "色気"
+		
+	ELSE
+		EXP:TAG:(STR+"経験") += NONAME_CHARADATA(ARG, "経験", STR)
+	ENDIF
+	
+	;現在の経験を記録
+	CFLAG:TAG:("ターン開始時の経験／"+STR+"") = EXP:TAG:(""+STR+"経験")
+REND
+
+;依存以外の能力は一括して加算する
+BASE:TAG:依存 = 0
+
+;誕生日を迎えた回数を年数と合わせておく
+CFLAG:TAG:誕生日を迎えた回数 = FLAG:年数
+
+CFLAG:TAG:性格 = RAND:7
+BASE:TAG:15 = 0
+BASE:TAG:アライメント = 100
+BASE:TAG:技能 = 0
+BASE:TAG:媚薬 = 0
+BASE:TAG:快楽動機づけ = 0
+BASE:TAG:貞操 = 100
+BASE:TAG:慰み者 = 0
+BASE:TAG:魔力 = 0
+BASE:TAG:信仰力 = 0
+BASE:TAG:君主の評価 = 20
+BASE:TAG:役人の評価 = 20
+BASE:TAG:民衆の評価 = 20
+CFLAG:TAG:対象選択可能 = 1
+BASE:TAG:ストレス = 0
+CFLAG:TAG:やる気 = 4
+CFLAG:TAG:称号属性 = 99
+
+TALENT:処女 = 1
+
+
+;各種基礎パラメータに-30～+30を与える
+FOR L_LOCAL, 0, 6
+	CALL PALAM_CONVERT_NAME, L_LOCAL
+	BASE:TAG:STR = LIMIT(BASE:TAG:STR+NONAME_CHARADATA(ARG, "能力", STR), 0, MAXBASE:TAG:STR)
+NEXT
+
+;各種気質を-50～+50させる
+FOR L_LOCAL, 0, 10
+	CALL KISITU_CONVERT_NAME, L_LOCAL
+	IF STR == "依存"
+		BASE:TAG:STR = LIMIT(0+NONAME_CHARADATA(ARG, "気質", STR), 0, MAXBASE:TAG:STR)
+	ELSE
+		BASE:TAG:STR = LIMIT(130+NONAME_CHARADATA(ARG, "気質", STR), 0, MAXBASE:TAG:STR)
+	ENDIF
+NEXT
+
+CFLAG:TAG:属性／里娘 = 100
+;習慣を全て対応した属性に変えておく
+
+;貴族or里の娘
+IF ARG <= 1
+	CALL NONAME_KISITU, TAG, 100, "里娘"
+ENDIF
+
+;里の娘
+IF ARG == 0
+	;16％の確率で淫妖+70＆非処女
+	IF !RAND:6
+		BASE:TAG:淫妖 += 70
+		EXP:TAG:淫妖経験 += 25
+		TALENT:TAG:処女 = 0
+		;50％の確率で傷物
+		IF !RAND:2
+			TALENT:TAG:傷物 = 1
+			EXP:TAG:淫妖経験 = 5
+		ENDIF
+	ENDIF
+	
+	;里娘の小袖を持ってない場合、入手する
+	IF !ITEM:里娘の小袖
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 里娘の小袖を入手した！
+		ITEM:里娘の小袖 += 1
+		RESETCOLOR
+	ENDIF
+	LOCAL = TARGET
+	TARGET = TAG
+	CALL DATA_CHANGE_CLOTHE, 66, "変更"
+	TARGET = LOCAL
+;貴族の娘
+ELSEIF ARG == 1
+	;10％の確率で淫妖+100＆非処女
+	IF !RAND:10
+		BASE:TAG:淫妖 += 100
+		EXP:TAG:淫妖経験 -= 45
+		TALENT:TAG:処女 = 0
+		;50％の確率で傷物
+		;(その場合は淫妖/2)
+		IF !RAND:2
+			TALENT:TAG:傷物 = 1
+			BASE:TAG:淫妖 /= 2
+			EXP:TAG:淫妖経験 = 5
+		ENDIF
+	ENDIF
+	
+	;里娘の小袖を持ってない場合、入手する
+	IF !ITEM:里娘の小袖
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 里娘の小袖を入手した！
+		ITEM:里娘の小袖 += 1
+		RESETCOLOR
+	ENDIF
+	LOCAL = TARGET
+	TARGET = TAG
+	CALL DATA_CHANGE_CLOTHE, 66, "変更"
+	TARGET = LOCAL
+ENDIF
+
+;-----------------------------------------------------
+;名無しキャラの能力適正設定
+;この関数で土台数値とランダム数値の双方を出力する
+;ARG　 　キャラの種類
+;ARGS　　項目
+;ARGS:1　具体的な名前
+;-----------------------------------------------------
+@NONAME_CHARADATA, ARG, ARGS, ARGS:1
+#FUNCTION
+
+LOCAL = 0
+;里の娘
+IF ARG == 0
+	IF ARGS == "能力"
+		;-30～+30の修正を与える
+		LOCAL += RAND:61-30
+	ELSEIF ARGS == "気質"
+		;-50～+50の修正を与える
+		LOCAL += RAND:101-50
+	ELSEIF ARGS == "経験"
+		;0～20の修正を与える
+		LOCAL += RAND:21
+	ENDIF
+	;PRINTFORML LOCAL:{LOCAL}
+	
+;貴族の娘
+ELSEIF ARG == 1
+	IF ARGS == "能力"
+		;美麗だけ+40修正を与える
+		IF ARGS:1 == "美麗"
+			LOCAL += 40
+		ENDIF
+		
+		;-30～+30の修正を与える
+		LOCAL += RAND:61-30
+	ELSEIF ARGS == "気質"
+		;気品とプライドだけ+60修正を与える
+		IF ARGS:1 == "気品" || ARGS:1 == "プライド"
+			LOCAL += 60
+		ENDIF
+		
+		;-50～+50の修正を与える
+		LOCAL += RAND:101-50
+	ENDIF
+ENDIF
+
+RETURNF LOCAL
+
+;-----------------------------------------------------
+;名無しキャラの素質設定
+;素質と生活習慣を設定する
+;ARG　　 対象(キャラ番号)
+;ARG:1　 属性値
+;ARGS　　属性名
+;-----------------------------------------------------
+@NONAME_KISITU, ARG, ARG:1, ARGS
+#DIM L_LOCAL, 1
+
+CFLAG:ARG:("属性／"+ARGS) = ARG:1
+
+;習慣は全てその属性で埋める
+FOR L_LOCAL, 0, 5
+	CALL ELEMENT_CONVERT_REV, ARGS
+	
+	CFLAG:ARG:("習慣職業／"+LIFESTYLE_NAME(L_LOCAL)) = RESULT
+	CFLAG:ARG:("習慣レベル／"+LIFESTYLE_NAME(L_LOCAL)) = 1
+NEXT
+
+

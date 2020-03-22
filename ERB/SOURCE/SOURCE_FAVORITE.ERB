@@ -1,0 +1,175 @@
+﻿;=======================================================
+;SOURCE_FAVORITE.ERB
+;教育(調教)時の好感度やアライメントの処理を行う
+;=======================================================
+@SOURCE_FAVORITE
+#DIM HOSEI,1
+#DIM GET_ABL, 1
+#DIM EXP_BONUS, 1
+
+;姉妹への友好度変化
+IF LOSEBASE:姉妹への友好度
+	PRINTFORM 綿月姉妹への友好度:
+	IF LOSEBASE:姉妹への友好度 < 0
+		PRINTFORM -
+	ELSE
+		PRINTFORM +
+	ENDIF
+	PRINTFORML {LOSEBASE:姉妹への友好度}
+	CFLAG:姉妹への友好度 += LOSEBASE:姉妹への友好度
+ENDIF
+
+;娼婦の場合、属性割合100％で+6される
+IF TALENT:娼婦
+	LOCAL = 6 * CFLAG:属性／乞食 / 100
+	PRINTFORML 主人への友好度 +{LOCAL}
+	CFLAG:主人への友好度 += LOCAL
+ENDIF
+
+IF LOSEBASE:主人への友好度 || FLAG:主人の前職 == 0
+	CALL CLOTHE_ABL, "主人への友好度"
+	LOCAL = RESULT
+	;服装による主人への友好度補正
+	IF LOCAL
+		PRINTFORM 主人への友好度（追加）：
+		IF LOCAL > 0
+			PRINTFORM +
+		ELSE
+			
+		ENDIF
+		PRINTFORML {RESULT}
+		CFLAG:主人への友好度 += RESULT
+	ENDIF
+	
+	
+	LOCAL = LOSEBASE:主人への友好度 + LOCAL
+	;依存が関与
+	GET_ABL = LOCAL * BASE:依存 / 150
+	IF GET_ABL < 0
+		GET_ABL = 0
+	ENDIF
+	
+	;主人の前職が教育係の場合、友好度+1
+	;(様々な補正の後にかかる)
+	;主人の前職が修道士の場合、アライメント+1
+	IF FLAG:主人の前職 == 0
+		GET_ABL += 1
+	ENDIF
+	
+	;[嫌厭色情]の場合、追加で+1
+	IF TALENT:嫌厭色情
+		GET_ABL += 1
+	ENDIF
+	
+	PRINTFORM 主人への友好度：
+	IF LOSEBASE:主人への友好度 < 0
+		
+	ELSE
+		PRINTFORM +
+	ENDIF
+	PRINTFORML {GET_ABL}
+	CFLAG:主人への友好度 += GET_ABL
+ENDIF
+
+;アライメント変化
+IF LOSEBASE:アライメント
+	CALL CLOTHE_ABL, "アライメント"
+	LOCAL = RESULT
+	
+	;服装によるアライメント補正
+	IF LOCAL
+		IF LOCAL < 0
+			
+		ELSE
+		;	PRINTFORM +
+		ENDIF
+	ENDIF
+
+	LOCAL = LOSEBASE:アライメント + LOCAL
+	
+	;救済の書を装備している場合、淫妖・堕落経験が入るコマンドでアライメントが下降しない
+	IF CFLAG:日用品／本 == 428 && TFLAG:淫妖経験 && TFLAG:堕落経験
+		LOCAL = 0
+	ENDIF
+	
+	;主人の前職が修道士の場合、アライメント+1
+	IF FLAG:主人の前職 == 2
+		LOCAL += 1
+	ENDIF
+	
+	;負の場合
+	;堕落の5％が入る
+	IF LOCAL < 0
+		GET_ABL = (LOCAL * ((200 - BASE:信仰心) + BASE:堕落 / 20)) / 50
+		IF GET_ABL > 0
+			GET_ABL = 0
+		ENDIF
+		
+	;正の場合
+	;信仰心で補正がかかる
+	ELSE
+		IF BASE:アライメント > 0
+			GET_ABL = LOCAL * (BASE:信仰心 / 200 + BASE:信仰 / 20)
+		;現在のアライメントが負の場合、1割改善する
+		ELSE
+			GET_ABL = LIMIT((100 - BASE:アライメント) / 10 * BASE:貞操 / 100, 1, 100)
+		ENDIF
+	ENDIF
+	IF GET_ABL
+		BASE:アライメント += GET_ABL
+		PRINTFORM アライメント　
+		
+		IF GET_ABL < 0
+			
+		ELSE
+			PRINTFORM +
+		ENDIF
+		
+		PRINTFORML {GET_ABL}
+	ENDIF
+ENDIF
+
+PRINTL 
+
+CALL CLOTHE_ABL, "姉妹への友好度"
+;服装による姉妹への友好度補正
+;元から友好度が上昇するコマンドでないと影響が無い
+IF RESULT && LOSEBASE:姉妹への友好度
+	PRINTFORM 姉妹への友好度補正（服装補正）　
+	IF RESULT > 0
+		PRINTFORM +
+	ELSE
+		
+	ENDIF
+	PRINTFORML {RESULT}
+	CFLAG:姉妹への友好度 += RESULT
+ENDIF
+
+;CALLFORM CLOTHE_ID_{CFLAG:服装}, "姉妹への友好度"
+;服装による崩壊ゲージ補正
+;IF RESULT
+;	PRINTFORM 崩壊（服装補正）　
+;	IF RESULT
+;		
+;	ELSE
+;		PRINTFORM +
+;	ENDIF
+;	PRINTFORML {CFLAG:補正／崩壊}
+;	BASE:崩壊 += RESULT
+;ENDIF
+
+CALLFORM CLOTHE_ABL, "堕落"
+;服装による堕落補正
+IF RESULT && CFLAG:属性 & 1p6
+	PRINTFORM 堕落（服装補正）　
+	IF RESULT < 0
+		
+	ELSE
+		PRINTFORM +
+	ENDIF
+	PRINTFORML {CFLAG:補正／堕落}
+	BASE:堕落 += RESULT
+ENDIF
+
+
+

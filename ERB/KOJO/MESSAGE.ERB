@@ -1,0 +1,2203 @@
+﻿;=====================================================================
+;一言メッセージ
+;メニュー画面で表示されます
+;ARG　　メッセージ固定用の引数
+;ARG:1　キャラ指定
+;=====================================================================
+@HIMESSAGE, ARG, ARG:1
+#DIM YOUSO, 1
+
+;衣服の属性
+#DIM CLO_ELE, 1
+
+;どの純化口上を呼び出すかを保存する変数
+#DIM JUNKA, 1
+;初期化もしておく(#DIM JUNKA=0でできた気がしなくもない)
+JUNKA = 0
+
+;LOCAL:1の初期化
+LOCAL:1 = 0
+
+VARSET CFLAG, 0, 190, 195
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+
+;他の魂が入っている(魂抜き時)
+IF CFLAG:魂の状態 == 1
+	FOR COUNT, 0, 5
+		LOCAL = MINARRAY(CFLAG, 190, 195)
+		FINDELEMENT CFLAG, LOCAL, 190, 195
+		YOUSO = RESULT
+		IF LOCAL == 0
+			;今の服装が布切れ
+			IF !ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)
+				CFLAG:YOUSO = 1
+				LOCAL:1 += 1
+			;性格が淫乱
+;			ELSEIF CFLAG:性格 == -1 && !CHECKMES(3)
+;				CFLAG:YOUSO = 3
+;				LOCAL:1 += 1
+			;思考力が100未満で躾方針が快楽を与える
+			ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100 && !CHECKMES(10)
+				CFLAG:YOUSO = 10
+				LOCAL:1 += 1
+			;妊娠している
+			ELSEIF TALENT:妊娠 && !CHECKMES(11)
+				CFLAG:YOUSO = 11
+				LOCAL:1 += 1
+			;淫魔になっている
+			ELSEIF TALENT:淫魔 && !CHECKMES(12)
+				CFLAG:YOUSO = 12
+				LOCAL:1 += 1
+			ELSEIF !LOCAL:1 && !CHECKMES(99)
+				CFLAG:YOUSO = 99
+				LOCAL:1 += 1
+			ENDIF
+		ENDIF
+	NEXT
+	IF LOCAL:1 != 1
+		CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+	ELSE
+		CFLAG:決定要素 = CFLAG:190
+	ENDIF
+	CALLFORM HIMESSAGE_SOUL_{CFLAG:追加魂}_{CFLAG:決定要素}
+;他の魂が入っている(依頼時)
+ELSEIF CFLAG:魂の状態 == 3
+	;魂の種類によって分ける
+
+	TRYCALLFORM HIMESSAGE_SOUL_{CFLAG:追加魂}, MIN(CFLAG:淫妖蓄積値/70, 4)
+;[純化]を得ている場合
+ELSEIF TALENT:純化
+	
+	;どの純化属性を得ているかを取得する
+	;TALENT20～27をサーチして、ひっかかるのがあればそれを代入する
+	FOR COUNT, 20, 28
+		IF TALENT:COUNT
+			;純化要素を変数に格納する
+			JUNKA = COUNT-20
+			;このFOR文は用済みなので、BREAK文で抜ける
+			BREAK
+		ENDIF
+	NEXT
+	
+	IF !ARG
+		FOR COUNT, 0, 5
+			LOCAL = MINARRAY(CFLAG, 190, 195)
+			FINDELEMENT CFLAG, LOCAL, 190, 195
+			YOUSO = RESULT
+			IF LOCAL == 0
+				;今の服装が布切れor半裸以上の服を着ている
+				IF (!ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)) || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 && !CHECKMES(13))
+					CFLAG:YOUSO = 1
+					LOCAL:1 += 1
+				;1年目1月の頭
+				ELSEIF FLAG:年数 == 1 && DAY == 1 && TIME == 0 && !CHECKMES(2)
+					CFLAG:YOUSO = 2
+					LOCAL:1 += 1
+				;性格が淫乱
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(3)
+					CFLAG:YOUSO = 3
+					LOCAL:1 += 1
+				;性格が淫乱(その2)
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(6)
+					CFLAG:YOUSO = 6
+					LOCAL:1 += 1
+				;やる気が2以下の場合
+				ELSEIF CFLAG:やる気 <= 2 && !CHECKMES(9)
+					CFLAG:YOUSO = 9
+					LOCAL:1 += 1
+				;思考力が100未満で躾方針が快楽を与える
+				ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100 && !CHECKMES(10)
+					CFLAG:YOUSO = 10
+					LOCAL:1 += 1
+				;妊娠している
+				ELSEIF TALENT:妊娠 && !CHECKMES(11)
+					CFLAG:YOUSO = 11
+					LOCAL:1 += 1
+				;淫魔になっている
+				ELSEIF TALENT:淫魔 && !CHECKMES(12)
+					CFLAG:YOUSO = 12
+					LOCAL:1 += 1
+				ELSEIF !LOCAL:1 && !CHECKMES(99)
+					CFLAG:YOUSO = 99
+					LOCAL:1 += 1
+				ENDIF
+			ENDIF
+		NEXT
+		IF LOCAL:1 != 1
+			CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+		ELSE
+			CFLAG:決定要素 = CFLAG:190
+		ENDIF
+		CALLFORM HIMESSAGE_JUNKA_{LOCAL}_{CFLAG:決定要素}
+	ENDIF
+;固定されていない場合
+ELSEIF TALENT:輝夜
+	;夜遊びの球使用中は固定の口上を出す
+	IF CFLAG:使用中／夜遊びの球
+		CFLAG:決定要素 = 13
+	ELSEIF !ARG
+		FOR COUNT, 0, 5
+			LOCAL = MINARRAY(CFLAG, 190, 195)
+			FINDELEMENT CFLAG, LOCAL, 190, 195
+			YOUSO = RESULT
+			IF LOCAL == 0
+				;今の服装が布切れor半裸以上の服を着ている
+				IF (!ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)) || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 && !CHECKMES(1))
+					CFLAG:YOUSO = 1
+					LOCAL:1 += 1
+				;1年目1月の頭
+				ELSEIF FLAG:年数 == 1 && DAY == 1 && TIME == 0 && !CHECKMES(2)
+					CFLAG:YOUSO = 2
+					LOCAL:1 += 1
+				;性格が淫乱
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(3)
+					CFLAG:YOUSO = 3
+					LOCAL:1 += 1
+				;メイド属性の服を着ている(その1)
+				ELSEIF GETBIT(CLO_ELE,2) && !TALENT:娼婦 && !CHECKMES(4)
+					CFLAG:YOUSO = 4
+					LOCAL:1 += 1
+				;シスター属性の服を着ている(その1)
+				ELSEIF GETBIT(CLO_ELE,3) && !TALENT:娼婦 && !CHECKMES(5)
+					CFLAG:YOUSO = 5
+					LOCAL:1 += 1
+				;性格が淫乱(その2)
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(6)
+					CFLAG:YOUSO = 6
+					LOCAL:1 += 1
+				;やる気が2以下の場合
+				ELSEIF CFLAG:やる気 <= 2 && !CHECKMES(9)
+					CFLAG:YOUSO = 9
+					LOCAL:1 += 1
+				;思考力が100未満で躾方針が快楽を与える
+				ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100 && !CHECKMES(10)
+					CFLAG:YOUSO = 10
+					LOCAL:1 += 1
+				;妊娠している
+				ELSEIF TALENT:妊娠 && !CHECKMES(11)
+					CFLAG:YOUSO = 11
+					LOCAL:1 += 1
+				;淫魔になっている
+				ELSEIF TALENT:淫魔 && !CHECKMES(12)
+					CFLAG:YOUSO = 12
+					LOCAL:1 += 1
+				ELSEIF !LOCAL:1 && !CHECKMES(99)
+					CFLAG:YOUSO = 99
+					LOCAL:1 += 1
+				ENDIF
+			ENDIF
+		NEXT
+		IF LOCAL:1 != 1
+			CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+		ELSE
+			CFLAG:決定要素 = CFLAG:190
+		ENDIF
+	ENDIF
+;依姫
+ELSEIF TALENT:依姫
+	IF !ARG
+		FOR COUNT, 0, 5
+			LOCAL = MINARRAY(CFLAG, 190, 195)
+			FINDELEMENT CFLAG, LOCAL, 190, 195
+			YOUSO = RESULT
+			IF LOCAL == 0
+				;普段着を売り、今の服が布切れ
+			;	IF !ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)
+			;		CFLAG:YOUSO = 1
+			;		LOCAL:1 += 1
+				;性格が淫乱
+				IF CFLAG:性格 == -1 && !CHECKMES(3)
+					CFLAG:YOUSO = 3
+					LOCAL:1 += 1
+				;メイド属性の服を着ている(その1)
+			;	ELSEIF GETBIT(CLO_ELE,2) && !TALENT:娼婦 && !CHECKMES(4)
+			;		CFLAG:YOUSO = 4
+			;		LOCAL:1 += 1
+			;	;シスター属性の服を着ている(その1)
+			;	ELSEIF GETBIT(CLO_ELE,3) && !TALENT:娼婦 && !CHECKMES(5)
+			;		CFLAG:YOUSO = 5
+			;		LOCAL:1 += 1
+				;性格が淫乱(その2)
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(6)
+					CFLAG:YOUSO = 6
+					LOCAL:1 += 1
+				;思考力が200未満
+				ELSEIF BASE:思考力 < 200 && !CHECKMES(7)
+					CFLAG:YOUSO = 7
+					LOCAL:1 += 1
+				;常識が200未満
+				ELSEIF BASE:常識 < 200 && !CHECKMES(8)
+					CFLAG:YOUSO = 8
+					LOCAL:1 += 1
+				;思考力が100未満で躾方針が快楽を与える
+				ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100
+					CFLAG:YOUSO = 10
+					LOCAL:1 += 1
+				ELSEIF !LOCAL:1 && !CHECKMES(99)
+					CFLAG:YOUSO = 99
+					LOCAL:1 += 1
+				ENDIF
+			ENDIF
+		NEXT
+		IF LOCAL:1 != 1
+			CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+		ELSE
+			CFLAG:決定要素 = CFLAG:190
+		ENDIF
+	ENDIF
+;豊姫
+ELSEIF TALENT:豊姫
+	IF !ARG
+		FOR COUNT, 0, 5
+			LOCAL = MINARRAY(CFLAG, 190, 195)
+			FINDELEMENT CFLAG, LOCAL, 190, 195
+			YOUSO = RESULT
+			IF LOCAL == 0
+				;普段着を売り、今の服が布切れ
+			;	IF !ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)
+			;		CFLAG:YOUSO = 1
+			;		LOCAL:1 += 1
+				;性格が淫乱
+				IF CFLAG:性格 == -1 && !CHECKMES(3)
+					CFLAG:YOUSO = 3
+					LOCAL:1 += 1
+				;メイド属性の服を着ている(その1)
+			;	ELSEIF GETBIT(CLO_ELE,2) && !TALENT:娼婦 && !CHECKMES(4)
+			;		CFLAG:YOUSO = 4
+			;		LOCAL:1 += 1
+			;	;シスター属性の服を着ている(その1)
+			;	ELSEIF GETBIT(CLO_ELE,3) && !TALENT:娼婦 && !CHECKMES(5)
+			;		CFLAG:YOUSO = 5
+			;		LOCAL:1 += 1
+				;性格が淫乱(その2)
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(6)
+					CFLAG:YOUSO = 6
+					LOCAL:1 += 1
+				;思考力が200未満
+				ELSEIF BASE:思考力 < 200 && !CHECKMES(7)
+					CFLAG:YOUSO = 7
+					LOCAL:1 += 1
+				;常識が200未満
+				ELSEIF BASE:常識 < 200 && !CHECKMES(8)
+					CFLAG:YOUSO = 8
+					LOCAL:1 += 1
+				;思考力が100未満で躾方針が快楽を与える
+				ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100
+					CFLAG:YOUSO = 10
+					LOCAL:1 += 1
+				ELSEIF !LOCAL:1 && !CHECKMES(99)
+					CFLAG:YOUSO = 99
+					LOCAL:1 += 1
+				ENDIF
+			ENDIF
+		NEXT
+		IF LOCAL:1 != 1
+			CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+		ELSE
+			CFLAG:決定要素 = CFLAG:190
+		ENDIF
+	ENDIF
+;その他
+ELSE
+	ARG:1 = 999
+	IF !ARG
+		FOR COUNT, 0, 5
+			LOCAL = MINARRAY(CFLAG, 190, 195)
+			FINDELEMENT CFLAG, LOCAL, 190, 195
+			YOUSO = RESULT
+			IF LOCAL == 0
+				;普段着を売り、今の服が布切れ
+				IF !ITEM:0 && CFLAG:服装 < 0 && !CHECKMES(1)
+					CFLAG:YOUSO = 1
+					LOCAL:1 += 1
+				;性格が淫乱
+				ELSEIF CFLAG:性格 == -1 && !CHECKMES(3)
+					CFLAG:YOUSO = 3
+					LOCAL:1 += 1
+				;メイド属性の服を着ている(その1)
+				ELSEIF GETBIT(CLO_ELE,2) && !TALENT:娼婦 && !CHECKMES(4)
+					CFLAG:YOUSO = 4
+					LOCAL:1 += 1
+				;シスター属性の服を着ている(その1)
+				ELSEIF GETBIT(CLO_ELE,3) && !TALENT:娼婦 && !CHECKMES(5)
+					CFLAG:YOUSO = 5
+					LOCAL:1 += 1
+			;	;思考力が200未満
+			;	ELSEIF BASE:思考力 < 200 && !CHECKMES(7)
+			;		CFLAG:YOUSO = 7
+			;		LOCAL:1 += 1
+			;	;常識が200未満
+			;	ELSEIF BASE:常識 < 200 && !CHECKMES(8)
+			;		CFLAG:YOUSO = 8
+			;		LOCAL:1 += 1
+				;思考力が100未満で躾方針が快楽を与える
+				ELSEIF BASE:思考力 < 100 && CFLAG:躾方針 == 2 && BASE:感度 >= 100
+					CFLAG:YOUSO = 10
+					LOCAL:1 += 1
+				ELSEIF !LOCAL:1 && !CHECKMES(99)
+					CFLAG:YOUSO = 99
+					LOCAL:1 += 1
+				ENDIF
+			ENDIF
+		NEXT
+		IF LOCAL:1 != 1
+			CFLAG:決定要素 = CFLAG:(190 + RAND:(LOCAL:1))
+		ELSE
+			CFLAG:決定要素 = CFLAG:190
+		ENDIF
+	ENDIF
+ENDIF
+
+;PRINTFORML 個数 :{LOCAL:1}
+;PRINTFORML その1:{CFLAG:190}
+;PRINTFORML その1:{CFLAG:191}
+;PRINTFORML その1:{CFLAG:192}
+;PRINTFORML その1:{CFLAG:193}
+;PRINTFORMW その1:{CFLAG:194}
+
+;魂が入っている場合や純化されている場合は呼び出さない
+IF !CFLAG:魂の状態 && !TALENT:純化
+	TRYCALLFORM HIMESSAGE_{ARG:1}_{CFLAG:決定要素}
+ENDIF
+
+;=============================================================
+;輝夜
+;=============================================================
+
+;-----------------------------------------------------
+;服装が布切れor半裸
+;-----------------------------------------------------
+@HIMESSAGE_1_1
+;服装が布きれ
+IF CFLAG:服装 < 0
+	;娼婦
+	IF TALENT:娼婦
+		PRINTFORML 「んっ……ふ……」
+		PRINTFORML 「早く私を犯して……気持ちいいことがしたいの……」
+	;乞食25％以上
+	ELSEIF CFLAG:属性／乞食 >= 25
+		PRINTFORML 「あ……んん……はぁっ……」
+		PRINTFORML 「気持ちよくなれる上に金まで稼げるなんて、なんて素敵なの……」
+	;乞食10％以上
+	ELSEIF CFLAG:属性／乞食 >= 10
+		PRINTFORML 「はぁ……っ……」
+		PRINTFORML 「こんな際どい布一枚で町通りに出るの恥ずかしいんだけど……」
+	ELSE
+		PRINTFORML 「くしゅんっ！　うう……肌寒いわ……」
+	ENDIF
+ELSE
+	;淫乱or貞操50以下で分岐
+	IF CFLAG:性格 == -1
+		;全壊時
+		IF DITEMTYPE:(CFLAG:服装):14 == 2
+			PRINTFORML 「これぇ……裸で出歩くより気持ちが昂ぶるの……っ」
+			PRINTFORML 「まるで襲われた後のように見えて……」
+		;半壊時
+		ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+			PRINTFORML 「こんな破けた服着て出歩くなんて……」
+			PRINTFORML 「だめ……！　想像しただけで……んんぅっ……」
+		;全裸
+		ELSEIF DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORML 「こんなあられもない格好で出歩くなんて、わたしとてもいけないことしてるの……」
+			PRINTFORML 「襲われても文句言えないよね……？」
+		;半裸
+		ELSE
+			PRINTFORML 「えへへ……わたしぃ……こんなにろしゅつしちゃってるのっ……」
+			PRINTFORML 「だれか、おそってよぉ……」
+		ENDIF
+	ELSEIF BASE:貞操 <= 50
+		;全壊時
+		IF DITEMTYPE:(CFLAG:服装):14 == 2
+			PRINTFORML 「みんな、私の事注目してる……」
+			PRINTFORML 「えへへ……私、こんな恰好で外出してるの……」
+		;半壊時
+		ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+			PRINTFORML 「みんな、私の事注目してる……」
+			PRINTFORML 「被虐心をそそる格好だし、誰か襲ってくれるのかな？」
+		;全裸
+		ELSEIF DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORML 「どうしてみんな裸にならないのかしら」
+			PRINTFORML 「そうすれば、事をする時に服を脱ぐ必要が無くなるのに……」
+		;半裸
+		ELSE
+			PRINTFORML 「こうして身体を露出した方が、惹かれる人が多くて楽しいよね」
+		ENDIF
+	;今の服装が[半裸]以上
+	ELSEIF DITEMTYPE:(CFLAG:服装):11
+		;全壊時
+		IF DITEMTYPE:(CFLAG:服装):14 == 2
+			PRINTFORML 「うう……みんなが好奇の目を寄せてくる……」
+			PRINTFORML 「お願いだから、新しい服用意して……」
+		;半壊時
+		ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+			PRINTFORML 「破れた所が大きすぎて、恥ずかしいんだけど……」
+			PRINTFORML 「新しい服用意するなり、修理するなりできないものなの？」
+		;全裸
+		ELSEIF DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORML 「こんな姿で街なんて歩けないの……」
+			PRINTFORML 「いや……王宮内ですら恥ずかしいのに……」
+		;半裸
+		ELSE
+			PRINTFORML 「……ねえ、少し露出が多すぎない？」
+			PRINTFORML 「こんな恰好だと風邪引くと思うんだけどね」
+		ENDIF
+	;半裸や全裸の衣服ではない時
+	;着替えたり修復したりした時になる
+	ELSE
+		;淫乱
+		IF CFLAG:性格 == -1
+			PRINTFORML 「えっ……どうして露出が少ない服にするの？」
+			PRINTFORML 「さっきの状態の方が身体が熱くなってよかったのにぃ……」
+		;貞操50以下
+		ELSEIF BASE:貞操 <= 50
+			PRINTFORML 「へぇ……ま、まあ、こちらの方が襲われなくていいのでしょうね」
+			PRINTFORML 「……別に襲われてもよかったのに」
+		;それ以外
+		ELSE
+			PRINTFORML 「そうそう、これぐらいの露出じゃないとね。王宮でも夜はすごく冷えるのよ」
+			PRINTFORML 「……どれぐらい冷えるかと言うと……豆腐で釘が打てるぐらい？」
+		ENDIF
+	ENDIF
+ENDIF
+
+;-----------------------------------------------------
+;1年目1月の頭
+;-----------------------------------------------------
+@HIMESSAGE_1_2
+PRINTFORML 「さあ！　ここから私と%CALLNAME:MASTER%の壮大な物語が幕を開けるのよ！」
+PRINTFORML 「……カッコつけすぎた？」
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_1_3
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「きもちいいのだーいすきっ」
+	PRINTFORML 「もっとからだいじってぇぇっ……」
+ELSE
+	PRINTFORML 「ねぇ……ん……」
+	PRINTFORML 「今日も気持ちいいことしましょう……」
+ENDIF
+
+;-----------------------------------------------------
+;メイド属性の服を着ている（その1）
+;-----------------------------------------------------
+@HIMESSAGE_1_4
+;メイド属性が50以上
+IF CFLAG:属性／メイド >= 50
+	PRINTFORM 「お帰りなさいませ、
+	IF CALLNAME:MASTER == "あなた"
+		PRINTFORML 貴方様」
+	ELSE
+		PRINTFORML %CALLNAME:MASTER%様」
+	ENDIF
+	PRINTFORML 「今日はどのような御用でしょうか？」
+;メイド属性が25以上
+ELSEIF CFLAG:属性／メイド >= 25
+	PRINTFORML 「お帰りなさい、ご主人様♪」
+	PRINTFORML 「……やっぱり照れ臭いわね」
+;メイド属性が10以上
+ELSEIF CFLAG:属性／メイド >= 10
+	PRINTFORML 「この服使用人が着る物にしてはやけに派手よね……」
+	PRINTFORML 「女中の服を見習いなさいよね」
+;それ以外
+ELSE
+	PRINTFORML 「この服、私の普段着より動きづらいんだけど……」
+	PRINTFORML 「慣れるものなの？」
+ENDIF
+
+;-----------------------------------------------------
+;シスター属性の服を着ている（その1）
+;-----------------------------------------------------
+@HIMESSAGE_1_5
+;シスター属性が50以上
+IF CFLAG:属性／シスター >= 50
+	PRINTFORML 「貴方に神の御加護がありますように……」
+	PRINTFORML 「……ね？　私も大分様になるようになったでしょう？」
+;シスター属性が25以上
+ELSEIF CFLAG:属性／シスター >= 25
+	PRINTFORML 「信仰が大事なのは分かるんだけど」
+	PRINTFORML 「まずは身近に居る%CALLNAME:MASTER%を大事にしないとね」
+;メイド属性が10以上
+ELSEIF CFLAG:属性／シスター >= 10
+	PRINTFORML 「この服を着てると悪いことできないわよね……」
+	PRINTFORML 「拾い食いしないように気を付けるわ」
+;それ以外
+ELSE
+	PRINTFORML 「どう見ても和風な私に洋風の服……これが本当の和洋折衷ってね」
+	PRINTFORML 「……和風？」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_1_6
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「ひゃめぇっ……からだ、うずくのぉっ……」
+	PRINTFORML 「くすりぃっ……くすりっ……ちょうだぁぃっ……」
+ELSE
+	PRINTFORML 「はぁっ……ぁっ……」
+	PRINTFORML 「そこっ……んっぁ……きもちいいのぉっ……」
+ENDIF
+
+;-----------------------------------------------------
+;やる気が2以下の場合
+;-----------------------------------------------------
+@HIMESSAGE_1_9
+PRINTFORML 「はぁー……どうして自分を磨かないといけないのかしら……」
+;怠惰寸前になるとメッセージが変わる
+IF CFLAG:やる気 <= 1
+	PRINTFORML 「……私の言いたい事、分かってくれるよね？」
+ELSE
+	PRINTFORML 「たまには休みたいわ……もっとゆとりを持てたら楽しくなると思うのだけど」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_1_10
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;服の属性がメイドor職業がメイド
+IF GETBIT(RESULT, 2) || TALENT:メイド
+	IF BASE:思考力 == 0
+		PRINTFORML 「はぁ……ん……きもちいいれすぅっ……」
+		PRINTFORML 「もっとぉ……しっぱいするのでぇっ……だめなメイドをしかってくださ……ぁぁんっ……」
+	ELSEIF BASE:思考力 <= 50
+		PRINTFORML 「ん……はぁ……ぁ……」
+		PRINTFORML 「ま、またぁ……ん……！　やってしまい、んっ、ましたぁ……ぁぁんっ……」
+	ELSE
+		PRINTFORML 「はぁ……頭がぼーっとする……」
+		PRINTFORML 「……きゃっ！　ご、ごめんなさいっ……今すぐ片づけ……んっ……！」
+	ENDIF
+;シスターの場合
+ELSEIF GETBIT(RESULT, 3) || TALENT:シスター
+	IF BASE:思考力 == 0
+		PRINTFORML 「ぁ……はぁ……いいのぉっ……」
+		PRINTFORML 「もっと……わらひにっ……ばつをぉっ……んんぅっ……」
+	ELSEIF BASE:思考力 <= 50
+		PRINTFORML 「ん……はぁ……ぁあんっ……」
+		PRINTFORML 「かみ……んぅっ……さまぁ……っ！　わたしを……んぁ……！　ゆるしてくださぃっ……」
+	ELSE
+		PRINTFORML 「……少し考え事が纏まらないの」
+		PRINTFORML 「悪いけど、今は余所へ……んんっ……そんな……っ」
+	ENDIF
+;ゴスロリの場合
+ELSEIF GETBIT(RESULT, 4) || TALENT:ゴスロリ
+	IF BASE:思考力 == 0
+		PRINTFORML 「はぁ……いいよぉっ……」
+		PRINTFORML 「からださわられるだけぇっ、ああんっ……きもひがおかひくなっひゃうのぉっ……」
+		PRINTFORML 「もっとぉ、じゅもんよみまちがえるぁらぁっ、いじってぇっ……」
+	ELSEIF BASE:思考力 <= 50
+		PRINTFORML 「あ……はぁ……んんっ……！」
+		PRINTFORML 「じゅ、じゅもんを……ぁ……！　よめないからっ……んぁ……ん……」
+	ELSE
+		PRINTFORML 「ご、ごめんなさいっ！」
+		PRINTFORML 「まさかこんな惨事になるとは思わなくて……んっ……！　な、なにを……っあ……！」
+	ENDIF
+;花嫁の場合
+ELSEIF GETBIT(RESULT, 5) || TALENT:花嫁
+	IF BASE:思考力 == 0
+		PRINTFORML 「はぁ……ああぁんっ……」
+		PRINTFORML 「しかってぇっ……もらえてぇ、うれしいのぉっ……んんっ……！」
+		PRINTFORML 「こんなきもひぃぃしかられかたかあったなんてぇ……んぁん……っ」
+	ELSEIF BASE:思考力 <= 50
+		PRINTFORML 「ん……ぁ……ぁんっ……！」
+		PRINTFORML 「はぁ……からだがあつくて、ぼーっとする……くらくらするのぉ……」
+	ELSE
+		PRINTFORML 「こんな事してしまうなんて……私は花嫁失格よね」
+		PRINTFORML 「もっと精進しないと……ん……！　へ、これが画期的な修行法なの？」
+		PRINTFORML 「なんか騙されてる気がするんだけど……っぁ……！」
+	ENDIF
+ELSE
+	IF BASE:思考力 == 0
+		PRINTFORML 「く……ひゃん……っ……きもひいいのぉっ……」
+		PRINTFORML 「あ……ふぅっ……こんなはんのうしちゃってるわたしをもっといじめてぇ……」
+	ELSEIF BASE:思考力 <= 50
+		PRINTFORML 「はぁ……あんっ……」
+		PRINTFORML 「だめ……こんな罰与えられたらぁ……くせになっちゃうぅ……」
+	ELSE
+		PRINTFORML 「はぁ……これは駄目だったの？」
+		PRINTFORML 「ごめんなさ……んっ……な、なによっ……こんな叱り方、許されるわけが……ぁっ！」
+	ENDIF
+ENDIF
+
+;-----------------------------------------------------
+;妊娠している場合
+;-----------------------------------------------------
+@HIMESSAGE_1_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「ふぅ……お腹が重くて動きづらい……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「まさか妊娠してしまうなんて……」
+	PRINTFORML 「太ったという事にして誤魔化そうかしら……？」
+ENDIF
+
+;-----------------------------------------------------
+;淫魔
+;-----------------------------------------------------
+@HIMESSAGE_1_12
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「えへへ……毎日まじわりたいの……」
+	PRINTFORML 「まいにちだれかつれてきてよぉ……」
+ELSEIF FLAG:王宮追放
+	PRINTFORML 「ふふふ……今の私は自由よ……」
+ELSE
+	PRINTFORML 「ねえ、どこかに絞れ取れそうな人は居ないのかしら？」
+ENDIF
+
+;-----------------------------------------------------
+;不良
+;-----------------------------------------------------
+@HIMESSAGE_1_13
+;怠惰
+IF CFLAG:怠惰
+	PRINTFORML 「はー……めんどくせー」
+	PRINTFORML 「どうしてアタシがそんなことしなきゃならないのさ」
+;平常時
+ELSE
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORML 「夜に都を出歩くな、って？」
+			PRINTFORML 「いいじゃん、別にさ。楽しいんだし」
+		CASE 1
+			PRINTFORML 「あーもうッ！　都の奴らは何も分かってない」
+			PRINTFORML 「アタシから見ればみんな馬鹿ばっかだよ」
+		CASE 2
+			PRINTFORML 「人間なんて、楽しいことして子供産めばいいじゃん」
+			PRINTFORML 「なんで誰もそうしないのさ？　みんな真面目すぎじゃね？」
+	ENDSELECT
+ENDIF
+
+;-----------------------------------------------------
+;姉妹
+;-----------------------------------------------------
+@HIMESSAGE_1_14
+IF CFLAG:姉妹への友好度 >= 100
+	PRINTFORML 「どうして上機嫌なのか、って？」
+	PRINTFORML 「そりゃもちろん、とよちゃんに「あまり長く寝ないで」と言ってきたからよ」
+ELSEIF CFLAG:姉妹への友好度 >= 30
+	PRINTFORML 「私、やっぱりとよちゃんより長く寝るのやめるわ……」
+	PRINTFORML 「だって、とよちゃんったら、かなり長く寝ていて、私がそれより長く寝ようとすると何もできないもの」
+ELSE
+	PRINTFORML 「ねえねえ、私、今よりもっと長く寝たいのだけど、寝てもいい？」
+	PRINTFORML 「なぜって……、そりゃもちろん、とよちゃんより早く大きくなるためよ」
+ENDIF
+
+
+;-----------------------------------------------------
+;年数依存イベント
+;-----------------------------------------------------
+@HIMESSAGE_YEAR
+;年数で分岐
+SELECTCASE FLAG:年数
+	;2年目
+	CASE 2
+		;性格によって分岐
+		SELECTCASE CFLAG:性格
+			;天真爛漫
+			CASE 0
+				PRINTFORML 「これ？　兎よ。庭から持ってきたの。ふわふわして柔らかいよ？」
+			;真面目
+			CASE 1
+				PRINTFORML 「おはようございます！　……え？　今は夜なの？」
+			;高飛車
+			CASE 2
+				PRINTFORML 「私の教育係にしては威厳がないと思ってたけど、少しは見直すことにするわ」
+			;社交的
+			CASE 3
+				PRINTFORML 「挨拶は貴族の嗜み、ですよね？」
+			;世話焼き
+			CASE 4
+				PRINTFORML 「お腹を空かした兎がいたから、傍にあった草を与えてあげたの。私のおかげで一匹助けられてよかったわ」
+			;夢見がち
+			CASE 5
+				PRINTFORML 「もしも%CALLNAME:MASTER%が星座になったら、私も星座になって追いかけるから……」
+			;男勝り
+			CASE 6
+				PRINTFORML 「ふふ、いつか貴方に力で勝ってやるんだから」
+		ENDSELECT
+	;3年目
+	CASE 3
+		;性格によって分岐
+		SELECTCASE CFLAG:性格
+			;天真爛漫
+			CASE 0
+				PRINTFORML 「これ？　毛布よ。兎と同じぐらいふわふわして暖かいの」
+			;真面目
+			CASE 1
+				PRINTFORML 「私、すごくまじめなんだから！　ほら、毎朝兎の頭を撫でるのよ？」
+			;高飛車
+			CASE 2
+				PRINTFORML 「結構やるじゃない。その調子でこれからもよろしくね」
+			;社交的
+			CASE 3
+				PRINTFORML 「色々な人とお話するのも、自分のためになっていいのですね」
+			;世話焼き
+			CASE 4
+				PRINTFORML 「脚を怪我した兎がいたから担いできちゃった。治して？」
+			;夢見がち
+			CASE 5
+				PRINTFORML 「もしも%CALLNAME:MASTER%が君主になったら、私は唯一のお姫様ね」
+			;男勝り
+			CASE 6
+				PRINTFORML 「大分力を付けたわ。さすがにそろそろ勝てるんじゃないかしら」
+		ENDSELECT
+	;4年目
+	CASE 4
+		;性格によって分岐
+		SELECTCASE CFLAG:性格
+			;天真爛漫
+			CASE 0
+				PRINTFORML 「助けて……兎が乗っていて起きられないの……」
+			;真面目
+			CASE 1
+				PRINTFORML 「ふう、私の役目は果たせたのかしら」
+			;高飛車
+			CASE 2
+				PRINTFORML 「貴方がとても優秀で助かっているわ。私ほどじゃないけど」
+			;社交的
+			CASE 3
+				PRINTFORML 「人との交流は私に任せてください。もう誰相手でも物怖じしません」
+			;世話焼き
+			CASE 4
+				PRINTFORML 「罠に捕らわれた兎がいたから担いできたわ。治して？」
+			;夢見がち
+			CASE 5
+				PRINTFORML 「ああ、私がもっといればいいのに……」
+			;男勝り
+			CASE 6
+				PRINTFORML 「ふふ、まだ余裕そうな表情をしてるのね。でもね、そろそろ私も力を付けてきちゃったのよ」
+		ENDSELECT
+	;5年目
+	CASE 5
+		;性格によって分岐
+		SELECTCASE CFLAG:性格
+			;天真爛漫
+			CASE 0
+				PRINTFORML 「くぅ……はっ！　いけない。兎の数を数えていたら寝てしまったわ」
+			;真面目
+			CASE 1
+				PRINTFORML 「5年間貴方に育ててもらったけど、結構成長できたのかしら」
+			;高飛車
+			CASE 2
+				PRINTFORML 「この5年間とても楽しかったわ。この調子でいけば数年後には頂点に立てるわね」
+			;社交的
+			CASE 3
+				PRINTFORML 「これからも、貴方と一緒に色々な人と会いたいです」
+			;世話焼き
+			CASE 4
+				PRINTFORML 「たまには、貴方に世話をしてもらおうかな」
+			;夢見がち
+			CASE 5
+				PRINTFORML 「5年目ね。6年目以降がないなら、私が作り出してあげる」
+			;男勝り
+			CASE 6
+				PRINTFORML 「さて、一太刀交えてくれない？　今の私なら絶対に貴方に負けないわ」
+		ENDSELECT
+ENDSELECT
+
+;-----------------------------------------------------
+;普段
+;-----------------------------------------------------
+@HIMESSAGE_1_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「んっ……ぁ……ねぇ……」
+	PRINTFORML 「わたしとからだ、かさねてよぉっ……」
+ELSE
+	SELECTCASE RAND:12
+		CASE 0
+			IF BASE:体力 >= 600
+				PRINTFORML 「体力があるおかげであまり疲労が貯まらないわ」
+				PRINTFORML 　あなたのおかげね」
+			ELSE
+				PRINTFORML 「体力がつくと毎月の教育も苦じゃないんだけどねー」
+			ENDIF
+		CASE 1
+			PRINTFORML 「物事に不慣れな内はかなり疲れやすいんだよね
+			PRINTFORML 　能力が伸びれば別に怖くもなくなるんだけど」
+		CASE 2
+			CALL HIMESSAGE_CONSTELLATIO
+		CASE 3
+			PRINTFORML 「疲労度が高い状態で無理矢理詰め込まれたらやる気無くすかも？」
+		CASE 4
+			PRINTFORML 「お金が足りない？　教育にはお金がかかるものなのよ」
+			PRINTFORML 「……どうしても足りないなら服をいくつか売ってもいいわ……」
+		CASE 5
+			PRINTFORML 「月人は穢れを吸う事によって身体が成長するのよ。
+			PRINTFORML 　生まれたての赤ちゃんが成長するのは、生まれた直後に発生した穢れを溜めこんでいるせいね」
+			PRINTFORML 「だから、その……穢れを溜めると身体つきがね……」
+		CASE 6
+			PRINTFORML 「兎のぬいぐるみー♪
+			PRINTFORML 　あんなにふわふわしてまん丸なぬいぐるみ抱いて癒されない人っているの？」
+		CASE 7
+			IF CFLAG:姉妹への友好度 >= 25
+				PRINTFORML 「うん、この調子でもっと仲良くなりたいわね」
+				PRINTFORML 「これからもよろしく頼むわ」
+			ELSE
+				PRINTFORML 「あの姉妹たちとは仲良くなりたいんだけど、あの子たち出来がいいから話に入るのが怖い……
+				PRINTFORML 　ねえ、私の手助けしてくれない？」
+			ENDIF
+		CASE 8
+			PRINTFORML 「衣服に影響されて普段の振舞いが変わるってこと、あるよね？
+			PRINTFORML 　ほら、メイド服を着たらその内本当のメイドになれたりしそうじゃない？」
+			
+			
+			;少し誤解を招く表現だったので、一旦廃止
+			;PRINTFORML 「衣服に影響されて普段の振舞いが変化されるなんてことあるから
+			;PRINTFORML 　私に普段着以外を着させるとその内お姫様じゃなくなっちゃうかも……」
+		CASE 9
+			PRINTFORML 「上達の道に近道は無し！　ただ鍛錬あるのみ！
+			PRINTFORML 　……とは聞くけど、能力が高くなるにつれて伸びが悪くなるのはつらいよね……」
+		CASE 10
+			;年数台詞は2年目以降のみ
+			IF FLAG:年数 >= 2
+				CALL HIMESSAGE_YEAR
+			ELSE
+				IF CFLAG:属性／メイド >= 50
+					PRINTFORML 「ご主人様、今日は如何なさいますか？」
+				ELSE
+					PRINTFORML 「なーに？」
+				ENDIF
+			ENDIF
+		CASE 11
+			;主人との友好度によって分岐
+			IF CFLAG:主人への友好度 >= 1000
+				PRINTFORML 「もし平和になって、ずっと平穏な日々が過ごせるようになったら……」
+				PRINTFORML 「色々な場所へ行きましょう。だって、この世には私が見ていないものがたくさんあるもの」
+			ELSEIF CFLAG:主人への友好度 >= 500
+				PRINTFORML 「こうしてお茶を飲んで饅頭を食べるのも、幸せよね」
+				PRINTFORML 「こんな日々が続くのもまたいいかなとは思うわ」
+			ELSEIF CFLAG:主人への友好度 >= 100
+				PRINTFORML 「ふーん……こうして貴方を見ていると、中々面白いわね」
+				PRINTFORML 「今度悪戯してみようかしら……」
+			ELSE
+				PRINTFORML 「……ちょっと、近くに座りすぎじゃない？」
+				PRINTFORML 「ほら、落ち着かないからね。ちょっとだけ空けてくれると落ち着くのだけど」
+			ENDIF
+		CASEELSE
+			IF CFLAG:属性／メイド >= 50
+				PRINTFORML 「ご主人様、今日は如何なさいますか？」
+			ELSE
+				PRINTFORML 「なーに？」
+			ENDIF
+	ENDSELECT
+ENDIF
+
+;=============================================================
+;依姫
+;=============================================================
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_2_3
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「はぁ……もっと、いじってぇっ……」
+	PRINTFORML 「もぅ……なにがおこってるのかわかぁんなぃのぉっ……」
+ELSE
+	PRINTFORML 「はぁ……王宮に戻りたくないです……」
+	PRINTFORML 「永遠に快楽を求めましょう……」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_2_6
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「んぅっ……はぁっ……」
+	PRINTFORML 「らめれすぅっ……なにも……かんがえられ……」
+ELSE
+	PRINTFORML 「ぁ……はぁ……」
+	PRINTFORML 「もうだめ……誰か疼きを止めて……」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が200未満の時
+;-----------------------------------------------------
+@HIMESSAGE_2_7
+;100未満、50未満、それ以外で作成
+IF BASE:思考力 < 50
+	PRINTFORML 「ふへっ……ここってどこでしたっけ……？」
+	PRINTFORML 「なにがなんだかよくわからないのぉ……」
+ELSEIF BASE:思考力 < 100
+	PRINTFORML 「はぁ……だめ……頭がぼーっとするの……」
+	PRINTFORML 「私としたことがぁ……」
+ELSE
+	PRINTFORML 「ん……頭がぼやけている……」
+	PRINTFORML 「少し疲れているのかもしれません……」
+ENDIF
+
+;-----------------------------------------------------
+;常識が200未満の時
+;-----------------------------------------------------
+@HIMESSAGE_2_8
+;100未満、50未満、それ以外で作成
+IF BASE:常識 < 50
+	PRINTFORML 「はぁっ……じょうしき？　なんですかぁそれぇ……」
+	PRINTFORML 「もっと気持ちいいことをしたいよぉ……」
+ELSEIF BASE:常識 < 100
+	PRINTFORML 「ふふ……毎日かいらくをおいもとめればいいのよね……？」
+	PRINTFORML 「やっぱり、生き物はせいしょくするのが当然なのよ。人前でもね？」
+ELSE
+	PRINTFORML 「何だか知らない世界を見ているようで……」
+	PRINTFORML 「私って一体……」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_2_10
+IF BASE:思考力 == 0
+	PRINTFORML 「はぁっ……ぁ……ぁああんっ……」
+	PRINTFORML 「も、もっと、まちがわせてくださ……ひゃぅんっ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「っは……はあっ……」
+	PRINTFORML 「や、やめてくださいっ……こんなことされて、っあ！　答えられるわけがっ……ひゃんっ……！」
+ELSE
+	PRINTFORML 「きゃっ！　ど、どうしてこのような間違いを……っん！」
+	PRINTFORML 「わ、私はこのような色事など……！　んぅっ……！」
+ENDIF
+
+;-----------------------------------------------------
+;普段
+;-----------------------------------------------------
+@HIMESSAGE_2_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「はぁ……ぁっ……」
+	PRINTFORML 「わ……私がこのような情事になど……！」
+ELSE
+	PRINTFORML 「何か用があるのですか？」
+ENDIF
+
+;=============================================================
+;豊姫
+;=============================================================
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_3_3
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「あひゃぁっ……らめっ……」
+	PRINTFORML 「なにがなんだが、よくわからないの……」
+ELSE
+	PRINTFORML 「えへへ、桃ってどこでも取れるのよ？」
+	PRINTFORML 「交わりながら一緒に食べません？」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱の時
+;-----------------------------------------------------
+@HIMESSAGE_3_6
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「もっと……もっとぉっ……」
+	PRINTFORML 「わらしをっ、めちゃくちゃにしてぇっ……」
+ELSE
+	PRINTFORML 「ああっ……はぁ……」
+	PRINTFORML 「な、なんでも……んっ……ない……」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が200未満の時
+;-----------------------------------------------------
+@HIMESSAGE_3_7
+;100未満、50未満、それ以外で作成
+IF BASE:思考力 < 50
+	PRINTFORML 「えへへ……ももとうさぎとせっくすだーいすきっ……」
+	PRINTFORML 「ごえいやくのうさぎさんたちにもおしえてあげたいわ……」
+ELSEIF BASE:思考力 < 100
+	PRINTFORML 「ねぇ？　なにが起こってるのかよく分からないんですけど」
+	PRINTFORML 「私は、気持ちいい事をしていれば身体は無事なのかしら？」
+ELSE
+	PRINTFORML 「はぁ……毎日桃食べられたらそれでいいわ」
+	PRINTFORML 「考えるの面倒ですもの」
+ENDIF
+
+;-----------------------------------------------------
+;常識が200未満の時
+;-----------------------------------------------------
+@HIMESSAGE_3_8
+;100未満、50未満、それ以外で作成
+IF BASE:常識 < 50
+	PRINTFORML 「あははぁっ……みんなそとでもきもちいいことすればいいのに……」
+	PRINTFORML 「そうすればはじなんてなくなるのよぉっ……」
+ELSEIF BASE:常識 < 100
+	PRINTFORML 「えへへ……私達って今までまちがった常識にとらわれていたのね……」
+	PRINTFORML 「もーっときもちいことしましょう？」
+ELSE
+	PRINTFORML 「はぁ……何が常識なのかよく分からなくなってきたわ」
+	PRINTFORML 「貴方の事を信じればいいの？」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_3_10
+IF BASE:思考力 == 0
+	PRINTFORML 「くひゃ……ぁんっ……」
+	PRINTFORML 「あらっ、んんぅっ、まひゃっ、まひかひゃったの……」
+	PRINTFORML 「もっと、せめへぇっ、んんぅっ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「ぁ……はぁ……ん……ねぇ……？」
+	PRINTFORML 「わたしぃっ、何やってるのか……分からないの……」
+ELSE
+	PRINTFORML 「っん……ぁ……なにか悪いことしたかしら？」
+	PRINTFORML 「ちょっと、聞いて……んんぅっ……ぁ……」
+ENDIF
+
+;-----------------------------------------------------
+;普段
+;-----------------------------------------------------
+@HIMESSAGE_3_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「ねえ……んっ……」
+	PRINTFORML 「わたしを、……っ、きもちちよく、して、くれない……？」
+ELSE
+	PRINTFORML 「今日も桃が美味しいわ～」
+ENDIF
+
+
+;=====================================================================
+;メッセージ確認
+;=====================================================================
+@CHECKMES, ARG
+#DIM FOR_COUNT, 1
+#FUNCTION
+LOCAL:1 = 0
+FOR FOR_COUNT, 0, 5
+	LOCAL = 190 + FOR_COUNT
+	IF CFLAG:LOCAL == ARG
+		LOCAL:1 = 1
+	ENDIF
+NEXT
+RETURNF LOCAL:1
+
+;=====================================================================
+;星座情報
+;=====================================================================
+@HIMESSAGE_CONSTELLATIO
+SELECTCASE CFLAG:星座
+	CASE 0
+		PRINTFORML 「牡羊座生まれは交友関係に強いけど身体を鍛えるのが苦手なんですって」
+	CASE 1
+		PRINTFORML 「牡牛座生まれは武術に長けてて弓の扱いが巧いんだけど、美しさに疎いんですって」
+	CASE 2
+		PRINTFORML 「双子座生まれは身近な友人とすぐに仲良くなるんだけど、善悪の定義が揺らぎやすいんですって」
+	CASE 3
+		PRINTFORML 「蟹座生まれは孤高の武芸者だという話があるわ。刀術に長けた人が多いみたいね」
+	CASE 4
+		PRINTFORML 「獅子座生まれは聖女になる素質があるらしいわ。貞操に硬いんですって」
+	CASE 5
+		PRINTFORML 「乙女座生まれは家事好きなんだけど身体が弱い傾向にあるらしいわ
+		PRINTFORML 　ちなみに魔法が得意なんだとか」
+	CASE 6
+		PRINTFORML 「天秤座生まれは他人との交流に強いんだけど、親元に依存しづらいらしいわ」
+	CASE 7
+		PRINTFORML 「蠍座生まれは傾国の美女としての素質があるらしいわね」
+	CASE 8
+		PRINTFORML 「射手座生まれは弓術使いの美男美女が多いんだとか」
+	CASE 9
+		PRINTFORML 「山羊座は魔術に長けたシスターに向いているんだけど、意思疎通が苦手らしいわ」
+	CASE 10
+		PRINTFORML 「水瓶座生まれは主人に依存しやすいんだけど融通が効かないらしいわね……」
+	CASE 11
+		PRINTFORML 「魚座は他人との交流に強いけど応用力が……うーん頑張りたいわ……
+		PRINTFORML 　ところでこの話さー……」
+ENDSELECT
+PRINTFORML 「知ってた？」
+
+;牡羊座　　　疎通が上がりやすいが体力が上がりづらい
+;おうし座　　武術の天才。特に弓術が得意。美麗が上がりづらい
+;双子座　　　姉妹との友好度が上がりやすいがアライメントがブレ易い
+;蟹座　　　　武術に秀でており、刀術が得意
+;しし座　　　貞操が硬く、アライメントが下降しづらい
+;乙女座　　　家事が上がりやすいが体力が上がりづらい。魔法を得意とする
+;てんびん座　疎通が上がりやすいが依存が上がりづらい
+;蠍座　　　　美麗・淫妖が上昇しやすいが貞操が下がりやすい
+;射手座　　　弓術が得意で美麗が上がりやすいが疎通が上がりづらい
+;やぎ座　　　魔術が得意で信仰が上がりやすいが疎通が上がりづらい
+;水瓶座　　　主人への友好度が上がりやすいが知力が上がりづらい(融通が効かないので)
+;うお座　　　疎通が上がりやすいが知力が上がりづらい
+
+
+;=======================================================================
+;魂抜き等を喰らっている場合
+;=======================================================================
+
+;------------------------------------------------------------------
+;武士娘
+;------------------------------------------------------------------
+
+;-----------------------------------------------------
+;普段着を売り、今の服が布切れ
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_0_1
+;娼婦
+IF TALENT:娼婦
+	PRINTFORML 「はぁ……ん……」
+	PRINTFORML 「剣の修業をほっぽり出して娼館へ出かけたい気分です……」
+;乞食25％以上
+ELSEIF CFLAG:属性／乞食 >= 25
+	PRINTFORML 「ん……はぁ……んんぅっ……」
+	PRINTFORML 「もう姫君ではなく、淫売として暮らしていった方が都合がよさそうです……」
+;乞食10％以上
+ELSEIF CFLAG:属性／乞食 >= 10
+	PRINTFORML 「それなりに慣れてきているようですね」
+	PRINTFORML 「元が美しいだけに布だけだと美しく思えます」
+ELSE
+	PRINTFORML 「……私は姫君の身体へ憑依させられると聞いたのですが」
+	PRINTFORML 「貴方はかなりの勇敢ですね。……無謀の間違いでしょうか」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_0_3
+
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「うっ……あたまのなかにもやがかかってる……」
+	PRINTFORML 「きもちよくしてくれ……うぅっ……」
+ELSE
+	PRINTFORML 「色事に堕ちた姫君というのも滾るものがあるな……」
+	PRINTFORML 「私はできる限り愉しむことにしよう」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_0_10
+IF BASE:思考力 == 0
+	PRINTFORML 「はぁ……ぁぁんっ……いいのっ……」
+	PRINTFORML 「しゅ、っ、ぎょうなんてぇっ、……ふぁ、どうでもよくなりましたぁ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「ぁぅ……やめてくれないかっ……んんぅっ……」
+	PRINTFORML 「これでは何の為に私がよばれたのか分からないではないかぁ……ぁぁんっ……」
+ELSE
+	PRINTFORML 「うぅ……考えがまとまらない……」
+	PRINTFORML 「悪いが少し別の場所に……ぁ……はぁぁんっ……」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_SOUL_0_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「うっ……これでは剣を振りづらいではないか……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「これが妊娠というものなのですか……」
+	PRINTFORML 「私が働いている所ではしっかり対策を取られているので……」
+ENDIF
+
+;---------------------------------------
+;淫魔
+;---------------------------------------
+@HIMESSAGE_SOUL_0_12
+PRINTFORML 「私自身、色事に関しては慣れている自身があったのですが……」
+PRINTFORML 「常に襲ってくるこの欲求は堪りません……」
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_SOUL_0_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「元が姫君の御身体だとしても、生活様式によってはこのように様代わりするのですね……」
+	PRINTFORML 「淫売に身を堕とされました事とこの美しい身体のギャップが癖になります」
+ELSE
+	PRINTFORML 「これが姫様の御身体なのですか」
+	PRINTFORML 「私の身体と違い、肌が美しくて羨ましい」
+ENDIF
+
+
+;------------------------------------------------------------------
+;弓引きの娘
+;武士の流用
+;------------------------------------------------------------------
+
+;-----------------------------------------------------
+;普段着を売り、今の服が布切れ
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_1_1
+;娼婦
+IF TALENT:娼婦
+	PRINTFORML 「はぁ……ん……」
+	PRINTFORML 「剣の修業をほっぽり出して娼館へ出かけたい気分です……」
+;乞食25％以上
+ELSEIF CFLAG:属性／乞食 >= 25
+	PRINTFORML 「ん……はぁ……んんぅっ……」
+	PRINTFORML 「もう姫君ではなく、淫売として暮らしていった方が都合がよさそうです……」
+;乞食10％以上
+ELSEIF CFLAG:属性／乞食 >= 10
+	PRINTFORML 「それなりに慣れてきているようですね」
+	PRINTFORML 「元が美しいだけに布だけだと美しく思えます」
+ELSE
+	PRINTFORML 「……私は姫君の身体へ憑依させられると聞いたのですが」
+	PRINTFORML 「貴方はかなりの勇敢ですね。……無謀の間違いでしょうか」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_1_3
+
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「うっ……あたまのなかにもやがかかってる……」
+	PRINTFORML 「きもちよくしてくれ……うぅっ……」
+ELSE
+	PRINTFORML 「色事に堕ちた姫君というのも滾るものがあるな……」
+	PRINTFORML 「私はできる限り愉しむことにしよう」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_1_10
+IF BASE:思考力 == 0
+	PRINTFORML 「はぁ……ぁぁんっ……いいのっ……」
+	PRINTFORML 「しゅ、っ、ぎょうなんてぇっ、……ふぁ、どうでもよくなりましたぁ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「ぁぅ……やめてくれないかっ……んんぅっ……」
+	PRINTFORML 「これでは何の為に私がよばれたのか分からないではないかぁ……ぁぁんっ……」
+ELSE
+	PRINTFORML 「うぅ……考えがまとまらない……」
+	PRINTFORML 「悪いが少し別の場所に……ぁ……はぁぁんっ……」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_SOUL_1_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「うっ……これでは弓を構えづらいではないか……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「これが妊娠というものなのですか……」
+	PRINTFORML 「私が働いている所ではしっかり対策を取られているので……」
+ENDIF
+
+;---------------------------------------
+;淫魔
+;---------------------------------------
+@HIMESSAGE_SOUL_1_12
+PRINTFORML 「私自身、色事に関しては慣れている自身があったのですが……」
+PRINTFORML 「常に襲ってくるこの欲求は堪りません……」
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_SOUL_1_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「元が姫君の御身体だとしても、生活様式によってはこのように様代わりするのですね……」
+	PRINTFORML 「淫売に身を堕とされました事とこの美しい身体のギャップが癖になります」
+ELSE
+	PRINTFORML 「これが姫様の御身体なのですか」
+	PRINTFORML 「私の身体と違い、肌が美しくて羨ましい」
+ENDIF
+
+;------------------------------------------------------------------
+;魔術師の娘
+;------------------------------------------------------------------
+
+;-----------------------------------------------------
+;普段着を売り、今の服が布切れ
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_2_1
+;娼婦
+IF TALENT:娼婦
+	PRINTFORML 「うふふ……姫君なのにすっかり色欲情な格好になったわね」
+	PRINTFORML 「目が虚ろになっているわ」
+;乞食25％以上
+ELSEIF CFLAG:属性／乞食 >= 25
+	PRINTFORML 「もう姫君やめられそうね……」
+	PRINTFORML 「身体が敏感になってきているのよ……」
+;乞食10％以上
+ELSEIF CFLAG:属性／乞食 >= 10
+	PRINTFORML 「それなりに慣れてるんじゃない？」
+	PRINTFORML 「私自身ここまではしたことないのだけれど」
+ELSE
+	PRINTFORML 「これが姫君の身体……」
+	PRINTFORML 「淫売にでも落としたいかの様な服装ね」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_2_3
+
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「なにこれぇ……しこうがまったくできない……」
+	PRINTFORML 「はやくおかしてぇっ……」
+ELSE
+	PRINTFORML 「なにこれ……匂いだけで蕩けそうになるわ」
+	PRINTFORML 「元の姫君はとんだ淫乱だったのかしら」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_2_10
+IF BASE:思考力 == 0
+	PRINTFORML 「あっ……ぁっ……あぁんっ……」
+	PRINTFORML 「きもちぃ……もっと、はぁぁんっ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「ぁっ……は……ぅんっ……」
+	PRINTFORML 「胸の先からとろけてきて、きもちぃぃ……」
+ELSE
+	PRINTFORML 「んぅっ……なぁに……？」
+	PRINTFORML 「魔力の源になるから嬉しいんだけど、もう少し節度を……ひゃんっ……」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_SOUL_2_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「このぐらい膨らむと魔術に集中できなくなるわ……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「赤子を抱いているとは……この年齢で……」
+ENDIF
+
+;---------------------------------------
+;淫魔
+;---------------------------------------
+@HIMESSAGE_SOUL_2_12
+PRINTFORML 「まさか姫君が淫魔になっているとはね」
+PRINTFORML 「まあ……がんばりなさい」
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_SOUL_2_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「……んっ、姫君にしてはやけに淫らな身体ね……」
+	PRINTFORML 「こんな美しい身体を持ってるのに、春を売らないと生きていけないだなんて……」
+ELSE
+	PRINTFORML 「これが姫君の身体なのね。大切に使わせてもらうわ」
+	PRINTFORML 「……私の事はあの爺さんから聞いてるよね？」
+ENDIF
+
+;------------------------------------------------------------------
+;娼婦の娘
+;------------------------------------------------------------------
+;-----------------------------------------------------
+;普段着を売り、今の服が布切れ
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_3_1
+;娼婦
+IF TALENT:娼婦
+	PRINTFORML 「っぁ……ん……いい身体ね……」
+	PRINTFORML 「これだけ上質な身体で淫売に堕としているだなんて、世の中は恐ろしいわ……」
+;乞食25％以上
+ELSEIF CFLAG:属性／乞食 >= 25
+	PRINTFORML 「ふぁ……ぁ……ぁんんっ……」
+	PRINTFORML 「いいわぁ……もっとこの身体を敏感にしましょう……」
+;乞食10％以上
+ELSEIF CFLAG:属性／乞食 >= 10
+	PRINTFORML 「ぅんっ……純粋な少女が色事に染められ初めているのはそそるわね」
+	PRINTFORML 「この初々しい感触が忘れられないのよ」
+ELSE
+	PRINTFORML 「へえ……姫様があられも無い姿をしているだなんて……」
+	PRINTFORML 「個人的な意見として、商売敵になってしまうのは嫌なんだけど」
+ENDIF
+
+;-----------------------------------------------------
+;性格が淫乱
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_3_3
+
+;媚薬漬け状態
+IF CFLAG:媚薬状態 == 2
+	PRINTFORML 「あふぅっ……なによこれぇ……」
+	PRINTFORML 「これぇ、ひめぎみのからだでしょぉ……んぁぁっ……」
+ELSE
+	PRINTFORML 「あぁ……常に視界がぼやける……」
+	PRINTFORML 「姫君自身が既に色に浸ってたことが分かるわ」
+ENDIF
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_SOUL_3_10
+IF BASE:思考力 == 0
+	PRINTFORML 「あっ……ぁ……はぁぁんっ……」
+	PRINTFORML 「もっろぉっ……いひってくらひゃいぃっ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「んふっ……ぁ……ぁあんっ……」
+	PRINTFORML 「胸の先がぁ、熱くって……んんぅっ……」
+ELSE
+	PRINTFORML 「ぁ……ぁんっ……」
+	PRINTFORML 「いくら罰とはいえ、こうして姫君の身体に触るなんて……んぁ……」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_SOUL_3_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「はぁ……お腹が重い……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「どうして赤子なんて孕んでいるのかしらねえ……？」
+ENDIF
+
+;---------------------------------------
+;淫魔
+;---------------------------------------
+@HIMESSAGE_SOUL_3_12
+PRINTFORML 「これが淫魔の身体なのね……」
+PRINTFORML 「んっ……気持ちいいわ……」
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_SOUL_3_99
+IF CFLAG:属性／乞食 >= 50
+	PRINTFORML 「へぇ……やけに……ん……敏感な身体ね……」
+	PRINTFORML 「普段から色事を愉しんでいそうな身体付きだわ……」
+ELSE
+	PRINTFORML 「姫君も、こんな娼婦に身体を乗っ取られて不憫ね」
+	PRINTFORML 「教育係がまともだったらよかったのにねー」
+ENDIF
+
+
+
+;-------------------------------------------------
+;領主娘
+;ARG　淫妖レベル(10刻みで変化)
+;-------------------------------------------------
+@HIMESSAGE_SOUL_4, ARG
+
+IF ARG == 4
+	SELECTCASE CFLAG:魂の性格 == 0
+		;強気
+		CASE 0
+			PRINTFORML 「ひゃんっ……あっ、はあっ、はぁ……
+			PRINTFORML 　で、出会い頭に頭撫でないでっ……ぁぁんっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「はぁ……はぁっ……ん……っ……
+			PRINTFORML 　えへへ、もっと弄ってくださいっ……股ならいくらでも開くのっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「あはぁっ……もっと気持ちよくしてください……
+			PRINTFORML 　気持ちが昂れるからいいんですぅっ……」
+	ENDSELECT
+ELSEIF ARG == 3
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ぁ……ん……な、なに……
+			PRINTFORML 　あなたに、んんぅっ……かまって……ひま……んっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「はぁ……ん……もっと、気持ちよくしてくださいっ……
+			PRINTFORML 　頭の中ぼーっとして、何も考えられませんっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「ん……あぁ……気持ちいい……
+			PRINTFORML 　もっと激しくして、頭飛ばして……」
+	ENDSELECT
+ELSEIF ARG == 2
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ひゃっ、や、やめてよっ……
+			PRINTFORML 　私の身体、変になっちゃうじゃない……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「やめてくださいっ、水音を聞くだけで、ん、その、……ぁ
+			PRINTFORML 　む、胸が高まるんですっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「はぁ……だめ、息が苦しくなる……
+			PRINTFORML 　せめて、私を楽にしてほしい……」
+	ENDSELECT
+ELSEIF ARG == 1
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「んん……あまりにも下劣すぎるわ……
+			PRINTFORML 　こんなの、経験したことが……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「わ……私はこのような色事で屈したりなんかしませんっ！
+			PRINTFORML 　早く元の身体に戻してください！」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……やはり、そうした色事は避けられないのね
+			PRINTFORML 　何もしないので解放してもらえませんか、無理ですか……」
+	ENDSELECT
+ELSE
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「へえ……こんな事するなんて、やってくれるじゃない
+			PRINTFORML 　いい度胸ね？　私を殺せるなら殺してみなさいよ、この卑怯者！」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「え？　これはどういうことなのでしょうか？
+			PRINTFORML 　これは私を嵌めようとする罠ですね？」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……どうして私はここに居るのでしょう
+			PRINTFORML 　何か悪い事でもしてしまいましたか、はぁ……」
+	ENDSELECT
+ENDIF
+
+;-------------------------------------------------
+;身売りされた娘
+;ARG　淫妖レベル(10刻みで変化)
+;-------------------------------------------------
+@HIMESSAGE_SOUL_5, ARG
+
+IF ARG == 4
+	SELECTCASE CFLAG:魂の性格 == 0
+		;強気
+		CASE 0
+			PRINTFORML 「ん……ぁ……はぁんっ……
+			PRINTFORML 　両親に会わせてほしいの……頭蕩けさせて、何も考えられなくしてあげる……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「わたし、毎日男の方と身体を合わせたいの……
+			PRINTFORML 　股から響く水音が、んっ、頭から離れなくて……犯してくださいっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……何でしょうか……
+			PRINTFORML 　私には、こんな姿が、お似合い、なの、です……早く、私、を、商人、の、元……んっ……」
+	ENDSELECT
+ELSEIF ARG == 3
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ぁっ……はぁ……ぁぁあんっ……
+			PRINTFORML 　股開くだけで、生活できるなんて……っ、男ってちょろいのねっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「んっ……ん……はぁ……んんっ……
+			PRINTFORML 　こうしていないと、心が収まらないんです……っ」
+		;鬱気
+		CASE 2
+			PRINTFORML 「はぁ……はぁっ……もっと、弄ってください……
+			PRINTFORML 　股を擦られ、身体が痙攣する感覚を忘れられません……」
+	ENDSELECT
+ELSEIF ARG == 2
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「りょ、両親に、ふ、くしゅう、……ぁ、するのっ……
+			PRINTFORML 　それまでは耐えて……耐え……んぅっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「ち、近づかないで……
+			PRINTFORML 　貴方が近づいただけで、私の、身体は、昂ぶりを感じ……んんっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「ん……っ……何、ですか……
+			PRINTFORML 　私に用は、ないはずです……去って、ください……」
+	ENDSELECT
+ELSEIF ARG == 1
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ふん……私はこれに耐えて両親に復讐してやるんだから……
+			PRINTFORML 　これぐらいどうってことないわ」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「はぁ……結局はそれが目当てだったのですね
+			PRINTFORML 　私を商品として仕立て上げるための行為……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……貴方と、あの者達の思惑は分かってた……
+			PRINTFORML 　でも、私は抗い続けるから……」
+	ENDSELECT
+ELSE
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「私を身売りしやがった両親を許せない……
+			PRINTFORML 　人間の身を売り渡す事の非道さを思い知らせてやりたいわ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「これは一体……？　あの人達は手段を問わないのですね……
+			PRINTFORML 　運命に抗う事はできないのでしょうか……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……はぁ、抵抗しすぎましたか
+			PRINTFORML 　身分の次は身体まで売られるとは思いませんでした……」
+	ENDSELECT
+ENDIF
+
+;-------------------------------------------------
+;家出遊女
+;ARG　淫妖レベル(10刻みで変化)
+;-------------------------------------------------
+@HIMESSAGE_SOUL_6, ARG
+
+IF ARG == 4
+	SELECTCASE CFLAG:魂の性格 == 0
+		;強気
+		CASE 0
+			PRINTFORML 「家出してよかったの……
+			PRINTFORML 　こうして、いつまでも身体を悦ばせてもらえる人生を味わえるのだから……
+			PRINTFORML 　おねがいっ、魂元に戻さないでぇ……んんっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「えへへ、もうわけがわからないの
+			PRINTFORML 　わらしをもっとえっちにして、いっしょうきもちよくひてほひいのぉっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「く……はぁ……ん……
+			PRINTFORML 　あたまがかいほうされて、いい気ぶんになれますぅっ……」
+	ENDSELECT
+ELSEIF ARG == 3
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ぁ……ひ……んんぅっ……
+			PRINTFORML 　らめ、なにもいえない……あたまがしろ……ひゃうぅっ……」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「くひゃぁ……んっ……ん……きもちいいですぅ
+			PRINTFORML 　もっとわらしをおかしくしてくださいっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「はぁ……はぁ……身体が熱い……
+			PRINTFORML 　悦び、股が濡れるこの感覚が愉しいの……私で弄んで……」
+	ENDSELECT
+ELSEIF ARG == 2
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「ん……私を見ないでよ。変態
+			PRINTFORML 　こんなことして何になるというの？　……金か」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「やめてください……このままでは私、表世界に戻れなくなります……
+			PRINTFORML 　やっ……ん……身体を触らないでくださいっ……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「はぁ……やめて、私が闇に紛れてしまう……
+			PRINTFORML 　自由を求めたつもりが身体を悦楽に捕われてしまう……」
+	ENDSELECT
+ELSEIF ARG == 1
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「何するのよ……私の身体……じゃないけど、こんな事させる奴馬鹿じゃないの？
+			PRINTFORML 　早く元に戻してくれない？　何の為に家を出たのか分からなくなるわ
+		;おとしやか
+		CASE 1
+			PRINTFORML 「嫌な予感がするのですが、私はこのまま売られるのでしょうか？
+			PRINTFORML 　え？　元の身体には戻れる？　それなら耐えるまで、ですね」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……世の中とは実に理解しがたい深みがある
+			PRINTFORML 　私はその深みに嵌らないようにしたい、闇の一部となるは私の死そのものを指すから……」
+	ENDSELECT
+ELSE
+	SELECTCASE CFLAG:魂の性格
+		;強気
+		CASE 0
+			PRINTFORML 「こんな事しやがって……家出したばかりの私をこんな目に遭わすなんていい度胸ね？
+			PRINTFORML 　ここから解放された暁には首絞めてやるからね」
+		;おとしやか
+		CASE 1
+			PRINTFORML 「どうして私が……思い出しました
+			PRINTFORML 　突然後ろから抑えられたのでしたね……誰がそんな事を……」
+		;鬱気
+		CASE 2
+			PRINTFORML 「……何でしょうか
+			PRINTFORML 　私は自由を求め家を出たの。誰も私を縛らないで……」
+	ENDSELECT
+ENDIF
+
+;-------------------------------------------------
+;純化された姫様
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNKA_0_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「ふふ……わたくし、このような姿ですのになぜか寒くありませんの」
+	PRINTFORML 「周囲の視線で勝手に身体が火照ってしまうのですわ」
+;それ以外
+ELSE
+	PRINTFORML 「くしゅんっ……！」
+	PRINTFORML 「うう……寒いですわ。どなたか毛布を頂戴」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_0_3
+PRINTFORML 「わたくし……殿方とお話をしているだけで色々と想像してしまうのです……」
+PRINTFORML 「はああ……もっと身体を触ってくださいまし……」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_0_9
+PRINTFORML 「はぁ、日々のお稽古が面倒ですわ……」
+PRINTFORML 「召使いが代わりに受けてくれないかしら……」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_0_10
+IF BASE:思考力 == 0
+	PRINTFORML 「あぁ……っんんん……」
+	PRINTFORML 「わらしっ……ばかになってしまいますぅ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「きゃふ……ぁはぁ……」
+	PRINTFORML 「んん……もっと……いじってくださいまし……」
+ELSE
+	PRINTFORML 「んぁ……っんん……」
+	PRINTFORML 「はぁ……い、いきなりはやめてくださいましっ……」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_0_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「これでは外出できませんの……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「わたくし、赤子を身篭ってしまったようです……」
+	;身篭るは妊娠した本人が使う言葉か？
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_0_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「私に何か御用がお有りですか？」
+	CASE 1
+		PRINTFORML 「あら、お顔に何かついていますよ。顔近づけてください」
+	CASE 2
+		PRINTFORML 「たまには外に出て散歩したいですね」
+ENDSELECT
+
+
+;-------------------------------------------------
+;屋敷のメイド(純化されたメイド)
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNKA_1_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「えへへ、今日もたくさんの人に私の姿を見てもらえたんです」
+	PRINTFORML 「その内、掃除しながら襲われる日も来るのでしょうか」
+;それ以外
+ELSE
+	PRINTFORML 「すみません。もう少し暖かい衣服をいただけませんか……？」
+	PRINTFORML 「これでは寒くて外の掃除が……」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_1_3
+PRINTFORML 「ご、御主人様、何か用事がおありですか？」
+PRINTFORML 「えっ……？　ろ、廊下で自慰に耽ってなどしていません……！」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_1_9
+PRINTFORML 「すみません。身体が怠くてやる気が出ないのです……」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_1_10
+IF BASE:思考力 == 0
+	PRINTFORML 「んん……っはぁ……はふぅ……また、掃除に使う道具を間違えてしまいましたぁ……」
+	PRINTFORML 「からだぁ、いじってくだひゃぃ……きゃふ……あぁ……イきそうですぅ……」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「はぁ……んん……うっ、花瓶を割ってしまいました……」
+	PRINTFORML 「んん……！　やめて、くださいっ……まだ、身体が敏感なのでっ……！」
+ELSE
+	PRINTFORML 「あっ、お皿が……すぐに掃除しますので、少しお待ちを……きゃあっ……！」
+	PRINTFORML 「んっ……く……や、やめてくださいっ……！」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_1_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「お腹が大きくなってまいりました」
+	PRINTFORML 「出産したらまた働きますので、もうしばらく御辛抱を」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「まさか、赤子を孕んでしまうとは……」
+	PRINTFORML 「これで仕事に差し支えが出たら、なんと言い訳をすればいいのやら……」
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_1_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「さて、今日も掃除させていただきますね」
+	CASE 1
+		PRINTFORML 「ご主人様。そちらの床は先ほど掃除したばかりでございます」
+	CASE 2
+		PRINTFORML 「この建物は広くて、とても掃除が追いつきそうにありませんね」
+ENDSELECT
+
+
+;-------------------------------------------------
+;謙虚なシスター(純化されたシスター)
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNKA_2_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「ふふ……こんな恰好で路地裏を歩いたりすれば……」
+	PRINTFORML 「子作りの神様……貴方に貢献致します」
+;それ以外
+ELSE
+	PRINTFORML 「神に仕える身でこのような恰好をするなんて……」
+	PRINTFORML 「肌が隠れる服を着させてもらえませんか……？」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_2_3
+PRINTFORML 「ふふ……淫欲の神様……どうか私に乱交の機会を授けてください」
+PRINTFORML 「そうすれば、私は自身の欲を満たすことができますから……」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_2_9
+PRINTFORML 「礼拝の時間ですか？　……うーん、面倒くさいです」
+PRINTFORML 「やる気が出るまで待ってください」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_2_10
+IF BASE:思考力 == 0
+	PRINTFORML 「あふぅ……ま、また経典持ってくるの忘れましたぁ……」
+	PRINTFORML 「かみさまぁ……きゃん……ごめんなさ……っんんん……！」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「あっ……十字架を持ってくるのを忘れ……んぁ……！」
+	PRINTFORML 「も……忘れませんからぁ……んん……！　許して、くださ……っぁ……」
+ELSE
+	PRINTFORML 「ああ、燭台の灯が……！」
+	PRINTFORML 「ご、ごめんなさい。次からは気をつけるので今回は……んんっ……！」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_2_11
+
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「そろそろ出産の頃合いなので、お話をしましょう」
+	PRINTFORML 「確かに、妊娠は一般的には穢れの素として忌避されがちなのですが――」
+	PRINTFORML 「一方で、定期的な妊娠は世の浄化に必要だとする宗派も存在するのです」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「妊娠は戒律で禁止されていないのか。ですか？」
+	PRINTFORML 「そこは宗派によって別れるところでして、私の宗派では許されているのですよ」
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_2_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「今日も神の思し召しに従い、行動するのみです」
+	CASE 1
+		PRINTFORML 「父様。今日の礼拝はお済みになりましたか？」
+	CASE 2
+		PRINTFORML 「蝋燭の予備が切れかかっていますね。蝋燭は神にとっての大切な道しるべ
+		PRINTFORML 　常に灯すことが大切なのです」
+ENDSELECT
+
+
+;-------------------------------------------------
+;魔術使いの少女(純化されたゴスロリ)
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNK_3_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「あぁ……また瘴気が肌に纏わりつく……」
+	PRINTFORML 「ん……これだから、この恰好で召喚術を使うのが気持ちいいのよ……」
+;それ以外
+ELSE
+	PRINTFORML 「肌の露出が……これでは瘴気が肌に触れてしまいます」
+	PRINTFORML 「瘴気って結構気持ち悪いのよね。じめじめしていてさ」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_3_3
+PRINTFORML 「はぁ……スライムの粘液が身体に絡んで……っんん……！」
+PRINTFORML 「……って、私のこと何時から見つめてたの……妄想してるところを見られるなんて……」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_3_9
+PRINTFORML 「あーあ、召喚陣描くの面倒臭いなー」
+PRINTFORML 「寝てる間に誰かが描いてくれればいいのに」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_3_10
+IF BASE:思考力 == 0
+	PRINTFORML 「っはぁ……詠唱間違えちゃったのぉ……」
+	PRINTFORML 「おねがい……もっと、わたしのことめちゃくちゃにしてぇ……っんんん……！」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「え……？　本を片付ける場所が間違ってるって？」
+	PRINTFORML 「っあ……っはぁぁぁ……次から気をつけるから許し……んぁぁ……！」
+ELSE
+	PRINTFORML 「あ……片づける瓶を間違えちゃった……」
+	PRINTFORML 「ひゃ……ごめんなさいっ……今度は間違えないから……っんん……！」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_3_11
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「はぁっ……はぁ……」
+	PRINTFORML 「お腹が重くて、詠唱がとても疲れるわ……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「妊娠しちゃったみたいね」
+	PRINTFORML 「まあ、別に魔術する分には影響ないんだけど……」
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_3_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「魔術って最高だと思わない？　だって、なんでもできちゃうもの！」
+	CASE 1
+		PRINTFORML 「神も本質的には穢れ者と変わらないはずよね？　どうして穢れ者だけ除け者にされるのかしら……」
+	CASE 2
+		PRINTFORML 「この蔦はね、切ると甘い蜜が垂れてくるの。この蜜は魔力補給に最適なのよね」
+ENDSELECT
+
+
+;-------------------------------------------------
+;貴族の花嫁(純化された花嫁)
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNK_4_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「もし、出先で他の方に誘われたなら、私はどうなってしまうのでしょう……」
+	PRINTFORML 「それで困る旦那様の表情を見られるのであれば、このような恰好もよき趣ですね」
+;それ以外
+ELSE
+	PRINTFORML 「旦那様。相方を持つ身で、このような他者を惑わす格好をさせるのはどうかと思います」
+	PRINTFORML 「私を失って一番困るのは旦那様ではないのですか？」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_4_3
+PRINTFORML 「旦那様。夜の交わりは夫婦の義務です」
+PRINTFORML 「……なんですか、その怪訝な顔は。私は真面目に申しているのですよ」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_4_9
+PRINTFORML 「今日は身体が怠いです……」
+PRINTFORML 「一緒に御昼寝しませんか？　小鳥の囀りとか心地よいと思うのですよ」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_4_10
+IF BASE:思考力 == 0
+	PRINTFORML 「ひゃん……また、砂糖と塩を間違えてしまいましたぁ……」
+	PRINTFORML 「もう、味が分からないのぉ……ひゃんん……だからぁ、ゆるしてくださぁい……ひゃぁぁ……！」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「え？　これは机しか拭いてはいけない布巾だったのですか？」
+	PRINTFORML 「参りましたね……っんん……っはぁ……また後でするので許し……っぁん……！」
+ELSE
+	PRINTFORML 「砂糖と塩を取り間違えました……」
+	PRINTFORML 「これはあまりよくない間違い……っん……な、なんですかいきなり……っぁ……！」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_4_11
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「お腹、さすってみてください」
+	PRINTFORML 「もうすぐ生まれるのですよ。私達の子が」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「喜んでください。お腹に旦那様の子供が宿ったのです」
+	PRINTFORML 「……本当ですよ？　私が不貞など致すわけがないでしょう」
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_4_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「ご機嫌麗しゅうございます。旦那様。今日はどこへ出かけますか？」
+	CASE 1
+		PRINTFORML 「優曇華の花は都の裏通りで綺麗に咲くと言われております。部屋に飾ってみませんか？」
+	CASE 2
+		PRINTFORML 「このように日差しが心地よい日は、縁側でまったりするのもよきかなと思います」
+ENDSELECT
+
+
+;-------------------------------------------------
+;武士を志す少女(純化された武士)
+;-------------------------------------------------
+;---------------------------------
+;半裸以上の服を着ている
+;---------------------------------
+@HIMESSAGE_JUNK_5_1
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORML 「ふふ……この服、ほぼ裸みたいなものですよね」
+	PRINTFORML 「これで敵の気を惹けば、敵も油断してくれるのよ。あわよくば精気も……いえ、なんでもないです……」
+;それ以外
+ELSE
+	PRINTFORML 「ちょっと……この服装で戦うのは恥ずかしいのですけど……」
+	PRINTFORML 「だって、これ……相手に素肌が丸見えじゃない……」
+ENDIF
+
+;---------------------------------
+;性格が淫乱
+;---------------------------------
+@HIMESSAGE_JUNKA_5_3
+PRINTFORML 「はぁ……ん……何をしているのか、……ん……！　と？」
+PRINTFORML 「それは……っん……身体で相手を悦ばせる練習を……っはぁ……！」
+
+;---------------------------------
+;やる気が2以下
+;---------------------------------
+@HIMESSAGE_JUNKA_5_9
+PRINTFORML 「一日ぐらい修行サボってもいいよね？」
+PRINTFORML 「身体が怠くてやる気が出ないんです」
+
+;-----------------------------------------------------
+;思考力が100未満で躾方針が快楽を与える
+;感度が100以上でないと駄目
+;-----------------------------------------------------
+@HIMESSAGE_JUNKA_5_10
+IF BASE:思考力 == 0
+	PRINTFORML 「はぁ……ん……えーと……この刀で合ってるんでしたっけ……」
+	PRINTFORML 「くはぁ……っん……まちがっている、って……？　ひゃん……！　よかった……ですぅ……」
+	PRINTFORML 「もっと……わらしを……めちゃくちゃに……して……っん……！」
+ELSEIF BASE:思考力 <= 50
+	PRINTFORML 「えーと……この斬り方をすれば藁人形はこちらへと倒れ……あれ？」
+	PRINTFORML 「あ……斬る順番を間違え……っあ……！　だめ……やめてくだひゃ……ぁんん……！」
+ELSE
+	PRINTFORML 「あっ……峰打ちの練習をするつもりが、誤って刃の方で打ってしまいました……」
+	PRINTFORML 「次から気を……ひゃぁ……！　どこに手を入れているのです……かぁ……！」
+ENDIF
+
+;---------------------------------------
+;妊娠している
+;---------------------------------------
+@HIMESSAGE_JUNKA_5_11
+;妊娠6～10ヶ月目
+IF CFLAG:妊娠経過日 >= 6
+	PRINTFORML 「お腹が重い……」
+	PRINTFORML 「一応修業は行えますが、負担が軽いものにしてほしいです……」
+;妊娠3～5ヶ月目
+ELSE
+	PRINTFORML 「妊娠してしまうとは……」
+	PRINTFORML 「激しい修業は控えた方がいいかもしれませんね」
+ENDIF
+
+;---------------------------------------
+;普段
+;---------------------------------------
+@HIMESSAGE_JUNKA_5_99
+SELECTCASE RAND:3
+	CASE 0
+		PRINTFORML 「見ていてください。いつの日か、一番強い剣士になってみせますから！」
+	CASE 1
+		PRINTFORML 「剣は主に神降ろしのための道具として用いられるのですが、接近戦も可能なんですよ！」
+	CASE 2
+		PRINTFORML 「お父様、私と一戦交えていただけませんか？」
+ENDSELECT
+
+
+
+

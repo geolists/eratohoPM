@@ -1,0 +1,222 @@
+﻿;=======================================================
+;SOURCE_SITUATION.ERB
+;バイブを装着、あるいは住み込みの場合の処理を行う
+;=======================================================
+@SOURCE_SITUATION
+
+;バスト限度を胸囲が超えている場合、淫妖とその経験を得る
+CALL CLOTHE_BUSTSIZE, CFLAG:服装
+IF RESULT+1 <= BASE:胸囲
+	IF RESULT+11 <= BASE:胸囲
+		PRINTFORML 衣服の中ではちきれんばかりに膨らむ胸が%CALLNAME:TARGET%の気を逸らす……
+		LOCAL = 2
+		LOCAL:1 = 3
+		LOCAL:2 = 15
+	ELSEIF RESULT+6 <= BASE:胸囲
+		PRINTFORML 衣服により強く締め付けられる胸が違和感を発し、%CALLNAME:TARGET%の意識を胸に向けさせる……
+		LOCAL = 2
+		LOCAL:1 = 2
+		LOCAL:2 = 10
+	ELSEIF RESULT+1 <= BASE:胸囲
+		PRINTFORML 衣服によって締め付けられる胸を意識させられ、%CALLNAME:TARGET%は時折胸に目を向ける……
+		LOCAL = 1
+		LOCAL:1 = 1
+		LOCAL:2 = 3
+	ENDIF
+	PRINTFORML 淫妖経験 +{LOCAL}
+	PRINTFORM 淫妖 {BASE:淫妖}　→　
+	EXP:淫妖経験 += LOCAL
+	BASE:淫妖 += LOCAL:1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	
+	;一定確率で胸元が弾け、慰み者値を1上昇させてしまう
+	;(疎通経験が上昇するコマンドの場合、代わりに3上昇する)
+	IF RAND:99+1 <= LOCAL:2
+		PRINTFORML 衣服の胸元が破けた！
+		IF TFLAG:疎通経験
+			PRINTFORML 周囲の人間が一斉に%CALLNAME:TARGET%に視線を向ける
+			PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にし、胸元を隠してその場を去った……
+			LOCAL:3 = 3
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にして胸元を隠した
+			PRINTFORML 時折目につく周囲の視線が痛い……
+			LOCAL:3 = 1
+		ENDIF
+		BASE:慰み者 = LIMIT(BASE:慰み者+LOCAL:3, 0, 200)
+	ENDIF
+ENDIF
+
+
+;バイブを着けている場合、一部のコマンド以外ではソースが追加される
+IF TFLAG:性交 != 2 && (OTHER_ACC(500) || OTHER_ACC(507)) && CFLAG:モード != 2
+	;両穴の場合、強いソースが入る
+	IF OTHER_ACC(500) && OTHER_ACC(507)
+		SOURCE:淫妖 += 5
+		TFLAG:淫妖経験 += 3
+	ELSE
+		SOURCE:淫妖 += 3
+		TFLAG:淫妖経験 += 2
+	ENDIF
+	
+	IF TALENT:処女 && OTHER_ACC(500)
+		PRINTFORM %CALLNAME:TARGET%は初めてであるにも関わらずバイブ挿入を指示され、
+		IF CFLAG:主人への友好度 >= 60
+			PRINTFORML 顔を真っ赤にしている……
+			CALL LOST_VIRGIN, 0
+		ELSE
+			PRINTFORML 納得できず、何度も首を振った……
+			CALL LOST_VIRGIN, 1
+		ENDIF
+		
+		;処女なので、淫妖入手が減る
+		SOURCE:淫妖 -= 1
+	ENDIF
+	;アナルバイブの場合
+	IF TALENT:処女 && OTHER_ACC(507)
+		PRINTFORM %CALLNAME:TARGET%は処女であるにも関わらず後ろの穴へのバイブ挿入を指示され、
+		IF CFLAG:主人への友好度 >= 60
+			PRINTFORML 顔を真っ赤にしている……
+		ELSE
+			PRINTFORML 納得できず、何度も首を振った……
+		ENDIF
+		
+		;処女で尻穴調教なので、淫妖が+1される
+		SOURCE:淫妖 += 1
+	ENDIF
+	
+	IF OTHER_ACC(500) && OTHER_ACC(507)
+		PRINTFORML %CALLNAME:TARGET%の両穴に挿入されたバイブは、場所と時間を弁えず責め続ける……
+	ELSEIF OTHER_ACC(500)
+		PRINTFORML %CALLNAME:TARGET%の秘裂に挿入されたバイブは、場所と時間を弁えず責め続ける……
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の後ろの穴に挿入されたバイブは、場所と時間を弁えず責め続ける……
+	ENDIF
+	
+	;着ている服がミニスカートやマイクロミニの場合
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):0 == 1
+		IF BASE:アライメント >= 90
+			PRINTFORML %CALLNAME:TARGET%は短いスカートが気になり、時折スカートを抑える振りをして
+			PRINTFORML バイブに触れ、振動を和らげようとしている……
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%はわざとスカートが跳ねそうなぐらい腰を揺らし
+			PRINTFORML 周囲に艶を帯びた目線を撒き散らしている
+		ENDIF
+	ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):0 == 2
+		IF BASE:アライメント >= 90
+			PRINTFORML %CALLNAME:TARGET%は極端に短いスカートで顔を赤らめ、時折後ろ手でスカートを抑えた
+			PRINTFORML バイブの振動は着実に身体を昂ぶらせ、剥き出しの太腿には液体が伝っている
+		ELSE
+			;整合性を取るため、バイブの種類によって分岐
+			IF OTHER_ACC(500) && OTHER_ACC(507)
+				PRINTFORML %CALLNAME:TARGET%はわざとスカートを肌蹴させ、バイブが挿さった淫靡な股部を晒した
+				PRINTFORML 時折その場に膝をつき、艶やかな声をあげて柱に股部を擦りつけた
+			ELSEIF OTHER_ACC(500)
+				PRINTFORML %CALLNAME:TARGET%はわざとスカートを肌蹴させ、バイブが挿さった淫靡な秘裂を晒した
+				PRINTFORML 時折その場に膝をついては、上目遣いをして周囲に媚びた目線を送った
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%はわざとスカートを肌蹴させ、バイブが挿さった淫靡な尻穴を晒した
+				PRINTFORML 時折その場に膝をついては、上目遣いをして周囲に媚びた目線を送った
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	;アライメントの正負によって大きく分けてから
+	;感度によって分岐
+	IF BASE:アライメント >= 100
+		IF BASE:感度 >= 600
+			PRINTFORML %CALLNAME:TARGET%は声を堪え切れず、時折間抜けな声を出しては股体を震わせた
+		ELSEIF BASE:感度 >= 400
+			PRINTFORML %CALLNAME:TARGET%は切羽詰まった声を漏らし、股からつーっと愛液を垂れさせた
+		ELSEIF BASE:感度 >= 200
+			;整合性を取るため、バイブの種類によって分岐
+			IF OTHER_ACC(500) && OTHER_ACC(507)
+				PRINTFORML %CALLNAME:TARGET%は顔を伏せ、両穴から伝わる快楽に対し顔を真っ赤にした
+			ELSEIF OTHER_ACC(500)
+				PRINTFORML %CALLNAME:TARGET%は顔を伏せ、膣から伝わる快楽に対し顔を真っ赤にした
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は顔を伏せ、後ろの穴から伝わる快楽に対し顔を真っ赤にした
+			ENDIF
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は頬を紅くし、秘裂を擦るバイブの感触に対して腰を揺らした
+		ENDIF
+	ELSE
+		IF BASE:感度 >= 600
+			;整合性を取るため、バイブの種類によって分岐
+			IF OTHER_ACC(500)
+				PRINTFORML %CALLNAME:TARGET%はあられもない声をあげ、震える秘裂から愛液を零れ出した
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%はあられもない声をあげ、秘裂から愛液を零れ出した
+			ENDIF
+		ELSEIF BASE:感度 >= 400
+			PRINTFORML %CALLNAME:TARGET%は艶っぽい声をあげ、淫靡に腰を振った
+		ELSEIF BASE:感度 >= 200
+			PRINTFORML %CALLNAME:TARGET%は小さく媚声をあげ、周囲に妖しく目配りをしながら太腿を擦り合わせた
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は時折目を細め、甘い刺激を愉しむかのようにため息を吐いた
+		ENDIF
+	ENDIF
+	
+	CALL CLOTHE_ABL, "淫妖"
+	BASE:快楽動機づけ = LIMIT(BASE:快楽動機づけ+1*RESULT, 0, 400)
+	CALL PLAYTHING
+	
+	;両穴の場合、穢れ+2
+	IF OTHER_ACC(500) && OTHER_ACC(507)
+		CALL CALC_IMP, 2
+	;アナルバイブの場合、穢れ+1
+	ELSEIF OTHER_ACC(507)
+		CALL CALC_IMP, 1
+	ENDIF
+ENDIF
+
+;住み込みで働いている場合、客淫行値によってコマンドが代入される
+IF BASE:客淫行値 >= 100 && CFLAG:モード == 4
+	VARSET LOCAL:1, 0
+	IF BASE:客淫行値 >= 250
+		LOCAL = 230
+		LOCAL:2 = 7+RAND:7
+	ELSEIF BASE:客淫行値 >= 200
+		LOCAL = 211
+		LOCAL:2 = 4+RAND:5
+	ELSEIF BASE:客淫行値 >= 150
+		SELECTCASE RAND:2
+			CASE 0
+				LOCAL = 200
+			CASE 1
+				LOCAL = 201
+		ENDSELECT
+		LOCAL:2 = 3+RAND:5
+	ELSE
+		LOCAL = 204
+		LOCAL:2 = 1+RAND:5
+	ENDIF
+	
+	;淫妖経験入手は50刻みで
+	LOCAL:1 = LIMIT((BASE:客淫行値-100)/50, 0, 99)
+	
+	TRYCALLFORM MESSAGE_COM{LOCAL}
+	
+	IF LOCAL == 230
+		CALL INSERT, 2, 1
+	ENDIF
+	IF LOCAL:1
+		PRINTFORML 淫妖経験 + {LOCAL:1}
+		EXP:淫妖経験 += LOCAL:1
+	ENDIF
+	
+	;穢れ+1
+	CALL CALC_IMP, 1
+	
+	PRINTFORM 淫妖:{BASE:淫妖}　→　
+	BASE:淫妖 += LOCAL:2
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:淫妖}
+	RESETCOLOR
+	
+ELSEIF BASE:客淫行値 >= 40 && CFLAG:モード == 4
+	PRINTFORML %CLIENTNAME(CFLAG:職業-21)%は好奇の目を%CALLNAME:TARGET%に向けている……
+ENDIF
+
+

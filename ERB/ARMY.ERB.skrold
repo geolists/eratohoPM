@@ -1,0 +1,127 @@
+﻿;=============================================================
+;兵力系統コマンド
+;兵力Lvアップと盗賊撃退を行う事ができる
+;=============================================================
+@ARMY
+
+$BACK_LOOP
+DRAWLINE
+PRINTFORML ～～兵士詰所～～
+PRINTFORML 兵士「いらっしゃい。何か御用かな？」
+IF (FLAG:年数 > 2 || (FLAG:年数 == 2 && DAY > 4)) && !(DAY == 1 && TIME == 0) && CFLAG:モード != 4
+	PRINTFORML 盗賊接近値({CFLAG:盗賊接近値}/{MAX_APPROACH_HIZOKU()})
+ENDIF
+PRINTFORML [0] - 兵力レベルアップ
+IF CFLAG:モード != 2
+	PRINTFORML [1] - 盗賊撃退
+ENDIF
+PRINTFORML [2] - 戻る
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0
+	$BACK_LOOP_1
+	DRAWLINE
+	;兵力Lv5は最大5
+	IF FLAG:兵力 >= 5
+		PRINTFORML これ以上兵力Lvを上げることはできません
+		RESTART
+	ENDIF
+	PRINTFORML 現在の兵力Lv:{FLAG:兵力}
+	LOCAL = 40000 + 20000 * FLAG:兵力
+	PRINTFORML 費用として${LOCAL}かかります。それでもよろしいですか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	$INPUT_LOOP_1
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		IF MONEY < LOCAL
+			PRINTL 所持金が足りません
+			GOTO INPUT_LOOP_1
+		ENDIF
+		FLAG:兵力 += 1
+		MONEY -= LOCAL
+		PRINTFORML 兵力Lvが{FLAG:兵力}に上がった！
+		GOTO BACK_LOOP_1
+	ELSEIF RESULT == 1
+		DRAWLINE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 1 && CFLAG:モード != 2
+	$BACK_LOOP_2
+	LOCAL = 20000
+	IF CFLAG:盗賊撃退依頼
+		PRINTL 既に依頼済みです
+		GOTO BACK_LOOP
+	ENDIF
+	DRAWLINE
+	PRINTFORML 盗賊を撃退するには${LOCAL}かかります
+	PRINTFORML どうしますか？
+	PRINTFORML 
+	PRINTFORML [0] - ${LOCAL}支払って撃退を依頼する
+	IF BASE:淫妖 >= 600 && FLAG:年数 >= 4
+		PRINTFORML [1] - 身体で支払う
+	ENDIF
+	PRINTFORML [2] - 戻る
+	
+	$INPUT_LOOP_2
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT == 0
+		IF MONEY < LOCAL
+			PRINTL 所持金が足りません
+			GOTO BACK_LOOP
+		ENDIF
+		DRAWLINE
+		MONEY -= LOCAL
+		PRINTFORMW 兵士にお金を渡し、盗賊の撃退を依頼した！
+		CFLAG:盗賊撃退依頼 = 1
+	ELSEIF RESULT == 1 && BASE:淫妖 >= 600 && FLAG:年数 >= 4
+		DRAWLINE
+		PRINTFORML 身体を奉げる事で、依頼費の代わりとします
+		PRINTL よろしいですか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			DRAWLINE
+			PRINTFORML 兵士達は%CALLNAME:TARGET%の身体を押さえ、身体を擦り始めた
+			PRINTFORMW 兵士達の溜まっていた欲を発散させようとする責めにより%CALLNAME:TARGET%は立ったまま太腿を震わせ、艶やかな声をあげ始める
+			PRINTFORMW その内、長髪の少女は腰を後ろに突き出した格好になり、半開きの口から舌を出して喘ぐようになった
+			PRINTFORML その様子を見た兵士達は%CALLNAME:TARGET%を押し倒し、衣服を剥いて挿入の準備を始めた
+			PRINTFORMW 挿入された時、%CALLNAME:TARGET%の開発された膣口はすんなりと受け入れ、悦びの声をあげ腰を跳ねさせる
+			PRINTFORMW 粘っこい水音と、%CALLNAME:TARGET%の媚声が部屋に響き渡り、兵士達の雰囲気はますます熱狂していく
+			PRINTFORMW そして%CALLNAME:TARGET%が手足を強く握りしめたかと思うと、腰を反らし、擦り切れた声をあげて達した
+			PRINTFORML 
+			CALL INSERT, 2, 1
+			PRINTFORMW 兵士達は代わる代わる%CALLNAME:TARGET%を犯し、最後には穴という穴に挿入して一斉に射精した
+			PRINTFORML 
+			PRINTFORML 数時間後……
+			PRINTFORMW ぐったりとした%CALLNAME:TARGET%を尻目に、兵士達は盗賊撃退の依頼を引き受けた！
+			PRINTFORML 
+			
+			LOCAL = 10
+			LOCAL = 17
+			PRINTFORML 淫妖経験 + {LOCAL}
+			EXP:淫妖経験 += LOCAL
+			CALL CALCULATION_PALAM, LOCAL, "淫妖"
+			CALL CALC_IMP, TFLAG:討論レベル
+			CFLAG:盗賊撃退依頼 = 1
+		ELSE
+			GOTO BACK_LOOP_2
+		ENDIF
+		
+	ELSEIF RESULT == 2
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 条件を満たしていません
+		GOTO BACK_LOOP_2
+	ENDIF
+ELSE
+	RETURN 0
+ENDIF
+

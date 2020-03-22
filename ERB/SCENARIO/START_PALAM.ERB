@@ -1,0 +1,74 @@
+﻿;===============================================================
+;初期ステータス
+;ARG　星座
+;===============================================================
+@START_STATUS, ARG
+
+;基礎値
+BASE:美麗 = 30
+BASE:知力 = 20
+BASE:疎通 = 20
+BASE:家事 = 20
+BASE:信仰 = 20
+BASE:体力 = 20
+BASE:淫妖 = 0
+BASE:堕落 = 0
+
+;牡羊座
+IF ARG == 0
+	BASE:疎通 += 15
+	BASE:体力 -= 10
+	BASE:家事 -= 5
+;牡牛座
+ELSEIF ARG == 1
+	BASE:美麗 -= 14
+	BASE:体力 += 18
+	BASE:信仰 -= 4
+;双子座
+ELSEIF ARG == 2
+	BASE:美麗 -= 20
+	BASE:体力 += 20
+;蟹座
+ELSEIF ARG == 3
+	BASE:体力 += 8
+	BASE:知力 -= 8
+;獅子座
+ELSEIF ARG == 4
+	BASE:貞操 += 10
+	BASE:アライメント += 5
+;乙女座
+ELSEIF ARG == 5
+	BASE:家事 += 12
+	BASE:体力 -= 16
+	BASE:知力 += 4
+;天秤座
+ELSEIF ARG == 6
+	BASE:疎通 += 9
+	BASE:家事 -= 3
+	BASE:体力 -= 6
+;蠍座
+ELSEIF ARG == 7
+	BASE:美麗 += 3
+	BASE:知力 -= 9
+	BASE:淫妖 += 13
+	BASE:貞操 -= 5
+;射手座
+ELSEIF ARG == 8
+	BASE:美麗 += 13
+	BASE:疎通 -= 13
+;山羊座
+ELSEIF ARG == 9
+	BASE:信仰 += 11
+	BASE:知力 += 9
+	BASE:疎通 -= 20
+;水瓶座
+ELSEIF ARG == 10
+	BASE:知力 -= 13
+	BASE:疎通 += 13
+;魚座
+ELSEIF ARG == 11
+	BASE:美麗 -= 5
+	BASE:知力 -= 8
+	BASE:疎通 += 13
+ENDIF
+

@@ -1,0 +1,16 @@
+﻿;=====================================================
+;戦闘中のアイテム使用処理
+;=====================================================
+@BATTLE_ITEM_USE
+$INPUT_LOOP
+CALL ITEM_USE, 601, 602, "戦闘"
+IF RESULT == -1
+	RETURN -1
+ELSEIF RESULT == 3
+	RETURN 0
+;選択をキャンセルした場合
+ELSEIF RESULT == -2
+	GOTO INPUT_LOOP
+ENDIF
+
+

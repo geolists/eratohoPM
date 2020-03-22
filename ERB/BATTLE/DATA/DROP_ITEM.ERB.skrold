@@ -1,0 +1,109 @@
+﻿;------------------------------------------------------------
+;拾得物
+;一部の敵にのみ実装
+;ARG　敵ID
+;------------------------------------------------------------
+@DROP_ITEM, ARG
+
+VARSET LOCAL, 0
+;PRINTFORML 敵ID:{ARG}
+;盗賊
+IF ARG == 2
+	;約20％の確率で葛湯を落とす
+	IF !RAND:5
+		LOCAL = 517
+		LOCAL:1 = 1
+	ENDIF
+;下級盗賊
+ELSEIF ARG == 3
+	;約10％の確率でおにぎりを落とす
+	IF !RAND:10
+		LOCAL = 518
+		LOCAL:1 = 1
+	ENDIF
+;狼
+ELSEIF ARG == 5
+	;約6％の確率で干し肉を落とす
+	IF !RAND:16
+		LOCAL = 519
+		LOCAL:1 = 1
+	ENDIF
+;中級盗賊
+ELSEIF ARG == 11
+	;約10％の確率でおにぎりを落とす
+	IF !RAND:10
+		LOCAL = 518
+		LOCAL:1 = 1
+	ENDIF
+;上級盗賊
+ELSEIF ARG == 16
+	;約10％の確率でおにぎりを落とす
+	IF !RAND:10
+		LOCAL = 518
+		LOCAL:1 = 1
+	ENDIF
+;燃素纏い
+ELSEIF ARG == 17
+	;約10％の確率で退魔の松明を落とす
+	IF !RAND:10
+		LOCAL = 602
+		LOCAL:1 = 1
+	ENDIF
+;家出淫魔
+ELSEIF ARG == 62
+	;10％の確率で悪魔のメイド服を落とす
+	IF !RAND:10
+		IF !ITEM:悪魔のメイド服
+			
+		;既に持っている場合、絹の布を落とす
+		ELSE
+			
+		ENDIF
+		LOCAL:1 = 1
+	ENDIF
+;赤の魔術師
+ELSEIF ARG == 104
+	;10％の確率で能力上昇アイテムを落とす
+	;個数はダンジョンのレベル分
+	IF !RAND:10
+		LOCAL = 522 + RAND:6
+		LOCAL:1 = TFLAG:ダンジョンレベル
+	ENDIF
+;星の司祭
+ELSEIF ARG == 110
+	;ヘカドの弓を持ってない場合のみ落とす
+	IF !ITEM:ヘカドの弓
+		LOCAL = 583
+		LOCAL:1 = 1
+	ENDIF
+ENDIF
+
+IF LOCAL:1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORM %ITEMNAME:LOCAL%を
+	IF LOCAL:1 >= 2
+		PRINTFORM {LOCAL:1}個
+	ENDIF
+	PRINTFORMW 手に入れた！
+	RESETCOLOR
+	ITEM:(LOCAL) += LOCAL:1
+ENDIF
+
+;ワールブルクの石を欠片から作成していない場合、ワールブルクの欠片を入手できる
+IF !FLAG:ワールブルクの欠片を石に && !RAND:50 && !FLAG:闘技大会
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML ワールブルクの欠片を手に入れた！
+	ITEM:ワールブルクの欠片 += 1
+	IF ITEM:ワールブルクの欠片 >= 8
+		PRINTFORMW ワールブルクの欠片の様子がおかしい……
+		PRINTFORML 欠片は互いに共鳴しあい、一箇所に集まっていく
+		PRINTFORMW 集まった欠片は眩い閃光の後、一つの石になった
+		PRINTL 
+		PRINTFORMW ワールブルクの欠片は、ワールブルクの石になった！
+		ITEM:ワールブルクの欠片 = 0
+		ITEM:ワールブルクの石 += 1
+		FLAG:ワールブルクの欠片を石に = 1
+	ENDIF
+	RESETCOLOR
+ENDIF
+

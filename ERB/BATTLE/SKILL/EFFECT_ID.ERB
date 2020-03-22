@@ -1,0 +1,890 @@
+﻿;==================================================
+;追加効果
+;==================================================
+
+;----------------------------------------------
+;1000:　戦闘以外の処理
+;----------------------------------------------
+;ダミーに等しい
+@EFFECT_ID_1000, ARG, ARG:1
+
+;----------------------------------------------
+;1001:　反動ダメージ10％
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1001, ARG, ARG:1
+
+;----------------------------------------------
+;1002:　(威力の項目で定めた数値)分のダメージ
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1002, ARG, ARG:1
+
+;----------------------------------------------
+;1003:　自分の攻撃力+100にして計算＆欲情+5％
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1003, ARG, ARG:1
+TFLAG:(506+ARG) = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/20, 0, TFLAG:(524+ARG))
+
+;----------------------------------------------
+;1004:　粘性体・蛙に特攻
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1004, ARG, ARG:1
+
+;----------------------------------------------
+;1005:　粘性体に無効
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1005, ARG, ARG:1
+
+;----------------------------------------------
+;1006:　気力が一定量回復する
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1006, ARG, ARG:1
+
+;----------------------------------------------
+;1007:　相手にダメージを与えれなかった場合、最大ＨＰの2割のダメージを与える
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1007, ARG, ARG:1
+
+;----------------------------------------------
+;1008:　急所に当たりやすい(通常の2倍)
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1008, ARG, ARG:1
+
+;----------------------------------------------
+;1009:　蛙にのみ特攻
+;----------------------------------------------
+;ダミー
+@EFFECT_ID_1009, ARG, ARG:1
+
+;----------------------------------------------
+;1:　相手を欲情状態にする
+;----------------------------------------------
+@EFFECT_ID_1, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を欲情状態にした！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(500+ARG:1) |= 1p0
+	TFLAG:(627+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;2:　気力を10％奪う
+;----------------------------------------------
+@EFFECT_ID_2, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(551+ARG:1*10)*10/TFLAG:(551+ARG:1*10), 0, TFLAG:(551+ARG:1*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%から気力を{damage}吸い取った！
+	TFLAG:(557+ARG*10) = LIMIT(TFLAG:(557+ARG*10)+damage, 0, TFLAG:(551+ARG*10))
+	TFLAG:(557+ARG:1*10) = LIMIT(TFLAG:(557+ARG:1*10)-damage, 0, TFLAG:(551+ARG:1*10))
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;3:　相手の行動を愛撫に変更する
+;----------------------------------------------
+@EFFECT_ID_3, ARG, ARG:1
+#DIM damage, 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%は%STR:ARG%の姿にそそられ、行動を変えた！
+TFLAG:(536+ARG:1) = 102
+;攻撃対象も変更
+TFLAG:(530+ARG:1) = ARG
+RESETCOLOR
+
+;----------------------------------------------
+;4:　相手を押し倒し状態にする
+;----------------------------------------------
+@EFFECT_ID_4, ARG, ARG:1
+#DIM damage, 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%は押し倒された！
+;4ターンの間継続
+TFLAG:(488+ARG:1) = 1
+TFLAG:(494+ARG:1) = 5
+RESETCOLOR
+
+;----------------------------------------------
+;5:　気力を10％奪われる
+;----------------------------------------------
+@EFFECT_ID_5, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(551+ARG*10)/10, 0, TFLAG:(551+ARG*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG)%から気力を{damage}吸い取った！
+	TFLAG:(557+ARG:1*10) = LIMIT(TFLAG:(557+ARG:1*10)+damage, 0, TFLAG:(551+ARG:1*10))
+	TFLAG:(557+ARG*10) = LIMIT(TFLAG:(557+ARG*10)-damage, 0, TFLAG:(551+ARG*10))
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;6:　衣服を1段階破壊される
+;----------------------------------------------
+@EFFECT_ID_6, ARG, ARG:1
+#DIM damage, 1
+
+;PRINTFORML 効果開始
+;PRINTFORML 対象の性別:{TFLAG:(615+ARG:1)}
+;PRINTFORML 対象の性別:{TFLAG:(609+ARG:1)}
+IF !TFLAG:(615+ARG:1) && TFLAG:(609+ARG:1) != 2
+	CALL SETCOLOR_PALAMUP
+	IF TFLAG:(609+ARG:1) == 1
+		PRINTFORML %STR:(ARG:1)%の服が全て破れ、欠片だけが残った！
+		TFLAG:(609+ARG:1) = 2
+		IF ARG:1 <= 2 && CFLAG:(ARG:1):服装 >= 0
+			DITEMTYPE:(CFLAG:服装):14 = 2
+			DITEMTYPE:(CFLAG:服装):11 = 2
+		ENDIF
+	ELSE
+		PRINTFORML %STR:(ARG:1)%の服が少し破れた！
+		TFLAG:(609+ARG:1) = 1
+		IF ARG:1 <= 2 && CFLAG:(ARG:1):服装 >= 0
+			DITEMTYPE:(CFLAG:服装):14 = 1
+			DITEMTYPE:(CFLAG:服装):11 = 1
+		ENDIF
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;7:　気力を50％奪う
+;----------------------------------------------
+@EFFECT_ID_7, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(551+ARG:1*10)/2, 0, TFLAG:(551+ARG:1*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%から気力を{damage}吸い取った！
+	TFLAG:(557+ARG:1*10) = LIMIT(TFLAG:(557+ARG:1*10)-damage, 0, TFLAG:(551+ARG:1*10))
+	TFLAG:(557+ARG*10) = LIMIT(TFLAG:(557+ARG*10)+damage, 0, TFLAG:(551+ARG*10))
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;8:　粘性体を即死させる
+;----------------------------------------------
+@EFFECT_ID_8, ARG, ARG:1
+#DIM damage, 1
+
+IF STR:(ARG:1+6) == "粘性体"
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を即死させた！
+	TFLAG:(500+ARG:1) |= 1p7
+	TFLAG:(556+ARG:1*10) = 0
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW %STR:(ARG:1)%は粘性体ではないため、効かなかった
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;9:　衣服を2段階破壊される
+;----------------------------------------------
+@EFFECT_ID_9, ARG, ARG:1
+#DIM damage, 1
+
+IF !TFLAG:(615+ARG:1) && TFLAG:(609+ARG:1) != 2
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %STR:(ARG:1)%の服が全て破れ、欠片だけが残った！
+	TFLAG:(609+ARG:1) = 2
+	IF ARG:4 <= 2 && CFLAG:(ARG:1):服装 >= 0
+		DITEMTYPE:(CFLAG:服装):14 = 2
+		DITEMTYPE:(CFLAG:服装):11 = 2
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;10:　相手を損傷状態にする
+;----------------------------------------------
+@EFFECT_ID_10, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を損傷状態にした！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(500+ARG:1) |= 1p1
+	TFLAG:(627+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;11:　相手の肩書きを消す
+;(2015/08/19更新)：効果を「相手を純化させる(正真正銘の名無しにする)」に変更
+;----------------------------------------------
+@EFFECT_ID_11, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を純化した！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG:1+6) = 
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;12:　相手の行動を通常攻撃(強)に変える
+;----------------------------------------------
+@EFFECT_ID_12, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の行動を変えた！
+	TFLAG:(536+ARG:1) = 101
+	;攻撃対象も変更
+	TFLAG:(530+ARG:1) = ARG
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;13:　攻撃と素早さを2倍にする
+;----------------------------------------------
+@EFFECT_ID_13, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の攻撃と素早さが2倍になった！
+TFLAG:(651+ARG) += 2
+TFLAG:(663+ARG) += 2
+RESETCOLOR
+
+;----------------------------------------------
+;14:　欲情を5％上昇させる
+;----------------------------------------------
+@EFFECT_ID_14, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(524+ARG:1)/2, 0, TFLAG:(524+ARG:1))
+IF damage
+	TFLAG:(506+ARG:1) = LIMIT(TFLAG:(506+ARG:1)+damage, 0, TFLAG:(524+ARG:1))
+ENDIF
+
+;----------------------------------------------
+;15:　相手を石化状態にする
+;----------------------------------------------
+@EFFECT_ID_15, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を石化状態にした！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(500+ARG:1) |= 1p2
+	TFLAG:(627+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;16:　責め具(触手バイブ)を装着させる
+;----------------------------------------------
+@EFFECT_ID_16, ARG, ARG:1
+IF ARG:1 == 0 && !(OTHER_ACC(500) || TFLAG:633 == 1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の秘裂に触手が入りこんだ！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(633+ARG:1) = 1
+	TFLAG:(639+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;17:　相手の肩書きを娼婦にする
+;----------------------------------------------
+@EFFECT_ID_17, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を娼婦に仕立て上げた！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG:1+6) = 娼婦
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;18:　相手を欲情状態にする+相手の衣服を1段階脱がせる
+;----------------------------------------------
+@EFFECT_ID_18, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を欲情状態にした！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(500+ARG:1) |= 1p0
+	TFLAG:(627+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+IF !TFLAG:(615+ARG:1) && TFLAG:(609+ARG:1) != 2
+	CALL SETCOLOR_PALAMUP
+	IF TFLAG:(609+ARG:1) == 1
+		PRINTFORML %STR:(ARG:1)%の服が全て破れ、欠片だけが残った！
+		TFLAG:(609+ARG:1) = 2
+		IF ARG:4 <= 2 && CFLAG:(ARG:1):服装 >= 0
+			DITEMTYPE:(CFLAG:服装):14 = 2
+			DITEMTYPE:(CFLAG:服装):11 = 2
+		ENDIF
+	ELSE
+		PRINTFORML %STR:(ARG:1)%の服が少し破れた！
+		TFLAG:(609+ARG:1) = 1
+		IF ARG:4 <= 2 && CFLAG:(ARG:1):服装 >= 0
+			DITEMTYPE:(CFLAG:服装):14 = 1
+			DITEMTYPE:(CFLAG:服装):11 = 1
+		ENDIF
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;19:　相手を暗闇状態にする
+;----------------------------------------------
+@EFFECT_ID_19, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の視界を暗闇で覆った！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	TFLAG:(500+ARG:1) |= 1p3
+	TFLAG:(627+ARG:1) = 5
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;20:　粘性体になる
+;----------------------------------------------
+@EFFECT_ID_20, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%は粘性体になった！
+RESETCOLOR
+;PRINTFORML 対象:{500+ARG:1}
+STR:(ARG+6) = 粘性体
+;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+
+;----------------------------------------------
+;21:　対象の行動元、攻撃対象を入れ替え、発動者と肩書きを交換する
+;----------------------------------------------
+@EFFECT_ID_21, ARG, ARG:1
+IF !GETBIT(CFLAG:永続状態異常, 2)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG)%は%STR:(ARG:1)%と姿が入れ替わった！
+	RESETCOLOR
+	;肩書きを交換して、相手を取り替え子状態にする
+	
+	;PRINTFORML 対象:{500+ARG:1}
+	;PRINTFORML 自分の肩書:%STR:(6+ARG)%
+	;PRINTFORML 相手の肩書:%STR:(6+ARG:1)%
+	SWAP STR:(6+ARG), STR:(6+ARG:1)
+	CFLAG:永続状態異常 |= 1p2
+	;取り替え子対象に行動者のIDを入れる
+	TFLAG:(645+ARG:1) = ARG
+	
+	;使用者の攻撃対象に対象者のIDを入れる
+	TFLAG:(530+ARG) = ARG:1
+	
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ELSE
+	PRINTFORML %STR:(ARG:1)%は既に入れ替わっている！
+ENDIF
+
+;----------------------------------------------
+;22:　気力を15％減らす
+;----------------------------------------------
+@EFFECT_ID_22, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(551+ARG:1*10)*15/TFLAG:(551+ARG:1*10), 0, TFLAG:(551+ARG:1*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の気力を{damage}減らした！
+	TFLAG:(557+ARG:1*10) = LIMIT(TFLAG:(557+ARG:1*10)-damage, 0, TFLAG:(551+ARG:1*10))
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;23:　気力を20％回復する
+;----------------------------------------------
+@EFFECT_ID_23, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(551+ARG*10)/5, 0, TFLAG:(551+ARG*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG)%は気力を回復した！
+	TFLAG:(557+ARG*10) = LIMIT(TFLAG:(557+ARG*10)+damage, 0, TFLAG:(557+ARG*10))
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;24:　[燃素待機]の状態になる
+;----------------------------------------------
+@EFFECT_ID_24, ARG, ARG:1
+#DIM damage, 1
+
+;使用者の状態を[燃素待機]にする
+TFLAG:(500+ARG) |= 1p4
+TFLAG:(627+ARG) = 1
+
+;----------------------------------------------
+;25:　術者を[必中]状態にする
+;----------------------------------------------
+@EFFECT_ID_25, ARG, ARG:1
+#DIM damage, 1
+
+;使用者の状況を[必中]にする
+TFLAG:(488+ARG) |= 1p3
+
+
+;----------------------------------------------
+;26:　術者のＨＰを最大HPの1/8だけ減らす
+;----------------------------------------------
+@EFFECT_ID_26, ARG, ARG:1
+#DIM damage, 1
+
+;使用者のHPを減らす
+damage = TFLAG:(556+ARG)/8
+TFLAG:(550+ARG) -= damage
+PRINTFORML %STR:(ARG)%は反動ダメージを受けた！
+
+
+;----------------------------------------------
+;27:　体力が最大体力から10％減らされる　＆　相手の穢れの低さに応じて怯ませる
+;----------------------------------------------
+@EFFECT_ID_27, ARG, ARG:1
+#DIM damage, 1
+
+damage = LIMIT(TFLAG:(550+ARG*10)/10, 0, TFLAG:(550+ARG*10))
+IF damage
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の体力が{damage}減少した！
+	TFLAG:(556+ARG:1*10) = LIMIT(TFLAG:(556+ARG:1*10)-damage, 0, TFLAG:(550+ARG:1*10))
+	RESETCOLOR
+ENDIF
+
+;戦闘中の穢れ値に応じて怯み率が設定される
+IF RAND:99+1 <= (80-BATTLE_IMP()*2)
+	;対象者の状態異常を[怯み]にする
+	TFLAG:(488+ARG:1) |= 1p1
+ENDIF
+
+
+;----------------------------------------------
+;28:　獣になる
+;----------------------------------------------
+@EFFECT_ID_28, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG)%は獣の姿に戻った！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG+6) = 獣
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;29:　相手を怯ませる
+;----------------------------------------------
+@EFFECT_ID_29, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%は怯んだ！
+	RESETCOLOR
+	;対象者の状態異常を[怯み]にする
+	TFLAG:(488+ARG:1) |= 1p1
+ENDIF
+
+;----------------------------------------------
+;30:　攻撃と素早さを1段階上昇させる
+;----------------------------------------------
+@EFFECT_ID_30, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の攻撃と素早さが上がった！
+TFLAG:(651+ARG) += 1
+TFLAG:(663+ARG) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;31:　植物になる
+;----------------------------------------------
+@EFFECT_ID_31, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG)%は植物になった！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG+6) = 植物
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;32:　淫魔になる
+;----------------------------------------------
+@EFFECT_ID_32, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%は淫魔になった！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG:1+6) = 淫魔
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;33:　相手の防御と素早さを1段階上昇させる
+;----------------------------------------------
+@EFFECT_ID_33, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%の防御と素早さが上がった！
+TFLAG:(652+ARG) += 1
+TFLAG:(663+ARG) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;34:　相手の攻撃と素早さと魔力を1段階上昇させる
+;----------------------------------------------
+@EFFECT_ID_34, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%の攻撃と魔力と素早さが上がった！
+TFLAG:(651+ARG) += 1
+TFLAG:(663+ARG) += 1
+TFLAG:(669+ARG) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;35:　相手の防御を2段階下げる
+;----------------------------------------------
+@EFFECT_ID_35, ARG, ARG:1
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(657+ARG) <= -3
+	PRINTFORMW %STR:(ARG:1)%の防御はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の防御が大きく下がった！
+	TFLAG:(657+ARG:1) = MAX(TFLAG:(657+ARG:1)-2, -3)
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;36:　相手を暗闇+損傷状態にする
+;----------------------------------------------
+@EFFECT_ID_36, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の視界を暗闇で覆った！
+	RESETCOLOR
+	TFLAG:(500+ARG:1) |= 1p3
+	TFLAG:(627+ARG:1) = 5
+ENDIF
+IF !GETBIT(TFLAG:(500+ARG:1), 1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を損傷状態にした！
+	RESETCOLOR
+	TFLAG:(500+ARG:1) |= 1p1
+	TFLAG:(627+ARG:1) = 5
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;37:　魔力を2段階上昇させるが、損傷状態になる
+;----------------------------------------------
+@EFFECT_ID_37, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の魔力が大幅に上がった！
+TFLAG:(669+ARG) += 2
+CALL SETCOLOR_PALAMDOWN
+PRINTFORMW しかし、代償として損傷状態になった……
+TFLAG:(500+ARG) |= 1p1
+TFLAG:(627+ARG) = 5
+RESETCOLOR
+
+;----------------------------------------------
+;38:　自分の魔力が1段階上がる
+;----------------------------------------------
+@EFFECT_ID_38, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の魔力が上がった！
+TFLAG:(669+ARG) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;39:　相手の素早さが1段階上がる
+;----------------------------------------------
+@EFFECT_ID_39, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%の素早さが上がった！
+TFLAG:(663+ARG:1) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;40:　相手の防御を1段階下げる
+;----------------------------------------------
+@EFFECT_ID_40, ARG, ARG:1
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(657+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の防御はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の防御が下がった！
+	TFLAG:(657+ARG:1) = MAX(TFLAG:(657+ARG:1)-1, -3)
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;41:　相手の魔力を1段階下げる
+;----------------------------------------------
+@EFFECT_ID_41, ARG, ARG:1
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(669+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の魔力はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の魔力が下がった！
+	TFLAG:(669+ARG:1) = MAX(TFLAG:(669+ARG:1)-1, -3)
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;42:　相手の攻撃を1段階下げる
+;----------------------------------------------
+@EFFECT_ID_42, ARG, ARG:1
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(669+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の攻撃はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の攻撃が下がった！
+	TFLAG:(651+ARG:1) = MAX(TFLAG:(651+ARG:1)-1, -3)
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;43:　自分の攻撃が1段階上がる
+;----------------------------------------------
+@EFFECT_ID_43, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の攻撃が上がった！
+TFLAG:(651+ARG) += 1
+RESETCOLOR
+
+;----------------------------------------------
+;44:　自分にかかっている状態異常を全治させる
+;----------------------------------------------
+@EFFECT_ID_44, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%にかかっている状態異常が治った！
+TFLAG:(500+ARG) = 0
+RESETCOLOR
+
+
+;----------------------------------------------
+;45:　自分の防御が1段階上がる
+;----------------------------------------------
+@EFFECT_ID_45, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の防御が上がった！
+TFLAG:(657+ARG) += 1
+RESETCOLOR
+
+
+;----------------------------------------------
+;46:　自分の攻撃が2段階上がる
+;----------------------------------------------
+@EFFECT_ID_46, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG)%の攻撃が大幅に上がった！
+TFLAG:(651+ARG) += 2
+RESETCOLOR
+
+;----------------------------------------------
+;47:　相手を蛙にする
+;----------------------------------------------
+@EFFECT_ID_47, ARG, ARG:1
+IF !TFLAG:(500+ARG:1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%の姿を蛙に変えた！
+	RESETCOLOR
+	;PRINTFORML 対象:{500+ARG:1}
+	STR:(ARG:1+6) = 蛙
+	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+ENDIF
+
+;----------------------------------------------
+;48:　相手が女性で、且つ獣・精霊・淫魔でない場合、メイドにする
+;----------------------------------------------
+@EFFECT_ID_48, ARG, ARG:1
+;純化された存在には効かない
+IF STR:(ARG:1+6) == ""
+	PRINTFORMW 純化された%STR:(ARG:1)%には効かなかった
+	RETURN 0
+ENDIF
+
+IF !TFLAG:(500+ARG:1) && STR:(ARG:1+6) != "メイド" && STR:(ARG:1+6) != "獣" && STR:(ARG:1+6) != "淫魔" && STR:(ARG:1+6) != "精霊"
+	;女性でない場合も弾く
+	IF TFLAG:(615+ARG:1) == 0
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %STR:(ARG:1)%をメイドに仕立て上げた！
+		RESETCOLOR
+		;PRINTFORML 対象:{500+ARG:1}
+		STR:(ARG:1+6) = メイド
+		;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW しかし、うまく決まらなかった！
+	ENDIF
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW しかし、うまく決まらなかった！
+ENDIF
+
+
+;----------------------------------------------
+;49:　相手の防御と魔力を1段階下げる
+;----------------------------------------------
+@EFFECT_ID_49, ARG, ARG:1
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(657+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の防御はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の防御が下がった！
+	TFLAG:(657+ARG:1) = MAX(TFLAG:(657+ARG:1)-1, -3)
+ENDIF
+
+IF TFLAG:(669+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の魔力はこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の魔力が下がった！
+	TFLAG:(669+ARG:1) = MAX(TFLAG:(669+ARG:1)-1, -3)
+ENDIF
+RESETCOLOR
+
+;----------------------------------------------
+;50:　相手が弓を装備している場合、一撃必殺(敵専用)
+;純狐専用の技「げい殺しの計」専用
+;----------------------------------------------
+@EFFECT_ID_50, ARG, ARG:1
+IF CFLAG:装備 >= 575 && CFLAG:装備 <= 589
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %STR:ARG%「弓を持つ……ということは貴方もげいの一味なのね。絶対に許さない！」
+	PRINTFORML 一撃必殺！
+	PRINTFORMW %STR:(ARG:1)%は倒れた！
+	;多分これで即死になるはず
+	TFLAG:(556+10*ARG:1) = 0
+	RESETCOLOR
+ELSE
+	PRINTFORML しかし、上手く決まらなかった！
+ENDIF
+
+
+;----------------------------------------------
+;51:　自分の攻撃と素早さを2段階上昇させる
+;----------------------------------------------
+@EFFECT_ID_51, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%の攻撃と素早さが大幅に上がった！
+TFLAG:(651+ARG) += 2
+TFLAG:(663+ARG) += 2
+RESETCOLOR
+
+;----------------------------------------------
+;52:　相手の能力ランクの内、上昇した能力ランクのみを打ち消す
+;----------------------------------------------
+@EFFECT_ID_52, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %STR:(ARG:1)%にかかっている、有利な能力変化を打ち消した！
+FOR LOCAL, 651, 679, 10
+	IF TFLAG:(LOCAL+ARG) >= 1
+		TFLAG:(LOCAL+ARG) = 0
+	ENDIF
+NEXT
+RESETCOLOR
+
+;----------------------------------------------
+;53:　相手の気力を、最大値の3割分削る
+;----------------------------------------------
+@EFFECT_ID_53, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+
+LOCAL = TFLAG:(551+ARG:1*10)*3/10
+
+PRINTFORMW %STR:(ARG:1)%の気力を{LOCAL}削った！
+TFLAG:(557+ARG:1*10) = MAX(TFLAG:(557+ARG:1*10)-LOCAL, 0)
+RESETCOLOR
+
+;----------------------------------------------
+;54:　相手が半裸以上の場合、気力を最大値の2割分削る
+;----------------------------------------------
+@EFFECT_ID_54, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+
+LOCAL = TFLAG:(551+ARG:1*10)*2/10
+
+;半裸以上の場合かどうかを見る
+;(輝夜側の場合、服の半裸/全裸属性を見る)
+
+;条件式が長くなるので、2つに分岐して、どちらにも当てはまらない場合はRETURNで終了させる
+IF (ARG:1 >= 3 && TFLAG:(609+ARG:1) >= 1)
+	
+;布きれ系の服装は負のIDを持つため、先にCFLAGの値を見てDITEMTYPEを見なくて済むようにする
+ELSEIF CFLAG:服装 < 0 || (ARG:1 <= 2 && CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 >= 1)
+	
+;上記の条件に当てはまらない場合、RETURNで終了させる
+ELSE
+	RESETCOLOR
+	RETURN 0
+ENDIF
+
+;PRINTFORML 身体を曝け出している%CALLNAME:TARGET%は身体に纏わりつく瘴気に、気力を奪われる……
+PRINTFORMW %STR:(ARG:1)%の気力を{LOCAL}削った！
+TFLAG:(557+ARG:1*10) = MAX(TFLAG:(557+ARG:1*10)-LOCAL, 0)
+RESETCOLOR
+
+;----------------------------------------------
+;55:　相手の気力が0の場合、相手を戦闘不能にする
+;----------------------------------------------
+@EFFECT_ID_55, ARG, ARG:1
+CALL SETCOLOR_PALAMUP
+
+RESETCOLOR
+PRINTFORMW 滲み出た瘴気は気力が尽きた敵を昏睡させる！
+;相手の気力が0の場合、戦闘不能にする
+IF TFLAG:(557+ARG:1*10) == 0
+	PRINTFORML %STR:(ARG:1)%は倒れた！
+	TFLAG:(500+ARG:1) |= 1p7
+	TFLAG:(556+ARG:1*10) = 0
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %STR:(ARG:1)%は平気な顔をしている！
+ENDIF
+RESETCOLOR
+
+
+;----------------------------------------------
+;56:　相手を損傷状態にする+相手の素早さを3段階下げる
+;----------------------------------------------
+@EFFECT_ID_56, ARG, ARG:1
+IF !GETBIT(TFLAG:(500+ARG:1), 1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %STR:(ARG:1)%を損傷状態にした！
+	RESETCOLOR
+	TFLAG:(500+ARG:1) |= 1p1
+	TFLAG:(627+ARG:1) = 5
+ENDIF
+
+CALL SETCOLOR_PALAMDOWN
+IF TFLAG:(663+ARG:1) <= -3
+	PRINTFORMW %STR:(ARG:1)%の素早さはこれ以上下がらない！
+ELSE
+	PRINTFORMW %STR:(ARG:1)%の素早さが大幅に下がった！
+	TFLAG:(663+ARG:1) = MAX(TFLAG:(663+ARG:1)-3, -3)
+ENDIF
+
+
+RESETCOLOR
+
+

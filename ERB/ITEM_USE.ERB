@@ -1,0 +1,1103 @@
+﻿;================================================
+;アイテム使用
+;始点と終点を項目ごとに用意し、リストアップ関数→入力関数へ移行する
+
+;================================================
+@SHOP_ITEM_USE
+#DIM LIST_START, 5
+#DIM LIST_END, 5
+
+
+PRINTFORML どのアイテムを使用しますか？
+CALL SETCOLOR_ABL
+PRINTFORML ～特殊アイテム～
+RESETCOLOR
+;510～516　特殊アイテム
+CALL LISTUP_ITEM, 510, 516, "アイテム"
+DRAWLINE
+;518～521　回復アイテム
+CALL SETCOLOR_ABL
+PRINTFORML ～回復アイテム～
+RESETCOLOR
+CALL LISTUP_ITEM, 517, 521, "アイテム"
+DRAWLINE
+;522～549　その他
+CALL SETCOLOR_ABL
+PRINTFORML ～その他～
+RESETCOLOR
+CALL LISTUP_ITEM, 522, 549, "アイテム"
+DRAWLINE
+;800～809　素質の素
+CALL SETCOLOR_ABL
+PRINTFORML ～イベントアイテム～
+RESETCOLOR
+CALL LISTUP_ITEM, 700, 799, "アイテム"
+DRAWLINE
+;800～809　素質の素
+CALL SETCOLOR_ABL
+PRINTFORML ～経験の素～
+RESETCOLOR
+CALL LISTUP_ITEM, 800, 809, "アイテム"
+DRAWLINE
+;810～821　心理的作用アイテム
+CALL SETCOLOR_ABL
+PRINTFORML ～心理的作用～
+RESETCOLOR
+CALL LISTUP_ITEM, 810, 826, "アイテム"
+DRAWLINE
+
+CALL ITEM_USE, 510, 549, "教育", "省略", 800, 826
+IF RESULT == 3
+	RESTART
+ENDIF
+
+;===========================================
+;リスト表示関数
+;ARG　　始点
+;ARG:1　終点
+;ARGS　 何のリストか
+;===========================================
+@LISTUP_ITEM, ARG, ARG:1, ARGS
+#DIM L_LOCAL, 1
+
+LOCAL = 0
+
+FOR L_LOCAL, ARG, ARG:1+1
+	IF ARGS == "アイテム" && ITEM:L_LOCAL
+		PRINTFORML [{L_LOCAL}] - %ITEMNAME:L_LOCAL%　×　{ITEM:L_LOCAL}
+		LOCAL += 1
+	ENDIF
+NEXT
+
+;何もアイテムが無い場合
+IF !LOCAL
+	PRINTL なし
+ENDIF
+
+;===========================================
+;アイテム使用の汎用関数
+;ARGとARG:1で範囲を指定して使おう
+;ARG　 　　始点
+;ARG:1 　　終点
+;ARGS　　　戦闘中かどうか
+;ARGS:1　　リスト表示を省略するか否か　表示or省略
+;ARG:2n　　2つ目以降のリストの始点
+;ARG:2n+1　2つ目以降のリストの終点
+;===========================================
+@ITEM_USE, ARG, ARG:1, ARGS, ARGS:1, ARG:2, ARG:3, ARG:4, ARG:5, ARG:6, ARG:7
+$BACK_LOOP
+DRAWLINE
+
+;効果的使用数
+;疲労度回復アイテム使用時にのみ使用。疲労度を0にするために必要な使用数を格納する
+;時間の都合上、一旦没
+;#DIM effect_quart, 1
+
+;省略処理でなければ表示する
+IF ARGS:1 != "省略"
+	PRINTL どのアイテムを使用しますか？
+	LOCAL = 0
+
+	FOR COUNT, ARG, ARG:1+1
+		IF ITEM:COUNT
+			PRINTFORML [{COUNT}] - %ITEMNAME:COUNT%　×　{ITEM:COUNT}
+		ENDIF
+		LOCAL += 1
+	NEXT
+	PRINTL 
+ENDIF
+PRINTFORML [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN -1
+;イベントアイテム(700～799)は例外的に追加
+ELSEIF RESULT != 0 && INRANGE(RESULT, 700,799) || (INRANGE(RESULT , ARG , ARG:1) || INRANGE(RESULT, ARG:2, ARG:3) || INRANGE(RESULT, ARG:4, ARG:5) || INRANGE(RESULT, ARG:6, ARG:7)) && ITEM:RESULT
+	DRAWLINE
+	LOCAL = RESULT
+	PRINTFORML ○%ITEMNAME:LOCAL%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{LOCAL}
+	DRAWLINE
+	;イベントアイテムは使用できない
+	IF INRANGE(LOCAL, 700, 799)
+		PRINTW このアイテムは使用できません
+		RETURN 3
+	ENDIF
+	PRINTL このアイテムを使用しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 1
+		RETURN 3
+	ENDIF
+	
+	;能力アップアイテムの場合、使う個数を選択させる
+	;おにぎり、葛湯、干し肉も使う個数を選択させる
+	IF (INRANGE(LOCAL,515,519) || INRANGE(LOCAL,522,526) || LOCAL == 542) && ITEM:LOCAL >= 2
+
+		DRAWLINE
+		PRINTL いくつ使用しますか？
+		PRINTFORML (現在の所持数:{ITEM:LOCAL})
+		PRINTFORML (0～{ITEM:LOCAL}の範囲で入力可。0入力でキャンセル)
+		IF INRANGE(LOCAL, 515, 519)
+			PRINTFORML 現在の疲労度:{BASE:ストレス}
+			PRINTL 
+		ENDIF
+		PRINTL [1] - 1個
+		PRINTL [2] - 2個
+		IF ITEM:LOCAL >= 5
+			PRINTL [5] - 5個
+		ENDIF
+		PRINTFORML [{ITEM:LOCAL}] - 全部
+		PRINTL [0] - キャンセル
+		
+		$INPUT_LOOP_B
+		INPUT
+		
+		;0入力はキャンセル
+		IF RESULT == 0
+			RETURN 3
+		ELSEIF RESULT <= ITEM:LOCAL
+			LOCAL:1 = RESULT
+		ELSE
+			PRINTL 入力が不正です
+			GOTO INPUT_LOOP_B
+		ENDIF
+	ELSE
+		LOCAL:1 = 1
+	ENDIF
+	
+	
+	ITEM:LOCAL -= LOCAL:1
+	IF ARGS == "教育"
+		;既に小麦色だと娼婦のオーラは使えない
+		IF LOCAL == 544 && CFLAG:肌の色 == 2
+			PRINTFORML これ以上肌の色を変えることはできない
+			GOTO INPUT_LOOP
+		ENDIF
+		PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%に%ITEMNAME:LOCAL%を使った……
+	ENDIF
+	IF INRANGE(LOCAL,515,519) || INRANGE(LOCAL,522,526) || LOCAL == 542
+		CALLFORM USE_ITEM_{LOCAL}, LOCAL:1
+	ELSE
+		CALLFORM USE_ITEM_{LOCAL}
+		IF RESULT == -2
+			RETURN -2
+		ENDIF
+	ENDIF
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+RETURN 3
+
+;================================================
+;一部疲労度回復アイテムの回復量定義
+;2017/1/18時点、使用箇所無し
+;ARG　アイテムの種類
+;================================================
+@EFFECT_HEAL_ITEM, ARG
+#FUNCTION
+
+;アイテムIDを格納する
+#DIM item_id, 1
+;効果量
+#DIM effect, 1
+
+effect = 0
+item_id = ARG
+
+SELECTCASE item_id
+	;葛湯
+	CASE 517
+		effect = 5
+	;おにぎり
+	CASE 518
+		effect = 10
+	;干し肉
+	CASE 519
+		effect = 30
+	;免厄の妙薬
+	CASE 520
+		effect = 60
+ENDSELECT
+
+RETURNF effect
+
+;================================================
+;使用したアイテムの効果
+;================================================
+;-----------------------------------
+;510　須臾のモチーフ
+;-----------------------------------
+@USE_ITEM_510, ARG
+PRINTFORML このアイテムを使用することはできない
+
+;-----------------------------------
+;511　前世譚のモチーフ
+;-----------------------------------
+@USE_ITEM_511, ARG
+PRINTFORML このアイテムを使用することはできない
+
+
+;-----------------------------------
+;515　悪魔の書
+;-----------------------------------
+@USE_ITEM_515, ARG
+PRINTFORML 怪しい紫煙が%CALLNAME:TARGET%を包む……
+PRINTFORMW %CALLNAME:TARGET%の心が少し薄汚れたようだ
+CALL SETCOLOR_PALAMDOWN
+PRINTFORML %CALLNAME:TARGET%の堕落が{100*ARG}上がった……
+RESETCOLOR
+BASE:堕落 += 100 * ARG
+CALL UP_STATUS
+
+;-----------------------------------
+;516　浄化の書
+;-----------------------------------
+@USE_ITEM_516, ARG
+PRINTFORML 神聖な光が%CALLNAME:TARGET%を包む……
+PRINTFORMW %CALLNAME:TARGET%の心が少し綺麗になったようだ
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の堕落が{50*ARG}下がった！
+RESETCOLOR
+BASE:堕落 -= 50 * ARG
+CALL UP_STATUS
+
+;-----------------------------------
+;517　葛湯
+;-----------------------------------
+@USE_ITEM_517, ARG
+
+;使用数を格納する変数
+#DIM quant, 1
+;疲労度回復量を格納する変数
+#DIM heal, 1
+
+quant = ARG
+heal = MIN(BASE:ストレス,5*quant)
+
+PRINTFORML %CALLNAME:TARGET%の身体が芯から温まる……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が{heal}下がった！
+RESETCOLOR
+BASE:ストレス -= heal
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += (1 * quant)
+
+;-----------------------------------
+;518　おにぎり
+;-----------------------------------
+@USE_ITEM_518, ARG
+
+;使用数を格納する変数
+#DIM quant, 1
+;疲労度回復量を格納する変数
+#DIM heal, 1
+
+quant = ARG
+heal = MIN(BASE:ストレス,10*quant)
+
+PRINTFORML %CALLNAME:TARGET%は空いたお腹が少し膨れ、疲れが取れた！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が{heal}下がった！
+RESETCOLOR
+BASE:ストレス -= heal
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += (1 * quant)
+
+;-----------------------------------
+;519　干し肉
+;-----------------------------------
+@USE_ITEM_519, ARG
+
+;使用数を格納する変数
+#DIM quant, 1
+;疲労度回復量を格納する変数
+#DIM heal, 1
+
+quant = ARG
+heal = MIN(BASE:ストレス,30*quant)
+
+PRINTFORML 噛めば噛むほど味が染み出してくる！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が{heal}下がった！
+RESETCOLOR
+BASE:ストレス -= heal
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += (1 * quant)
+
+;-----------------------------------
+;520　免厄の妙薬
+;-----------------------------------
+@USE_ITEM_520
+PRINTFORML 様々な効能が身体中に巡る……！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が60下がった！
+RESETCOLOR
+BASE:ストレス -= 60
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += 1
+
+;-----------------------------------
+;521　月のドリンク
+;-----------------------------------
+@USE_ITEM_521
+PRINTFORML 元気一発！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が100下がった！
+RESETCOLOR
+BASE:ストレス -= 100
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += 1
+
+;-----------------------------------
+;522　桃の香り
+;-----------------------------------
+@USE_ITEM_522, ARG
+LOCAL = LIMIT(BASE:美麗/300, 0, 2)
+
+PRINTFORML 辺り一面に仄かな桃の香りが漂う……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の美麗が{(4-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:美麗 = LIMIT(BASE:美麗+(4-LOCAL)*ARG, 0, 1000)
+
+;-----------------------------------
+;523　記憶水晶
+;-----------------------------------
+@USE_ITEM_523, ARG
+LOCAL = LIMIT(BASE:知力/300, 0, 2)
+
+PRINTFORML %CALLNAME:TARGET%は水晶に浮かんだ様々な情景を見つめている……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の知力が{(4-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:知力 = LIMIT(BASE:知力+(4-LOCAL)*ARG, 0, 1000)
+
+;-----------------------------------
+;524　疎通のオーブ
+;-----------------------------------
+@USE_ITEM_524, ARG
+LOCAL = LIMIT(BASE:疎通/300, 0, 2)
+
+PRINTFORML %CALLNAME:TARGET%を仄かに暖かい光が包み込んだ……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疎通が{(4-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:疎通 = LIMIT(BASE:疎通+(4-LOCAL)*ARG, 0, 1000)
+
+;-----------------------------------
+;525　月刊クックムーン
+;-----------------------------------
+@USE_ITEM_525, ARG
+LOCAL = LIMIT(BASE:家事/300, 0, 2)
+
+PRINTFORML %CALLNAME:TARGET%はページをめくる度に頷いている……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の家事が{(4-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:家事 = LIMIT(BASE:家事+(4-LOCAL)*ARG, 0, 1000)
+
+;-----------------------------------
+;526　清めのお香
+;-----------------------------------
+@USE_ITEM_526, ARG
+LOCAL = LIMIT(BASE:信仰/300, 0, 2)
+
+PRINTFORML %CALLNAME:TARGET%はお香の煙を被りながら手を合わせて祈っている……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の信仰が{(4-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:信仰 = LIMIT(BASE:信仰+(4-LOCAL)*ARG, 0, 1000)
+
+;-----------------------------------
+;527　天使の施し
+;-----------------------------------
+@USE_ITEM_527, ARG
+PRINTFORMW %CALLNAME:TARGET%の口を抑え、無理矢理錠剤を飲ませた
+PRINTFORMW 飲ませてから少し経つと身体を痙攣させ始め、寒いと呟いて太腿を擦り合わせ始めた
+PRINTFORML 痙攣は徐々に大きなっていき、腰が浮く程になったかと思うと
+PRINTFORMW 甲高い絞れた声をあげながら腰を反らし、濡れていた股間から潮を吹いた
+PRINTFORMW しばらく経つと共に腰を降ろし、はあはあと荒い息をついた
+PRINTFORML 呼吸が落ち付いた頃には%CALLNAME:TARGET%もすっかり言葉を出す余裕を得ていたが
+PRINTFORMW 小声で世界が廻ってる、天使が見えるとうわ言を呟くだけであった……
+CALL SETCOLOR_BAD
+PRINTFORML ＜%CALLNAME:TARGET%の精神は粉々に破壊された！＞
+PRINTFORMW ＜%CALLNAME:TARGET%の性格は[隷属]になった！＞
+CFLAG:性格 = 7
+RESETCOLOR
+
+;-----------------------------------
+;528　アダーストーン
+;-----------------------------------
+@USE_ITEM_528, ARG
+#DIM L_LOCAL, 1
+PRINTFORML %CALLNAME:TARGET%はアダーストーンを眺めた
+PRINTFORML 奇妙な色彩を帯びた光が%CALLNAME:TARGET%を包み込む……
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %CALLNAME:TARGET%の能力が変化した！？
+RESETCOLOR
+
+;5(美麗)～14(堕落)でランダムに能力を決定する
+FOR L_LOCAL, 5, 15
+	BASE:L_LOCAL = RAND:(LIMIT(FLAG:年数, 1, 10) * 100)
+NEXT
+
+;気質変異
+;40～49を変化
+FOR L_LOCAL, 40, 50
+	BASE:L_LOCAL = RAND:(LIMIT(FLAG:年数, 1, 4) * 150)
+NEXT
+
+;素質付与
+
+;15％の確率で習得早い
+IF RAND:100 + 1 <= 15 && !TALENT:習得早い
+	TALENT:習得早い = 1
+	TALENT:習得遅い = 0
+ENDIF
+;15％の確率で習得遅い
+IF RAND:100 + 1 <= 15 && !TALENT:習得遅い
+	TALENT:習得遅い = 1
+	TALENT:習得早い = 0
+ENDIF
+
+;10％の確率で敏感体質
+IF RAND:100 + 1 <= 10 && !TALENT:敏感体質
+	TALENT:敏感体質 = 1
+	TALENT:不感体質 = 0
+ENDIF
+;10％の確率で不感体質
+IF RAND:100 + 1 <= 10 && !TALENT:不感体質
+	TALENT:不感体質 = 1
+	TALENT:敏感体質 = 0
+ENDIF
+
+;5％の確率で即落ち
+IF RAND:100 + 1 <= 5 && !TALENT:即堕ち
+	TALENT:即堕ち = 1
+	TALENT:嫌厭色情 = 0
+ENDIF
+;3％の確率で嫌厭色情
+IF RAND:100 + 1 <= 3 && !TALENT:嫌厭色情
+	TALENT:嫌厭色情 = 1
+	TALENT:即堕ち = 0
+ENDIF
+
+;-----------------------------------
+;529　妊娠検査薬
+;-----------------------------------
+@USE_ITEM_529, ARG
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の姿をオーブ越しに捉えた
+IF CFLAG:妊娠
+	CALL SETCOLOR_PREGNANCY
+	PRINTFORMW どうやら妊娠しているようだ……
+ELSE
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 妊娠していないようだ
+ENDIF
+RESETCOLOR
+
+
+;-----------------------------------
+;530　檜の人形
+;-----------------------------------
+@USE_ITEM_530, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:530%を女中に渡した
+CALL SETCOLOR_VALUE
+PRINTFORMW 評価が100上がった！
+CFLAG:評価 += 100
+RESETCOLOR
+
+;-----------------------------------
+;531　竹の人形
+;-----------------------------------
+@USE_ITEM_531, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:531%を女中に渡した
+CALL SETCOLOR_VALUE
+PRINTFORMW 評価が200上がった！
+CFLAG:評価 += 200
+RESETCOLOR
+
+;-----------------------------------
+;532　榊の人形
+;-----------------------------------
+@USE_ITEM_532, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:532%を女中に渡した
+CALL SETCOLOR_VALUE
+PRINTFORMW 評価が300上がった！
+CFLAG:評価 += 300
+RESETCOLOR
+
+;-----------------------------------
+;533　ハートの鱗
+;-----------------------------------
+@USE_ITEM_533, ARG
+PRINTFORML %CALLNAME:MASTER%は%ITEMNAME:533%を%CALLNAME:TARGET%に渡した
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 主人への友好度が10上がった！
+CFLAG:主人への友好度 += 10
+RESETCOLOR
+CALL UP_STATUS
+
+;-----------------------------------
+;534　暖かい言葉
+;-----------------------------------
+@USE_ITEM_534, ARG
+PRINTFORML %CALLNAME:MASTER%は%ITEMNAME:534%を%CALLNAME:TARGET%に渡した
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 主人への友好度が20上がった！
+CFLAG:主人への友好度 += 20
+RESETCOLOR
+CALL UP_STATUS
+
+;-----------------------------------
+;535　兎のぬいぐるみ
+;-----------------------------------
+@USE_ITEM_535, ARG
+PRINTFORML %CALLNAME:MASTER%は%ITEMNAME:535%を%CALLNAME:TARGET%に渡した
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 主人への友好度が40上がった！
+CFLAG:主人への友好度 += 40
+RESETCOLOR
+CALL UP_STATUS
+
+LOADGLOBAL
+;ぬいぐるみをあげた回数+1
+GLOBAL:505 += 1
+SAVEGLOBAL
+
+;-----------------------------------
+;535　初心に帰れ
+;-----------------------------------
+@USE_ITEM_537, ARG
+PRINTFORMW %CALLNAME:TARGET%は%ITEMNAME:537%を覗きこんだ
+PRINTFORML 身体に刻まれた性交の刻印が消えていく……
+IF TALENT:傷物
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 主人への友好度が10上がった！
+	CFLAG:主人への友好度 += 10
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 主人への友好度が10下がった……
+	CFLAG:主人への友好度 -= 10
+ENDIF
+CALL SETCOLOR_PALAMUP
+PRINTFORMW [処女]が復活した！
+TALENT:処女 = 1
+TALENT:傷物 = 0
+TALENT:依存 = 0
+RESETCOLOR
+CALL UP_STATUS
+
+;-----------------------------------
+;536　淡水色の聖水
+;-----------------------------------
+@USE_ITEM_536, ARG
+PRINTFORML 淡い水色が光に照らされ、美しい艶を醸し出す
+PRINTFORML %CALLNAME:TARGET%の心が癒されていく……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が10下がった！
+PRINTFORML %CALLNAME:TARGET%の主人への友好度が10上がった！
+RESETCOLOR
+BASE:ストレス -= 10
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+CFLAG:主人への友好度 += 10
+CALL UP_STATUS
+
+;-----------------------------------
+;539　高脂肪ミルク
+;-----------------------------------
+@USE_ITEM_539, ARG
+PRINTFORML まろやかな舌触りが魅力的だ……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が15下がった！
+RESETCOLOR
+BASE:ストレス -= 15
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += 2
+BASE:発育要因 += 2
+
+;-----------------------------------
+;540　禁断のミルク
+;-----------------------------------
+@USE_ITEM_540, ARG
+PRINTFORML 濃厚なコクととろける舌触りは最高だが
+PRINTFORML どこか心が桃色に包まれてしまう……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が20下がった！
+RESETCOLOR
+PRINTFORML 淫妖経験+3
+EXP:淫妖経験 += 3
+BASE:ストレス -= 20
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += 3
+BASE:発育要因 += 3
+
+;-----------------------------------
+;541　牡蠣
+;-----------------------------------
+@USE_ITEM_541, ARG
+PRINTFORML ぷりぷりとした身はとてもおいしく
+PRINTFORMW 解凍したとしても鮮度が損なわれていない……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が10下がった！
+PRINTFORML 美麗経験+1
+EXP:美麗経験 += 1
+BASE:ストレス -= 10
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+BASE:栄養値 += 1
+RESETCOLOR
+
+;-----------------------------------
+;542　人魚の雫
+;-----------------------------------
+@USE_ITEM_542, ARG
+LOCAL = LIMIT(BASE:美麗/300, 0, 2)
+
+PRINTFORML 心なしか肌の艶が増した気がする……
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の美麗が{(5-LOCAL)*ARG}上昇した！
+RESETCOLOR
+BASE:美麗 = LIMIT(BASE:美麗+(5-LOCAL)*ARG, 0, 1000)
+BASE:変異値／人魚 += 20
+
+;-----------------------------------
+;543　おいしい水
+;-----------------------------------
+@USE_ITEM_543, ARG
+PRINTFORML すっきりする喉越しは爽快感を与えるらしい
+PRINTFORML 飲む姿を見ているだけでも清々しそうだ
+CALL SETCOLOR_PALAMUP
+PRINTFORML %CALLNAME:TARGET%の疲労度が7下がった！
+RESETCOLOR
+BASE:ストレス -= 7
+IF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+
+;-----------------------------------
+;544　まつぼっくり
+;-----------------------------------
+@USE_ITEM_544, ARG
+PRINTFORML 種子が宙を舞う様は何か考えさせられる……
+CALL SETCOLOR_PALAMUP
+PRINTW 技能ポイントが20上がった！
+RESETCOLOR
+BASE:技能 += 20
+
+
+
+;-----------------------------------
+;545　娼婦のオーラ
+;-----------------------------------
+@USE_ITEM_545, ARG
+PRINTFORML 妖しい霧が%CALLNAME:TARGET%の身体を包み込んだ……
+CALL CHANGE_SKINCOLOR, TARGET, "強制"
+
+
+;=============================================
+;戦闘中のアイテム使用
+;=============================================
+;-----------------------------------
+;601　ジェルクリーナー
+;-----------------------------------
+@USE_ITEM_601, ARG
+$INPUT_LOOP
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+;対象が粘性体でない場合は弾く
+IF RESULT == -1
+	ITEM:601 += 1
+	RETURN -2
+ELSEIF STR:(RESULT+6) != "粘性体"
+	PRINTL 相手が粘性体ではない
+	GOTO INPUT_LOOP
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 601
+RETURN 0
+
+@ATTACK_MOVE_601, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%にジェルクリーナーを浴びせた！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %STR:(TFLAG:(530+ARG))%のＨＰは半分になった！
+TFLAG:(556+TFLAG:(530+ARG)*10) /= 2
+RESETCOLOR
+
+;-----------------------------------
+;601　退魔の松明
+;-----------------------------------
+@USE_ITEM_602, ARG
+$INPUT_LOOP
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数
+;対象が粘性体でない場合は弾く
+IF RESULT == -1
+	ITEM:602 += 1
+	RETURN -2
+ELSEIF STR:(TFLAG:(530+ARG)+6) != "箱"
+	PRINTL 相手が箱ではない
+	GOTO INPUT_LOOP
+ELSEIF TFLAG:(500+TFLAG:(530+ARG))
+	PRINTL 既に状態異常にかかっている
+	GOTO INPUT_LOOP
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 602
+RETURN 0
+
+@ATTACK_MOVE_602, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に松明を投げた！
+CALL SETCOLOR_PALAMUP
+PRINTFORML %STR:(TFLAG:(530+ARG))%は損傷状態になった！
+TFLAG:(500+TFLAG:(530+ARG)) = 2
+RESETCOLOR
+
+;-----------------------------------
+;711　ワールブルクの石
+;-----------------------------------
+@USE_ITEM_711, ARG
+PRINTFORML このアイテムを使用することはできない
+
+;-----------------------------------
+;800　姫様の素
+;-----------------------------------
+@USE_ITEM_800, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:800%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "姫様", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 美麗経験+1
+EXP:美麗経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;801　メイドの素
+;-----------------------------------
+@USE_ITEM_801, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:801%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "メイド", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 家事経験+1
+EXP:家事経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;802　シスターの素
+;-----------------------------------
+@USE_ITEM_802, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:802%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "シスター", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 信仰経験+1
+EXP:信仰経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;803　ゴスロリの素
+;-----------------------------------
+@USE_ITEM_803, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:803%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "ゴスロリ", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 知力経験+1
+EXP:知力経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;804　花嫁の素
+;-----------------------------------
+@USE_ITEM_804, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:804%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "花嫁", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 主人への友好度+2
+CFLAG:主人への友好度 += 2
+RESETCOLOR
+
+;-----------------------------------
+;805　淫魔の素
+;-----------------------------------
+@USE_ITEM_805, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:805%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "淫魔", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 堕落経験+1
+EXP:堕落経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;806　娼婦の素
+;-----------------------------------
+@USE_ITEM_806, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:806%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "乞食", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 淫妖経験+1
+EXP:淫妖経験 += 1
+RESETCOLOR
+
+
+;-----------------------------------
+;807　武士の素
+;-----------------------------------
+@USE_ITEM_807, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:807%を覗きこんだ
+;属性変化処理
+CALL CHANGE_ELEMENT_OTHER, "武士", 1
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 体力経験+1
+EXP:体力経験 += 1
+RESETCOLOR
+
+;-----------------------------------
+;810　美麗のトリビア
+;-----------------------------------
+@USE_ITEM_810, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:810%を使った
+IF !GETBIT(CFLAG:興味, 0)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ美麗への興味が沸いた！
+	CFLAG:興味 |= 1p0
+	CFLAG:トリビア |= 1p0
+ELSE
+	PRINTFORML 既に美麗に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:美麗のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;811　知力のトリビア
+;-----------------------------------
+@USE_ITEM_811, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:811%を使った
+IF !GETBIT(CFLAG:興味, 1)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ知力への興味が沸いた！
+	CFLAG:興味 |= 1p1
+	CFLAG:トリビア |= 1p1
+ELSE
+	PRINTFORML 既に知力に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:知力のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;812　疎通のトリビア
+;-----------------------------------
+@USE_ITEM_812, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:812%を使った
+IF !GETBIT(CFLAG:興味, 2)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ疎通への興味が沸いた！
+	CFLAG:興味 |= 1p2
+	CFLAG:トリビア |= 1p2
+ELSE
+	PRINTFORML 既に疎通に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:疎通のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;813　淫妖のトリビア
+;-----------------------------------
+@USE_ITEM_813, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:813%を使った
+IF !GETBIT(CFLAG:興味, 8)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ淫妖への興味が沸いた！
+	CFLAG:興味 |= 1p8
+	CFLAG:トリビア |= 1p8
+ELSE
+	PRINTFORML 既に淫妖に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:淫妖のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;814　堕落のトリビア
+;-----------------------------------
+@USE_ITEM_814, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:814%を使った
+IF !GETBIT(CFLAG:興味, 9)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ堕落への興味が沸いた！
+	CFLAG:興味 |= 1p9
+	CFLAG:トリビア |= 1p8
+ELSE
+	PRINTFORML 既に堕落に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:堕落のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;815　家事のトリビア
+;-----------------------------------
+@USE_ITEM_815, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:815%を使った
+IF !GETBIT(CFLAG:興味, 3)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ家事への興味が沸いた！
+	CFLAG:興味 |= 1p3
+	CFLAG:トリビア |= 1p3
+ELSE
+	PRINTFORML 既に家事に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:家事のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;816　信仰のトリビア
+;-----------------------------------
+@USE_ITEM_816, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:816%を使った
+IF !GETBIT(CFLAG:興味, 4)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ信仰への興味が沸いた！
+	CFLAG:興味 |= 1p4
+	CFLAG:トリビア |= 1p4
+ELSE
+	PRINTFORML 既に信仰に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:信仰のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;817　体力のトリビア
+;-----------------------------------
+@USE_ITEM_817, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:817%を使った
+IF !GETBIT(CFLAG:興味, 5)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 半月の間だけ体力への興味が沸いた！
+	CFLAG:興味 |= 1p5
+	CFLAG:トリビア |= 1p5
+ELSE
+	PRINTFORML 既に体力に興味が沸いているようだ
+	PRINTFORMW 今度の楽しみにとっておこう……
+	ITEM:体力のトリビア += 1
+ENDIF
+RESETCOLOR
+
+;-----------------------------------
+;821　気付きの種
+;-----------------------------------
+@USE_ITEM_821, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:821%を覗きこんだ
+IF !CFLAG:気付き状態
+	CALL SETCOLOR_PALAMUP
+	
+	PRINTFORML %CALLNAME:TARGET%は１ターンの間、気付きがよくなった！
+	CFLAG:気付き状態 = 2
+ELSE
+	PRINTFORML ……と思ったが、既に気付きがよくなってようなので意味がない
+	PRINTFORMW 覗くのを止めた
+	ITEM:気付きの種 += 1
+ENDIF
+
+;-----------------------------------
+;822　癒しのオーラ
+;-----------------------------------
+@USE_ITEM_822, ARG
+PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:822%を浴びた
+IF CFLAG:やる気 < 5
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%のやる気が回復した！
+	RESETCOLOR
+	CFLAG:やる気 += 1
+ELSE
+	PRINTFORML これ以上やる気は回復しないようだ……
+	ITEM:癒しのオーラ += 1
+ENDIF
+
+;-----------------------------------
+;823　討論会招待券
+;-----------------------------------
+@USE_ITEM_823, ARG
+PRINTFORML 討論会が開催される事になった！
+CALL DEBATE_BASE
+
+;-----------------------------------
+;824　正道の輝石
+;-----------------------------------
+@USE_ITEM_824, ARG
+PRINTFORMW このアイテムは使用する必要がありません
+ITEM:正道の輝石 += 1
+
+;-----------------------------------
+;825　渾沌の力
+;-----------------------------------
+@USE_ITEM_825, ARG
+PRINTFORML %CALLNAME:TARGET%と純狐の二人が出会った記憶が消えていく……
+
+CALL SETCOLOR_PALAMUP
+PRINTFORMW %CALLNAME:TARGET%は純狐が関わるイベントに遭遇しなくなりました！
+CFLAG:純狐フラグ = 0
+;このアイテムは何度でも使える親切設計
+ITEM:渾沌の力 += 1
+RESETCOLOR
+
+
+;-----------------------------------
+;826　夜遊びの球
+;-----------------------------------
+@USE_ITEM_826, ARG
+
+;王宮を追放されている場合、使用不可
+;種族が月人以外の場合も使用不可
+IF !FLAG:王宮追放 && !TALENT:人魚 && !TALENT:淫魔 && !CFLAG:使用中／夜遊びの球
+	PRINTFORML %CALLNAME:TARGET%は茶色の煙に包まれた！
+
+	;姿、素質等変更処理
+	CALL TRANSFORM_NIGHT, TARGET, "変化"
+ELSE
+	IF CFLAG:使用中／夜遊びの球
+		PRINTFORML 既に夜遊びの球を使用しているため、このアイテムを使用することはできない
+	ELSEIF FLAG:王宮追放
+		PRINTFORML 王宮を追放されているため、このアイテムを使用することはできない
+	ELSE
+		PRINTFORML 種族が月人以外になっているため、このアイテムを使用することはできない
+	ENDIF
+ENDIF
+
+;このアイテムは何度でも使える親切設計
+ITEM:夜遊びの球 += 1
+RESETCOLOR
+
+

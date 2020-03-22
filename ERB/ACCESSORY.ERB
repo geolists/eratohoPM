@@ -1,0 +1,568 @@
+﻿;=================================================
+;装飾品変更
+;=================================================
+@CHANGE_ACCESSORY
+#DIM SET_TAG, 1
+#DIM CLOTHE, 2
+#DIM MODE,1
+#DIM START,1
+#DIM END,1
+#DIM TEMP, 1
+#DIM TOTAL, 1
+#DIM NG, 20
+#DIM CLO_ELE, 1
+#DIM L_LOCAL, 1
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+;属性を引き出しておく
+
+$BACK_LOOP_1
+DRAWLINE
+PRINTFORML どの装飾品を付け替えますか？
+CALL KAREIDO
+
+TOTAL = RESULT
+CFLAG:総合華麗度 = RESULT
+
+
+PRINTFORM 華麗度:
+IF TOTAL > 0
+	FOR LOCAL, 0, TOTAL
+		SETCOLOR 255,178,64
+		PRINTFORM %UNICODE(0x22C6)%
+	NEXT
+ELSEIF TOTAL < 0
+	LOCAL:1 = TOTAL * -1
+	FOR LOCAL, 0, LOCAL:1
+		SETCOLOR 64,64,255
+		PRINTFORM %UNICODE(0x22C6)%
+	NEXT
+ENDIF
+RESETCOLOR
+PRINTL 
+
+REPEAT 6
+	CALL CONVERT_ACCE, COUNT
+	PRINTFORM [{COUNT}] - %STR,12,LEFT%
+	IF !CFLAG:("日用品／"+STR+"")
+		PRINTFORML :なし
+	ELSE
+		PRINTFORM :%ITEMNAME:(CFLAG:("日用品／"+STR+"")),16,LEFT%
+		IF CFLAG:("見た目／"+STR+"") > 0
+			FOR LOCAL, 0, CFLAG:("見た目／"+STR+"")
+				SETCOLOR 255,178,64
+				PRINT ☆
+			NEXT
+		ELSEIF CFLAG:("見た目／"+STR+"") < 0
+			LOCAL:1 = CFLAG:("見た目／"+STR+"") * -1
+			FOR LOCAL, 0, LOCAL:1
+				SETCOLOR 64,64,255
+				PRINT ☆
+			NEXT
+		ENDIF
+		RESETCOLOR
+		PRINTL 
+	ENDIF
+REND
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN 1
+ELSEIF RESULT <= 5
+	SET_TAG = 260 + RESULT
+	MODE = RESULT
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+$BACK_LOOP_2
+DRAWLINE
+
+CLOTHE = 0
+CLOTHE:1 = 0
+IF SET_TAG == 260
+	REPEAT 8
+		START = 400
+		CLOTHE = START + COUNT
+		
+		IF ITEM:CLOTHE
+			;シルクのカチューシャはメイド属性の衣服専用
+			;その他の属性用アイテムの処理もここに統合
+			IF CLOTHE >= 404 && !GETBIT(CLO_ELE, 2+(COUNT-4))
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			ELSE
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				NG:COUNT = 0
+			ENDIF
+		ENDIF
+	REND
+ELSEIF SET_TAG == 261
+	REPEAT 8
+		START = 410
+		CLOTHE = START + COUNT
+		
+		IF ITEM:CLOTHE
+			;エナメル靴はメイド属性の衣服専用
+			;その他の属性用アイテムの処理もここに統合
+			IF CLOTHE >= 414 && !GETBIT(CLO_ELE, 2+(COUNT-4))
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			ELSE
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				NG:COUNT = 0
+			ENDIF
+		ENDIF
+	REND
+ELSEIF SET_TAG == 262
+	START = 490
+	CLOTHE = 490
+	REPEAT 8
+		IF ITEM:CLOTHE
+			;精液風呂は精飲経験が50以上無いと使えない
+			IF CLOTHE == 496 && EXP:精飲経験 < 50
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			ELSE
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				NG:COUNT = 0
+			ENDIF
+		ENDIF
+		CLOTHE += 1
+	REND
+ELSEIF SET_TAG == 263
+	REPEAT 9
+		START = 420
+		CLOTHE = START + COUNT
+		
+		IF ITEM:CLOTHE
+			;無名土史料はメイド属性の衣服専用
+			;その他の属性用アイテムの処理もここに統合
+			IF CLOTHE >= 424 && CLOTHE < 428 && !GETBIT(CLO_ELE, 2+(COUNT-4))
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			ELSE
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				NG:COUNT = 0
+			ENDIF
+		ENDIF
+	REND
+ELSEIF SET_TAG == 264 || SET_TAG == 265
+	START = 430
+	CLOTHE = 430
+	REPEAT 16
+		IF CLOTHE == 439
+			CLOTHE = 500
+		ELSEIF CLOTHE == 504
+			CLOTHE = 507
+		ENDIF
+		
+		IF ITEM:CLOTHE && !(CFLAG:264 == CLOTHE || CFLAG:265 == CLOTHE)
+			;両穴バイブは淫妖経験が180以上でないとできない
+			IF EXP:淫妖経験 < 180 && ((CLOTHE == 507 && OTHER_ACC(500)) || (CLOTHE == 500 && OTHER_ACC(507)))
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%　両穴挿入は淫妖経験が180以上必要
+				RESETCOLOR
+				NG:COUNT = 1
+			;アナルバイブは淫妖経験100以上でないと装着できない
+			ELSEIF CLOTHE == 507 && EXP:淫妖経験 < 100
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			;ガーターベルトはメイド属性の衣服専用
+			ELSEIF CLOTHE == 431 && !GETBIT(CLO_ELE, 2)
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			;退魔の祈祷棒は巫女服専用
+			ELSEIF CFLAG:服装 < 0 || (CLOTHE == 432 && !DITEMTYPE:(CFLAG:服装):12)
+				SETCOLOR 128, 128, 128
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				RESETCOLOR
+				NG:COUNT = 1
+			ELSE
+				PRINTFORML [{CLOTHE}] - %ITEMNAME:(CLOTHE)%
+				NG:COUNT = 0
+			ENDIF
+		ENDIF
+		CLOTHE += 1
+	REND
+ENDIF
+END = CLOTHE + COUNT
+PRINTL [99] - 装飾品を外す
+PRINTL [999] - 戻る
+
+$INPUT_LOOP_2
+INPUT
+
+IF RESULT >= START && RESULT <= END && ITEM:RESULT
+	DRAWLINE
+	PRINTFORML ～～%ITEMNAME:RESULT%～～
+	LOCAL = RESULT
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{RESULT}
+	
+	DRAWLINE
+	
+	IF (LOCAL >= 500 && NG:(LOCAL-491)) || (LOCAL == 507 && NG:(LOCAL-494)) || (LOCAL < 500 && NG:(LOCAL-START))
+		PRINTW 装着するための条件を満たしていません
+		GOTO BACK_LOOP_2
+	ENDIF
+	
+	PRINTFORML [%ITEMNAME:LOCAL%]を身に着けさせますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		IF CFLAG:SET_TAG
+			TEMP = CFLAG:SET_TAG
+			CALL ACC_CHECK, SET_TAG, "脱着"
+		ENDIF
+		CFLAG:SET_TAG = LOCAL
+		CALL ACC_CHECK, SET_TAG, "装着"
+		IF RESULT == 1
+			CFLAG:SET_TAG = TEMP
+			CALL ACC_CHECK, SET_TAG, "装着"
+			GOTO BACK_LOOP_2
+		ENDIF
+	ENDIF
+	GOTO BACK_LOOP_2
+ELSEIF RESULT == 99
+	PRINTFORML 装飾品を外しますか？
+	LOCAL = RESULT
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		CALL ACC_CHECK, SET_TAG, "脱着"
+		CFLAG:SET_TAG = 0
+	ENDIF
+	GOTO BACK_LOOP_2
+ELSEIF RESULT == 999
+	GOTO BACK_LOOP_1
+ELSEIF RESULT < 400
+	PRINTL 選択範囲外です
+	GOTO INPUT_LOOP_2
+ELSE
+	PRINTL 条件を満たしていません
+	GOTO INPUT_LOOP_2
+ENDIF
+
+;---------------------------
+;装飾品のCOUNT用変換
+;---------------------------
+@CONVERT_ACCE,ARG
+IF ARG == 0
+	STR = 髪飾り
+ELSEIF ARG == 1
+	STR = 靴
+ELSEIF ARG == 2
+	STR = 入浴剤
+ELSEIF ARG == 3
+	STR = 本
+ELSEIF ARG == 4
+	STR = その他
+ELSEIF ARG == 5
+	STR = その他2
+ENDIF
+
+;---------------------------
+;装飾品による影響のチェック
+;ARG　　部位
+;ARGS　 装着or脱着
+;---------------------------
+@ACC_CHECK, ARG, ARGS
+#DIM saki, 1
+#DIM TAG, 2
+#DIM VAL, 1
+#DIM ELE, 1
+
+TAG:1 = 0
+LOCAL:1 = 0
+ELE = 0
+IF CFLAG:ARG == 400
+	LOCAL = 25
+	TAG = 5
+	VAL = 1
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 401
+	LOCAL = 50
+	TAG = 5
+	VAL = 2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 402
+	LOCAL = 100
+	TAG = 5
+	VAL = 3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 403
+	LOCAL = -200
+	TAG = 5
+	VAL = -2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 404
+	LOCAL = 20
+	TAG = 8
+	VAL = 0
+	;メイド属性を持つ
+	ELE = 1p2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 405
+	LOCAL = 20
+	TAG = 9
+	VAL = 0
+	;シスター属性を持つ
+	ELE = 1p3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 406
+	LOCAL = 10
+	TAG = 5
+	TAG:1 = 6
+	VAL = 0
+	;ゴスロリ属性を持つ
+	ELE = 1p4
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 407
+	LOCAL = 30
+	TAG = 5
+	VAL = 0
+	;花嫁属性を持つ
+	ELE = 1p5
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 410
+	LOCAL = 25
+	TAG = 7
+	VAL = 1
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 411
+	LOCAL = 50
+	TAG = 7
+	VAL = 2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 412
+	LOCAL = 100
+	TAG = 7
+	VAL = 3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 413
+	LOCAL = -200
+	TAG = 7
+	VAL = -2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 414
+	LOCAL = 20
+	TAG = 8
+	VAL = 0
+	;メイド属性を持つ
+	ELE = 1p2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 415
+	LOCAL = 20
+	TAG = 9
+	VAL = 0
+	;シスター属性を持つ
+	ELE = 1p3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 416
+	LOCAL = 10
+	TAG = 5
+	TAG:1 = 6
+	VAL = 0
+	;ゴスロリ属性を持つ
+	ELE = 1p4
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 417
+	LOCAL = 30
+	TAG = 5
+	VAL = 0
+	;花嫁属性を持つ
+	ELE = 1p5
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 420
+	LOCAL = 25
+	TAG = 6
+	VAL = 1
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 421
+	LOCAL = 50
+	TAG = 6
+	VAL = 2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 422
+	LOCAL = 100
+	TAG = 6
+	VAL = 3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 423
+	LOCAL = -200
+	TAG = 6
+	VAL = -2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 424
+	LOCAL = 20
+	TAG = 8
+	VAL = 0
+	;メイド属性を持つ
+	ELE = 1p2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 425
+	LOCAL = 20
+	TAG = 9
+	VAL = 0
+	;シスター属性を持つ
+	ELE = 1p3
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 426
+	LOCAL = 10
+	TAG = 5
+	TAG:1 = 6
+	VAL = 0
+	;ゴスロリ属性を持つ
+	ELE = 1p4
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 427
+	LOCAL = 30
+	TAG = 5
+	VAL = 0
+	;花嫁属性を持つ
+	ELE = 1p5
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 431
+	LOCAL = 0
+	TAG = 0
+	VAL = 0
+	;メイド属性を持つ
+	ELE = 1p2
+	LOCAL:1 = 1
+ELSEIF CFLAG:ARG == 432
+	LOCAL = 0
+	TAG = 0
+	VAL = 0
+	;シスター属性を持つ
+	ELE = 1p3
+	LOCAL:1 = 1
+ENDIF
+
+IF LOCAL:1
+	IF ARGS == "装着"
+		saki = BASE:TAG + LOCAL
+		CALL CONVERT_ACCE, ARG-260
+		CFLAG:("見た目／"+STR+"") = VAL
+		CFLAG:("属性／"+STR+"") |= ELE
+		IF saki > 1000
+			BASE:TAG = 1000
+		ELSEIF saki < 0
+			PRINTL 能力が足りないので装備することができない
+			RETURN 1
+		ELSE
+			BASE:TAG += LOCAL
+		ENDIF
+		
+		IF TAG:1
+			saki = BASE:(TAG:1) + LOCAL
+			IF saki > 1000
+				BASE:(TAG:1) = 1000
+			ELSEIF saki < 0
+				PRINTL 能力が足りないので装備することができない
+				RETURN 1
+			ELSE
+				BASE:(TAG:1) += LOCAL
+			ENDIF
+		ENDIF
+	ELSE
+		;装飾品を外した後の能力値を先に計算する
+		saki = BASE:TAG - LOCAL
+		CALL CONVERT_ACCE, ARG-260
+		CFLAG:("見た目／"+STR+"") = 0
+		CFLAG:("属性／"+STR+"") = 0
+		
+		;装飾品を外した後に能力が1000以上にならない場合、
+		IF saki < 1000 && BASE:TAG < 1000
+			BASE:TAG -= LOCAL
+		ELSEIF saki > 1000
+			BASE:TAG = 1000
+		ENDIF
+		
+		IF TAG:1
+			IF BASE:(TAG:1) < 1000
+				BASE:(TAG:1) -= LOCAL
+			ELSE
+				BASE:(TAG:1) = 1000
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;-----------------------------------------------------
+;華麗度計算
+;-----------------------------------------------------
+@KAREIDO
+LOCAL = 0
+
+
+FOR COUNT, 0, 6
+	CALL CONVERT_ACCE, COUNT
+	LOCAL += CFLAG:("見た目／"+STR+"")
+NEXT
+
+RETURN LOCAL
+
+;-----------------------------------------------------
+;その他のアクセサリー判定
+;-----------------------------------------------------
+@OTHER_ACC, ARG
+#FUNCTION
+
+IF CFLAG:日用品／その他 == ARG || CFLAG:日用品／その他2 == ARG
+	LOCAL = 1
+ELSE
+	LOCAL = 0
+ENDIF
+
+RETURNF LOCAL
+
+;-----------------------------------------------------
+;装飾品_装備条件
+;式中関数　特定の装飾品が装備できるか判定する
+;(@CHANGE_ACCESSORYに散らばっている装備条件をこの関数に纏めてもいいが、今後の使用頻度を考えて保留)
+;返り値　0:装備できない　1:装備できる
+;
+;ARG　装備対象のアイテムID
+;-----------------------------------------------------
+@ABLE_ACC, ARG
+#FUNCTION
+
+;返り値格納のためにLOCALを使う
+LOCAL = 0
+
+;精液風呂は精飲経験が50以上無いと使えない
+IF ARG == 496 && EXP:精飲経験 < 50
+	LOCAL = 0
+ELSE
+	LOCAL = 1
+ENDIF
+
+
+RETURNF LOCAL
+
+

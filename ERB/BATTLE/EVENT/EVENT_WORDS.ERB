@@ -1,0 +1,204 @@
+﻿;==================================================
+;ダンジョン内のイベント
+;主に口上
+;ARG　現在潜っているダンジョンのID
+;==================================================
+@DUNGEON_WORDS, ARG
+
+DRAWLINE
+;穢れの地
+IF ARG == 30
+	IF !GETBIT(FLAG:イベントフラグ／穢れの地, 0) && TFLAG:現在の階層 == 5
+		;穢れの地　5F
+		PRINTFORML ～～穢れの地　小さな集落～～
+		PRINTFORML 筋骨隆々とした男性「おや、その身だしなみ……
+		PRINTFORMW 　　　　　　　　　　もしかしてお前、月から来たのではないか？」
+		PRINTFORML 
+		PRINTFORML 筋骨隆々とした男性「ははは！　やっぱり合っていたか！
+		PRINTFORMW 　　　　　　　　　　俺の名前は須佐乃男。地上の化け物退治を生業としているのさ」
+		PRINTFORML 
+		PRINTFORML 須佐乃男「でも、今回ばかりは少し困っていてな。龍を倒してほしいと頼まれたんだが、首が8つあるらしいんだよ
+		PRINTFORMW 　　　　　さすがに俺でも一人じゃ無理かな……と思ってたところだったんだ」
+		PRINTFORML 
+		PRINTFORML 須佐乃男「そんなところに偶然来てくれたのがお前だったというわけだ
+		PRINTFORMW 　　　　　俺も一緒に行くから、頼む！　化け物を倒してくれ！
+		PRINTFORMW 　　　　　倒せたらいい物をやるからさ」
+		
+		FLAG:イベントフラグ／穢れの地 |= 1p0
+	ELSEIF !GETBIT(FLAG:イベントフラグ／穢れの地, 1) && TFLAG:現在の階層 == TFLAG:最深部の階層
+		;八岐大蛇、初対面時
+		PRINTFORML ～～穢れの地　洞窟深部～～
+		PRINTFORMW 須佐乃男の案内により洞窟に入った%CALLNAME:TARGET%
+		PRINTFORMW じめじめとした湿気で額に浮かぶ汗を拭い、先を進んでいく
+		PRINTFORML 
+		PRINTFORMW その時だった、奥から咆哮が轟いた
+		PRINTFORML 
+		PRINTFORMW 驚く%CALLNAME:TARGET%。咆哮は奥から聞こえてきた。咆哮の主もそこにいるのだろうか
+		PRINTFORMW 須佐乃男「この声は……間違いない。俺が探していた化け物「八岐大蛇」だ！
+		PRINTFORMW 　　　　　さあ、行くぞ！」
+		
+		FLAG:イベントフラグ／穢れの地 |= 1p1
+	ENDIF
+;榊の森
+ELSEIF ARG == 40
+	;6Fで遭遇
+	IF !GETBIT(FLAG:イベントフラグ／榊の森, 0) && TFLAG:現在の階層 == 6
+		;ヒステリックになった天照
+		PRINTFORML ～～榊の森　生い茂る林間にて～～
+		PRINTFORML 悲観に暮れる女性「ああ……！　嫦娥はどこへ行ってしまったの……！
+		PRINTFORML 　　　　　　　　　どこを探してもおらず、須佐乃男からも返事が無い
+		PRINTFORMW 　　　　　　　　　彼女は一体、どこへ……！」
+		PRINTFORML 　　　　　　　　　
+		PRINTFORML 悲観に暮れる女性「その飾りはもしかして弟の……うう……情けないところをお見せしてしまいました……
+		PRINTFORMW 　　　　　　　　　私……ですか？　私の名前は天照です。月夜見の姉なんですよ」
+		PRINTFORML 　　　　　　　　　
+		PRINTFORML 天照「嫦娥は私の従妹が産んだ子の一人なんです。とても可愛らしい娘で、私達姉弟は大変可愛がっていたのですが
+		PRINTFORMW 　　　何の因果なのか、禁忌の薬に手を出してしまいまして……」
+		
+		FLAG:イベントフラグ／榊の森 |= 1p0
+	ENDIF
+ENDIF
+
+;---------------------------------------
+;戦闘前イベント
+;ARG　ダンジョンID
+;---------------------------------------
+@DUNGEON_BEFORE_BATTLE_EVENT, ARG
+
+DRAWLINE
+;榊の森
+IF ARG == 40
+	;嫦娥撃破後、最深部で発生
+	IF GETBIT(FLAG:イベントフラグ／榊の森, 1) && !GETBIT(FLAG:イベントフラグ／榊の森, 2) && TFLAG:現在の階層 == 13
+		PRINTFORML ～～月宮　嫦娥の間にて～～
+		PRINTFORML 嫦娥「あらあら、いらっしゃい
+		PRINTFORML 　　　前回は見苦しい姿を見せてしまい、本当に申し訳ありませんでした
+		PRINTFORMW 　　　あの頃の記憶は全然残ってないの。気が付いたら私は倒れていて、ね……
+		PRINTFORML 　　　
+		PRINTFORML 　　　そうそう、ちょうどいい所にいらっしゃったわ
+		PRINTFORML 　　　ちょうど私の知り合いが遊びに来ていたところだったのよ
+		PRINTFORMW 　　　玉龍ちゃんと言うんだけど、せっかくだからこの子と遊んでくれない？」
+	;玉龍撃破後
+	ELSEIF TFLAG:現在の階層 == 13 && GETBIT(FLAG:イベントフラグ／榊の森, 2)
+		PRINTFORML ～～月宮　嫦娥の間にて～～
+		PRINTFORML 嫦娥「あらあら、また来たのね
+		PRINTFORMW 　　　もう少しで玉龍ちゃんが拗ねるところだったわよ
+		PRINTFORML 
+		PRINTFORMW 　　　さあ、暴れていらっしゃい。玉龍ちゃん……！」
+	ENDIF
+ENDIF
+
+;---------------------------------------
+;ダンジョンクリア時のイベント
+;ARG　ダンジョンID
+;---------------------------------------
+@DUNGEON_CLEAR_EVENT, ARG
+
+DRAWLINE
+;30:　穢れの地
+IF ARG == 30
+	IF !GETBIT(FLAG:イベントフラグ／穢れの地, 2)
+		;討伐後
+		PRINTFORML ～～穢れの地　洞窟深部～～
+		PRINTFORMW 須佐乃男「助かったよ。これで俺も村の人たちにいい報告ができそうだ
+		PRINTFORMW 　　　　　……なんでわざわざ地上に降りて化け物退治しているの？　って？
+		PRINTFORMW 　　　　　簡単だよ。罪滅ぼしのためにやっているのさ
+		PRINTFORMW 　　　　　俺を庇って処刑された兄――月夜見への罪滅ぼしとして、な」
+		PRINTFORML 　　　　　
+		PRINTFORMW 須佐乃男「おっと、そうだった。約束通りいい物をやるよ」
+		PRINTFORML 
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW ワールブルクの石を手に入れた！
+		RESETCOLOR
+
+		ITEM:ワールブルクの石 += 1
+		PRINTFORML 
+		PRINTFORMW 須佐乃男「化け物退治をしていたら偶然見つけたんだ。変わった色をしてるだろ？
+		PRINTFORML 
+		PRINTFORML 　　　　　……なに？　月夜見がどこへ行ったか教えてほしい、だと？
+		PRINTFORMW 　　　　　さあな。俺は知らねえ。処刑された時に居合わせなかったからな
+		PRINTFORML 　　　　　ただ一つだけ手がかりがあるぜ。月の都から遠く離れた辺境には、榊の森があるらしい
+		PRINTFORML 　　　　　その森の奥に建つ月宮には、かつて禁忌の薬に手を出した罪人が封印されているという噂だ
+		PRINTFORMW 　　　　　そいつに会えば、罪人がどうなったか分かるんじゃないか
+		PRINTFORML 　　　　　噂によると、その罪人は元々は地位が高かったらしいし、兄も同じような目に遭っている可能性は否定できないしな
+		PRINTFORMW 　　　　　それに……俺の姉はそいつを求めて今も彷徨っているかもしれないし……」
+		
+		FLAG:イベントフラグ／穢れの地 |= 1p2
+	ENDIF
+;榊の森
+ELSEIF ARG == 40
+	IF !GETBIT(FLAG:イベントフラグ／榊の森, 1)
+		;嫦娥を倒した後
+		PRINTFORML ～～月宮最深部　嫦娥の間にて～～
+		PRINTFORML 嫦娥「ぐぐ……我は滅びぬ……例え身体は朽ちても心は不滅……」
+		PRINTFORML 
+		PRINTFORML 嫦娥はその一言を残し、気を失ってしまった
+		PRINTFORMW はたして彼女は生きているのだろうか……それを確かめるには後ほど再び訪ねる必要があるようだ
+		
+		FLAG:イベントフラグ／榊の森 |= 1p1
+	;クリア後　玉龍撃破時
+	ELSE
+		PRINTFORML ～～月宮最深部　嫦娥の間にて～～
+		PRINTFORML 嫦娥「あらあら、玉龍ちゃんが「これ以上戦えない」って言ってるわ
+		PRINTFORML 　　　やはり中々できるのね
+		PRINTFORMW 
+		PRINTFORML 　　　もしよかったら、また訪ねてきてね
+		PRINTFORMW 　　　その頃には玉龍ちゃんの機嫌もよくなってると思うから……」
+		
+		FLAG:イベントフラグ／榊の森 |= 2
+	ENDIF
+ENDIF
+
+
+;初対面なのに話が長すぎ
+@DUNGEON_BOTU
+PRINTFORML 見も知らぬ地。
+PRINTFORML 次々と襲いかかる敵を跳ねのけ進んだ%CALLNAME:TARGET%の目の前に、小さな集落が姿を現した
+PRINTFORMW 
+PRINTFORML 井戸の前で顔を洗っていた男性が%CALLNAME:TARGET%に気付くと、こちらに向かって歩いてきた
+PRINTFORMW 身体は筋骨隆々としていてとても逞しい
+PRINTFORML 筋骨隆々とした男性「おや、その身だしなみ……
+PRINTFORMW 　　　　　　　　　　もしかして貴方、月から来たのではありませんか」
+PRINTFORML 
+PRINTFORMW ずばりと言い当てられ、%CALLNAME:TARGET%は思わず驚く
+PRINTFORMW 易々と正体を明かしていいのか判断つかず、はぐらかす%CALLNAME:TARGET%
+PRINTFORMW その様子に男性は苦笑しながら、自己紹介を始めた
+PRINTFORML 
+PRINTFORML 筋骨隆々とした男性「ははは……まあ無理もないか
+PRINTFORML 　　　　　　　　　　俺の名前は須佐乃男。月人だ」
+PRINTFORML 
+PRINTFORML 須佐乃男と名乗る男性は、天に浮かぶ月を見つめながら静かに口を開いた
+PRINTFORML 
+PRINTFORML 須佐乃男「俺は罪滅ぼしをしているんだ
+PRINTFORML 　　　　　馬鹿な俺をかばった兄に対する、罪滅ぼしをな」
+PRINTFORML 
+PRINTFORML 須佐乃男「かつて俺は王宮に住む、いわば王族の一人だった
+PRINTFORML 　　　　　当時の王族は精霊と友好関係を築くため、毎晩祭事を催していたんだ
+PRINTFORMW 　　　　　彼らの協力がなければ月の都は発展できないからな
+PRINTFORML 　　　　　
+PRINTFORML 　　　　　ある日、俺は兄と共に祭事に出たんだ。兄と一緒に祭事に出るのは日常茶飯事だったから、俺と兄は和気藹々としていたさ
+PRINTFORML 　　　　　それに、その日は特別だった。新しい料理人が就くと聞いていたからな
+PRINTFORMW 　　　　　噂によると都でとても有名な料理人だったらしい
+PRINTFORML 　　　　　
+PRINTFORML 　　　　　ところが、そんな日に俺はやってしまったんだ
+PRINTFORMW 　　　　　祭事が始まり料理が出された時、出てきた料理にみすぼらしさに俺はつい腹が立ってしまった
+PRINTFORML 　　　　　何しろ腐った魚や豆、それにどろどろとしたものまで出てきやがったからな
+PRINTFORMW 　　　　　あまりに汚い見た目だったから俺は刀を取り出し、料理を出した要人を斬り殺したんだ
+PRINTFORMW 　　　　　祭事で料理を出すのは、その料理を手掛けた者と決まっている。つまり、俺は腕が立つ料理人を殺してしまった
+PRINTFORML 　　　　　
+PRINTFORMW 　　　　　そこからは一瞬だった。祭事での出来事はあっという間に都に広がり、俺と兄は裁判にかけられることになった
+PRINTFORMW 　　　　　俺は口を閉じていたよ。まだ若かったんだろうな。俺が悪いことをしたのか？　いや、していない。そう思っていたんだ
+PRINTFORMW 　　　　　そしたら兄が「私が殺しました」と白状して――俺をかばったんだ
+PRINTFORMW 　　　　　俺は驚いたよ。なんで兄が俺のような愚か者をかばったんだ、と
+PRINTFORML 　　　　　
+PRINTFORMW 　　　　　そして兄はどこかへ連れ去られ、俺は釈放された
+PRINTFORMW 　　　　　俺はそんな兄に向ける顔がないから、罪滅ぼしとして地上で妖を斬っているんだ」
+PRINTFORML 　　　　　
+PRINTFORMW 月を見上げながら語る須佐乃男の表情は妙に儚く見えた
+PRINTFORMW 遠い昔の出来事を懐かしんでいるのだろうか。あるいは贖罪の思いで一杯なのか
+PRINTFORMW そんな須佐乃男に、%CALLNAME:TARGET%は恐る恐る尋ねた
+PRINTFORML 　　　　　
+PRINTFORMW 須佐乃男「ああ、兄の名前か。月夜見だよ。……ってなんでそんなに驚いているんだ」
+
+
+

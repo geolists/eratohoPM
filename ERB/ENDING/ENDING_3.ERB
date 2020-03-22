@@ -1,0 +1,511 @@
+﻿;========================================================
+;メイドルート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;========================================================
+@ENDING_MAID
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落+淫妖が900以上
+IF BASE:堕落 + BASE:淫妖 >= 900
+	CALL ENDING_MAID_1
+	LOCAL:1 = 720
+;600以上
+ELSEIF BASE:堕落 + BASE:淫妖 >= 600
+	CALL ENDING_MAID_2
+	LOCAL:1 = 721
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	CALL ENDING_MAID_18
+	LOCAL:1 = 737
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_MAID_19
+	LOCAL:1 = 738
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_MAID_20
+	LOCAL:1 = 739
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_MAID_3
+			LOCAL:1 = 722
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_MAID_4
+			LOCAL:1 = 723
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_MAID_5
+			LOCAL:1 = 724
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_MAID_6
+			LOCAL:1 = 725
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_MAID_7
+			LOCAL:1 = 726
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_MAID_8
+			LOCAL:1 = 727
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_MAID_9
+			LOCAL:1 = 728
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_MAID_10
+			LOCAL:1 = 729
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_MAID_11
+			LOCAL:1 = 730
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_MAID_12
+			LOCAL:1 = 731
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_MAID_13
+			LOCAL:1 = 732
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_MAID_14
+			LOCAL:1 = 733
+		ENDIF
+	;信仰
+	ELSEIF LOCAL:1 == 9
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_MAID_15
+			LOCAL:1 = 734
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_MAID_16
+			LOCAL:1 = 735
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_MAID_17
+			LOCAL:1 = 736
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　性奴隷への道
+;---------------------------------------------------------
+@ENDING_MAID_1
+PRINTFORML %CALLNAME:MASTER%が部屋に戻ると、%CALLNAME:TARGET%がテーブルを拭いているところだった
+PRINTFORMW 手つきはどこかたどたどしく、時折ビクンと身体を震わせては吐息を吐いて身体を落ち着かせていた
+PRINTL 
+PRINTFORML 性的な行為を頻繁に行った結果、%CALLNAME:TARGET%の心と身体は開発され
+PRINTFORMW ついに%CALLNAME:MASTER%の性的な教育を拒否できなくなってしまった
+PRINTL 
+PRINTFORML 彼女の様子がおかしいのも局部にローターを仕込まれているからであり
+PRINTFORMW 彼女自身は喘ぐような表情を見せながらも、どこか嬉しそうだ
+PRINTL 
+PRINTFORML 背後から突然抱きつき、耳に息を吹きかけると%CALLNAME:TARGET%は極まった声をあげ
+PRINTFORMW 身体を震わせて%CALLNAME:MASTER%に身体を寄せた
+PRINTL 
+PRINTFORML 喘ぐように口を開き、悦に浸った表情を浮かべている彼女は
+PRINTFORMW きっと、これから先も%CALLNAME:MASTER%に忠誠を誓うだろう
+PRINTFORML 
+PRINTFORMW -メイドED No.1　性奴隷への道-
+
+;---------------------------------------------------------
+;ED2　堕落した手伝い
+;---------------------------------------------------------
+@ENDING_MAID_2
+PRINTFORML 性を交えた教育を受けてきた%CALLNAME:TARGET%は
+PRINTFORMW 貞操観念がどこかズレていた
+PRINTL 
+PRINTFORML 毎晩%CALLNAME:MASTER%が夜の躾を要求しても全く断ろうとせず
+PRINTFORMW むしろ喜んで返事を返した
+PRINTL 
+PRINTFORML %CALLNAME:MASTER%が下着を着けないよう指示した時も
+PRINTFORMW 最初の内は嫌がっていたが、後になると指摘した時に頬を紅く染めるようになった
+PRINTL 
+PRINTFORML このまま教育が進んでいけば、もはや%CALLNAME:TARGET%から姫らしい貞操は完全に消える事になるだろう……
+PRINTFORML 
+PRINTFORMW -メイドED No.2　堕落した手伝い-
+
+;---------------------------------------------------------
+;ED3　傾国の手伝い
+;---------------------------------------------------------
+@ENDING_MAID_3
+PRINTFORML %CALLNAME:TARGET%は権力がある屋敷に仕えている
+PRINTFORMW ある日訪ねてきた貴族が迎え入れたのだ
+PRINTL
+PRINTFORML この場所でなら煩わしい王族のしがらみから逃れることができる
+PRINTFORMW そう思った%CALLNAME:TARGET%は喜んで貴族の元へついていった
+PRINTL
+PRINTFORML 今ではその貴族に事あることに可愛がられ、今ではすっかりお気に入りの女性となれたようだ
+PRINTFORMW ……その貴族の夫人が嫉妬の炎を燃やしているのが将来を憂いる要素になっている
+PRINTFORML 
+PRINTFORMW -メイドED No.3　傾国の手伝い-
+
+;---------------------------------------------------------
+;ED4　屋敷の手伝い
+;---------------------------------------------------------
+@ENDING_MAID_4
+PRINTFORMW %CALLNAME:TARGET%は夫人と会話をし、笑顔を浮かべている
+PRINTL
+PRINTFORML この場所でなら煩わしい王族のしがらみから逃れることができる
+PRINTFORMW そう思った%CALLNAME:TARGET%は喜んで有力な貴族が住まう屋敷へ出ていった
+PRINTL
+PRINTFORML 今ではこうして夫人からの信頼を得て仕事以外でも頻繁に会話をする程の仲になった
+PRINTFORMW また、他のメイドからの信頼も厚く、憧れる同僚も多いとか
+PRINTL
+PRINTFORMW これなら、無事に暮らしていけるだろう……
+PRINTFORML 
+PRINTFORMW -メイドED No.4　屋敷の手伝い-
+
+;---------------------------------------------------------
+;ED5　隠れた手伝い
+;---------------------------------------------------------
+@ENDING_MAID_5
+PRINTFORML 「%CALLNAME:TARGET%はもう巣立ったというのに、お手伝いさんを雇うだなんてどうかしてませんか？」
+PRINTFORMW 女中の一人が%CALLNAME:MASTER%に進言した
+PRINTFORMW 無理もない、%CALLNAME:TARGET%は"名目上、余所の男性と婚約したことにした"のだから
+PRINTL 
+PRINTFORML 給料や住まいは自分で全て管理すると言い、半ば強引に女中を追い払うと
+PRINTFORMW 物影に隠れていたメイドがおずおずを姿を出した
+PRINTFORML 「……これで、ずっと%CALLNAME:MASTER%の元に居られるのね？」
+PRINTFORMW 頷くと、メイド……いや、%CALLNAME:TARGET%は喜びの余り腰に抱きついた
+PRINTFORMW 「やったー！　この日を待ち望んでたのよ！」
+PRINTFORMW 「もう君主から嫌がらせを受ける日々が無くなるのよ！」
+PRINTFORMW 「身分に未練は無いのかですって？　どうせ壊されるのなら無い方がマシよ」
+PRINTFORMW 「これからは、ずーっと、最低でも百年は一緒に居ましょうね！」
+PRINTL
+PRINTFORMW はいはい、と返事を返し、まずは掃除をさせることにした
+PRINTFORMW 仕事をさせておかないとまず怪しまれるからだ
+PRINTFORMW ……既に充分怪しいが
+PRINTFORML 
+PRINTFORMW -メイドED No.5　隠れた手伝い-
+
+;---------------------------------------------------------
+;ED6　主人となった手伝い
+;---------------------------------------------------------
+@ENDING_MAID_6
+PRINTFORMW %CALLNAME:TARGET%は有力な貴族の元へ住み込みで働きに出た
+PRINTL 
+PRINTFORML 「任せておいて、面白いものを見せてあげるから」
+PRINTFORMW 去り際に放った一言が気になるところではあるが……
+PRINTL 
+PRINTFORML 屋敷に入った%CALLNAME:TARGET%はメイドとして存分な働きっぷりを発揮
+PRINTFORML 見事に古参のメイドや主人の信頼を勝ち取った%CALLNAME:TARGET%は
+PRINTFORMW 次の計画に入った
+PRINTL 
+PRINTFORML まず、主人と最も仲のよいメイドを味方に取り込み主人に噂を流す
+PRINTFORMW その噂を耳にした主人は、噂を流したメイドや%CALLNAME:TARGET%に相談を行った
+PRINTL 
+PRINTFORMW 「ええ、私はそうお聞きしております」
+PRINTL 
+PRINTFORML そのメイドと%CALLNAME:TARGET%は口を揃えて答えた
+PRINTFORMW 二人の解答を聞いてすっかり信用した主人はその通りに実行
+PRINTFORML その行動の結果、二人は回りまわって利益を受け、そして……
+PRINTL 
+PRINTFORMW 「この屋敷の主人はこのような事をしていたのよ」
+PRINTL 
+PRINTFORMW 陰で他のメイド達に伝え主人への信頼を落とした
+PRINTL 
+PRINTFORML 二人のメイドの意見を受けた主人はその通り実行し、メイド達が利益を受ける……
+PRINTFORMW この流れを何度も繰り返した結果……
+PRINTL 
+PRINTFORML 「御機嫌よう。屋敷の主人がたくさん物を納めてくださるようですわ」
+PRINTL
+PRINTFORML 不敵な笑みをした%CALLNAME:TARGET%が戻ってきた
+PRINTFORMW その気品と話し方がメイド姿に似合っている
+PRINTL 
+PRINTFORML 「もしもご希望の品がございましたら私にご相談くださいな。"操って"さしあげますから」
+PRINTL
+PRINTFORMW 今やあの屋敷の主人はメイド達の傀儡となっていることに、本人は気付いていない……
+PRINTFORML 
+PRINTFORMW -メイドED No.6　主人となった手伝い-
+
+;---------------------------------------------------------
+;ED7　謀略好きな手伝い
+;---------------------------------------------------------
+@ENDING_MAID_7
+PRINTFORMW %CALLNAME:TARGET%が有力な主人の元に住み込みで働いて1年が経つ……
+PRINTL 
+PRINTFORML メイドとして働きながら数々の謀略を主人に提言をし
+PRINTFORMW 主人の権力を瞬く間に上げていった
+PRINTL 
+PRINTFORML その結果、今では%CALLNAME:TARGET%は見事に主人の信頼を得ている
+PRINTL 
+PRINTFORML 「私を信頼していただければ権力を思いのままにさしあげることができますよ」
+PRINTFORMW %CALLNAME:TARGET%は屋敷の窓際に座り、笑みを浮かべた
+PRINTFORML 
+PRINTFORMW -メイドED No.7　謀略好きな手伝い-
+
+;---------------------------------------------------------
+;ED8　役人を盾にお手伝い
+;---------------------------------------------------------
+@ENDING_MAID_8
+PRINTFORML 「ねえねえ%CALLNAME:MASTER%、今日もこの役人から品物貰っちゃった♪」
+PRINTFORMW %CALLNAME:TARGET%は嬉しそうに品物を見せびらかしている
+PRINTL
+PRINTFORML %CALLNAME:TARGET%は王宮でメイドとして働く傍ら、役人に助言をしている
+PRINTFORMW 最初は疑っていた役人だったが、助言通りになった事が続いた事により信頼されるようになった
+PRINTL
+PRINTFORMW そして今では役人達の力により、無事君主から嫌がらせ等を受けることがなくなった
+PRINTL
+PRINTFORML 「もう誘拐とかされずに済むってわけね」
+PRINTFORMW 君主が原因の誘拐はされなくなったとはいえる
+PRINTFORML 
+PRINTFORMW -メイドED No.8　役人を盾にお手伝い-
+
+;---------------------------------------------------------
+;ED9　一時しのぎの貿易
+;---------------------------------------------------------
+@ENDING_MAID_9
+PRINTFORML 「ねえ、すごいでしょう？　商人と必死に交渉してやっと手に入れたんだから……」
+PRINTFORMW %CALLNAME:TARGET%は手に入れた品を嬉しそうに見せた
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%は今やすっかりメイドとなっており
+PRINTFORMW 正体を隠して王宮で生活している
+PRINTL 
+PRINTFORML そして、外の商人と頻繁に交渉ををしては
+PRINTFORMW その巧みな交渉術で多くの物を手に入れている
+PRINTL 
+PRINTFORML 「どんなかたちであれ、主が喜んでくれているなら嬉しいわ」
+PRINTFORMW 私が嫌がらせを受けることがなくなるのだから、と彼女は笑みを浮かべながら言った
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%は行方不明扱いになっているにも関わらず
+PRINTFORML 責任を取らされていない事を考えるときつくは言えない
+PRINTFORMW と考えた%CALLNAME:MASTER%であった
+PRINTFORML 
+PRINTFORMW -メイドED No.9　一時しのぎの貿易-
+
+;---------------------------------------------------------
+;ED10　身内展覧会
+;---------------------------------------------------------
+@ENDING_MAID_10
+PRINTFORML 王宮の東側と西側を繋ぐ大きな渡り廊下
+PRINTFORMW ここは、日中は常に多くの人が通り、まるで都の市場に居るような錯覚を味わう事ができる
+PRINTL 
+PRINTFORML そんな廊下で、物品を広げて道行く人に声をかけているメイドが一人
+PRINTFORMW 長い黒髪の彼女は、髪を揺らしながら呼びこみを行い、興味を惹いた人が立ち止まって展示品を見ている
+PRINTL 
+PRINTFORML これらの品物は、少女――%CALLNAME:TARGET%が各地で交渉した結果入手した物である
+PRINTFORMW 彼女の高い交渉力は、相手が一生の宝にしようとしていた物でも結果的には出させてしまう程の力らしい
+PRINTL 
+PRINTFORML この展覧会は次第に話題になっていき、やがて告知せずとも人が集まるようになった
+PRINTFORMW 寄った人々からは称賛の声が浴びせられ、%CALLNAME:TARGET%と%CALLNAME:MASTER%は嬉しそうだ
+PRINTL 
+PRINTFORMW そんな展覧会を君主は廊下の曲がり角に隠れて見ていた
+PRINTFORML 
+PRINTFORMW -メイドED No.10　身内展覧会-
+
+;---------------------------------------------------------
+;ED11　余所の輪
+;---------------------------------------------------------
+@ENDING_MAID_11
+PRINTFORMW 数ヶ月後……
+PRINTFORMW %CALLNAME:TARGET%はメイド服を着て外の館の元へと働きに出ていた
+PRINTFORML 各地へと赴いて働くついでに主人と話をすることで交流を深めたらしく
+PRINTFORMW 今ではとても広い交流の輪を持っているようだ
+PRINTL 
+PRINTFORMW 「それじゃ働きに行ってくるわね」
+PRINTFORMW 衣服を整えると%CALLNAME:TARGET%は部屋を出た
+PRINTFORMW 毎日が楽しそうに見えるし、君主との問題は解決していないが何とかなりそうな気がした
+PRINTFORML 
+PRINTFORMW -メイドED No.11　余所の輪-
+
+;---------------------------------------------------------
+;ED12　至高のメイド
+;---------------------------------------------------------
+@ENDING_MAID_12
+PRINTFORML すっかり家事に手慣れた%CALLNAME:TARGET%は、王宮から出て
+PRINTFORMW 都から少し離れた屋敷でメイドとして働いている
+PRINTL 
+PRINTFORML 最初は王宮から出ていくのが名残り惜しかった%CALLNAME:TARGET%だったが
+PRINTFORMW 屋敷の主人の優しさと住み心地のよさに惹かれ、今ではすっかり屋敷に馴染んでいる
+PRINTL 
+PRINTFORML 他のメイドからも慕われ、もう屋敷には心残りが無いのかと思われていたが
+PRINTFORMW それでも、一つだけ心残りがあった
+PRINTL 
+PRINTFORML ある日、%CALLNAME:MASTER%の元に一通の封筒が届いた
+PRINTFORMW 差出人は%CALLNAME:TARGET%であるらしい。中身を開けようとすると窓をノックする音がした
+PRINTFORMW %CALLNAME:MASTER%は窓を開けると……
+PRINTFORML 
+PRINTFORMW -メイドED No.12　至高のメイド-
+
+;---------------------------------------------------------
+;ED13　熾烈な競争
+;---------------------------------------------------------
+@ENDING_MAID_13
+PRINTFORML 家事に手慣れた%CALLNAME:TARGET%は、王宮を出て屋敷にメイドとして出ていったが
+PRINTFORMW 他のメイド達より一歩抜きんでるのに苦労している
+PRINTL 
+PRINTFORML 王宮を出た事により自由な身になれると思っていた%CALLNAME:TARGET%だったが
+PRINTFORMW 屋敷に入ると味方が居なくなった上に常に競争下に入った事により、王宮が恋しくなる事があるとか
+PRINTL 
+PRINTFORML それでも、いつかは主人に気に入ってもらえるような存在になり
+PRINTFORMW %CALLNAME:MASTER%と再開できる日を願って日々を頑張って過ごしている
+PRINTFORML 
+PRINTFORMW -メイドED No.13　熾烈な競争-
+
+;---------------------------------------------------------
+;ED14　外輪の自由
+;---------------------------------------------------------
+@ENDING_MAID_14
+PRINTFORML 家事の腕に自信を持ち王宮を出た%CALLNAME:TARGET%だったが
+PRINTFORMW 外界のメイド達は比べ物にならない位家事に手慣れていた
+PRINTL 
+PRINTFORML 最初は何とかついていこうとしたのだが、やがて実力の差が顕著に表れるようになり
+PRINTFORMW 最終的には屋敷から追い出されてしまった
+PRINTL 
+PRINTFORML 服がボロボロになり、空いた腹を頻繁に鳴らしながら行く宛てもなく途方に暮れていた%CALLNAME:TARGET%は
+PRINTFORMW 前方から歩いてくる見覚えのある姿を見て驚いた
+PRINTL 
+PRINTFORML 最初は他人のそら似だと思っていたが、近づくにつれ姿がくっきりと見えるようになると
+PRINTFORMW %CALLNAME:TARGET%は倒れそうになりながらも喜んで駆け寄った
+PRINTL 
+PRINTFORML そう、%CALLNAME:MASTER%だったのだ！
+PRINTFORMW %CALLNAME:TARGET%はしっかりと腰に抱きつき、目に涙を浮かべて再会の喜びを述べている
+PRINTL 
+PRINTFORMW もう二度と、二人が離れることはありませんように……
+PRINTFORML 
+PRINTFORMW -メイドED No.14　熾烈な競争-
+
+;---------------------------------------------------------
+;ED15　天命の稲妻
+;---------------------------------------------------------
+@ENDING_MAID_15
+PRINTFORML とある教会……
+PRINTFORMW %CALLNAME:TARGET%はメイド服の上にエプロンを纏った姿で、丁寧に銅像を拭いている
+PRINTFORMW 最初は埃を被りすっかり輝きを失っていた銅像だったが、磨いていく内に輝きを取り戻した
+PRINTL 
+PRINTFORML 全ての銅像を拭き終わった%CALLNAME:TARGET%は、笑みを浮かべて見送りをしている主に笑みを返して去った
+PRINTFORMW %CALLNAME:TARGET%は王宮を出て、各地の教会や寺、それに神社の物を掃除して回っている
+PRINTFORMW これも信心の深さゆえのことなのかも知れない
+PRINTL 
+PRINTFORMW 行いが実を結んだのか、ある日、重大な出来事が起こった
+PRINTFORML 暗雲が立ち込める日、王宮の庭を歩いていた君主の元に一筋の稲妻が落ちたのだ
+PRINTFORMW 君主の身体は一発で炭化し、断末魔の叫び声を聞いた兵士が駆け付けた頃には既に一本の炭と化していた
+PRINTL 
+PRINTFORML 君主が死んだという知らせを聞いた%CALLNAME:TARGET%は急いで王宮へと戻り
+PRINTFORMW 彼女を理解してくれている新たな君主の下で、%CALLNAME:MASTER%と共に慎ましく暮らした
+PRINTFORML 
+PRINTFORMW -メイドED No.15　天命の稲妻-
+
+;---------------------------------------------------------
+;ED16　神罰（人力）
+;---------------------------------------------------------
+@ENDING_MAID_16
+PRINTFORMW %CALLNAME:TARGET%はその信仰の高さを生かし、ある行動を起こした
+PRINTL 
+PRINTFORML それは%CALLNAME:TARGET%を主とする信仰を興すこと
+PRINTFORMW それにより、彼女に背いた者には神罰が下るというシステムを作ることが目的であった
+PRINTFORMW ……神罰を起こすのは信者なのだが
+PRINTL 
+PRINTFORML このシステムは長い間成功していたが、ある日、君主が%CALLNAME:TARGET%に手を出した
+PRINTFORMW 当然、神罰は君主にも向けられることになったが……
+PRINTL 
+PRINTFORML 神罰が君主に向けられた時、とっさの判断で近衛兵を呼び寄せ、"神罰"を迎撃した
+PRINTFORMW 神罰の真相を知った君主は、%CALLNAME:TARGET%と%CALLNAME:MASTER%を疫病神と断定
+PRINTFORMW 着の身着のまま二人を王宮から追放してしまった
+PRINTFORML 
+PRINTFORMW -メイドED No.16　神罰（人力）-
+
+;---------------------------------------------------------
+;ED17　狂信者誕生
+;---------------------------------------------------------
+@ENDING_MAID_17
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の元でメイドとして働いた
+PRINTL 
+PRINTFORML やはり昔から教育していただけあって、彼女の身体付きや言動はとても魅力的で
+PRINTFORMW 手元から離せないと思えた
+PRINTL 
+PRINTFORML その思いは日に日に強くなり、ある日、遂に家事をしている途中の%CALLNAME:TARGET%の腰に後ろから抱きついた
+PRINTFORMW きゃっ！　と声を上げ、身体をビクッと跳ねさせた%CALLNAME:TARGET%だったが、%CALLNAME:MASTER%の弁明を聞き一つの提案をした
+PRINTL 
+PRINTFORML 「そこまで私が好きなら、君主……何とかしてくれるよね？」
+PRINTFORMW 上目使いで放たれたその言葉に心を奪われた%CALLNAME:MASTER%は手元にあった包丁を持って君主の間に特攻
+PRINTFORMW 当然一発で御用となった%CALLNAME:MASTER%は王宮から追放されてしまった
+PRINTL 
+PRINTFORMW %CALLNAME:MASTER%は、%CALLNAME:TARGET%が鍛え上げた信仰の技術により虜になっていたのかも知れない
+PRINTFORMW その姿は%CALLNAME:TARGET%の信者のようであった……
+PRINTFORML 
+PRINTFORMW -メイドED No.17　狂信者誕生-
+
+;---------------------------------------------------------
+;ED18　最高のメイド
+;---------------------------------------------------------
+@ENDING_MAID_18
+PRINTFORMW ある日、王宮に革命が起こった……
+PRINTL 
+PRINTFORML メイドとしては機転・美しさ・交渉力等が抜きん出ていた%CALLNAME:TARGET%
+PRINTFORMW 前々から準備をしていたのか、ついに君主を心変わりさせることに成功した
+PRINTL 
+PRINTFORML 君主は喜んで立場を%CALLNAME:TARGET%に譲り、新しい歴史が始まった
+PRINTFORMW まずは周辺の屋敷と交流を始め、王宮は更に活気付いた
+PRINTL 
+PRINTFORML 王宮と%CALLNAME:MASTER%はずっと安泰だろう……
+PRINTFORML 
+PRINTFORMW -メイドED No.18　最高のメイド-
+
+;---------------------------------------------------------
+;ED19　奇跡の再会
+;---------------------------------------------------------
+@ENDING_MAID_19
+PRINTFORML %CALLNAME:TARGET%はメイドとしての素養を完全に習得し
+PRINTFORMW 王宮を出ていった
+PRINTL 
+PRINTFORML 「もう余所の屋敷で私を見かけても気づかないでしょうね。それでは、御機嫌よう」
+PRINTFORMW その言葉と共に恭しくお辞儀をした%CALLNAME:TARGET%は、そのまま振り返らずに去った
+PRINTFORMW これが最後の言葉だ
+PRINTL 
+PRINTFORML 数年後……
+PRINTFORMW とある屋敷に仕事で訪ねた%CALLNAME:MASTER%は、一人のメイドと遭遇する
+PRINTFORMW 黒い長髪が目立つ麗しい少女だ
+PRINTL 
+PRINTFORML %CALLNAME:MASTER%は既視感を覚えながらそのメイドを呼び止めて会話すると
+PRINTFORMW そのメイドは瞳を滲ませていた
+PRINTFORML 
+PRINTFORMW -メイドED No.19　奇跡の再会-
+
+;---------------------------------------------------------
+;ED20　出直し
+;---------------------------------------------------------
+@ENDING_MAID_20
+PRINTFORML 予想以上にボロを出さず、むしろある程度の結果を残してしまった%CALLNAME:MASTER%
+PRINTFORMW 痺れを切らした君主は%CALLNAME:TARGET%を強引に王宮から追放してしまった
+PRINTL 
+PRINTFORML 周囲から反発の声を受けた君主は、周囲の声を聞いてメイドを一人雇う事にした
+PRINTFORMW 面接を行ったところ、あまりにも美しいメイドが目についたので即採用したようだ
+PRINTFORMW 髪の毛は艶やかな長い黒髪で、明るい青を基調としたメイド服が似合っている
+PRINTL 
+PRINTFORML 「ただいま♪　君主の目はどうなっているのかしら……」
+PRINTFORMW レーシック手術でも受けさせようかしら、と%CALLNAME:TARGET%は腑に落ちない表情を浮かべている
+PRINTFORMW %CALLNAME:TARGET%は、"メイドとして"王宮に戻ってきたのだ
+PRINTFORML 
+PRINTFORMW -メイドED No.20　出直し-

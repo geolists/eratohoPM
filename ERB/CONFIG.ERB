@@ -1,0 +1,104 @@
+﻿;======================================================
+;config
+;ゲーム中に設定を変えたい場合はこちらを
+;======================================================
+@CONFIG
+
+$BACK_LOOP
+
+DRAWLINE
+PRINT [0] - イベントをカットする　
+IF FLAG:イベントカット
+	CALL SETCOLOR_PALAMUP
+	PRINTL ON
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL OFF
+ENDIF
+RESETCOLOR
+PRINT [1] - 口上の表示　　　　　　
+IF !FLAG:口上スキップ
+	CALL SETCOLOR_PALAMUP
+	PRINTL 表示する
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL 表示しない
+ENDIF
+RESETCOLOR
+PRINT [2] - 気質表示時　　　　　　
+IF FLAG:気質ウェイト
+	CALL SETCOLOR_PALAMUP
+	PRINTL 必ず止める
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL スキップできる
+ENDIF
+RESETCOLOR
+PRINT [3] - 画像表示　　　　　　　
+SELECTCASE GLOBAL:4
+	CASE 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTL 表示しない
+	CASE 1
+		CALL SETCOLOR_PALAMUP
+		PRINTL 表示(大)
+	CASE 2
+		CALL SETCOLOR_PALAMUP
+		PRINTL 表示(小)
+ENDSELECT
+RESETCOLOR
+DRAWLINE
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+
+IF RESULT == 0
+	IF FLAG:イベントカット
+		PRINTL イベントを表示します
+		FLAG:イベントカット = 0
+	ELSE
+		PRINTL イベントをカットします
+		FLAG:イベントカット = 1
+	ENDIF
+ELSEIF RESULT == 1
+	IF FLAG:口上スキップ
+		PRINTL 口上を表示します
+		FLAG:口上スキップ = 0
+	ELSE
+		PRINTL 口上を表示しません
+		FLAG:口上スキップ = 1
+	ENDIF
+ELSEIF RESULT == 2
+	IF FLAG:気質ウェイト
+		PRINTL 気質表示画面を右クリック等でスキップできます
+		FLAG:気質ウェイト = 0
+	ELSE
+		PRINTL 気質表示画面を右クリック等でスキップできなくなります
+		FLAG:気質ウェイト = 1
+	ENDIF
+ELSEIF RESULT == 3
+	IF GLOBAL:4 == 2
+		GLOBAL:4 = 0
+	ELSE
+		GLOBAL:4 += 1
+	ENDIF
+
+	SELECTCASE GLOBAL:4
+		CASE 0
+			PRINTL ゲーム中に画像を表示しません
+		CASE 1
+			PRINTL ゲーム中に画像を表示(大)で表示します
+		CASE 2
+			PRINTL ゲーム中に画像を表示(小)で表示します
+	ENDSELECT
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+RESTART
+

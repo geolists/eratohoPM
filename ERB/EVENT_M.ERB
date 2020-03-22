@@ -1,0 +1,1699 @@
+﻿;調教時テキスト
+;-------------------------------------------------
+;0,本を読む
+;-------------------------------------------------
+@MESSAGE_COM0
+PRINTFORMW %CALLNAME:TARGET%に本を読んだ……
+
+;-------------------------------------------------
+;1,会話を楽しむ
+;-------------------------------------------------
+@MESSAGE_COM1
+PRINTFORMW %CALLNAME:TARGET%と会話をした……
+
+;-------------------------------------------------
+;2,作法を教える
+;-------------------------------------------------
+@MESSAGE_COM2
+PRINTFORM %CALLNAME:TARGET%に
+IF RAND:3
+	PRINTFORM お茶の淹れ方
+ELSEIF RAND:2
+	PRINTFORM 挨拶の仕方
+ELSE
+	PRINTFORM 接客の作法
+ENDIF
+PRINTFORMW を教えた……
+
+;-------------------------------------------------
+;3,走り込み
+;-------------------------------------------------
+@MESSAGE_COM3
+PRINTFORMW %CALLNAME:TARGET%を庭で走らせた……
+
+;-------------------------------------------------
+;4,読み聞かせ
+;-------------------------------------------------
+@MESSAGE_COM4
+PRINTFORML %CALLNAME:TARGET%に本を読み聞かせた……
+PRINTFORMW 続けて実行すると、よりよい効果が出そうだ
+
+;-------------------------------------------------
+;10,青空教室
+;-------------------------------------------------
+@MESSAGE_COM10
+PRINTFORMW %CALLNAME:TARGET%と共に外へ出かけ、自然について色々教えた……
+
+;-------------------------------------------------
+;11,裁縫を教える
+;-------------------------------------------------
+@MESSAGE_COM11
+PRINTFORMW %CALLNAME:TARGET%と一緒に裁縫を行った……
+
+;-------------------------------------------------
+;12,都見学
+;-------------------------------------------------
+@MESSAGE_COM12
+PRINTFORMW %CALLNAME:TARGET%と一緒に都を見学して回った……
+
+;-------------------------------------------------
+;13,着付けを教える
+;-------------------------------------------------
+@MESSAGE_COM13
+PRINTFORMW %CALLNAME:TARGET%に着物の着方を教えた……
+
+;-------------------------------------------------
+;14,筋力トレーニング
+;-------------------------------------------------
+@MESSAGE_COM14
+PRINTFORMW %CALLNAME:TARGET%に筋力トレーニングを行わせた……
+
+;-------------------------------------------------
+;20,授業を行う
+;-------------------------------------------------
+@MESSAGE_COM20
+PRINTFORMW %CALLNAME:TARGET%に授業を行った……
+
+;-------------------------------------------------
+;21,実習
+;-------------------------------------------------
+@MESSAGE_COM21
+PRINTFORMW %CALLNAME:TARGET%に実習を行わせた……
+
+;-------------------------------------------------
+;22,自由課題を与える
+;-------------------------------------------------
+@MESSAGE_COM22
+PRINTFORMW %CALLNAME:TARGET%に自由に課題を与え、取り組ませた……
+
+;-------------------------------------------------
+;23,短距離走
+;-------------------------------------------------
+@MESSAGE_COM23
+PRINTFORMW %CALLNAME:TARGET%は短距離走を行った……
+
+;-------------------------------------------------
+;30,お稽古
+;-------------------------------------------------
+@MESSAGE_COM30
+PRINTFORMW %CALLNAME:TARGET%に稽古をさせた……
+
+;-------------------------------------------------
+;33,整体運動
+;-------------------------------------------------
+@MESSAGE_COM33
+PRINTFORML %CALLNAME:TARGET%は健康的な身体作りを目指し、体操を行った
+PRINTFORMW 脚や腰はしなやかに伸び、血流を促していく……
+
+;-------------------------------------------------
+;40,姉妹と会話
+;-------------------------------------------------
+@MESSAGE_COM40
+PRINTFORMW %CALLNAME:TARGET%を綿月姉妹と会話させた……
+
+;-------------------------------------------------
+;41,お使い
+;-------------------------------------------------
+@MESSAGE_COM41
+PRINTFORMW %CALLNAME:TARGET%にお使いを頼んだ……
+
+;-------------------------------------------------
+;42,姉妹と授業を受ける
+;-------------------------------------------------
+@MESSAGE_COM42
+PRINTFORMW %CALLNAME:TARGET%は綿月姉妹と一緒に授業を受けた……
+
+;-------------------------------------------------
+;43,姉妹と着付けする
+;-------------------------------------------------
+@MESSAGE_COM43
+PRINTFORMW %CALLNAME:TARGET%は綿月姉妹と一緒に着付けを行った……
+;プライドが高すぎると成功しなくなる
+IF ((300-BASE:プライド)/4+CFLAG:姉妹への友好度)*1 <= 0
+	PRINTFORMW %CALLNAME:TARGET%のプライドの高さが姉妹に受け入れられていないようだ……
+ENDIF
+
+;-------------------------------------------------
+;44,姉妹と出かける
+;-------------------------------------------------
+@MESSAGE_COM44
+PRINTFORMW %CALLNAME:TARGET%は綿月姉妹と一緒に出かけた……
+
+;-------------------------------------------------
+;45,姉妹と特訓
+;-------------------------------------------------
+@MESSAGE_COM45
+PRINTFORMW %CALLNAME:TARGET%は綿月姉妹と共に特訓をした……
+
+;-------------------------------------------------
+;60,姉妹と身体を絡ませる
+;-------------------------------------------------
+@MESSAGE_COM60
+PRINTFORMW %CALLNAME:TARGET%は衣服を肌蹴て、綿月姉妹と身体を絡ませた……
+
+;-------------------------------------------------
+;61,売春
+;-------------------------------------------------
+@MESSAGE_COM61
+PRINTFORM %CALLNAME:TARGET%は
+;堕落が500以上
+IF BASE:堕落 >= 500
+	PRINTFORM 淫蕩に満ちた表情を浮かべて
+;堕落が250以上
+ELSEIF BASE:堕落 >= 250
+	PRINTFORM 期待に目を輝かせながら
+;堕落が100以上
+ELSEIF BASE:堕落 >= 100
+	PRINTFORM 色っぽい吐息をついて
+;それ以下
+ELSE
+	PRINTFORM しきりに%CALLNAME:MASTER%に振り返りながら
+ENDIF
+PRINTFORMW 、売春宿へと出掛けた……
+
+;-------------------------------------------------
+;62,淫行授業
+;-------------------------------------------------
+@MESSAGE_COM62
+PRINTFORML %CALLNAME:TARGET%にローター等を着けて授業を行った……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は机に突っ伏せて、時折声を漏らしながら腰を震わせている
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は蕩けた表情をしてビクビクと身体を震わせている
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め、くぐもった声が聞こえる
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤に染めている
+ENDIF
+
+;-------------------------------------------------
+;63,淫行野外学習
+;-------------------------------------------------
+@MESSAGE_COM63
+PRINTFORML %CALLNAME:TARGET%にローター等を着けて野外へと出掛けた……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW あまりの刺激の強さに%CALLNAME:TARGET%は時折腰が砕けてその場にへたり込んだ
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は不自然な位に腰を振り、両腕で胸を抱いている
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め、色っぽい吐息を出した
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を紅く染めつつ草を触ったりしている
+ENDIF
+
+;-------------------------------------------------
+;64,淫行お使い
+;-------------------------------------------------
+@MESSAGE_COM64
+PRINTFORML %CALLNAME:TARGET%にローター等を着けてから、お使いを頼んだ……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は道中で何度も柱に寄りかかり、腰を擦りつけて波が引くのを待った
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%はくぐもった声を漏らしながら腰を振って歩き、周囲の視線が向けられる
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め、吐息を出しながら歩いた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を紅く染めて歩いている
+ENDIF
+
+;-------------------------------------------------
+;70,カウンセリング
+;-------------------------------------------------
+@MESSAGE_COM70
+PRINTFORMW %CALLNAME:TARGET%にカウンセリングを行った……
+
+;-------------------------------------------------
+;71,技能学習
+;-------------------------------------------------
+@MESSAGE_COM71
+PRINTFORMW %CALLNAME:TARGET%に技能についての学習を行わせた……
+
+;-------------------------------------------------
+;80,祈る
+;-------------------------------------------------
+@MESSAGE_COM80
+PRINTFORMW %CALLNAME:TARGET%は祈った……
+
+;-------------------------------------------------
+;81,参拝する
+;-------------------------------------------------
+@MESSAGE_COM81
+PRINTFORMW %CALLNAME:TARGET%は参拝した……
+
+;-------------------------------------------------
+;80,断食
+;-------------------------------------------------
+@MESSAGE_COM82
+PRINTFORMW %CALLNAME:TARGET%は断食を行った……
+
+;-------------------------------------------------
+;85,家事
+;-------------------------------------------------
+@MESSAGE_COM85
+PRINTFORMW %CALLNAME:TARGET%は家事を行った……
+
+;-------------------------------------------------
+;86,掃除
+;-------------------------------------------------
+@MESSAGE_COM86
+PRINTFORMW %CALLNAME:TARGET%は掃除を行った……
+
+;-------------------------------------------------
+;87,調理
+;-------------------------------------------------
+@MESSAGE_COM87
+PRINTFORMW %CALLNAME:TARGET%は調理を行った……
+
+;-------------------------------------------------
+;90,仮想訓練
+;-------------------------------------------------
+@MESSAGE_COM90
+PRINTFORMW %CALLNAME:TARGET%はイメージトレーニングを行った……
+
+;-------------------------------------------------
+;91,長距離走
+;-------------------------------------------------
+@MESSAGE_COM91
+PRINTFORMW %CALLNAME:TARGET%は長距離走に参加した……
+
+;-------------------------------------------------
+;92,合同合宿
+;-------------------------------------------------
+@MESSAGE_COM92
+PRINTFORMW %CALLNAME:TARGET%を合同合宿に参加させた……
+
+;-------------------------------------------------
+;93,野外対面立位
+;-------------------------------------------------
+@MESSAGE_COM93
+PRINTFORML %CALLNAME:TARGET%を向き合った状態で抱え
+PRINTFORMW 秘裂に一物を挿入し、休む間も無く交わった……
+;成功した場合
+IF TFLAG:成功
+	;淫妖が500以上
+	IF BASE:淫妖 >= 500
+		PRINTFORMW %CALLNAME:TARGET%は一突きされる度に腰を痙攣させ
+		PRINTFORMW 息を切らしながら合間に媚声を混じらせる
+	;淫妖が250以上
+	ELSEIF BASE:淫妖 >= 250
+		PRINTFORMW %CALLNAME:TARGET%は艶やかな声をあげ、腰を抱え込まれた状態でくねらせた
+	;淫妖が100以上
+	ELSEIF BASE:淫妖 >= 100
+		PRINTFORMW %CALLNAME:TARGET%は切ない吐息を出し、腕の中で何度も腰を震わせた
+	;それ以下
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は野外で交わる感覚に奇妙さを感じ、瞳を潤わせている
+	ENDIF
+ELSE
+	;淫妖値高ければそんなに失敗しないだろう…
+	;淫妖が500以上
+	IF BASE:淫妖 >= 500
+		PRINTFORML 体力が追いつかず、場所が悪いこともあり挿入前に中断してしまった
+		PRINTFORMW %CALLNAME:TARGET%は残念そうにしている
+	;それ以下
+	ELSE
+		PRINTFORML 途中でバテてしまい、挿入まで至らなかった……
+		PRINTFORMW %CALLNAME:TARGET%はそろそろ中に戻りたいと言っている……
+	ENDIF
+ENDIF
+
+
+
+;-------------------------------------------------
+;100,愛撫
+;-------------------------------------------------
+@MESSAGE_COM100
+PRINTFORML %CALLNAME:TARGET%にキスをしながら、身体を丹念に撫で回した……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は一撫でされる度に背筋を反らし、声にならない喘ぎを出した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は艶っぽい声をあげて腰を跳ねさせた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は腰をくねらせ、閉じた口からはくぐもった声を漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を紅く染めた
+ENDIF
+
+;-------------------------------------------------
+;101,キス
+;-------------------------------------------------
+@MESSAGE_COM101
+PRINTFORML %CALLNAME:TARGET%とキスを行った……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%はお互いの歯が当たる位に強く口づけをし、互いに舌を絡ませた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は口の中に舌を入れ、互いの舌を絡ませようとしてきた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は口の中に舌を入れてきた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を紅く染め、恐る恐る唇を触れさせた
+ENDIF
+
+;-------------------------------------------------
+;102,手淫
+;-------------------------------------------------
+@MESSAGE_COM102
+PRINTFORML %CALLNAME:TARGET%に一物を手で扱かせた……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は潤んだ瞳で一物を見つめながら、手で丁寧に刺激を与えた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は目を細め、手で優しく刺激した
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は困惑の表情を浮かべながら手で刺激した
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は戸惑いながら手で擦った
+ENDIF
+
+;-------------------------------------------------
+;103,性の座学
+;-------------------------------------------------
+@MESSAGE_COM103
+PRINTFORML %CALLNAME:TARGET%に性についての知識を話した……
+
+;-------------------------------------------------
+;104,卑猥な会話
+;-------------------------------------------------
+@MESSAGE_COM104
+PRINTFORML %CALLNAME:TARGET%に淫らな言葉混じりで快楽を想起させる話をした……
+
+;-------------------------------------------------
+;110,フェラチオ
+;-------------------------------------------------
+@MESSAGE_COM110
+PRINTFORML %CALLNAME:TARGET%に一物を咥えさせた……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は艶の籠った瞳をして一物を動かし、筋と先を舌先で巧みに刺激した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は手を添えて一物を反復して動かし、舌先で筋を刺激した
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は舌先で筋を舐め、一点を集中して責めた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は戸惑いながらも舌先で舐めた
+ENDIF
+
+;-------------------------------------------------
+;111,自慰
+;-------------------------------------------------
+@MESSAGE_COM111
+PRINTFORML %CALLNAME:TARGET%に自慰を指示した……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%はあられもない声をあげつつ腰や胸を壁に擦りつけて没頭している
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は秘所に指を挿し入れ、ピクリと腰を震わせつつ声をあげている
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は乳首を手のひらで刺激しては、熱い吐息を吐いて身体を震わせている
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を紅く染め、恐る恐る胸や秘核に手を当てて刺激している
+ENDIF
+
+;-------------------------------------------------
+;112,焦らし
+;-------------------------------------------------
+@MESSAGE_COM112
+PRINTFORML %CALLNAME:TARGET%の全身を優しく撫でまわし、微弱な刺激を与えた……
+;快楽が90以上
+IF BASE:快楽 >= 90
+	PRINTFORMW %CALLNAME:TARGET%は淫らに腰を浮かせ、声にならない喘ぎを出した
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は腰をくねらせ、はっきりとした刺激を得ようと試みている
+ENDIF
+
+
+;-------------------------------------------------
+;120,性交
+;-------------------------------------------------
+@MESSAGE_COM120
+PRINTFORML %CALLNAME:TARGET%の秘裂に%CALLNAME:MASTER%の一物をあてがい、一気に挿入した……
+;処女
+IF TALENT:処女
+	PRINTFORMW %CALLNAME:TARGET%は眼を瞑って痛みに耐えている
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は一突きされただけで軽く達し、腰を突き出している
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は艶やかな声をあげて腰を振った
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は緩やかに腰を振り、少しずつ染み渡る快楽に吐息を漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は奇妙な感覚に瞳を潤わせている
+ENDIF
+
+;-------------------------------------------------
+;121,立ち性交
+;-------------------------------------------------
+@MESSAGE_COM121
+PRINTFORML 立ったまま%CALLNAME:TARGET%の秘裂に%CALLNAME:MASTER%の一物をあてがい、一気に挿入した……
+;処女
+IF TALENT:処女
+	PRINTFORMW %CALLNAME:TARGET%は眼を瞑って痛みに耐えている
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は一突きされただけで軽く達し、足元に愛液で水溜りが作られた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は艶やかな声をあげて腰を振った
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は緩やかに腰を振り、少しずつ染み渡る快楽に吐息を漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は奇妙な感覚に瞳を潤わせている
+ENDIF
+
+
+;-------------------------------------------------
+;200,愛撫
+;-------------------------------------------------
+@MESSAGE_COM200
+PRINTFORML 複数人で輝夜の身体を撫で回した……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は嫌悪感を感じる間もなく色っぽい声をあげて腰をくねらせた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は自らの淫らな身体に後悔しつつ艶っぽい声をあげ、微かに腰を跳ねさせた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は意思に反して腰をくねらせ、閉じた口からはくぐもった声を漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を背けている
+ENDIF
+
+;-------------------------------------------------
+;201,キス
+;-------------------------------------------------
+@MESSAGE_COM201
+PRINTFORML %CALLNAME:TARGET%は顔を持ち上げられ、無理矢理キスをされた……
+PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべている
+
+;-------------------------------------------------
+;202,痴態見学
+;-------------------------------------------------
+@MESSAGE_COM202
+PRINTFORML %CALLNAME:TARGET%は他に攫われた娘が交わる場面を見させられた
+PRINTFORMW %CALLNAME:TARGET%は顔を背ける事ができず、内部に得体の知れない感情が生じた
+
+;-------------------------------------------------
+;203,目隠しプレイ
+;-------------------------------------------------
+@MESSAGE_COM203
+PRINTFORML %CALLNAME:TARGET%は布で目を覆われ、身体を触られた
+PRINTFORMW 敏感になった触覚が%CALLNAME:TARGET%の理性を削りにかかる……
+
+;-------------------------------------------------
+;204,身体を触る
+;-------------------------------------------------
+@MESSAGE_COM204
+PRINTFORML %CALLNAME:TARGET%は後ろから身体を触られた
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は容易く愛液をしたらせながら、びくんと背筋を伸ばした
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は指を追うように腰を振り、時折甘い声をあげた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は少し頬を赤らめたが、正気に戻った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は嫌悪感を覚え、眉に皺を寄せた
+ENDIF
+
+;-------------------------------------------------
+;210,指挿し入れ
+;-------------------------------------------------
+@MESSAGE_COM210
+PRINTFORML %CALLNAME:TARGET%は秘裂に指を挿し入れられ、膣内を捏ね回された……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は容易く愛液をしたらせながら、びくんと背筋を伸ばした
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は指を追うように腰を振り、時折甘い声をあげた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は膣壁を擦られる奇妙な感覚に腰を揺らしてくぐもった声を漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は苦痛に顔を歪ませている
+ENDIF
+
+;-------------------------------------------------
+;211,フェラチオ
+;-------------------------------------------------
+@MESSAGE_COM211
+PRINTFORML %CALLNAME:TARGET%は一物を無理矢理咥えさせられた……
+;堕落が400以上
+IF BASE:堕落 >= 400
+	PRINTFORMW %CALLNAME:TARGET%は濁った瞳を男達に向け、上達した舌遣いで一物を巧みに刺激した
+;堕落が250以上
+ELSEIF BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は渋々稚拙な舌遣いで一物を舐めた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべながらも、腰を振る男達に抵抗できないでいた
+ENDIF
+
+;-------------------------------------------------
+;212,精液飲み
+;-------------------------------------------------
+@MESSAGE_COM212
+PRINTFORML %CALLNAME:TARGET%は精液が溜まった皿を口元に付けられ、無理矢理飲まされた
+;堕落が400以上
+IF BASE:堕落 >= 400
+	PRINTFORMW %CALLNAME:TARGET%は濁った瞳を男達に向け、悦しそうに精液を飲み干した
+;堕落が250以上
+ELSEIF BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は眉間に皺を寄せながら精液を飲んだ
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は首を横に振るも、皿を傾けられ、無理矢理飲まされてしまった
+ENDIF
+
+;-------------------------------------------------
+;213,目隠し放置
+;-------------------------------------------------
+@MESSAGE_COM213
+PRINTFORML %CALLNAME:TARGET%は視界を布で遮られ、局部に責め具を付けられた状態で放置された
+;淫妖が600以上
+IF BASE:淫妖 >= 600
+	PRINTFORML %CALLNAME:TARGET%は艶めかしい声をあげ、相手を求めるような悲痛な甘い声をあげ
+	PRINTFORMW 腰を突き出した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORML %CALLNAME:TARGET%は媚声を洩らし、床に擦りつけるように腰を振った
+;それ以下
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は喘ぐように口を開き、腰を震わせた
+ENDIF
+PRINTFORMW 周囲の男達はその様子を見て盛り上がっている
+
+;-------------------------------------------------
+;220,性交
+;-------------------------------------------------
+@MESSAGE_COM220
+PRINTFORML %CALLNAME:TARGET%は四肢を抑えられ、勃った一物を秘裂に挿入された……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は股を開いて一物を受け入れ、艶やかな喘ぎ声をあげた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は意思と反して腰を振り、切ない吐息を漏らした
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は罵倒を浴びせようとするも、秘裂から伝わる刺激によって言葉が途切れた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は苦痛に顔を歪ませ、周囲に罵倒を浴びせた
+ENDIF
+
+;-------------------------------------------------
+;221,野外性交
+;-------------------------------------------------
+@MESSAGE_COM221
+PRINTFORML %CALLNAME:TARGET%は人通りがほとんどない野外に連れ出されると
+PRINTFORML 周囲の者に身体を抑えつけられ、そのまま一物を挿入された……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は脚を相手と絡ませ、野外であるにも関わらず艶やかな声をあげた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は口で自分の行動を戒めようとするも、身体は快楽に従って動いた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤にして、甘い刺激に下唇を噛んで耐えた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤にしつつ、周囲に罵倒を浴びせた
+ENDIF
+
+;-------------------------------------------------
+;222,騎乗位
+;-------------------------------------------------
+@MESSAGE_COM222
+PRINTFORML %CALLNAME:TARGET%は自ら相手の上に跨り
+PRINTFORML そそり立った一物を秘裂に挿入した……
+;淫妖が600以上
+IF BASE:淫妖 >= 600
+	PRINTFORMW %CALLNAME:TARGET%は媚声をあげながら腰を振り、自ら胸を弄り始めた
+;淫妖が300以上
+ELSEIF BASE:淫妖 >= 300
+	PRINTFORMW %CALLNAME:TARGET%は悦びに満ちた表情を浮かべ、腰を振る度に媚声をあげた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は可愛らしい声を時折漏らした
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべ、昂ぶりを抑える為に黙々と腰を振った
+ENDIF
+
+;-------------------------------------------------
+;223,焦らし
+;-------------------------------------------------
+@MESSAGE_COM223
+PRINTFORML %CALLNAME:TARGET%は多数の人間に局部を弄られ、達しそうになると放置された……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は艶めかしい声をあげ、達しさせてほしいと呟いた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は快楽を得るために腰を突き出し、周囲の笑いを買った
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は口を噛み締め、腰を震わせた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤にした
+ENDIF
+
+;-------------------------------------------------
+;224,目隠し責め
+;-------------------------------------------------
+@MESSAGE_COM224
+PRINTFORML %CALLNAME:TARGET%は視界を布で遮られ、局部に責め具を付けられた状態で放置されたり、各部を責められたりした
+;淫妖が600以上
+IF BASE:淫妖 >= 600
+	PRINTFORML %CALLNAME:TARGET%は艶めかしい声をあげ、腰を突き出した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORML %CALLNAME:TARGET%は敏感になった触覚に翻弄され、媚声を洩らし、背筋を反らした
+;それ以下
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は喘ぐように口を開き、腰を振った
+ENDIF
+PRINTFORMW 周囲の男達はその様子を見て盛り上がっている
+
+
+;-------------------------------------------------
+;230,見せしめ強姦
+;-------------------------------------------------
+@MESSAGE_COM230
+PRINTFORML %CALLNAME:TARGET%は見せしめとして闇の店に連れていかれ
+PRINTFORML 覆面を被った観客の前で秘裂に一物を挿入された……
+;淫妖が500以上＆堕落が100以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は濡れた瞳をして足を絡ませ、媚声を店に響かせた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は媚が入った悲鳴をあげつつ首を振って長い長髪を散らし、一物の挿入に合わせて腰を振った
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は艶を帯びた声で助けを求め、観客の熱い目線を浴びた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の名前を叫ぼうとするも、膣壁を擦られる刺激で時折言葉が途切れた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は何度も%CALLNAME:MASTER%の名前を叫んだ……
+ENDIF
+
+;-------------------------------------------------
+;231,見せしめ輪姦
+;-------------------------------------------------
+@MESSAGE_COM231
+PRINTFORML %CALLNAME:TARGET%は見せしめとして闇の店に連れていかれ
+PRINTFORML 覆面を被った観客達に次々に秘裂に一物を挿入された……
+;淫妖が500以上＆堕落が500以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 500
+	PRINTFORMW %CALLNAME:TARGET%はすっかり目を細め、一物の挿入に悦びの表情を見せた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は媚声混じりの悲鳴をあげ、本能に逆らえず腰を一物に合わせて振った
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は複数人に無理矢理立たされた状態で挿入され、艶を帯びた吐息を漏らした
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の名前を叫ぼうとするも、膣壁を擦られる刺激で時折言葉が途切れた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は何度も%CALLNAME:MASTER%の名前を叫び、暴れて必死の抵抗を試みた
+ENDIF
+
+;-------------------------------------------------
+;232,染髪
+;-------------------------------------------------
+@MESSAGE_COM232
+PRINTFORML 匪賊達は半狂乱となって暴れる%CALLNAME:TARGET%の身体を抑え
+PRINTFORMW 染髪剤が入った器に無理矢理頭を押しこんだ！
+PRINTL 
+PRINTFORMW 数分後……
+PRINTFORML %CALLNAME:TARGET%は匪賊達に身体を弄られながら
+PRINTFORMW 変わり果てた自分の髪を見て唖然としていた……
+
+;-------------------------------------------------
+;233,刺青を入れる
+;-------------------------------------------------
+@MESSAGE_COM233
+PRINTFORML 匪賊達は半狂乱となって暴れる%CALLNAME:TARGET%の身体を抑え
+PRINTFORMW 美しい肌を持つ身体の一部分に刺青を入れていった……
+
+;-------------------------------------------------
+;234,性の暗示
+;-------------------------------------------------
+@MESSAGE_COM234
+PRINTFORML 純狐は%CALLNAME:TARGET%の額に指を突き立てると、目を瞑って念を篭めた
+PRINTFORML すると、忽ち%CALLNAME:TARGET%の目が曇っていき、吐息が荒くなっていく
+PRINTFORMW どうやら、%CALLNAME:TARGET%の淫欲を純化させ、表面化させているようだ
+
+;淫妖が900以上
+IF BASE:淫妖 >= 900
+	PRINTFORML %CALLNAME:TARGET%は純狐に脚を絡ませ、甘い吐息を顔に吹きかけた
+	PRINTFORMW 術をかけられなくとも既に淫らであった%CALLNAME:TARGET%は、自身の情欲に抑えが効かなったのであった
+;淫妖が600以上
+ELSEIF BASE:淫妖 >= 600
+	PRINTFORML %CALLNAME:TARGET%は顔を赤らめながらも純狐に抱き付き、潤んだ瞳で見つめた
+	PRINTFORMW 既に情欲に嵌りつつあった彼女は、この術のせいで一線を越える勇気を得た
+;それ以外
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は放心状態になって純狐を見つめている
+	PRINTFORMW 心なしか瞳には熱が籠っており、時折身体を揺らす様からは、純狐の術が精神を蝕んでいるのが分かる
+ENDIF
+
+;-------------------------------------------------
+;235,淫具挿入
+;-------------------------------------------------
+@MESSAGE_COM235
+PRINTFORM 純狐は%CALLNAME:TARGET%
+;その他、にバイブ/アナルバイブが挿入されているかを監視
+IF CFLAG:日用品／その他 == 500 || CFLAG:日用品／その他 == 507
+	
+	;既にバイブが挿入されている場合
+	IF CFLAG:日用品／その他2 == 500
+		PRINTFORML に既に挿入されているバイブを弄り、秘裂の中をほじくった
+	;アナルバイブの場合も、そのまま弄る
+	ELSEIF CFLAG:日用品／その他2 == 507
+		PRINTFORML に既に挿入されているアナルバイブを弄り、尻穴をほじくった
+	ELSE
+		;既に、その他2に日常品が装着されている場合
+		IF CFLAG:日用品／その他2
+			PRINTFORM が身に着けている%ITEMNAME:(CFLAG:日用品／その他2)%を外し、
+		ENDIF
+		
+		;その他にバイブが挿入されている場合
+		IF CFLAG:日用品／その他 == 500
+			PRINTFORML アナルバイブを挿入した
+		ELSE
+			PRINTFORML バイブを挿入した
+		ENDIF
+	ENDIF
+ELSE
+	;既にバイブが挿入されている場合
+	IF CFLAG:日用品／その他2 == 500
+		PRINTFORML に既に挿入されているバイブを弄り、秘裂の中をほじくった
+	;アナルバイブの場合も、そのまま弄る
+	ELSEIF CFLAG:日用品／その他2 == 507
+		PRINTFORML に既に挿入されているアナルバイブを弄り、尻穴をほじくった
+	ELSE
+		;既に、その他に日常品が装着されている場合
+		IF CFLAG:日用品／その他
+			PRINTFORM が身に着けている%ITEMNAME:(CFLAG:日用品／その他)%を外し、
+		ENDIF
+		PRINTFORM 秘裂に
+		
+		;その他2にバイブが挿入されている場合
+		IF CFLAG:日用品／その他2 == 500
+			PRINTFORML アナルバイブを挿入した
+		ELSE
+			PRINTFORML バイブを挿入した
+		ENDIF
+	ENDIF
+ENDIF
+
+;淫妖が900以上
+IF BASE:淫妖 >= 900
+	PRINTFORML %CALLNAME:TARGET%は身体を跳ねさせ、艶を帯びた声を何度も漏らした
+	PRINTFORML 既に何度か達しており、淫靡に腰をくねらせないと歩くこともままならない様子だ
+	PRINTFORMW 果たして帰ることはできるのだろうか……
+;淫妖が600以上
+ELSEIF BASE:淫妖 >= 600
+	PRINTFORML %CALLNAME:TARGET%は身体を震わせながら純狐に抱き付き、もう堪え切れないことを告げた
+	PRINTFORMW このまま生活しろと純狐に告げられると、%CALLNAME:TARGET%は何度も頭を振っては否定の言葉を紡いだ
+;淫妖が300以上
+ELSEIF BASE:淫妖 >= 300
+	PRINTFORML %CALLNAME:TARGET%は小さく声をあげ、純狐の身体に腰を擦らせた
+	PRINTFORMW 瞳は潤み、呼吸も乱れている
+;それ以外
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は痛みで眉をしかめたが、純狐がしてくれることだから、という理由で受け入れた
+	PRINTFORMW 淫靡な振動音が鳴り響く中、%CALLNAME:TARGET%は恭しい表情をして純狐を見つめる
+ENDIF
+
+;-------------------------------------------------
+;236,属性淫行
+;-------------------------------------------------
+@MESSAGE_COM236
+PRINTFORML 純狐は%CALLNAME:TARGET%の素行から、どんな職能が優れているかを見抜いた……！
+PRINTFORMW 純狐は%CALLNAME:TARGET%に幻覚を見せる……
+
+;最も高い属性に応じた淫行を行う
+
+;最も高い属性を検索させる
+LOCAL = MAXARRAY(CFLAG, 220, 228)
+LOCAL:1 = FINDELEMENT(CFLAG, LOCAL, 220, 228)
+
+
+;姫様
+;全裸で馬に乗せる
+IF LOCAL:1 == 220
+	PRINTFORML 月の都で最も大きな大通り、中央は広く開けられ、道の両端には観衆がひしめいている
+	PRINTFORML そんな状況で、%CALLNAME:TARGET%は馬に乗って姿を現した。たくさんの視線が%CALLNAME:TARGET%に突き刺さる
+	PRINTFORMW というのも、今の%CALLNAME:TARGET%は一糸纏わぬ状態で馬に乗っているからだ
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML %CALLNAME:TARGET%は細めた目で観衆を眺め、唾を飲んだ
+		PRINTFORML 股間からは愛液が滲み、頬や乳首はすっかり赤みを帯びている
+		PRINTFORMW あまりに艶やかである姫君の姿を、観衆達は見逃せなかった
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML %CALLNAME:TARGET%は目を閉じ、早く行進が終わるよう祈った
+		PRINTFORML だが、彼女は無意識の内に腰をくねらせ、太腿を馬の背に擦りつけていた
+		PRINTFORMW 彼女の身体は淫らにできており、擦り付けた後に所々愛液の水滴が残る
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にして、観衆から目を背ける
+		PRINTFORML 頭を振るたび後ろ髪が揺れ、普段は隠れている背中の線が衆目に曝される
+		PRINTFORMW 必死に嫌がる彼女だが、身体が内側から火照り始めていることに気づいてはいない
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は声を荒げ、裸身が衆目に曝されることを拒んだ
+		PRINTFORML だが身体を隠そうにも両手は手錠で固定され、ろくに動かすことができない
+		PRINTFORMW 結局このまま行進を続け、美しい肌が曝される破目になった
+	ENDIF
+;メイド
+;バイブを入れたまま接待させる
+ELSEIF LOCAL:1 == 221
+	PRINTFORML %CALLNAME:TARGET%は、下半身にバイブを挿入した状態で接待をするよう命令された
+	PRINTFORML 接待場所となる王宮の来賓室には、煌びやかな刺繍が施された幕と著名な画家によって描かれた絵画が飾られている
+	PRINTFORMW こんな高貴な場所に通される客は、とても重要な人物に違いない……
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML %CALLNAME:TARGET%は来賓が来る前から既に限界を迎えていた
+		PRINTFORML 今すぐにでも自ら身体を慰めて達したいのに、命令がある以上それは許されない
+		PRINTFORML ならばできるだけ誤魔化すしかない。そう思った%CALLNAME:TARGET%は、来賓にお茶を出した後、柱に胸を押し付け、その場で擦り合わせ始めた
+		PRINTFORMW 柱によって押し潰される胸は服越しに大きく形を変え、来賓の視線を釘付けにした
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML %CALLNAME:TARGET%は命令に悦びを含んだ表情をして返した
+		PRINTFORML 来賓が来られると同時にお辞儀をしたが、その声には艶を含んでおり、案内する際にも声を漏らして身を震わせた
+		PRINTFORML そして、来賓が座った後に小さな声で何度も堪えられない様を漏らし、太腿を擦り合わせたり腰をよじらせたりして、必死に堪える
+		PRINTFORMW 熱い吐息と艶やかな視線が、何度も来賓にかけられる
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML %CALLNAME:TARGET%は時折上掠った声を漏らしながら接客した
+		PRINTFORML 下半身で震える責め具は着実に快楽を与え、唇に艶を出させ、色混じりの吐息を吐き出させる
+		PRINTFORML その淫靡な態度を来賓に指摘されると、%CALLNAME:TARGET%は快楽を堪える声を漏らしながら机に突っ伏した
+		PRINTFORMW 恐らく快楽を堪えるためにしたのだろうが、傍から見てその姿は誘っているようにしか見えなかった
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は真っ赤な顔をしながら、来賓にお茶を出した
+		PRINTFORML 下半身で震える電動音を掻き消すため、必死に言葉を紡ぐ。下半身に責め具がついているのを意識したくないのだろう
+		PRINTFORML しかし、淫具は着実に%CALLNAME:TARGET%を刺激し、時折素っ頓狂な声を上げさせては部屋を静寂に返した
+		PRINTFORMW 結局、来賓が帰った途端に%CALLNAME:TARGET%は悶え、その場に膝をついた
+	ENDIF
+;シスター
+;戒律を破った罰として破門させられるが、その建前として不貞である証拠を教主に作られる
+ELSEIF LOCAL:1 == 222
+	PRINTFORML %CALLNAME:TARGET%は、教会の戒律を破ってしまった
+	PRINTFORML 様々な理由により不貞で破ったことにするため、%CALLNAME:TARGET%は教主に襲われた
+	;理由を書くと長くなるため省略(教主の世間体、教会の雰囲気)
+	PRINTFORMW 教会の地下牢にて、%CALLNAME:TARGET%は教主を前にして、太腿や胸を肌蹴た状態で縛られている
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML 教主に局部を触られると、%CALLNAME:TARGET%は腰を浮かせ、媚声をあげた
+		PRINTFORML 瞳は潤み、吐息は熱くなる
+		PRINTFORML 淫欲な行為に漬かった身体は、この後の行為を期待してしまうのだ
+		PRINTFORML その"期待"を教主が把握しているのか、%CALLNAME:TARGET%の腰を持ち上げ、自身の淫穴に突起物を挿入した
+		PRINTFORMW %CALLNAME:TARGET%は腰に腕と両脚を回し、頭を何度も振って悦びを表した
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML 教主の手が太腿に触れると、%CALLNAME:TARGET%は甲高い声をあげた
+		PRINTFORML 触れられた手で太腿を撫でられると、%CALLNAME:TARGET%の声は少しずつ小さくなっていき、やがて鼻がかった声しか漏らさなくなった
+		PRINTFORML 熱い吐息を漏らし、頭を揺らす彼女。陰部は妖しく光り、床に染みができている
+		PRINTFORMW 遂には&CALLNAME:TARGET&自ら教主の唇を求め、唇を合わせてしまう
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML %CALLNAME:TARGET%は教主に肌を触られると、腰を浮かせた
+		PRINTFORML その手が胸先や股間に届くと、%CALLNAME:TARGET%は頭を振って髪をちらつかせる
+		PRINTFORML まだ教主を受け入れた訳ではないのだが、身体が勝手に反応してしまう
+		PRINTFORMW 長時間嬲られた後、時間が来たのか教主は地下牢を出ていく、その様子を%CALLNAME:TARGET%は微かに潤んだ瞳で呆然として見つめていた
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は近づいてくる教主を睨んだ
+		PRINTFORML だが教主はその程度では怯まず、%CALLNAME:TARGET%の太腿や胸に手を伸ばして揉み始める
+		PRINTFORML %CALLNAME:TARGET%は眉間に皺を寄せ、抵抗しようとするが身体を縛られているため、大して抵抗できない
+		PRINTFORMW 結局痴態は見せなかったものの、%CALLNAME:TARGET%の局部には赤い跡が残った
+	ENDIF
+;ゴスロリ
+;触手に絡ませ、精液を飲ませる
+ELSEIF LOCAL:1 == 223
+	PRINTFORML %CALLNAME:TARGET%は呼び出した触手に絡み取られた
+	PRINTFORML 粘液塗れの触手が衣服の中に潜りこみ、生温い感触を%CALLNAME:TARGET%に伝える
+	PRINTFORMW 触手は四肢を雁字搦めにした後、口に太い触手を突っ込んだ
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML %CALLNAME:TARGET%は上気させた顔で虚空を眺めている
+		PRINTFORML 淫欲に塗れた%CALLNAME:TARGET%にとっては、触手に拘束されること自体が扇情的だったのだ
+		PRINTFORML 特に粘液のぬるぬるとした感触が気に入ったようで、触手が蠢く度に悦びの声を漏らす
+		PRINTFORMW 触手が吐き出す白濁液を容易く飲み込み、最終的に、触手は自身が吐き出せる白濁液の限界を知ることとなった
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML 触手は腔内を一通り撫でた後、生臭い白濁液を吐き出した
+		PRINTFORML とても生臭く、腔内の水分を全て奪う程の粘り気を持つ液体だが、%CALLNAME:TARGET%は苦もせず飲み干した
+		PRINTFORML むしろ、飲み干したことに悦びを感じているらしく、全身が火照り、腰を触手に擦り付けている
+		PRINTFORMW 期待に応えるべく四肢を拘束する触手が蠢くと、%CALLNAME:TARGET%はくぐもった悦び声の声をあげて身を反らした
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML 触手は大きく脈打った後、粘性質の液体を腔内に吐き出す
+		PRINTFORML あまりに苦く、生臭い香りに%CALLNAME:TARGET%は眉間に皺を寄せる
+		PRINTFORMW だが、この時まだ本人は気づいてはいなかった。自身の股間が湿り気を帯びていることを
+	ELSE
+		PRINTFORML 触手は腔内で弾け、大量の白濁液を吐き出す
+		PRINTFORML 生暖かく、粘り気もとても強いその液体は、%CALLNAME:TARGET%に嫌悪感を抱かせるのに充分だった
+		PRINTFORMW 取り押さえられた四肢をくすぐられても、乳首を撫でられても、%CALLNAME:TARGET%の強張った表情が解けることはなかった
+	ENDIF
+;花嫁
+;主人公の目の前で輪姦される
+ELSEIF LOCAL:1 == 224
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の目の前で、複数人の男性によって犯されている
+	PRINTFORML 下半身にある前後の穴には男性の黒太い一物が挿入され、口でも一物を奉仕させられる
+	PRINTFORMW %CALLNAME:MASTER%の前で犯される状況に、%CALLNAME:TARGET%は――
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML 自ら腰を振り、男性達に身体を奉げた
+		PRINTFORML 咥えた一物を舌で撫でてやると、男性は瞬く間に射精してしまう
+		PRINTFORML 股間からは愛液がつーっと伝い落ち、床に水たまりを作る
+		PRINTFORML 口で達した男性が一物を引き抜くと、続け様に次の男性が一物を突っ込む
+		PRINTFORMW この淫欲に満ちた宴は、男性が全員倒れるまで続いた
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML 悦びの表情を浮かべ、自ら腰を振った
+		PRINTFORML 結合部から鳴り響くと水音に媚声が混じる
+		PRINTFORML 数刻経ち、%CALLNAME:TARGET%が目を瞑ると、男性は腰を掴んで深くまで突き入れた。%CALLNAME:TARGET%がそろそろ達すると考えたのだろう
+		PRINTFORMW 男性の予想通り%CALLNAME:TARGET%は一際大きな媚声をあげた後、大きく背を逸らし、全身から力を抜いた
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML 身体をよじり、男性の拘束を解こうとした
+		PRINTFORML だが一物を突かれるたびに弛緩し、無意識の内に腰を揺らしてしまう
+		PRINTFORML 拒否の言葉を紡ぐのに身体は反応する様子を、男性からはからかわれてしまった
+		PRINTFORML やがて%CALLNAME:TARGET%は背を逸らした後、がっくりと項垂れた
+		PRINTFORMW 股間からは白濁液と透明な液体が混じったものが垂れ流れている
+	ELSE
+		PRINTFORML 悲鳴をあげ、必死に抵抗した
+		PRINTFORML 身体をよじって男性の行為を妨げようとするが、男性は気にせず行為を続ける
+		PRINTFORMW %CALLNAME:MASTER%の名前を叫ぶ声も小さくなっていき、終いにはただ泣き咽るだけになった
+	ENDIF
+;武士
+;法を破って追放される前に慰み者にされる
+ELSEIF LOCAL:1 == 227
+	PRINTFORML %CALLNAME:TARGET%は規則を破った罰として、警備隊達に捕まった！
+	PRINTFORML 武士には武士なりの規則があり、警備隊達はさすがに%CALLNAME:TARGET%といえども見逃すことはできなかった
+	PRINTFORML 規則を破った武者は全ての権利を剥奪され、都の外へ追放される
+	;PRINTFORML 追放された者はいずれ色事に手を染めることになるだろう
+	PRINTFORMW 警備隊達は%CALLNAME:TARGET%を宿所に監禁し、衣服を脱ぐことを強要した……
+	
+	;淫妖の値によって分岐
+	IF BASE:淫妖 >= 900
+		PRINTFORML %CALLNAME:TARGET%は自ら薄地の布を解き、肩を露出した
+		PRINTFORML 普段から薄着を纏っており、心のどこかでこうなることを期待していたのかもしれない
+		PRINTFORML そして警備隊の一人に強く抱き付き、口づけをした
+		PRINTFORMW さすがの光景に周りの警備隊は欲情を刺激される。姦されるのも、時間の問題であった
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORML 警備隊に衣服を脱がされると、%CALLNAME:TARGET%は腕で乳房を隠した
+		PRINTFORML 艶っぽい目つきをする%CALLNAME:TARGET%の様子に、警備隊は堪えられなくなる
+		PRINTFORML 警備隊達は一斉に%CALLNAME:TARGET%に寄り、四肢を取り押さえる
+		PRINTFORMW いきり立った剛直の上に座らされ、腰を揺らされると、%CALLNAME:TARGET%は頬を緩ませ甘い声をあげた
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORML %CALLNAME:TARGET%は頭を振った後、俯いた
+		PRINTFORML 埒が明かないと思ったのか、警備隊達は%CALLNAME:TARGET%の四肢を抑えてから衣服に手をかけ、強引に剥いた
+		PRINTFORML なし崩し的に胸や股間を弄られ、綺麗な肌に汗が滲んでいく
+		PRINTFORMW %CALLNAME:TARGET%は何度も悲鳴をあげるが、それとは裏腹に股間は湿り気を帯びていた
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は口を閉ざし、微動だにしない。自分が置かれた状況を理解したくないのだろうか
+		PRINTFORML しかし警備隊達は待ってくれない。数人がかりで%CALLNAME:TARGET%の身体を抑えた後、衣服を無理矢理剥いでいく
+		PRINTFORML 衣服が一枚、また一枚と剥かれるたび、%CALLNAME:TARGET%の抵抗は激しくなる
+		PRINTFORML さすがに警備隊も手に負えないと思ったのか、%CALLNAME:TARGET%の鼻に薬物をしみこませた布を当てた
+		PRINTFORMW 抵抗が小さくなった%CALLNAME:TARGET%は、衣服を全部剥かれた後、身体を警備隊達に弄られた
+	ENDIF
+;娼婦
+;淫魔
+;このコマンドは実行させない予定
+;一応メッセージ用意しておきます
+ELSE
+	PRINTFORMW 理解不能な幻覚が%CALLNAME:TARGET%を襲う！
+ENDIF
+
+
+
+
+;-------------------------------------------------
+;390,お茶会
+;-------------------------------------------------
+@MESSAGE_COM390
+PRINTFORMW %CALLNAME:TARGET%をお茶会に参加させた……
+
+;-------------------------------------------------
+;391,披露宴
+;-------------------------------------------------
+@MESSAGE_COM391
+PRINTFORMW %CALLNAME:TARGET%を披露宴に参加させた……
+
+;-------------------------------------------------
+;391,民と話す
+;-------------------------------------------------
+@MESSAGE_COM392
+PRINTFORMW %CALLNAME:TARGET%を都に連れて行き、出会った民と会話をさせた……
+
+;-------------------------------------------------
+;400,物乞い
+;-------------------------------------------------
+@MESSAGE_COM400
+PRINTFORMW %CALLNAME:TARGET%は路地に正座し、道行く人に物を乞った……
+
+;-------------------------------------------------
+;401,自慰物乞い
+;-------------------------------------------------
+@MESSAGE_COM401
+PRINTFORML %CALLNAME:TARGET%は路地裏で横になり、通行人に見えるように布を肌蹴け
+PRINTFORMW 人が通るたびに局部を手で弄った……
+;淫妖が500以上＆堕落が500以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は艶やかな目を通行人に向け、色を帯びた喘ぎ声で観客を集めた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%はしきりに肢体を地面に擦りつけ、止まらない媚声をあげて自慰に没頭した
+;淫妖が250以上＆堕落が250以上
+ELSEIF BASE:淫妖 >= 250 && BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は太腿を擦り合わせながら自慰を行い、肌蹴た部分から局部が露出するのを気にせずに没頭した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は弄る度に身体を震わせ、色っぽいくぐもった声を周囲に漏らした
+;淫妖が100以上＆堕落が100以上
+ELSEIF BASE:淫妖 >= 100 && BASE:堕落 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は身体を震わせると共に媚声をあげ、道行く人の目を惹いた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%はびくりと身体を震わせ、思わず出そうになる媚声を羞恥によって堪えた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤にしつつも、金銭を稼ぐためにやり通した
+ENDIF
+
+;-------------------------------------------------
+;402,性交物乞い
+;-------------------------------------------------
+@MESSAGE_COM402
+PRINTFORML %CALLNAME:TARGET%は路地裏で横になり、通行人に見えるように布を肌蹴け
+PRINTFORMW 人が通るたびに性交を誘った……
+;淫妖が500以上＆堕落が500以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は腰に足を絡め、媚声を周囲に響かせながら性交に没頭した
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は悦びの表情を浮かべ、強い刺激にたまらず声をあげた
+;淫妖が250以上＆堕落が250以上
+ELSEIF BASE:淫妖 >= 250 && BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は相手の突きで強い快楽を感じて背筋を反らし、周囲に色を帯びた吐息を響かせた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は一突きされる度に背筋を伸ばし、噛み殺した媚声をあげた
+;淫妖が100以上＆堕落が100以上
+ELSEIF BASE:淫妖 >= 100 && BASE:堕落 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は甘い声をあげ、相手の一物に合わせて腰を振った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を紅潮させ、秘裂から滲み出る奇妙な感覚に声を漏らした
+ENDIF
+
+;-------------------------------------------------
+;410,整理
+;-------------------------------------------------
+@MESSAGE_COM410
+PRINTFORMW %CALLNAME:TARGET%は物の整理を行った……
+
+;-------------------------------------------------
+;411,性なる奉仕
+;-------------------------------------------------
+@MESSAGE_COM411
+PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%の下半身の着衣を剥き
+PRINTFORMW 一物をそのまま咥えた……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は悦びの表情を浮かべ、衣服にも擦りつけて刺激した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は頬を染めつて、一物の筋を刺激して舐めた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は恭しい表情をして一点を集中して舐めた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は咥えた一物を戸惑いながらしゃぶった
+ENDIF
+
+;-------------------------------------------------
+;412,淫行家事
+;-------------------------------------------------
+@MESSAGE_COM412
+PRINTFORML %CALLNAME:TARGET%は局部にローター等を着けて家事を行った……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は机や壁に胸を押しつけ、声をあげて耐えがたい痺れを紛らわしている
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%はスカートの裾を掴み、しきりに太腿を擦り合わせている
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は不自然に腰を振りつつ家事を行っている
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は頬を真っ赤に染めている
+ENDIF
+
+;-------------------------------------------------
+;413,路上奉仕
+;-------------------------------------------------
+@MESSAGE_COM413
+PRINTFORML %CALLNAME:TARGET%は艶やかな衣服を身に着けた状態で都に出て
+PRINTFORMW 人通りの少ない通りで道行く人々に奉仕を行った……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW 奉仕が終わった%CALLNAME:TARGET%は頬を赤らめて感謝の言葉を述べた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW 客が喉深くに一物を突っ込む度に%CALLNAME:TARGET%は腰と共に髪を揺らした
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべて嫌がりながら客に奉仕を行った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は嫌悪の表情を浮かべ、顔を俯けている
+ENDIF
+
+;-------------------------------------------------
+;414,まかない作り
+;-------------------------------------------------
+@MESSAGE_COM414
+PRINTFORMW %CALLNAME:TARGET%は王宮内の人々の為にまかないを作った……
+
+;-------------------------------------------------
+;420,聖歌
+;-------------------------------------------------
+@MESSAGE_COM420
+PRINTFORMW %CALLNAME:TARGET%は聖歌を歌った……
+
+;-------------------------------------------------
+;421,身体の提供
+;-------------------------------------------------
+@MESSAGE_COM421
+PRINTFORML %CALLNAME:TARGET%は信者の前でスカートを肌蹴け、教主の一物に腰を下ろした……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は突き上げられる度に黒髪を振り乱して甘い声をあげ、時折達して身体を痙攣させた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は突き上げに対応して媚声をあげ、腰を揺らした
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は突き上げられる度に顔を真っ赤に染めて声を堪えた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は頬を真っ赤に染め、圧迫感で苦しそうに息をしている
+ENDIF
+
+
+;-------------------------------------------------
+;422,穢れを受ける
+;-------------------------------------------------
+@MESSAGE_COM422
+PRINTFORML %CALLNAME:TARGET%は信者達の前で服を肌蹴、あらゆる口に一物を挿入された……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は塞がれた口からくぐもった艶やかな声をあげ、長髪を振り乱している
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は周りの信者からの愛撫によって腰をよじり、くぐもった喘ぎをあげた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は積極的に口で奉仕をし、二穴からの刺激で甘い吐息を漏らしている
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め、苦しそうに喘いでいる
+ENDIF
+
+;-------------------------------------------------
+;423,渡り巫女
+;-------------------------------------------------
+@MESSAGE_COM423
+PRINTFORML %CALLNAME:TARGET%は静かな雰囲気が漂う寂れた道を歩き、神聖な交わりを望む者たちを募った……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は蕩けた声をあげ、突かれる度に魚のように跳ねて着衣を乱した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は一物の動きに応じて身体を揺らし、可愛らしい声をあげながら長髪を散らした
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は口で信者の一物を刺激し、瞼が下がった目をして誘った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は肌蹴た胸を紅く染め、信者の責めに対して身体を震わせた
+ENDIF
+
+;-------------------------------------------------
+;424,滝行
+;-------------------------------------------------
+@MESSAGE_COM424
+PRINTFORMW %CALLNAME:TARGET%は滝に打たれた……
+;アライメントが-の場合
+IF BASE:アライメント < 100
+	PRINTFORM 激しい水流が
+	;胸部が解放されているか全裸
+	IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+		
+	ELSE
+		PRINTFORM 服越しに
+	ENDIF
+	PRINTFORMW 胸を擦り、色事が意識の片隅に残る%CALLNAME:TARGET%は身をよじった……
+ENDIF
+
+;-------------------------------------------------
+;425,神に捧げる
+;-------------------------------------------------
+@MESSAGE_COM425
+PRINTFORML %CALLNAME:TARGET%は御供台に上がって清らかな裸身を横たわらせると
+PRINTFORML 見えない何かが身体を優しく撫で始め、秘裂に挿入した……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は蕩けた声をあげ、見えない相手に合わせて腰を振った
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%はたまらないといった感じで頭を振り乱し、時折身体を震わせた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は小さく甘い声をあげ、秘裂から愛液を滴らせた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は腰をよじり、微かに声を漏らした
+ENDIF
+
+;-------------------------------------------------
+;430,実技の実践
+;-------------------------------------------------
+@MESSAGE_COM430
+PRINTFORMW %CALLNAME:TARGET%は得た知識を実際に試してみる事にした……
+
+;-------------------------------------------------
+;431,瞑想
+;-------------------------------------------------
+@MESSAGE_COM431
+PRINTFORMW %CALLNAME:TARGET%は静かに目を瞑って精神を集中させた……
+
+;-------------------------------------------------
+;432,淫行魔術
+;-------------------------------------------------
+@MESSAGE_COM432
+PRINTFORML %CALLNAME:TARGET%が妖しげな薬を置いて詠唱をすると、薬瓶から妖しげな煙が立ち昇った……
+;淫妖が900以上
+IF BASE:淫妖 >= 900
+	PRINTFORMW %CALLNAME:TARGET%は荒い息をして胸を弄り、時折身体を痙攣させてその場にくず折れた
+;淫妖が750以上
+ELSEIF BASE:淫妖 >= 750
+	PRINTFORMW %CALLNAME:TARGET%は時折身体をピクリと震わせ、太腿に液体をしたらせた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は虚ろな目をして薬を眺め、口の端に垂れる涎に一切気をかけなかった
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は頬を紅く染め、太腿をしきりに擦り合わせた
+ENDIF
+
+;-------------------------------------------------
+;433,触手召喚
+;-------------------------------------------------
+@MESSAGE_COM433
+PRINTFORML %CALLNAME:TARGET%が魔法陣を書いて詠唱すると、中から無数の触手が現れ%CALLNAME:TARGET%を束縛した……
+;淫妖が900以上
+IF BASE:淫妖 >= 900
+	PRINTFORMW %CALLNAME:TARGET%は蕩けた声で触手におねだりをし、つま先から愛液を滴り落とした
+;淫妖が750以上
+ELSEIF BASE:淫妖 >= 750
+	PRINTFORMW %CALLNAME:TARGET%は何度も身体を痙攣させ、呂律の回っていない声をあげ続けた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は頬を真っ赤にし、太腿から這い上がった触手が陰部を弄る度に甘い声をあげた
+;それ以下
+ELSE
+	PRINTFORM 触手に
+	;胸囲が85以上
+	IF BASE:胸囲 >= 85
+		PRINTFORM 豊満な
+	ENDIF
+	PRINTFORMW 胸を弄られる度に%CALLNAME:TARGET%は小さく声をあげ、腰をよじらせた
+ENDIF
+
+;-------------------------------------------------
+;434,精神移行訓練
+;-------------------------------------------------
+@MESSAGE_COM434
+PRINTFORML %CALLNAME:TARGET%は怪しいお香を炊いて座禅を組み、集中力を高めた
+PRINTFORMW 煙は吸った者の精神を落ち着かせるが、同時に倫理観も僅かだが奪っていく……
+
+;-------------------------------------------------
+;440,惚気る
+;-------------------------------------------------
+@MESSAGE_COM440
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%と甘いやり取りを行った……
+
+;-------------------------------------------------
+;441,スキンシップ
+;-------------------------------------------------
+@MESSAGE_COM441
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の身体に触れた……
+
+;-------------------------------------------------
+;442,淫行料理
+;-------------------------------------------------
+@MESSAGE_COM442
+PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%の胸部に責め具を付けさせ
+PRINTFORMW 刺激に耐えながら調理をするように命じた……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は蕩けた表情を浮かべ、何度も料理を中断してその場で胸や陰部を弄り甘い声をあげた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は何度も甘い声を小さく漏らし、その場にくず折れそうになった
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は太腿をしきりに擦り合わせ、時折腰を引いて目を瞑った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は心配そうな目で何度も%CALLNAME:MASTER%を見つめた
+ENDIF
+
+;-------------------------------------------------
+;443,脱がせ羞恥
+;-------------------------------------------------
+@MESSAGE_COM443
+PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と共に都に出かけ
+PRINTFORMW 素肌を僅かにしか隠していない衣服を焦らすように剥いていった……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW 完全に全裸となった%CALLNAME:TARGET%はその場にへたり込み、潤んだ瞳で%CALLNAME:MASTER%を見つめた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は完全に露出した胸を抑え、目に涙を浮かべながら%CALLNAME:MASTER%を見つめた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は口元に指を当て、%CALLNAME:MASTER%を易しく咎めた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は驚きと羞恥が入り混じった表情をして%CALLNAME:MASTER%を見つめた
+ENDIF
+
+;-------------------------------------------------
+;444,女体盛り
+;-------------------------------------------------
+@MESSAGE_COM444
+PRINTFORML 一糸纏わぬ姿である%CALLNAME:TARGET%を机に仰向けに寝かせ
+PRINTFORMW 身体の上に直に料理を置き、好き者の貴族を対象にした催しを開いた……
+
+;-------------------------------------------------
+;450,刀術訓練
+;-------------------------------------------------
+@MESSAGE_COM450
+PRINTFORML %CALLNAME:TARGET%は刀術訓練を行った……
+
+;-------------------------------------------------
+;451,弓術訓練
+;-------------------------------------------------
+@MESSAGE_COM451
+PRINTFORML %CALLNAME:TARGET%は弓術訓練を行った……
+
+;-------------------------------------------------
+;460,精液摂取
+;-------------------------------------------------
+@MESSAGE_COM460
+PRINTFORML %CALLNAME:TARGET%は男性を襲い、相手を欲情させて一物を奉仕した……
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW 腰を揺らしながら%CALLNAME:TARGET%は奉仕を続け、濡れた瞳で相手を見つけた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は艶を帯びた声を漏らしながら、口に含んだ一物を刺激し続けた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は水音を立てて一物を勃てていった
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は淡々と一物を刺激し続けた
+ENDIF
+
+;-------------------------------------------------
+;530,粘性体で誘拐
+;-------------------------------------------------
+@MESSAGE_COM530
+PRINTFORML %CALLNAME:TARGET%は粘性体を都に放ち、娘を取り込ませて体液を収集させた
+PRINTFORMW 取り込まれた娘は身体を弓なりに反らし、声にならない喘ぎをあげた
+
+;-------------------------------------------------
+;531,粘性体で誘拐
+;-------------------------------------------------
+@MESSAGE_COM531
+PRINTFORML %CALLNAME:TARGET%は適当に選んだ都の娘に術をかけ、複数の男性に襲われるように仕向けた
+PRINTFORMW 群がる男達の勢いは留まる所を知らず、最初は嫌がっていた娘も次第に媚声が混じるようになった
+
+
+
+
+;-------------------------------------------------
+;599,姫様訓練
+;-------------------------------------------------
+@MESSAGE_COM599
+PRINTFORMW %CALLNAME:TARGET%は姫に必要とされる技能について、座学を交えた学習を行った……
+;貞操が100未満
+IF BASE:貞操 < 100
+	PRINTFORMW %CALLNAME:TARGET%の性格を踏まえ、夜伽の練習を中心に行う事になった
+ENDIF
+
+;-------------------------------------------------
+;600,メイド訓練
+;-------------------------------------------------
+@MESSAGE_COM600
+PRINTFORMW %CALLNAME:TARGET%はメイドに必要とされる技能について、座学を交えた学習を行った……
+;貞操が100未満
+IF BASE:貞操 < 100
+	PRINTFORMW %CALLNAME:TARGET%の性格を踏まえ、夜伽の練習を中心に行う事になった
+ENDIF
+
+;-------------------------------------------------
+;601,シスター訓練
+;-------------------------------------------------
+@MESSAGE_COM601
+PRINTFORMW %CALLNAME:TARGET%はシスターに必要とされる技能について、座学を交えた学習を行った……
+;貞操が100未満
+IF BASE:貞操 < 100
+	PRINTFORMW %CALLNAME:TARGET%の性格を踏まえ、夜伽の練習を中心に行う事になった
+ENDIF
+
+;-------------------------------------------------
+;602,ゴスロリ訓練
+;-------------------------------------------------
+@MESSAGE_COM602
+PRINTFORMW %CALLNAME:TARGET%はゴスロリに必要とされる技能について、座学を交えた学習を行った……
+;貞操が100未満
+IF BASE:貞操 < 100
+	PRINTFORMW %CALLNAME:TARGET%の性格を踏まえ、夜伽の練習を中心に行う事になった
+ENDIF
+
+;-------------------------------------------------
+;603,花嫁訓練
+;-------------------------------------------------
+@MESSAGE_COM603
+PRINTFORMW %CALLNAME:TARGET%は花嫁に必要とされる技能について、座学を交えた学習を行った……
+;貞操が100未満
+IF BASE:貞操 < 100
+	PRINTFORMW %CALLNAME:TARGET%の性格を踏まえ、夜伽の練習を中心に行う事になった
+ENDIF
+
+;-------------------------------------------------
+;605,花魁訓練
+;-------------------------------------------------
+@MESSAGE_COM605
+PRINTFORMW %CALLNAME:TARGET%は花魁に必要とされる技能について、座学を交えた学習を行った……
+
+;-------------------------------------------------
+;620,人魚の舞
+;-------------------------------------------------
+@MESSAGE_COM620
+PRINTFORML %CALLNAME:TARGET%は人魚の舞を踊った……
+PRINTFORMW しなやかな尾の鱗は妖しく光り、艶めかしく腰が揺れる……
+
+;-------------------------------------------------
+;621,欲情花粉
+;-------------------------------------------------
+@MESSAGE_COM621
+PRINTFORML %CALLNAME:TARGET%は欲情作用のある花粉を振りまき、周囲の少女をおびき寄せた
+PRINTFORMW そして顔を紅潮させた女性がふらふらと寄ってきたかと思うと%CALLNAME:TARGET%は蔦でその少女の身体を絡め取り、身体の隅々に蔦を這わせた……
+
+;-------------------------------------------------
+;622,触手絡め
+;-------------------------------------------------
+@MESSAGE_COM622
+PRINTFORML %CALLNAME:TARGET%は触手で%CALLNAME:MASTER%を絡め取り、自身の秘所に%CALLNAME:MASTER%が持つ肉の雄蕊を入れさせた
+PRINTFORMW 互いに甘美な一時を過ごす間にも%CALLNAME:TARGET%は触手を外へ伸ばし、他の餌食を探している……
+
+;-------------------------------------------------
+;623,スライムベッド
+;-------------------------------------------------
+@MESSAGE_COM623
+PRINTFORML %CALLNAME:TARGET%は不意打ちで少女を攫い、自身の粘性化した身体に座らせた
+PRINTFORML 少女の両脚は既に%CALLNAME:TARGET%の身体に埋もれており、最早逃げることは叶わない
+PRINTFORMW 溶解液を浴びせられ肌が露出した少女は体勢を崩され、うつ伏せの状態で%CALLNAME:TARGET%の身体へ倒れ込むことになる……
+
+
+;-------------------------------------------------
+;899,結婚指輪を贈る
+;-------------------------------------------------
+@MESSAGE_COM899
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%に指輪を贈った……
+
+
+
+
+;-------------------------------------------------
+;900,強制夜伽
+;-------------------------------------------------
+@MESSAGE_COM900
+PRINTFORMW %CALLNAME:MASTER%は強引に%CALLNAME:TARGET%を姉妹と交わらせた……
+
+@MESSAGE_MINI_900
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は艶やかな声をあげつつ背を反らした
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め上げて必死に声を堪えている
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:1%の責めに時折鼻にかかった声を漏らして身をゆらしている
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は嫌悪感を露わにし、%CALLNAME:1%を引き離そうとしている
+ENDIF
+
+;-------------------------------------------------
+;901,強制公開自慰
+;-------------------------------------------------
+@MESSAGE_COM901
+PRINTFORMW %CALLNAME:MASTER%は強引に姉妹を人通りが少ない路地裏で自慰させた……
+
+@MESSAGE_MINI_901
+;淫妖が500以上＆堕落が500以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は艶やかな目を通行人に向け、色を帯びた喘ぎ声で観客を集めた
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%はしきりに肢体を地面に擦りつけ、止まらない媚声をあげて自慰に没頭した
+;淫妖が250以上＆堕落が250以上
+ELSEIF BASE:淫妖 >= 250 && BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は太腿を擦り合わせながら自慰を行い、肌蹴た部分から局部が露出するのを気にせずに没頭した
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は弄る度に身体を震わせ、色っぽいくぐもった声を周囲に漏らした
+;淫妖が100以上＆堕落が100以上
+ELSEIF BASE:淫妖 >= 100 && BASE:堕落 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は身体を震わせると共に媚声をあげ、道行く人の目を惹いた
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%はびくりと身体を震わせ、思わず出そうになる媚声を羞恥によって堪えた
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は羞恥で顔を真っ赤にしている
+ENDIF
+;-------------------------------------------------
+;902,強制性交物乞い
+;-------------------------------------------------
+@MESSAGE_COM902
+PRINTFORMW %CALLNAME:MASTER%は強引に姉妹を路地裏に座らせ、道行く人と性交させた……
+
+@MESSAGE_MINI_902
+;淫妖が500以上＆堕落が500以上
+IF BASE:淫妖 >= 500 && BASE:堕落 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は腰に足を絡め、媚声を周囲に響かせながら性交に没頭した
+;淫妖が500以上
+ELSEIF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は悦びの表情を浮かべ、強い刺激にたまらず声をあげた
+;淫妖が250以上＆堕落が250以上
+ELSEIF BASE:淫妖 >= 250 && BASE:堕落 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は相手の突きで強い快楽を感じて背筋を反らし、周囲に色を帯びた吐息を響かせた
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は一突きされる度に背筋を伸ばし、噛み殺した媚声をあげた
+;淫妖が100以上＆堕落が100以上
+ELSEIF BASE:淫妖 >= 100 && BASE:堕落 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は甘い声をあげ、相手の一物に合わせて腰を振った
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は顔を紅潮させ、秘裂から滲み出る奇妙な感覚に声を漏らした
+ENDIF
+
+;-------------------------------------------------
+;903,複数P強制
+;-------------------------------------------------
+@MESSAGE_COM903
+PRINTFORMW %CALLNAME:MASTER%は強引に姉妹を交えて、秘所を一物で貫いた……
+
+@MESSAGE_MINI_903
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	PRINTFORMW %CALLNAME:TARGET%は多方面からの責めに身体を痙攣させ、声にならない喘ぎをあげている
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	PRINTFORMW %CALLNAME:TARGET%は顔を真っ赤に染め上げて必死に声を堪えているが、びくびくと痙攣する腰は快楽を誤魔化し切れていない
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:1%の責めに時折鼻にかかった声を漏らして身をゆらしている
+;それ以下
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は嫌悪感を露わにし、%CALLNAME:1%や%CALLNAME:MASTER%を引き離そうとしている
+ENDIF
+
+
+
+
+
+
+;SELECTCOMに応じたテキスト関数をCALLする
+@TRAIN_MESSAGE
+TRYCALLFORM MESSAGE_COM{SELECTCOM}
+
+

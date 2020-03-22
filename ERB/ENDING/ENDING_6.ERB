@@ -1,0 +1,528 @@
+﻿;========================================================
+;花嫁ルート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;========================================================
+@ENDING_WEDDING
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落+淫妖が900以上
+IF BASE:堕落 + BASE:淫妖 >= 900
+	CALL ENDING_WEDDING_1
+	LOCAL:1 = 780
+;600以上
+ELSEIF BASE:堕落 + BASE:淫妖 >= 600
+	CALL ENDING_WEDDING_2
+	LOCAL:1 = 781
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	CALL ENDING_WEDDING_18
+	LOCAL:1 = 797
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_WEDDING_19
+	LOCAL:1 = 798
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_WEDDING_20
+	LOCAL:1 = 799
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_WEDDING_3
+			LOCAL:1 = 782
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_WEDDING_4
+			LOCAL:1 = 783
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_WEDDING_5
+			LOCAL:1 = 784
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_WEDDING_6
+			LOCAL:1 = 785
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_WEDDING_7
+			LOCAL:1 = 786
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_WEDDING_8
+			LOCAL:1 = 787
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_WEDDING_9
+			LOCAL:1 = 788
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_WEDDING_10
+			LOCAL:1 = 789
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_WEDDING_11
+			LOCAL:1 = 790
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_WEDDING_12
+			LOCAL:1 = 791
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_WEDDING_13
+			LOCAL:1 = 792
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_WEDDING_14
+			LOCAL:1 = 793
+		ENDIF
+	;信仰
+	ELSEIF LOCAL:1 == 9
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_WEDDING_15
+			LOCAL:1 = 794
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_WEDDING_16
+			LOCAL:1 = 795
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_WEDDING_17
+			LOCAL:1 = 796
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　闇の妾
+;---------------------------------------------------------
+@ENDING_WEDDING_1
+PRINTFORMW 淫らに育ち切った%CALLNAME:TARGET%は、如何わしい貴族の妾として貰われていった……
+PRINTFORMW 噂によると、その貴族は闇の店を経営しており他にも数人の妾を匿っているらしい
+PRINTFORMW 本当に大丈夫なのだろうか……と%CALLNAME:MASTER%は心配するが決まったものは仕方ない
+PRINTL 
+PRINTFORMW 貴族の部屋で%CALLNAME:TARGET%は昼間から交わっていた
+PRINTFORMW 甘い言葉を呟く%CALLNAME:TARGET%の瞳はすっかり曇っており、頭の中に淫事以外が思い浮かばないようだ
+PRINTFORMW 妾の中には穢れの影響で歳を取った者もおり、穢れの濃さから考えて%CALLNAME:TARGET%はあまり長生きできそうにないだろう……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.1　闇の妾
+
+;---------------------------------------------------------
+;ED2　見合い中？
+;---------------------------------------------------------
+@ENDING_WEDDING_2
+PRINTFORML %CALLNAME:TARGET%は顔を赤くし、熱い吐息を漏らしながらお見合いから帰っていた
+PRINTFORMW 「えへへ……今日もお見合いしたんだけどねえ……良い人居なかったのぉっ……」
+PRINTFORMW 太腿はすっかり濡れており、つーっと液体が伝っているのが見える
+PRINTFORML 
+PRINTFORMW 貴族とのお見合いと称して会ってはいるものの、実際には身体を触られ
+PRINTFORMW 身体を開発された%CALLNAME:TARGET%は容易く達し、それから貴族に慰み者にされ続けているらしい
+PRINTL 
+PRINTFORMW 「ん……ぁ……堪え切れないから、今日もやりましょう？」
+PRINTFORML 淫靡な表情を浮かべながら%CALLNAME:TARGET%は夜の誘いをしてきた
+PRINTFORMW その瞳はすっかり濁っており、妖艶な雰囲気を醸し出している……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.2　見合い中？
+
+;---------------------------------------------------------
+;ED3　魅惑の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_3
+PRINTFORMW %CALLNAME:TARGET%は誰が見ても美しく、伴侶の事を愛する女性へと育った
+PRINTFORML 
+PRINTFORMW 時間としては遅く、王宮内の女中が寝床に入る時間である
+PRINTFORMW 今日は、%CALLNAME:TARGET%が王宮で暮らす最後の日
+PRINTFORMW 明日には結納を結ぶ貴族の元へ向かわないといけないからだ
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の部屋に赴き、椅子に座っている。横には%CALLNAME:TARGET%がぴったりと寄り添う
+PRINTFORML 「ねえ、私が%CALLNAME:MASTER%の元から離れる事になったの、後悔してる？」
+PRINTFORML %CALLNAME:TARGET%は純白の手袋を纏った手を%CALLNAME:MASTER%の手に当てる
+PRINTFORMW か細い指は微かに震え、自身にも言い聞かせているように思える
+PRINTL 
+PRINTFORML %CALLNAME:MASTER%は自身の答えを%CALLNAME:TARGET%に告げた
+PRINTFORMW 「そう……？　ま、まあ、そんな答えにもなるよね……」
+PRINTFORML %CALLNAME:TARGET%は俯き、落ち込んだような口調で呟いた
+PRINTFORMW 白いヴェール越しに見える表情は、どこか寂しそうだった
+PRINTFORML 
+PRINTFORMW 貴族の元で、楽しく幸せに暮らせる事を祈り、%CALLNAME:MASTER%は部屋を後にした
+PRINTFORML 
+PRINTFORMW -花嫁ED No.3　魅惑の花嫁-
+
+;---------------------------------------------------------
+;ED4　華やかな花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_4
+PRINTFORMW %CALLNAME:TARGET%はかなり美しく、花嫁としての素質を持つ女性へと育った
+PRINTFORML 
+PRINTFORMW 貴族の元へ嫁いでからも、貴族に毎日のように愛でられ、貴族にとって大事な気力の素となっているようだ
+PRINTFORMW %CALLNAME:TARGET%はこの愛でられように満更でもない様子で、今日も高そうな衣服と装飾品を纏って語る
+PRINTFORMW 「%CALLNAME:MASTER%、私はこうして今、幸せに過ごしています。ありがとう」
+PRINTL 
+PRINTFORMW %CALLNAME:TARGET%は今、幸せな時を過ごしている
+PRINTFORML 
+PRINTFORMW -花嫁ED No.4　華やかな花嫁-
+
+;---------------------------------------------------------
+;ED5　噂の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_5
+PRINTFORMW %CALLNAME:TARGET%は里を歩くと話題になり、一目置かれる女性へと育った
+PRINTFORML 
+PRINTFORMW 「ねえねえ、今日も里を歩きましょうよ」
+PRINTFORMW 部屋を掃除していると、%CALLNAME:TARGET%が袖を引っ張ってきた
+PRINTFORMW 目を期待で輝かせており、%CALLNAME:MASTER%の快諾を待ち望んている
+PRINTFORMW %CALLNAME:MASTER%には二つ悩み事があった
+PRINTFORML まず一つ目は、%CALLNAME:TARGET%を嫁がせる相手が見つからない事
+PRINTFORMW こうして毎日せがまれるので、中々見合いの機会を設けられないのが原因となる
+PRINTFORML そして二つ目は、里中を歩くと誤解されるという事
+PRINTFORMW まるで二人が結婚したかのように思われてしまい、熱い視線を向けられてしまう
+PRINTFORML 
+PRINTFORML まあ、今更悩んでも仕方がないだろう
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の手を取り、快諾した
+PRINTFORML 
+PRINTFORMW -花嫁ED No.5　噂の花嫁-
+
+;---------------------------------------------------------
+;ED6　知略の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_6
+PRINTFORMW %CALLNAME:TARGET%は有力な貴族の元へ嫁いだ
+PRINTFORML 
+PRINTFORMW そして、貴族に会うとすぐに%CALLNAME:TARGET%は次の言葉を発した
+PRINTFORMW 「私に会うのは一番最後にしてほしいの」
+PRINTFORML 理由を訊かれると
+PRINTFORML 「他にも妾とかいらっしゃるのでしょう？　その方達に配慮をするのは当然の事では？」
+PRINTFORMW と返した
+PRINTFORML 
+PRINTFORMW その翌日から、貴族は%CALLNAME:TARGET%との約束を守る事にした
+PRINTFORMW しかし、当の貴族にとってこの要求は非常に辛い物であった
+PRINTFORMW 何しろ見惚れた女性に出会えるのが一番最後だったからだ
+PRINTFORML まだ出会ったばかりであり、相手の事をよく知りたい
+PRINTFORMW そんな時にお預けを喰らったのでは集中もできなくなる
+PRINTFORML その欲求を堪えきれず、貴族は他の妾等との交流の時間を極力減らした
+PRINTFORMW なるべく%CALLNAME:TARGET%と出会える時間を長くするためだ
+PRINTFORML そして、いざ%CALLNAME:TARGET%と会える時間になり、会話に勤しんだ
+PRINTFORMW 彼女は他の妾達に気を遣っているのか、中々自分の話に持っていこうとしない
+PRINTFORMW でも、時折出てくる彼女自身の話がとても面白く、気が付いたら夜の深い時間になっていた
+PRINTFORMW 名残惜しいが、また明日、時間をとって話を聞くことにしよう。貴族はそう考え、部屋を後にした
+PRINTFORML 
+PRINTFORMW しかし、これが貴族の立場を大きく脅かす事になる
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%の事で頭が一杯になった貴族は、他の妾に対してどこかよそよそしくなった
+PRINTFORMW それが表情の変化に敏感である妾達に一発で察され、貴族は信用を一気に無くしていった
+PRINTFORMW 中には新入りである%CALLNAME:TARGET%を疑い、嫉妬も交えて詰め寄る事もあったが
+PRINTFORML %CALLNAME:TARGET%は「私があなた方の話を聞いて頷いてるだけなんです。とても魅力的な方々なのに、どうしてあの方は……」
+PRINTFORMW と返し、残念そうな表情を浮かべた
+PRINTFORML 
+PRINTFORMW これが%CALLNAME:TARGET%の策略であった
+PRINTFORMW こうして興味があるであろう者を最後に回し、いざ出番が来た時には他人の話を軸にして話をする
+PRINTFORMW そうすると時折出てくる自分の話に貴族は興味を強く持ち、常に恋い焦がれるようになるという算段だ
+PRINTFORMW 原理としては押すとたまにバナナが出てくるボタンを何度も押し続ける猿に近い
+PRINTFORML 
+PRINTFORMW やがて妾達は貴族の元を離れていった
+PRINTFORML %CALLNAME:TARGET%は貴族の耳元でそっと囁いた
+PRINTFORMW 「私の事が忘れられなかったのですか？　ふふ、仕方ないですね……」
+PRINTFORMW %CALLNAME:TARGET%は貴族の震える手をとり、そっと温めた
+PRINTFORML 
+PRINTFORMW -花嫁ED No.6　知略の花嫁-
+
+;---------------------------------------------------------
+;ED7　先見性のある花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_7
+PRINTFORMW %CALLNAME:TARGET%は貴族の元へ嫁ぎ、数年が経った
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%の教育の甲斐あって思慮深く育った%CALLNAME:TARGET%は、貴族にとって心強い相談役となった
+PRINTFORML 貴族は新事業を発足しようと考えており、晩の食事の場で話をされた%CALLNAME:TARGET%は、助言を行った
+PRINTFORMW 貴族はその内容に感化され、次の日に実践した所幸先のよいスタートを切る事ができた
+PRINTFORML 貴族は%CALLNAME:TARGET%に感謝の意を浮かべ、ますます好きになった
+PRINTFORMW 日頃から愛でられる時間や態度が更に深く長い物となり、貴族と%CALLNAME:TARGET%は深い恋へと落ちていった
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%がそんな話を聞いたのは、貴族が%CALLNAME:TARGET%と共に王宮へ訪ねてきた時だった
+PRINTFORMW 二人共幸せそうな表情を浮かべている。
+PRINTFORML 
+PRINTFORMW -花嫁ED No.7　先見性のある花嫁-
+
+;---------------------------------------------------------
+;ED8　妾の相談役
+;---------------------------------------------------------
+@ENDING_WEDDING_8
+PRINTFORML 数年後……
+PRINTFORML 「私ね。あの方が抱えてる妾達の相談役を担ってるの」
+PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべて語った
+PRINTFORMW 今日はたまたま戻ってきていい日という事で%CALLNAME:MASTER%の元へ訪ねに来ていたのだ
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は他人に嫁として貰われるには十分な雰囲気と思慮深さを得て、貴族に嫁いだ
+PRINTFORMW そして、嫁ぎ先で妾の愚痴や相談を聞くことにしたのだ
+PRINTFORMW 「一口に妾と言っても、色々な経緯があるのよ」
+PRINTFORML 「例えば、晩餐会に出て一目惚れしたとか、よく行く店の人に見惚れたとか、道を歩く少女を……」
+PRINTFORMW 最後は大丈夫なのだろうか。表沙汰になったら貴族等の立場が危ぶまれるが……
+PRINTFORML 「だから、そうした人達に応じた解決策を提示するのは面白いし、何より私自身聞いてて楽しいのよね」
+PRINTFORMW 彼女は口元を緩め、楽しそうに語った
+PRINTFORMW この話をしている間、とても柔らかい表情を浮かべている。貴族の館での暮らしがとても楽しいのだろう
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の姿を見つめ続けた
+PRINTFORML 
+PRINTFORMW -花嫁ED No.8　妾の相談役-
+
+;---------------------------------------------------------
+;ED9　遠まわしな花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_9
+PRINTFORMW %CALLNAME:TARGET%は他人との交流に長けた花嫁へと成長した
+PRINTFORML 
+PRINTFORMW その能力は嫁ぎ先で早速活かされる事となった
+PRINTFORML 彼女は妾や使用人と結託し、貴族に待遇改善を持ちかけたのだ
+PRINTFORMW ……%CALLNAME:TARGET%は充分すぎるぐらい待遇が良いはずなのだが
+PRINTFORML 
+PRINTFORMW 慌てた君主は早速待遇の改善を図った
+PRINTFORML そして%CALLNAME:TARGET%には日頃の面会だけでなく、金銭も渡すようになった
+PRINTFORMW その結果が、今%CALLNAME:TARGET%の目の前にある大金である
+PRINTFORML 
+PRINTFORML 目の前に居る%CALLNAME:TARGET%はにやにやしてこちらを見つめている
+PRINTFORMW 一体何を望んでいるのだろうか……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.9　遠まわしな花嫁-
+
+;---------------------------------------------------------
+;ED10　仲多き花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_10
+PRINTFORMW %CALLNAME:TARGET%は他人との交流が得意な花嫁へと成長した
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%が貴族の元へ嫁いで数年後……
+PRINTFORMW %CALLNAME:MASTER%は相も変わらず王宮で働いていた
+PRINTFORMW もう教育係ではなくなったのだが、綿月姉妹を主にした雑用を担当させられている
+PRINTFORMW 今日も晩食の為に買い出しに出かけたのだが、そこで思わぬ光景に出くわした
+PRINTFORML 
+PRINTFORMW それは、%CALLNAME:TARGET%が多くの女性と楽しそうに会話をしながら歩いていたのだ
+PRINTFORMW どんな話の内容なのかまでは分からないが、口調としては柔らかい一方、どこか単語に棘があった
+PRINTFORMW 恐らく同じような立場の女性の集まりで、話題の中に身内の愚痴話が混じっているのだろう
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はこちらに気付いたらしく、向かってきて声をかけてきた
+PRINTFORMW 「お久しぶり、元気にしてます？」
+PRINTFORMW 「この方達は他の貴族に仕えてる妾さん達なの」
+PRINTFORML 彼女曰く、貴族の館で行われる交流会に出向いた際に他の貴族も妾を飼っている事が分かり
+PRINTFORMW 交流会が終わった後に館の中に居る妾に他の妾との交流機会を作ってもらい、何度も交流したのだという
+PRINTFORML 「これだけ友人が居ると、とても楽しそうに見えるでしょう？」
+PRINTFORMW %CALLNAME:TARGET%は口元を袖で抑えながら笑みを浮かべた
+PRINTFORML 
+PRINTFORML 
+PRINTFORMW -花嫁ED No.10　仲多き花嫁-
+
+;---------------------------------------------------------
+;ED11　友人な花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_11
+PRINTFORMW %CALLNAME:TARGET%が貴族の元へ嫁いで数年が経った
+PRINTFORML %CALLNAME:TARGET%は王宮に居た頃より幸せな日々を送っていた
+PRINTFORMW なぜなら……
+PRINTFORML 
+PRINTFORMW 「お久しぶり。こうして訪ねてきたのも何度目かしら」
+PRINTFORMW %CALLNAME:TARGET%はこんな台詞を言っているが、嫁いで半年経った頃から週に2回訪ねてきている
+PRINTFORMW 彼女は持ち前の交流力で貴族の心象を非常に良くし、こうして週に何度か王宮を訪ねる機会を得たのだ
+PRINTFORMW 寂しがりなのか、あるいは一定の交流幅を持っておきたいのか分からないが、今も定期的に訪ねてくるという訳だ
+PRINTFORML 
+PRINTFORML 「ねえ、%CALLNAME:MASTER%は私が嫁いで寂しい？」
+PRINTFORMW 毎週会っている状態では、正確な答えは出せそうになかった
+PRINTFORML 
+PRINTFORMW -花嫁ED No.11　余所の輪-
+
+;---------------------------------------------------------
+;ED12　美味の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_12
+PRINTFORML 数年後……
+PRINTFORMW 相も変わらず王宮で働いている%CALLNAME:MASTER%は、新聞の中で一目惹く記事を見つけた
+PRINTFORML 
+PRINTFORMW "貴族の花嫁　料理家を負かす"
+PRINTFORMW 貴族の嫁が料理家と料理対決を行い、勝利したという内容だ
+PRINTFORMW 惹かれたのは掲載された写真だ。なんとその嫁は%CALLNAME:TARGET%だったのだ
+PRINTFORML 確かに%CALLNAME:TARGET%は嫁ぐ前から料理を含めた家事の腕が逸品であったが
+PRINTFORMW まさか、専門家を負かす程になるとは思わなかった
+PRINTFORMW 彼女の料理の腕は一体、どこまで伸びるのだろうか……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.12　美味の花嫁-
+
+;---------------------------------------------------------
+;ED13　傍らの花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_13
+PRINTFORML 数年後……
+PRINTFORMW %CALLNAME:TARGET%は嫁いだ貴族の館で御馳走を作っている
+PRINTFORML 「今日は大事なお客さんが沢山いらっしゃるから、とびっきりの料理を作らなきゃ！」
+PRINTFORMW 袖を捲り、エプロンを着けて調理に励む%CALLNAME:TARGET%
+PRINTFORMW きっかけは嫁いだ初日であった、率先して調理を引き受け、出した料理が貴族と妾、それに使用人に受けたのだ
+PRINTFORML それからというものの、%CALLNAME:TARGET%は定期的に調理を引き受け
+PRINTFORMW 調理担当である使用人にも料理のコツを指導していた
+PRINTFORML 
+PRINTFORML 実際に料理を客人の前に出し、%CALLNAME:TARGET%は扉の影からこっそりと晩餐の風景を覗いた
+PRINTFORMW 今日来られている客人はいずれも王宮の関係者、貴族の待遇にも関わってくるのだ
+PRINTFORMW それだけに料理の評価が気になる
+PRINTFORML
+PRINTFORMW 客人が箸で料理を口に運び、入れて少し咀嚼する
+PRINTFORMW するとみるみる内に頬を綻ばせた。その客人に続いて次々と他の客人達も頬を綻ばせた
+PRINTFORMW 厳粛な場の空気が和やかな物になっていくのを感じる。中には調理人の事を聞く者も居た
+PRINTFORMW 今回の調理は成功だ。%CALLNAME:TARGET%は軽やかな足取りでその場を後にした
+PRINTFORML 
+PRINTFORMW -花嫁ED No.13　傍らの花嫁-
+
+;---------------------------------------------------------
+;ED14　料理は趣味
+;---------------------------------------------------------
+@ENDING_WEDDING_14
+PRINTFORMW %CALLNAME:TARGET%は嫁いだ貴族の館で、一つの問題を起こしていた
+PRINTFORMW それは、彼女が培った家事の技術を発端とする問題だ
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はいつものように貴族の館で掃除を行っていた
+PRINTFORMW 後ろから腰付近を掴まれ、振り向くと、そこには%CALLNAME:TARGET%より少し低い背をした女性が立っていた
+PRINTFORMW 女性はメイド服を着ており、泣き出しそうな表情を浮かべている
+PRINTFORMW 「私の……仕事を奪って……何がしたいんですか……？　嫌がらせですか……？」
+PRINTFORMW 彼女が話す度に掴む手に力が入る。慌てた%CALLNAME:TARGET%は必死に彼女をなだめ、掃除道具を渡してその場を後にした
+PRINTFORML 
+PRINTFORML 「でもね。彼女の掃除の腕、そこまで良くないのよ……」
+PRINTFORMW お忍びで%CALLNAME:MASTER%の元を訪ねた%CALLNAME:TARGET%は寂しそうに言った
+PRINTFORMW 本分に集中した方が気楽なのでは……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.14　家事する花嫁-
+
+;---------------------------------------------------------
+;ED15　天命の稲妻
+;---------------------------------------------------------
+@ENDING_WEDDING_15
+PRINTFORMW %CALLNAME:TARGET%が貴族へ嫁いでから数年後……
+PRINTFORML %CALLNAME:TARGET%は奇妙な夢を見た
+PRINTFORMW それは、メイド服を着て教会の銅像を拭いていたら、貴族の元に雷が落ちるという話だった
+PRINTFORML 
+PRINTFORMW 落雷の轟音により、%CALLNAME:TARGET%は目を覚ました
+PRINTFORMW 今日は雷が激しい日になりそうだ……まさか
+PRINTFORMW 信心深い%CALLNAME:TARGET%は外出を控え、貴族と一日中愛を確かめ合った
+PRINTFORML 
+PRINTFORMW 次の日、%CALLNAME:TARGET%は信じられない報せを目にした
+PRINTFORMW なんと貴族が落雷により息を引き取ったというのだ
+PRINTFORMW これは正夢なのだろうか？　一先ず%CALLNAME:TARGET%は王宮に戻る事にした
+PRINTFORML 
+PRINTFORMW -花嫁ED No.15　誰かの天命の稲妻-
+
+;---------------------------------------------------------
+;ED16　神罰の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_16
+PRINTFORMW %CALLNAME:TARGET%は信心深さ花嫁へ成長した
+PRINTFORML 
+PRINTFORMW その信心深さは嫁ぎ先にて早速活用される事になる
+PRINTFORMW 彼女は信仰通りに性行為を行うよう妾達に布教し、貴族にも伝えたのだ
+PRINTFORMW これにより妾達の体調や肌の艶は以前より増し、貴族の満足度が上がった
+PRINTFORML 
+PRINTFORMW 次に、この信心深さはとある者への復讐に使われる事となった
+PRINTFORMW 交流会が催され、何も知らない君主が館を訪ねた
+PRINTFORML その時、君主の前を妾が通り、会話を行った
+PRINTFORMW 際どい衣服を身にまとい、ちらりと覗かせる豊満な胸の谷間に貴族の視線は釘付けにされる
+PRINTFORMW そして、彼女は信仰の教えと称し、君主を個室に誘い込んだのだ
+PRINTFORML 
+PRINTFORMW 数十分後、交流会に姿を現さない君主を探しに来た客人が、事に及ぶ君主と妾の姿を発見した
+PRINTFORMW この後の展開は推して知るべし
+PRINTFORML 
+PRINTFORMW -花嫁ED No.16　神罰の花嫁-
+
+;---------------------------------------------------------
+;ED17　愛の世界
+;---------------------------------------------------------
+@ENDING_WEDDING_17
+PRINTFORMW 数年後……
+PRINTFORMW %CALLNAME:TARGET%が嫁いだ貴族の館は、彼女が持つ信仰力の影響により、豹変を遂げていた
+PRINTFORML 
+PRINTFORMW 「愛は全ての人類に振りまかなければならないのです」
+PRINTFORMW %CALLNAME:TARGET%が妾達を呼び布教をしていたところ、妾の一人からこんな質問が飛んできた
+PRINTFORMW 「愛って……身体を交わらせる事？」
+PRINTFORMW %CALLNAME:TARGET%は顔を赤くして頭を振った。しかし妾は口を閉じない
+PRINTFORML 「愛があるから人類は今日まで生き残れたんですよね？　それなら愛は身体の交わりなのではないですか？」
+PRINTFORMW 反論ができなくなった%CALLNAME:TARGET%は口を開き、顔を真っ赤にして固まってしまった
+PRINTFORML 
+PRINTFORML 「お、お願いっ！　%CALLNAME:MASTER%も私の屋敷にきてっ！」
+PRINTFORMW 両手を合わせ、必死に%CALLNAME:MASTER%に懇願する%CALLNAME:TARGET%
+PRINTFORMW %CALLNAME:MASTER%はこの状況にただただ困り果てるしかなかった
+;問題が出そうなので以下2行は没
+;PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%の近況について耳にしていないが
+;PRINTFORMW 嫁ぎ先の館に夜な夜な男女を問わず大勢の人が出入りしているという噂は耳にした
+PRINTFORML 
+PRINTFORMW -花嫁ED No.17　愛の世界-
+
+;---------------------------------------------------------
+;ED18　至高の花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_18
+PRINTFORML %CALLNAME:TARGET%は非の打ち所のない花嫁へと成長した
+PRINTFORMW その能力の高さは、彼女に奇跡をもたらす事になる
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%が貴族へ嫁いでから数年後……
+PRINTFORMW 月の都は大きな動きが起きようとしていた
+PRINTFORMW 君主が没落し、その地位を堕とされる事になったのだ
+PRINTFORMW その働きかけをしたのはとある貴族
+PRINTFORMW 彼は莫大な財産を築き、君主の政権の非をも徹底的に突きつけたのだ
+PRINTFORMW 君主は慌てて彼を追放しようとするが、役人も匪賊も取り合おうとはしない
+PRINTFORMW それもそのはず、貴族の根回しが既に行き渡っていたからだ
+PRINTFORML 
+PRINTFORMW 貴族の屋敷にて、テラスから景色を眺める貴族の傍らに%CALLNAME:TARGET%が居た
+PRINTFORML 「ふふふ……ここまで来るのに時間がかかったわ……」
+PRINTFORMW %CALLNAME:TARGET%は貴族と腕を組み、微笑んだ
+PRINTFORML 
+PRINTFORMW -花嫁 No.18　至高の花嫁-
+
+;---------------------------------------------------------
+;ED19　再会する花嫁
+;---------------------------------------------------------
+@ENDING_WEDDING_19
+PRINTFORMW %CALLNAME:TARGET%はとても高い資質を持つ花嫁へと成長した
+PRINTFORML 
+PRINTFORMW 今日が彼女が王宮で暮らす最後の日だ
+PRINTFORMW %CALLNAME:TARGET%は、恩人である%CALLNAME:MASTER%を呼び、一緒に寝る事にした
+PRINTFORMW 当然ながら、嫁ぐ前の花嫁が別の異性と同じ部屋で一晩を過ごす事に反対意見は出たので、女中が監視をしている
+PRINTFORMW 「ねえ……私、本当に嫁いでしまっていいのかな……」
+PRINTFORML 監視者が居る以上、あまり恥ずかしい事は言えない
+PRINTFORMW しかし%CALLNAME:MASTER%は、ここで言わなければ悔いが残ると考え、自分の思いを口にした
+PRINTFORMW 「そう……それならよかった。また機会があれば会いに来てね？」
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の手を強く握り、顔を見つめた
+PRINTFORMW 目は何時もより艶を帯びており、目尻に液体が浮かんでいる
+PRINTFORML 
+PRINTFORML 「私、姫様の味方でしたから、事に及んでも黙ってさしあげましたのに……」
+PRINTFORML 後日、王宮の縁側に赴き、監視役だった女中が%CALLNAME:MASTER%に話した
+PRINTFORMW %CALLNAME:MASTER%は何も言わず、空を眺めた
+PRINTFORML 
+PRINTFORMW -花嫁ED No.19　再会する花嫁-
+
+;---------------------------------------------------------
+;ED20　見合いの日々
+;---------------------------------------------------------
+@ENDING_WEDDING_20
+PRINTFORMW それなりにできる花嫁へと成長した%CALLNAME:TARGET%
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%と一緒に見合い相手を探している
+PRINTFORMW そこそこの能力を持つので、近い内に相手は見つかるはずだが……
+PRINTFORML 「私って色々できるのだし、もっと面白い人の方が似合うはずなんだけど……」
+PRINTFORMW 万能さをなまじ身に着けてしまったためか、自分の能力を冷静に見極める事ができないでいるようだ
+PRINTFORMW かといって自暴自棄にもなってほしくないので、相手は慎重に探していくしかない……
+PRINTFORML 
+PRINTFORMW -花嫁ED No.20　見合いの日々-

@@ -1,0 +1,67 @@
+﻿;===========================================
+;弓術スキル
+;ARG　リスト参照者
+;===========================================
+@ARROW_SKILL, ARG
+;使えるスキルの種類
+;0だと使える特技が無いと出して返す
+#DIM parm, 1
+
+VARSET LOCAL, 0
+$BACK_LOOP
+parm = 0
+DRAWLINE
+PRINTL [90] - フェムトアロー
+LOCAL:90 = 1
+PRINTL [91] - エクポーズショット
+LOCAL:91 = 1
+PRINTL [92] - アブレーショット
+LOCAL:92 = 1
+DRAWLINE
+IF CFLAG:装備 == 580
+	PRINTL [300] - 消去の儀
+	LOCAL:300 = 1
+ELSEIF CFLAG:装備 == 581
+	PRINTL [301] - ヤグショット
+	LOCAL:301 = 1
+ELSEIF CFLAG:装備 == 583
+	PRINTL [302] - メモリーライト
+	LOCAL:302 = 1
+ENDIF 
+DRAWLINE
+PRINTFORML [997] - 弓術特技の説明
+PRINTFORML [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF INRANGE(RESULT, 90, 99) && LOCAL:RESULT
+	CALLFORM ARROW_SKILL_{RESULT}
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF INRANGE(RESULT, 300, 399) && LOCAL:RESULT
+	CALLFORM SPE_SKILL_{RESULT}
+ELSEIF RESULT == 997
+	CALL SHOW_ARROW_SKILL
+	GOTO BACK_LOOP
+ELSEIF RESULT == 999
+	RETURN -1
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+;----------------------------------------------
+;弓術の説明
+;ARG　武士称号のレベル
+;----------------------------------------------
+@SHOW_ARROW_SKILL, ARG
+DRAWLINE
+PRINTFORML ○弓術一覧
+PRINTFORML 　フェムトアロー　　　物理　消費気力: 4　　誰よりも早く先制する
+PRINTFORML 　エクポーズショット　補助　消費気力: 5　　粘性体を即死させる
+;ちなみに命中70％
+PRINTFORML 　アブレーショット　　物理　消費気力: 8　　防御を2/3にした状態で計算する
+PRINTL 
+PRINTFORMW ※弓系の攻撃は粘性体にはほとんど効かない
+

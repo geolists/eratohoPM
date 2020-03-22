@@ -1,0 +1,1136 @@
+﻿;================================================================
+;能力上昇への補正
+;================================================================
+
+;-----------------------------------------
+;体力による疲労度増加補正
+;ARG　 基礎値
+;ARG:1 複合要素による疲労度補正
+;-----------------------------------------
+@REVISION_STRENGTH, ARG, ARG:1
+
+ARG = ARG * LIMIT(100-BASE:体力/20, 1, 100) / 100
+
+RETURN ARG
+
+;-----------------------------------------
+;淫妖・堕落以外の各種計算
+;ARG　 基礎値
+;ARGS　上昇させる能力
+;-----------------------------------------
+@CALCULATION_PALAM, ARG, ARGS
+#DIM EXP_BONUS, 1
+#DIM HOSEI,1
+#DIM GET_ABL, 2
+#DIM INYOU, 1
+
+IF ARGS == "美麗"
+	;経験補正
+	EXP_BONUS = EXP:美麗経験 / 40
+	
+	CALL CLOTHE_ABL, "美麗"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(美麗)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100 + INYOU
+	ELSE
+		GET_ABL = ARG + INYOU
+	ENDIF
+	
+	;素養補正
+	;気品が関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * BASE:気品 / 180
+	ELSE
+		GET_ABL = GET_ABL * BASE:気品 / 180 * (100 - (BASE:美麗 / 300 * 30)) / 100
+	ENDIF
+	
+	;人魚の場合、上昇値が1.5倍になる
+	IF TALENT:人魚
+		GET_ABL = GET_ABL*3/2
+	ENDIF
+	
+	;高飛車の場合、上昇値が2倍になる
+	IF CFLAG:性格 == 2
+		GET_ABL *= 2
+	;真面目の場合、上昇値が半減
+	ELSEIF CFLAG:性格 == 1
+		GET_ABL /= 2
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 0)
+		LOCAL = 0
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 美麗: {BASE:美麗} + {GET_ABL} → 
+	BASE:美麗 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:美麗}
+	RESETCOLOR
+ELSEIF ARGS == "知力"
+	;経験補正
+	EXP_BONUS = EXP:知力経験 / 40
+	
+	CALL CLOTHE_ABL, "知力"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(知力)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100 + INYOU
+	ELSE
+		GET_ABL = ARG + INYOU
+	ENDIF
+	
+	;素養補正
+	;常識・思考力が関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * (BASE:常識 + BASE:思考力) / 360
+	ELSE
+		GET_ABL = GET_ABL * (BASE:常識 + BASE:思考力) / 360 * (100 - (BASE:知力 / 300 * 30)) / 100
+	ENDIF
+	
+	;真面目の場合、上昇値が2倍になる
+	IF CFLAG:性格 == 1
+		GET_ABL *= 2
+	;社交的の場合、上昇値が半減
+	ELSEIF CFLAG:性格 == 3
+		GET_ABL /= 2
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 1)
+		LOCAL = 1
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 知力: {BASE:知力} + {GET_ABL} → 
+	BASE:知力 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:知力}
+	RESETCOLOR
+ELSEIF ARGS == "疎通"
+	;経験補正
+	EXP_BONUS = EXP:疎通経験 / 40
+	
+	CALL CLOTHE_ABL, "疎通"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(疎通)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100 + INYOU
+	ELSE 
+		GET_ABL = ARG + INYOU
+	ENDIF
+	
+	;素養補正
+	;話術と常識が半分ずつ関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * (BASE:話術 + BASE:常識) / 360
+	ELSE
+		GET_ABL = GET_ABL * (BASE:話術 + BASE:常識) / 360 * (100 - (BASE:疎通 / 300 * 30)) / 100
+	ENDIF
+	;能力が低いとストレスが上がりやすくなる
+	
+	;社交的の場合、上昇値が2倍になる
+	IF CFLAG:性格 == 3
+		GET_ABL *= 2
+	;高飛車の場合、上昇値が半減
+	ELSEIF CFLAG:性格 == 2
+		GET_ABL /= 2
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 2)
+		LOCAL = 2
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 疎通: {BASE:疎通} + {GET_ABL} → 
+	BASE:疎通 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:疎通}
+	RESETCOLOR
+ELSEIF ARGS == "家事"
+	;経験補正
+	EXP_BONUS = EXP:家事経験 / 40
+	
+	CALL CLOTHE_ABL, "家事"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(家事)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+	
+	;主人の前職が執事の場合、基礎値が2.0倍に
+	IF FLAG:主人の前職 == 1
+		GET_ABL = GET_ABL * 20 / 10
+	ENDIF
+	
+	;素養補正
+	;献身・淫妖が関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * (BASE:献身 + SOURCE:淫妖 * 10) / 180
+	ELSE
+		GET_ABL = GET_ABL * (BASE:献身 + SOURCE:淫妖 * 10) / 180 * (100 - (BASE:家事 / 300 * 30)) / 100
+	ENDIF
+	;能力が低いとストレスが上がりやすくなる
+	
+	;世話焼きの場合、上昇値が2倍になる
+	IF CFLAG:性格 == 4
+		GET_ABL *= 2
+	;夢見がちの場合、上昇値が半減
+	ELSEIF CFLAG:性格 == 5
+		GET_ABL /= 2
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 3)
+		LOCAL = 3
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 家事: {BASE:家事} + {GET_ABL} → 
+	BASE:家事 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:家事}
+	RESETCOLOR
+ELSEIF ARGS == "信仰"
+	;経験補正
+	EXP_BONUS = EXP:信仰経験 / 40
+	
+	CALL CLOTHE_ABL, "信仰"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(信仰)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+	
+	;主人の前職が修道士の場合、基礎値が2.0倍に
+	IF FLAG:主人の前職 == 2
+		GET_ABL = GET_ABL * 20 / 10
+	ENDIF
+	
+	;素養補正
+	;信仰心とアライメントが関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * (BASE:信仰心 + BASE:アライメント * 2 + SOURCE:淫妖 * 10) / 360
+	ELSE
+		GET_ABL = GET_ABL * (BASE:信仰心 + BASE:アライメント * 2 + SOURCE:淫妖 * 10) / 360 * (100 - (BASE:信仰 / 300 * 30)) / 100
+	ENDIF
+	
+	;夢見がちの場合、上昇値が2倍になる
+	IF CFLAG:性格 == 5
+		GET_ABL *= 2
+	;世話焼きの場合、上昇値が半減
+	ELSEIF CFLAG:性格 == 4
+		GET_ABL /= 2
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 4)
+		LOCAL = 4
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 信仰: {BASE:信仰} + {GET_ABL} → 
+	BASE:信仰 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:信仰}
+	RESETCOLOR
+ELSEIF ARGS == "体力"
+	;経験補正
+	EXP_BONUS = EXP:体力経験 / 40
+	
+	CALL CLOTHE_ABL, "体力"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(体力)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+	
+	;素養補正
+	;スタミナが関わる
+	;革命者を付けている場合、能力による伸びの減衰が無くなる
+	IF CHECKSKILL(319)
+		GET_ABL = GET_ABL * BASE:スタミナ / 180
+	ELSE
+		GET_ABL = GET_ABL * BASE:スタミナ / 180 * (100 - (BASE:体力 / 300 * 30)) / 100
+	ENDIF
+	
+	;男勝りの場合、上昇値が1.5倍になる
+	IF CFLAG:性格 == 6
+		GET_ABL = GET_ABL * 15 / 10
+	;淫乱の場合、上昇値が1/3に
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL /= 3
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は頭に淫らな事が浮かんで集中できないようだ……
+		RESETCOLOR
+	ENDIF
+	
+	
+	;この能力に興味がある場合
+	IF GETBIT(CFLAG:興味, 5)
+		LOCAL = 5
+		CALL PALAM_CONVERT_NAME, LOCAL
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持ち、自ら突き進んだ！
+		PRINTFORML 興味ボーナス:+{(GET_ABL*125-GET_ABL*100)/100+1}
+		RESETCOLOR
+		GET_ABL = 125 * GET_ABL / 100+1
+	ENDIF
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, GET_ABL, ARGS, "上昇"
+	GET_ABL = RESULT
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 体力: {BASE:体力} + {GET_ABL} → 
+	BASE:体力 += GET_ABL
+	PRINTFORML {BASE:体力}
+ELSEIF ARGS == "堕落"
+	;経験補正
+	EXP_BONUS = EXP:堕落経験 / 40
+	
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, ARG, ARGS, "上昇"
+	
+	CALL CLOTHE_ABL, "堕落"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(堕落)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+	
+	;媚薬状態の場合、+1される
+	IF CFLAG:媚薬状態
+		GET_ABL += 1
+	ENDIF
+	
+	;素養補正
+	;気品、プライドが関わる
+	;アライメントも関わる
+	;信仰心でマイナス補正がかかる
+	LOCAL = (600 - BASE:信仰心 - ((BASE:アライメント - 100) * 3))
+	
+	IF LOCAL < 0
+		LOCAL = 0
+	ENDIF
+	
+	GET_ABL = (GET_ABL + BASE:淫妖 / 400) * (LOCAL / 350) + (GET_ABL * (BASE:気品 + BASE:プライド) / 600)
+	
+	;素質による補正
+	;即堕ちの場合
+	IF TALENT:即堕ち
+		GET_ABL *= 3
+	;嫌厭色情
+	ELSEIF TALENT:嫌厭色情
+		GET_ABL /= 2
+	ENDIF
+	
+	;肌補正をかける
+	BASE:堕落 = BASE:堕落 * (100+HOSEI_SKIN(TARGET))/100
+	
+	;媚薬状態の場合、数値が2倍になる
+	;（最高で3倍）
+	IF CFLAG:媚薬状態
+		GET_ABL *= 2
+	ENDIF
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 堕落: {BASE:堕落} + {GET_ABL} → 
+	BASE:堕落 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:堕落}
+	RESETCOLOR
+	
+	;肌の色変更判定
+	CALL CHANGE_SKINCOLOR, TARGET
+	
+	;調教モードでない場合、経験に応じて評価が下がる
+	IF CFLAG:モード != 2
+		LOCAL = ARG * 3 / 2
+		PRINTFORML 評価が{LOCAL}下がった
+		CFLAG:評価 -= LOCAL
+	ENDIF
+ELSEIF ARGS == "魔力"
+	
+	CALL CLOTHE_ABL, "属性"
+	
+	;ゴスロリ属性の衣服なら、+一つにつき0.25倍の修正がかかる
+	IF GETBIT(RESULT,3)
+		CALL CLOTHE_ABL, "属性強度"
+		
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(ゴスロリ)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+	
+	;媚薬状態の場合、+10される
+	;(魔力なので精神がトランスしやすい状態は重要)
+	IF CFLAG:媚薬状態
+		GET_ABL += 10
+	ENDIF
+	
+	;素養補正
+	;思考力が関わる
+	;現在の淫妖と堕落の値も1％程関わる(淫妖+堕落/75(最大値26))
+	;信仰心でマイナス補正がかかる
+	LOCAL = 600 - BASE:信仰心/4
+	
+	IF LOCAL < 0
+		LOCAL = 0
+	ENDIF
+	
+	GET_ABL = (GET_ABL+(BASE:淫妖+BASE:堕落)/75) * BASE:思考力 / 50 * LOCAL / 600
+	
+	;素質による補正
+	;即堕ちの場合
+	IF TALENT:即堕ち
+		GET_ABL *= 2
+	ENDIF
+	
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 魔力: {BASE:魔力} + {GET_ABL} → 
+	BASE:魔力 += GET_ABL
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML {BASE:魔力}
+	RESETCOLOR
+	
+ELSEIF ARGS == "評価"
+	
+	;1-肌補正*01だけ上昇補正がかかる
+	ARG = ARG * (100-HOSEI_SKIN(TARGET))/100
+	
+	IF ARG >= 1
+		CALL SETCOLOR_VALUE
+		PRINTFORML 評価が{ARG}上昇した！
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 評価が{ARG}下がった……
+	ENDIF
+	RESETCOLOR
+	
+	CFLAG:評価 += ARG
+	
+ELSEIF ARGS == "君主の評価"
+	
+	;君主の場合は特殊で、他の評価と異なり上昇補正となる
+	ARG = ARG * (100+HOSEI_SKIN(TARGET))/100
+	
+	IF ARG >= 1
+		CALL SETCOLOR_VALUE
+		PRINTFORML 君主からの評価が{ARG}上昇した！
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 君主からの評価が{ARG}下がった……
+	ENDIF
+	RESETCOLOR
+	
+	BASE:君主の評価 = LIMIT(BASE:君主の評価+ARG, 0, MAXBASE:君主の評価)
+ELSEIF ARGS == "役人の評価"
+	
+	;1-肌補正*0.1だけ上昇補正がかかる
+	ARG = ARG * (100-HOSEI_SKIN(TARGET))/100
+	
+	IF ARG >= 1
+		CALL SETCOLOR_VALUE
+		PRINTFORML 役人の評価が{ARG}上昇した！
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 役人の評価が{ARG}下がった……
+	ENDIF
+	RESETCOLOR
+	
+	BASE:役人の評価 = LIMIT(BASE:役人の評価+ARG, 0, MAXBASE:役人の評価)
+ELSEIF ARGS == "民衆の評価"
+	
+	;1-肌補正*01だけ上昇補正がかかる
+	ARG = ARG * (100-HOSEI_SKIN(TARGET))/100
+	
+	IF ARG >= 1
+		CALL SETCOLOR_VALUE
+		PRINTFORML 民衆の評価が{ARG}上昇した！
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 民衆の評価が{ARG}下がった……
+	ENDIF
+	RESETCOLOR
+	
+	BASE:民衆の評価 = LIMIT(BASE:民衆の評価+ARG, 0, MAXBASE:民衆の評価)
+ELSEIF ARGS == "アライメント"
+	CALL CLOTHE_ABL, "アライメント"
+	LOCAL = RESULT
+	
+	;星座補正
+	IF ARG >= 1
+		CALL CONSTELLATIO_HOSEI, ARG, ARGS, "上昇"
+	ELSE
+		CALL CONSTELLATIO_HOSEI, ARG, ARGS, "下降"
+	ENDIF
+	
+	;服装によるアライメント補正
+	IF LOCAL
+		IF LOCAL < 0
+			
+		ELSE
+		;	PRINTFORM +
+		ENDIF
+	ENDIF
+
+	LOCAL = ARG + LOCAL
+	
+	;救済の書を装備している場合、淫妖・堕落経験が入るコマンドでアライメントが下降しない
+	IF CFLAG:日用品／本 == 428 && TFLAG:淫妖経験 && TFLAG:堕落経験
+		LOCAL = 0
+	ENDIF
+	
+	;主人の前職が修道士の場合、アライメント+1
+	IF FLAG:主人の前職 == 2
+		LOCAL += 1
+	ENDIF
+	
+	;負の場合
+	;堕落の5％が入る
+	IF LOCAL < 0
+		GET_ABL = (LOCAL * ((200 - BASE:信仰心) + BASE:堕落 / 20)) / 50
+		IF GET_ABL > 0
+			GET_ABL = 0
+		ENDIF
+		
+	;正の場合
+	;信仰心で補正がかかる
+	ELSE
+		IF BASE:アライメント > 0
+			GET_ABL = LOCAL * (BASE:信仰心 / 200 + BASE:信仰 / 20)
+		;現在のアライメントが負の場合、1割改善する
+		ELSE
+			GET_ABL = LIMIT((100 - BASE:アライメント) / 10 * BASE:貞操 / 100, 1, 100)
+		ENDIF
+	ENDIF
+	IF GET_ABL
+		BASE:アライメント += GET_ABL
+		PRINTFORM アライメント　
+		
+		IF GET_ABL < 0
+			
+		ELSE
+			PRINTFORM +
+		ENDIF
+		
+		PRINTFORML {GET_ABL}
+	ENDIF
+ELSEIF ARGS == "理性"
+	;星座補正
+	CALL CONSTELLATIO_HOSEI, ARG, ARGS, "上昇"
+	
+	CALL CLOTHE_ABL, "堕落"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		GET_ABL = ARG * HOSEI / 100
+	ELSE
+		GET_ABL = ARG
+	ENDIF
+
+	;常識と思考力が関わる
+	GET_ABL = ((LOSEBASE:理性+BASE:堕落/100)*LIMIT(300-(BASE:常識+BASE:思考力),100,600))/100
+	
+	;(200-貞操)/50の補正をかける
+	GET_ABL = GET_ABL*LIMIT(200-BASE:貞操,0,200)/50
+	
+	;高飛車や真面目だと1/2に
+	IF CFLAG:性格 == 1 || CFLAG:性格 == 2
+		GET_ABL /= 2
+	;淫乱だと2倍になる
+	ELSEIF CFLAG:性格 == -1
+		GET_ABL *= 2
+	ENDIF
+	
+	;媚薬状態の場合、×1.2される
+	IF CFLAG:媚薬状態
+		GET_ABL = GET_ABL * 12 / 10
+	ENDIF
+	
+	;素質による補正
+	;即堕ちの場合
+	IF TALENT:即堕ち
+		GET_ABL *= 3
+	;嫌厭色情
+	ELSEIF TALENT:嫌厭色情
+		GET_ABL /= 2
+	ENDIF
+	
+	BASE:理性 = LIMIT(BASE:理性-GET_ABL, 0, MAXBASE:理性)
+ELSEIF ARGS == "君主の権力値"
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 君主の権力値に{ARG}のダメージを与えた！
+	FLAG:君主の権力値 -= ARG
+ENDIF
+
+;-----------------------------------------
+;獲得信仰力計算
+;ARG　 基礎値
+;ARG:1 淫妖込みで計算する？(0:しない　1:する)
+;ARG:2 教育系統のモード中の場合は1
+;-----------------------------------------
+@CALCULATION_FAITH, ARG, ARG:1, ARG:2
+
+IF ARG:1 == 0
+	;教育系統のモード中
+	IF ARG:2 == 1
+		LOCAL = ARG * BASE:信仰 / 15 * (85 + RAND:16) / 100
+	ELSE
+		LOCAL = BASE:信仰 / 2
+	ENDIF
+ELSEIF ARG:1 == 1
+	;教育系統のモード中
+	IF ARG:2 == 1
+		LOCAL = ARG * (BASE:信仰 / 25 + BASE:淫妖 / 10) * (85 + RAND:16) / 100
+	ELSE
+		LOCAL = (BASE:信仰 + BASE:淫妖) / 3
+	ENDIF
+ENDIF
+
+;主人の前職が修道士の場合、信仰力入手は1.2倍になる
+IF FLAG:主人の前職 == 2
+	LOCAL = LOCAL * 120 / 100
+ENDIF
+
+;コマンドやイベント時は他の処理で上昇させる
+;(期待値表示をすることがあるため)
+IF ARG:2 == 1 && LOCAL
+	CALL SETCOLOR_FAITH
+	PRINTFORML 信仰力が{LOCAL}上がった！
+	BASE:信仰力 = LIMIT(BASE:信仰力+LOCAL, 0, MAXBASE:信仰力)
+	RESETCOLOR
+ENDIF
+
+RETURN LOCAL
+
+;-----------------------------------------
+;淫妖計算
+;ARG　 基礎値
+;ARG:1 補正度(高いほど影響が出づらくなる)
+;-----------------------------------------
+@CALCULATION_INYOU, ARG, ARG:1
+#DIM GET_ABL, 1
+
+;素養補正
+;感度が関わる
+GET_ABL = (ARG + BASE:淫妖 / 900) * BASE:感度 * (100 - (LIMIT(BASE:淫妖, 0, 900) / 300 * 25)) / 100
+
+;淫乱かどうか
+IF CFLAG:性格 == -1
+	GET_ABL = GET_ABL / (ARG:1 * 2 / 3)
+ELSE
+	GET_ABL = GET_ABL / ARG:1
+ENDIF
+
+IF GET_ABL <= 0
+	GET_ABL = 1
+ENDIF
+
+;補正をかける
+CALL REVISION_INYOU, GET_ABL
+GET_ABL = RESULT
+
+;魂抜きや依頼を受けた状態の時、淫妖上昇値を蓄積する
+IF (CFLAG:魂の状態 == 0 || CFLAG:魂の状態 == 2)
+	CFLAG:淫妖蓄積値 += GET_ABL
+ENDIF
+
+RETURN GET_ABL
+
+;-----------------------------------------
+;淫妖補正
+;-----------------------------------------
+@REVISION_INYOU, ARG
+;素質による補正
+;敏感体質
+IF TALENT:敏感体質
+	ARG *= 5 / 4
+;不感体質
+ELSEIF TALENT:不感体質
+	ARG *= 3 / 4
+ENDIF
+
+;即堕ちの場合
+IF TALENT:即堕ち
+	ARG *= 3
+;嫌厭色情
+ELSEIF TALENT:嫌厭色情
+	ARG /= 2
+ENDIF
+
+RETURN ARG
+
+;-----------------------------------------
+;淫妖経験判定
+;花魁or娼婦ソースへの振り分けに用いる
+;花魅を上昇させる条件
+
+;・貞操(隠しステータス)が101以上
+;・アライメントが+1以上(内部数値的には101以上)
+;・堕落経験を積まない(1でもあった場合娼婦ソース確定)
+;-----------------------------------------
+@HANTEI_INYOU, ARG
+
+;判定変数の初期化
+LOCAL = 0
+
+;条件を一つでも満たさない場合、脱落させる
+;貞操が100以下
+IF BASE:貞操 <= 100
+	LOCAL = 1
+;アライメントが100以下
+ELSEIF BASE:アライメント <= 100
+	LOCAL = 1
+;堕落が1以上
+ELSEIF BASE:堕落
+	LOCAL = 1
+ENDIF
+
+IF LOCAL
+	EXP:娼婦 += ARG
+ELSE
+	EXP:花魁 += ARG
+ENDIF
+
+
+;-----------------------------------------
+;能力上昇処理
+;ARGS　対象とする能力
+;ARGS:1 WAITでPRINTFORMWを出力
+;-----------------------------------------
+@COMMON_ABLUP, ARGS, ARG, ARGS:1
+
+PRINTFORM %ARGS%:{BASE:ARGS}　→　
+BASE:ARGS += ARG
+IF ARG > 0
+	CALL SETCOLOR_PALAMUP
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+ENDIF
+
+;上昇対象が淫妖で、魂抜きor依頼の場合
+IF ARGS == "淫妖" && (CFLAG:魂の状態 == 1 || CFLAG:魂の状態 == 3)
+	CFLAG:淫妖蓄積値 += ARG
+ENDIF
+
+IF ARGS:1 == "WAIT"
+	PRINTFORMW {BASE:ARGS}
+ELSE
+	PRINTFORML {BASE:ARGS}
+ENDIF
+RESETCOLOR
+
+;ARGS:1を初期化する
+ARGS:1 = ""
+
+;-----------------------------------------
+;肌色補正
+;対象キャラの肌の色で倍率補正(％)をかける
+;ARG　対象キャラ
+;-----------------------------------------
+@HOSEI_SKIN, ARG
+#FUNCTION
+
+SELECTCASE CFLAG:ARG:肌の色
+	;薄茶色
+	CASE 1
+		LOCAL = 20
+	;小麦色
+	CASE 2
+		LOCAL = 40
+	CASEELSE
+		LOCAL = 0
+ENDSELECT
+
+RETURNF LOCAL
+
+;-----------------------------------------
+;穢れ上昇補正
+;対象キャラの素質等で穢れの上昇に補正をかける
+;ARG　基本上昇量
+;-----------------------------------------
+@CALC_IMP, ARG
+
+VARSET LOCAL, 0
+
+;刺青を入れられている場合、+1
+IF TALENT:刺青
+	LOCAL += 1
+ENDIF
+
+;清めの札を装備している場合、穢れが入らなくなる
+;(礼は効果無し)
+IF OTHER_ACC(435)
+	LOCAL = 0
+ENDIF
+
+BASE:穢れ += LOCAL+ ARG
+
+RETURN 0
+
+;-----------------------------------------
+;能力上昇テーブル
+;日常イベントで上昇する数値を一括管理し、ここで上昇処理を行う
+;ARG:1　能力上昇レベル
+;ARGS:1　中心能力
+;ARGS:2　追従能力
+;-----------------------------------------
+@DAILY_PALAM_0, ARG:1, ARGS:1, ARGS:2
+#DIM L_COUNT, 1
+
+;LOCALの初期化
+FOR L_COUNT, 1, 3
+	LOCAL:L_COUNT = 0
+NEXT
+
+IF ARG:1 == 1
+	LOCAL:1 = 8
+	LOCAL:2 = 2
+ELSEIF ARG:1 == 2
+	LOCAL:1 = 10
+	LOCAL:2 = 5
+ELSEIF ARG:1 == 3
+	LOCAL:1 = 15
+	LOCAL:2 = 5
+ELSEIF ARG:1 == 4
+	LOCAL:1 = 20
+	LOCAL:2 = 10
+ENDIF
+
+;中心能力と追従能力が同じな場合、LOCAL:2をLOCAL:1に足す
+IF ARGS:1 == ARGS:2
+	LOCAL:1 += LOCAL:2
+	LOCAL:2 = 0
+ENDIF
+
+;85～100％が上昇値となる
+LOCAL:1 = LOCAL:1 * (RAND:16 + 85) / 100
+LOCAL:2 = LOCAL:2 * (RAND:16 + 85) / 100
+
+IF LOCAL:2
+	CALL COMMON_ABLUP, ARGS:1, LOCAL:1
+	CALL COMMON_ABLUP, ARGS:2, LOCAL:2, "WAIT"
+ELSE
+	CALL COMMON_ABLUP, ARGS:1, LOCAL:1, "WAIT"
+ENDIF
+
+
+;-----------------------------------------
+;能力上昇テーブル(淫妖用)
+;日常イベントで上昇する数値を一括管理し、ここで上昇処理を行う
+;ARG:1　能力上昇レベル
+;ARGS:1　中心能力
+;ARGS:2　追従能力
+;-----------------------------------------
+@DAILY_PALAM_6, ARG:1, ARGS:1, ARGS:2
+#DIM L_COUNT, 1
+
+;LOCALの初期化
+FOR L_COUNT, 1, 3
+	LOCAL:L_COUNT = 0
+NEXT
+
+IF ARG:1 == 1
+	LOCAL:1 = 5
+	LOCAL:2 = 2
+ELSEIF ARG:1 == 2
+	LOCAL:1 = 10
+	LOCAL:2 = 4
+ELSEIF ARG:1 == 3
+	LOCAL:1 = 15
+	LOCAL:2 = 7
+ELSEIF ARG:1 == 4
+	LOCAL:1 = 20
+	LOCAL:2 = 12
+ENDIF
+
+;貞操が50以下
+IF BASE:貞操 <= 50
+	LOCAL:1 += 15
+;アライメントが-50以下
+ELSEIF BASE:アライメント <= 50
+	LOCAL:1 += 5
+ENDIF
+
+;85～100％が上昇値となる
+LOCAL:1 = LOCAL:1 * (RAND:16 + 85) / 100
+;慰み者もLOCAL:2/4の分だけ増やす
+BASE:慰み者 += LOCAL:2/4
+
+IF LOCAL:2
+	CALL COMMON_ABLUP, ARGS:1, LOCAL:1
+ELSE
+	CALL COMMON_ABLUP, ARGS:1, LOCAL:1, "WAIT"
+ENDIF
+
+;-----------------------------------------
+;目立ちやすさ
+;ARG　対象
+;-----------------------------------------
+@CONSPI, ARG
+
+
+LOCAL = 0
+
+LOCAL += CFLAG:ARG:総合華麗度+BASE:ARG:美麗/50
+
+;服装のデータを採る
+CALL CLOTHE_ABL, "美麗"
+
+LOCAL += RESULT*2
+
+;着用者の胸囲が服の適正バストサイズ以内に収まっている場合、+3
+IF BASE:ARG:胸囲 <= CULC_BUSTSIZE(CFLAG:ARG:服装)
+	LOCAL += 3
+ENDIF
+
+RETURN LOCAL
+
+
+;-----------------------------------------
+;悪目立ち
+;ARG　対象
+;-----------------------------------------
+@CONSPI_DARK, ARG
+
+;淫妖と堕落が共に100未満の場合、悪目立ち度を0として扱う
+;IF BASE:淫妖 < 100 && BASE:堕落 < 100
+;	RETURN 0
+;ENDIF
+
+;((淫妖-100)*2+(堕落-100))/100を基礎値とする
+LOCAL = LIMIT(((BASE:淫妖-100)*2+(BASE:堕落-100))/100, 0, 100)
+
+;布切れかどうかで分岐をかける
+IF CFLAG:服装 >= 0
+	;全裸or半裸があるかどうかで分岐をかける
+	IF DITEMTYPE:(CFLAG:服装):11 >= 1
+		;全裸の場合　+10
+		IF DITEMTYPE:(CFLAG:服装):11 == 2
+			LOCAL += 10
+		;半裸の場合　+5
+		ELSEIF DITEMTYPE:(CFLAG:服装):11 == 1
+			LOCAL += 5
+		ENDIF
+		
+		;全壊の場合　+8
+		IF DITEMTYPE:(CFLAG:服装):14 == 2
+			LOCAL += 8
+		;半壊の場合　+4
+		ELSEIF DITEMTYPE:(CFLAG:服装):14 == 1
+			LOCAL += 4
+		ENDIF
+		
+		;半裸以上の露出度の服を着ている際に[落書き]がある場合、+5
+		IF DITEMTYPE:(CFLAG:服装):14 && TALENT:落書き
+			LOCAL += 5
+		ENDIF
+		
+		;バイブが刺さっている場合、見えてしまうので補正がかかる
+		
+		;二穴の場合は+10
+		IF OTHER_ACC(507) && OTHER_ACC(507)
+			LOCAL += 10
+		ELSEIF OTHER_ACC(507) || OTHER_ACC(507)
+			LOCAL += 3
+		ENDIF
+	ENDIF
+ELSE
+	;解れかけた布切れの場合　+15
+	IF CFLAG:服装 == -3
+		LOCAL += 15
+	;ボロの布切れの場合　+10
+	ELSEIF CFLAG:服装 == -2
+		LOCAL += 10
+	;布切れの場合　+5
+	ELSEIF CFLAG:服装 == -1
+		LOCAL += 5
+	ENDIF
+	
+	;[落書き]がある場合、+5
+	IF TALENT:落書き
+		LOCAL += 5
+	ENDIF
+	
+	;バイブが刺さっている場合、見えてしまうので補正がかかる
+	
+	;二穴の場合は+10
+	IF OTHER_ACC(507) && OTHER_ACC(507)
+		LOCAL += 10
+	ELSEIF OTHER_ACC(507) || OTHER_ACC(507)
+		LOCAL += 3
+	ENDIF
+ENDIF
+
+
+;体のくびれで補正をかける
+IF BODY_RIPEN(TARGET) >= 20
+	LOCAL += 3
+ELSEIF BODY_RIPEN(TARGET) >= 10
+	LOCAL += 1
+ENDIF
+
+;人魚の場合、+5
+IF TALENT:人魚
+	LOCAL += 5
+ENDIF
+
+;髪色が茶髪の場合　+5
+IF CFLAG:髪色 == 1
+	LOCAL += 5
+ENDIF
+
+;肌色
+;小麦色　+5
+IF CFLAG:肌の色 == 2
+	LOCAL += 5
+;薄茶色　+3
+ELSEIF CFLAG:肌の色 == 1
+	LOCAL += 3
+ENDIF
+
+
+;服装のデータを採る
+CALL CLOTHE_ABL, "淫妖"
+
+LOCAL += RESULT*2
+
+RETURN LOCAL
+

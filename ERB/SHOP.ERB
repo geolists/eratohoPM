@@ -1,0 +1,863 @@
+﻿;SHOP.ERBは完全に各関数を呼び出すエントランス化
+;元の処理はSHOP2.ERB及びITEM.ERBに移動
+;今後は頻繁にいじる必要が無くなるはず
+
+@EVENTSHOP
+DRAWLINE
+DRAWLINE
+
+;慰み者の値を記憶
+BASE:変化前の慰み者 = BASE:慰み者
+
+
+
+;上昇ステータスが上限を越えないようにチェックする
+;SETCOLOR_PALAMは1000以上には対応していないため、ここで対処する
+CALL UP_STATUS
+
+;一言メッセージのフラグを初期化
+CFLAG:一言決定済み = 0
+IF FLAG:攫った姉妹の数 >= 1
+	CFLAG:2:一言決定済み = 0
+ENDIF
+IF FLAG:攫った姉妹の数 >= 2
+	CFLAG:3:一言決定済み = 0
+ENDIF
+
+REPEAT 5
+	CFLAG:(189 + COUNT) = 0
+REND
+
+LOCAL:10 = TARGET
+TARGET = 1
+
+$Y_LOOP
+
+;--------------------------------------------------
+;時間経過直後に発生させたいイベントは下記に入れる
+;--------------------------------------------------
+
+;夜遊びの球持続処理
+CALL SUSTAIN_NIGHT
+
+;年を跨ぐとプロポーション変更
+IF FLAG:年数 != 1 && DAY == 1 && TIME == 0
+	CALL YEAR_EVENT_GROW, 0
+;6月頭に穢れ判定のみ行う
+ELSEIF DAY == 6 && TIME == 0
+	CALL YEAR_EVENT_GROW, 1
+ENDIF
+
+;6月頭と12月頭に性格変更判定がかかる
+IF (DAY == 6 || DAY == 12) && TIME == 0
+	CALL HALFYEAR_EVENT_GROW
+ENDIF
+
+;矯正バイブを装着させている場合、イベントが発生
+IF GETBIT(CFLAG:矯正アイテム, 0)
+	CALL KOUSOKU_ITEM_504
+ENDIF
+;堕落のお香を装着させている場合、イベントが発生
+IF GETBIT(CFLAG:矯正アイテム, 1)
+	CALL KOUSOKU_ITEM_505
+	DRAWLINE
+ENDIF
+
+;経年イベントの呼び出し
+;月毎のイベントに変更
+IF TIME == 0 && (FLAG:年数 == 1 && DAY == 1) == 0
+	IF TARGET >= 2
+		PRINTFORM %CALLNAME:TARGET%は
+	ENDIF
+	CALL YEAR_EVENT
+	REPEAT 5
+		CALL PALAM_CONVERT, COUNT
+		LOCALS = %STR%
+		
+;		FLAG:("ターン開始時の"+LOCALS+"") = BASE:LOCALS
+	REND
+	;胸囲等が変わるので、再び補正をかけなおす
+	CALL DATA_CHANGE_CLOTHE, CFLAG:服装, "変更"
+	DRAWLINE
+ENDIF
+IF !(LOCAL:10 == TARGET)
+	CALL CHANGE_ELEMENT, 2
+	DRAWLINE
+ENDIF
+IF CHARANUM - 1 > TARGET
+	TARGET += 1
+	GOTO Y_LOOP
+ENDIF
+TARGET = LOCAL:10
+
+;以下の条件を満たした場合、嫦娥文書を入手するイベントが発生する
+;1:　君主の権力値が5000以下
+;2:　役人の評価が100以上
+;
+;どちらかのみを満たした場合、ヒントを出す
+IF BASE:役人の評価 >= 100 && FLAG:君主の権力値 <= 5000 && !ITEM:嫦娥文書
+	CALL DOCUMENT_EVENT
+;軽くなるかもしれないので、嫦娥文書関係フラグが0bitと1bit共に立っている場合、関数を呼ばないようにする
+ELSEIF (BASE:役人の評価 >= 100 || FLAG:君主の権力値 <= 5000) && (!GETBIT(FLAG:嫦娥文書関係フラグ, 0) || !GETBIT(FLAG:嫦娥文書関係フラグ, 1))
+	CALL HINT_DOCUMENT_EVENT
+ENDIF
+
+;7月と1月の後半に預言者(サグメ)が来る
+;(2年目の1月は除く)
+IF !(FLAG:年数 == 2 && DAY == 1) && FLAG:年数 >= 2 && TIME == 1 && (DAY == 1 || DAY == 7)
+	CALL SAGUME_PROPHET
+ENDIF
+
+;7月と11月に行商人が来る
+IF TIME == 0 && (DAY == 7 || DAY == 11)
+	CALL WORK_SHOP
+ENDIF
+
+;4ヶ月に1回コンテストが開催される
+IF (DAY % 4) == 0 && TIME == 0 && CFLAG:モード != 2 && !FLAG:王宮追放
+	CALL CONTEST
+ENDIF
+
+;半年に1回教育費の査定が行われる
+IF DAY == 6 && TIME == 0 || (FLAG:年数 != 1 && DAY == 1 && TIME == 0)
+	CALL VALUATION
+ENDIF
+
+;王宮を追放されている時に所持金が底を着くとバッドエンド
+IF MONEY < 1 && FLAG:王宮追放
+	CALL BAD_END_3
+ENDIF
+
+;特定の年数・月だと発生するイベント
+IF !FLAG:イベントカット && !FLAG:王宮追放 && CFLAG:モード != 2
+	CALL MONTH_EVENT
+ENDIF
+CALL MONTH_EVENT_FLAG
+
+
+;6ヶ月に1回は討論会が行われる
+IF (DAY % 6) == 0 && TIME == 0 && CFLAG:モード != 2 && !FLAG:王宮追放
+	CALL DEBATE_BASE
+ENDIF
+
+
+;星座毎に定められた月を超えると誕生日を迎える
+;(誕生日を迎えた回数を記憶し、誘拐された場合にも対処できるようにする)
+CALL BIRTHDAY_SET
+IF CFLAG:モード != 2 && RESULT <= DAY && CFLAG:誕生日を迎えた回数 < FLAG:年数 && !TIME
+	CALL BIRTHDAY
+	
+	;(Ver0.999α)応急措置　誕生日を迎えた回数が年数-1より小さい場合、誕生日を迎えた回数を修正する
+	;これにより1年で複数回誕生日を迎えることを阻止する
+	IF CFLAG:誕生日を迎えた回数+1 < FLAG:年数
+		PRINTFORML %CALLNAME:TARGET%の誕生日処理を修正しました
+		PRINTFORMW 正常に誕生日を迎えていたキャラでこのメッセージが表示された場合はご報告ください
+		CFLAG:誕生日を迎えた回数 = FLAG:年数
+	ELSE
+		CFLAG:誕生日を迎えた回数 += 1
+	ENDIF
+ENDIF
+
+;姉妹イベント
+;(イベントカットも搭載予定)
+CALL SIMAI_EVENT
+
+;サグメイベント
+;(王宮追放フラグが立っていない場合のみ発生)
+IF !FLAG:王宮追放 && TALENT:輝夜
+	CALL MANAGE_SAGUME_EVENT
+ENDIF
+
+
+@SHOW_SHOP
+#DIM CLOTHE_ELE, 1
+#DIM CLOTHE, 2
+;変数list　PRINTCを管理する変数(小文字変数はこの関数内で自己完結する要素を示す(暫定的な定義))
+#DIM list, 1
+#DIM L_LOCAL, 1
+
+	DITEMTYPE:63:11 = 2
+	DITEMTYPE:63:16 = 1
+
+CALL CLOTHE_ABL, "属性"
+CLOTHE_ELE = RESULT
+
+
+;CFLAG:誕生日を迎えた回数 += 1
+;PRINTFORML 誕生日{CFLAG:誕生日を迎えた回数}回実行
+
+;TALENT:裁縫技術 = 1
+
+;FOR LOCAL, 220, 227
+;	CFLAG:LOCAL = 50
+;NEXT
+
+;FOR LOCAL, 0, 104
+	;IF ITEMNAME:LOCAL != ""
+;		ITEM:LOCAL = 1
+;	;ENDIF
+;NEXT
+
+;PRINTFORML {LOCAL}
+
+;ITEM:10 = 1
+;ITEM:12 = 1
+
+;FLAG:拠点クリア／静寂の森 = 0
+
+;PRINTFORML ターン開始時の愛情経験:{CFLAG:ターン開始時の経験／愛情}
+
+
+SELECTCASE SEASON(DAY)
+	CASE 1
+		SETBGCOLOR 24, 8, 8
+	CASE 2
+		SETBGCOLOR 0, 24, 16
+	CASE 3
+		SETBGCOLOR 24, 16, 0
+	CASE 4
+		SETBGCOLOR 0, 16, 24
+ENDSELECT
+
+;年数を記録する変数を作成
+;13日（月）目になったら1年進める
+IF DAY >= 13
+	DAY -= 12
+	FLAG:年数 += 1
+ENDIF
+
+;デバッグ用関数呼び出し
+TRYCALL DEBUG_PM
+
+DRAWLINE
+PRINTV FLAG:年数
+PRINT 年目　
+PRINTV DAY
+PRINT 月
+IF TIME == 0
+	PRINT (上半期)
+ELSE
+	PRINT (下半期)
+ENDIF
+IF CFLAG:モード == 2
+	SETCOLOR 255,96,96
+	PRINTFORM 　誘拐中！
+	RESETCOLOR
+ELSEIF CFLAG:モード == 4
+	CALL SETCOLOR_ABL
+	PRINTFORM 　%NAME_METAWORK(CFLAG:住み込み)%に住み込み中！(残り{CFLAG:住み込み期間/2}.{CFLAG:住み込み期間%2*5}ヶ月)
+	RESETCOLOR
+ELSE
+	PRINT 
+ENDIF
+
+;デバッグ用
+;CALL SNATCH, 1
+;CALL CONSPI_DARK,TARGET
+;PRINTFORML 悪目立ち度:{RESULT}
+;PRINTFORML 人魚変異値:{BASE:変異値／人魚}
+
+PRINT 　
+IF CFLAG:気付き状態
+	CALL SETCOLOR_PALAMUP
+	PRINT [気付きがよい]
+	RESETCOLOR
+ENDIF
+
+PRINT 　
+IF CFLAG:興味
+	FOR L_LOCAL, 0, 8
+		CALL SETCOLOR_PALAMUP
+		IF GETBIT(CFLAG:興味, L_LOCAL)
+			CALL PALAM_CONVERT_NAME, L_LOCAL
+			PRINTFORM %STR%　
+		ENDIF
+	NEXT
+	PRINT に興味を持っている
+	RESETCOLOR
+ENDIF
+
+IF TALENT:妊娠
+	CALL SETCOLOR_PREGNANCY
+	PRINTFORM 　妊娠{CFLAG:妊娠経過日}ヶ月目
+	RESETCOLOR
+ENDIF
+
+PRINTL 
+
+CALL SHOW_TARGET_STATUS
+
+;怪我している場合、ターンを飛ばす
+IF GETBIT(CFLAG:体調, 0)
+	DRAWLINE
+	IF CFLAG:怪我の期間 <= 0
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の怪我が治った！
+		CFLAG:体調 -= 1p0
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は怪我をしていて動けない……
+		;怪我の期間を1減らす
+		CFLAG:怪我の期間 --
+	ENDIF
+	RESETCOLOR
+;長期間治療を受けた場合、ターンを飛ばす
+ELSEIF GETBIT(CFLAG:体調, 3)
+	DRAWLINE
+	IF CFLAG:長期間治療の期間 <= 0
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の治療が終わった！
+		CFLAG:体調 -= 1p3
+		
+		;長期間治療フラグに応じて、治療対象が変わる
+		IF GETBIT(CFLAG:長期間治療の対象, 0)
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW %CALLNAME:TARGET%から[純狐の虜]が消えた！
+			TALENT:純狐の虜 = 0
+			CFLAG:長期間治療の対象 -= 1p0
+		ENDIF
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は他の場所で治療を受けています……
+		;怪我の期間を1減らす
+		CFLAG:長期間治療の期間 --
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+
+IF FLAG:王宮追放
+	PRINTSINGLEFORM -------------------------- ～～闇の裏通り　あばら家～～ %DRAWLINESTR%
+ELSE
+	PRINTSINGLEFORM -------------------------- ～～%CALLNAME:TARGET%の部屋～～ %DRAWLINESTR%
+ENDIF
+
+;画像表示処理
+;(誘拐中は表示されない)
+IF GLOBAL:4 && !(CFLAG:モード == 2)
+	;画像表示設定を引数にする
+	CALL MANAGE_GRAPHIC, GLOBAL:4
+ENDIF
+
+IF !FLAG:口上スキップ && !(CFLAG:モード == 2)
+	IF !CFLAG:一言決定済み
+		CALL HIMESSAGE, 0, TARGET
+		CFLAG:一言決定済み = 1
+	ELSE
+		CALL HIMESSAGE, 1, TARGET
+	ENDIF
+ENDIF
+RESETCOLOR
+
+;ヘルプメッセージ
+DRAWLINE
+IF FLAG:年数 == 1 && DAY == 1 && TIME == 0
+	SETCOLOR 255,168,92
+	PRINTFORML [指南書]
+	PRINTFORML まずは「教育」コマンドを選び、%CALLNAME:TARGET%に教育をしてみよう！
+	RESETCOLOR
+;ゲームを始めたばかりの場合
+ELSEIF FLAG:年数 == 1 && DAY == 2 && TIME == 0 && !(!GETBIT(GLOBAL:508, 0) || !GLOBAL:503)
+	SETCOLOR 255,168,92
+	PRINTFORML [指南書]
+	PRINTFORML 半月が経過しました
+	PRINTFORML 「教育」にて%CALLNAME:TARGET%の能力を上げるのがこのゲームの基本動作となります
+	PRINTFORML 自信が出てきたら「武者修行」や「人と交流する」、それに「遊びに出かける」を試してみるのもいいでしょう
+	PRINTFORML それらの行動は「教育」では達成できない物を満たしてくれるはずです
+	
+	LOADGLOBAL
+	GLOBAL:508 += 1
+	SAVEGLOBAL
+	RESETCOLOR
+;今着ている服が半壊or全壊状態の場合
+ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 >= 1
+	SETCOLOR 255,168,92
+	PRINTFORML [破けた服を修復するには]　破けた服は2通りの方法で修復できます
+	PRINTFORML 1.この画面で選択できる「裁縫技術」を使う(要[裁縫技術])
+	PRINTFORML 2.「店に行く」コマンドで「裁縫屋」を選ぶ($20000必要)
+	RESETCOLOR
+;純狐の虜になった場合
+ELSEIF TALENT:純狐の虜
+	SETCOLOR 255,168,92
+	PRINTFORML [指南書]
+	PRINTFORML 他者の虜となる病を治せる者がいるようです……
+	PRINTFORML 「カウンセリング」を選んで治してみましょう
+	RESETCOLOR
+ELSEIF !FLAG:淡水色の聖水購入済み && MONEY >= 15000
+	SETCOLOR 255,168,92
+	PRINTFORML [指南書]
+	PRINTFORML 商人が珍しい物を入荷したようです……「店に行く」コマンドで尋ねてみましょう
+	RESETCOLOR
+ELSEIF FLAG:淡水色の聖水購入済み == 1
+	SETCOLOR 255,168,92
+	PRINTFORML [指南書]
+	PRINTFORML 主人への友好度が上がるとCPが上昇します
+	PRINTFORML 主人への友好度は、贈り物や「遊びにでかける」コマンドで上げることができます
+	PRINTFORML また、%CALLNAME:TARGET%と性的な交わりを行うことでも上昇させることができるようです
+	PRINTFORML 疲労度と同じく値の変化を意識したい要素です
+	FLAG:淡水色の聖水購入済み += 1
+	RESETCOLOR
+;弱みを握られておらず、肌の色が変化していない場合
+ELSEIF !FLAG:役人の脅し && !CFLAG:肌の色 && BASE:淫妖 >= 800
+	SETCOLOR 255,168,92
+	PRINTFORML [淫妖が高くなりすぎると……]
+	PRINTFORML 淫妖が1000を超えると役人に摘発されます
+	PRINTFORML 肌の色を変えると役人に見つかりづらくなります
+	RESETCOLOR
+ENDIF
+
+SETCOLOR 0, 191, 132
+PRINTSINGLEFORM ------------------------------ やるべきこと %DRAWLINESTR%
+
+SETCOLOR 208,192,192
+
+;現助手＋元助手のキャラ数の確認
+S = 0
+T = 0
+REPEAT CHARANUM
+	;労役中のキャラは排除
+	SIF CFLAG:COUNT:12 > 0
+		CONTINUE
+	C = COUNT
+	SIF RESULT == 1
+		CONTINUE
+	SIF CFLAG:COUNT:1 == 2
+		S += 1
+	SIF CFLAG:COUNT:1 >= 1
+		T += 1
+REND
+
+;BASE:体力 = 1000
+
+;装飾品を持っているかどうかチェック
+CALL CHECK_ACCESSORY
+FLAG:所持装飾品 = RESULT
+
+;衣装を持っているかどうかチェック
+CALL CHECK_CLOTHE
+FLAG:所持服装 = RESULT
+
+;PRINTFORML 蓄積:{BASE:習慣化}
+
+;PRINTFORML 慰み者:{BASE:慰み者}
+;PRINTFORML 淫妖蓄積値:{CFLAG:淫妖蓄積値}
+
+;PRINTFORML 貞操:{BASE:貞操}
+
+;PRINTFORML 怠惰:{CFLAG:非行値}
+;PRINTFORML 穢れ:{BASE:穢れ}
+
+
+IF TARGET >= 0
+	IF CFLAG:モード == 2
+		PRINTC [100] - 捜索する
+	ELSEIF TALENT:娼婦 || (FLAG:王宮追放 && NO == 1)
+		PRINTC [100] - 物乞う
+	ELSE
+		PRINTC [100] - 教育
+	ENDIF
+ENDIF
+IF (FLAG:年数 >= 2 || DAY >= 6 ) && CFLAG:モード != 2
+	IF CFLAG:住み込み
+		PRINTC [101] - 秘め事
+	ELSE
+		PRINTC [101] - 夜伽
+	ENDIF
+ENDIF
+;追放されている場合、王宮に忍びこんで姉妹を誘拐することができる
+;(Ver0.985　王宮の情報を集めなくても潜入できるようにしました)
+IF FLAG:王宮追放 && CFLAG:モード != 2
+	PRINTC [590] - 王宮潜入
+ELSEIF TALENT:淫魔 && CFLAG:モード != 2
+	PRINTC [600] - 人を襲う
+ENDIF
+PRINTL 
+;夜遊びの球で一時的に追放されている場合は使用できない
+IF FLAG:王宮追放 && CFLAG:モード != 2 && CFLAG:使用中／夜遊びの球 != 1
+	PRINTC [591] - 人攫い
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:使用中／夜遊びの球
+	PRINTC [592] - 囮調査
+	CALL ENT_PRINTC
+	PRINTC [593] - 情報収集
+	CALL ENT_PRINTC
+ENDIF
+RESETCOLOR
+
+SETCOLOR 0, 191, 132
+PRINTSINGLEFORM ------------------------------ 各々の場所へ行く(日数が経過します) %DRAWLINESTR%
+
+CALL ENT_PRINTC, 1
+SETCOLOR 192, 192, 208
+IF CFLAG:モード != 2
+	PRINTC [115] - 旅行＆休憩　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2 && FLAG:交渉表示フラグ
+	PRINTC [116] - 交渉　　　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2 && BASE:家事 >= 80
+	PRINTC [117] - 家事　　　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2 && BASE:信仰 >= 80 && GETBIT(CLOTHE_ELE, 3)
+	PRINTC [119] - 布教活動　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	PRINTC [120] - 武者修行　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	PRINTC [121] - 闘技場　　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	PRINTC [123] - 人と交流する　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	PRINTC [124] - 遊びに出かける　　
+	CALL ENT_PRINTC
+ENDIF
+RESETCOLOR
+
+RESETCOLOR
+SETCOLOR 0, 191, 132
+IF FLAG:王宮追放
+	PRINTSINGLEFORM ------------------------------ %CALLNAME:TARGET%の環境を変える %DRAWLINESTR%
+ELSE
+	PRINTSINGLEFORM ------------------------------ 女中や兵士に頼む %DRAWLINESTR%
+ENDIF
+VARSET list, 0
+
+CALL ENT_PRINTC, 1
+SETCOLOR 192, 208, 192
+;王宮を追放されてなく、かつ誘拐中ではない場合、色を変える
+IF !FLAG:王宮追放 && CFLAG:主人への友好度 >= 500 && CFLAG:モード != 2 && FLAG:指輪告知メッセージ != 2
+	SETCOLOR 255,164,96
+	PRINTC [102] - 店に行く　←Check!
+ELSE
+	PRINTC [102] - 店に行く　　　　　
+ENDIF
+CALL ENT_PRINTC
+SETCOLOR 192, 208, 192
+IF CHARANUM > 0
+	PRINTC [103] - 能力表示　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CHARA_SELECTABLE(0)
+	PRINTC [104] - 対象変更　　　　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	PRINTC [108] - アイテムを使う　　
+	CALL ENT_PRINTC
+ENDIF
+;PRINTC [109] - スキル習得＆セット
+;CALL ENT_PRINTC
+IF FLAG:所持服装 && CFLAG:モード != 2 && !TALENT:淫魔
+	PRINTC [110] - 着替え＆装飾品　　
+	CALL ENT_PRINTC
+ENDIF
+;IF FLAG:所持装飾品 && CFLAG:モード != 2
+	;PRINTC [111] - 装飾品を替える　　
+;	CALL ENT_PRINTC
+;ENDIF
+IF TALENT:純狐の虜 || (BASE:堕落 > 30 && CFLAG:モード != 2 && !FLAG:王宮追放)
+	PRINTC [112] - カウンセリング　　
+	CALL ENT_PRINTC
+ENDIF
+IF CFLAG:モード != 2
+	;旧「教育環境を変える」コマンド。「教育環境を変える」「スキル習得＆セット」「称号の部屋」「働き先を変える」がこのコマンドに格納されている
+	PRINTC [113] - 習慣・境遇変更　　
+	CALL ENT_PRINTC
+ENDIF
+;IF CFLAG:モード != 2 && CFLAG:職業 != 99
+;	PRINTC [114] - 働き先を変える　　
+;	CALL ENT_PRINTC
+;ENDIF
+IF CFLAG:モード != 2 && TALENT:裁縫技術
+	PRINTC [118] - 裁縫技術　　　　　
+	CALL ENT_PRINTC
+ENDIF
+;IF CFLAG:モード != 2
+;	PRINTC [122] - 称号の部屋　　　　
+;	CALL ENT_PRINTC
+;ENDIF
+PRINTC [215] - 兵力LvUP＆匪賊撃退
+PRINTL 
+
+
+SETCOLOR 0, 191, 132
+PRINTSINGLEFORM ------------------------------ その他 %DRAWLINESTR%
+RESETCOLOR
+PRINTL [200] - SAVE　　　　　　
+PRINTL [300] - LOAD　　　　　　
+PRINTC [400] - 記録室　　　　　　
+PRINTC [500] - CONFIG　　　　　　
+PRINTC [900] - チュートリアル　　
+
+@USERSHOP
+#DIM CLOTHE_ELE, 1
+LOCAL = RESULT
+CALL CLOTHE_ABL, "属性"
+CLOTHE_ELE = RESULT
+RESULT = LOCAL
+
+;CALL MYSTERY_SPRING
+;CALL COLOSSEUM, 0
+
+;怪我している場合、ターンを飛ばす
+IF GETBIT(CFLAG:体調, 0)
+	PRINTFORML 怪我が治るまで安静にすることにした……
+	BEGIN TURNEND
+;長期間治療の場合もターンを飛ばす
+ELSEIF GETBIT(CFLAG:体調, 3)
+	PRINTFORML 治療が終わるまで待機することにした……
+	BEGIN TURNEND
+ENDIF
+
+IF RESULT == 100 && TARGET >= 0
+	IF CFLAG:モード == 2
+		CALL EXPLORE
+	ELSEIF TALENT:娼婦 || (FLAG:王宮追放 && NO == 1)
+		CFLAG:モード = 3
+		BEGIN TRAIN
+		RETURN 1
+	ELSEIF CFLAG:モード == 4
+		BASE:達成値 = 0
+		BASE:ムード /= 2
+		BASE:客淫行値 /= 3
+		BEGIN TRAIN
+		RETURN 1
+	ELSE
+		CFLAG:モード = 0
+		BEGIN TRAIN
+		RETURN 1
+	ENDIF
+ELSEIF RESULT == 101 && (FLAG:年数 >= 2 || DAY >= 6 ) && CFLAG:モード != 2
+	CFLAG:モード = 1
+	IF FLAG:夜伽チュートリアル済 == 0
+		DRAWLINE
+		PRINTFORML ～～夜伽の間　入口～～
+		PRINTFORML 女中「夜伽を行われるのは初めてですよね！
+		PRINTFORML 　　　私に夜伽についての説明を行わせてください！
+		PRINTL 
+		PRINTL [0] - はい
+		PRINTL [1] - けっこうです
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			CALL TUTORIAL_YOTOGI, 0
+		ELSE
+			PRINTFORMW 女中「そうですか……」
+			FLAG:夜伽チュートリアル済 = 1
+		ENDIF
+	ENDIF
+	
+	BEGIN TRAIN
+	RETURN 1
+ELSEIF RESULT == 103 && CHARANUM > 0
+	CALL SHOW_CHARADATA
+ELSEIF RESULT == 104 && CHARA_SELECTABLE()
+	CALL CHANGE_TARGET
+ELSEIF RESULT == 108 && !(CFLAG:モード == 2)
+	CALL SHOP_ITEM_USE
+;ELSEIF RESULT == 109
+;	CALL LV_UP
+ELSEIF RESULT == 110 && CFLAG:モード != 2
+	DRAWLINE
+	PRINTFORML 替える物を選択してください
+	PRINTL [0] - 衣服
+	PRINTL [1] - 装飾品
+	PRINTL [2] - 戻る
+	
+	CALL SENTAKUSHI, 3
+	
+	IF !RESULT && FLAG:所持服装 && !TALENT:淫魔
+		IF CFLAG:使用中／夜遊びの球
+			PRINTFORML %CALLNAME:TARGET%は服を着替えるのを嫌がっている
+			PRINTFORMW どうやら夜遊びの球の効力が続く限り、着替えることはできないようだ
+		ELSEIF TALENT:淫魔
+			PRINTFORMW 淫魔と化した%CALLNAME:TARGET%は、服を着替えることができない！
+		ELSE
+			CALL CHANGE_CLOTHES
+		ENDIF
+	ELSEIF RESULT == 1 && CHARANUM < 100 && FLAG:所持装飾品
+		CALL CHANGE_ACCESSORY
+	ENDIF
+ELSEIF RESULT == 112 && (TALENT:純狐の虜 || (BASE:堕落 > 30 && CFLAG:モード != 2 && !FLAG:王宮追放))
+	CALL COUNSELING
+ELSEIF RESULT == 113 && CFLAG:モード != 2
+	DRAWLINE
+	PRINTFORML 習慣や境遇を変更することができます
+	PRINTFORML 
+	PRINTL [0] - 教育環境を変える　　　　躾の方法や下着の有無を変更します
+	PRINTL [1] - スキル習得＆セット　　　スキルの習得やセットを行います
+	PRINTL [2] - 称号の部屋　　　　　　　立場毎の称号を取得します
+	PRINTL [3] - 働き先を変える　　　　　働き先を変更します
+	PRINTL [4] - 戻る
+	
+	CALL SENTAKUSHI, 5
+	
+	SELECTCASE RESULT
+		CASE 0
+			CALL CUSTOM
+		CASE 1
+			CALL LV_UP
+		CASE 2
+			CALL GET_HONOR
+		CASE 3
+			IF CFLAG:モード != 2 && CFLAG:職業 != 99
+				IF CFLAG:使用中／夜遊びの球
+					PRINTFORML %CALLNAME:TARGET%は働き先を替えるのを嫌がっている
+					PRINTFORMW どうやら夜遊びの球の効力が続く限り、働き先は替えられないらしい
+				ELSEIF CFLAG:君主制約 >= 3 && CFLAG:モード != 2
+					PRINTFORMW 君主制約により、働き先を変える事はできない
+				ELSE
+					CALL WORK
+				ENDIF
+			ELSE
+				PRINTFORMW 現在、職業を変更することはできない
+			ENDIF
+	ENDSELECT
+;ELSEIF RESULT == 114 && CFLAG:モード != 2 && CFLAG:職業 != 99
+;	IF CFLAG:君主制約 >= 3 && CFLAG:モード != 2
+;		PRINTFORML 君主制約により、働き先を変える事はできない
+;	ELSE
+;		CALL WORK
+;	ENDIF
+ELSEIF RESULT == 215
+	CALL ARMY
+ELSEIF RESULT == 115 && CFLAG:モード != 2
+	CALL REST
+ELSEIF RESULT == 116 && CFLAG:モード != 2 && FLAG:交渉表示フラグ
+	CALL NEGOTIATION
+ELSEIF RESULT == 117 && CFLAG:モード != 2 && BASE:家事 >= 80
+	CALL LUNCH
+	
+ELSEIF RESULT == 118 && CFLAG:モード != 2 && TALENT:裁縫技術
+	CALL CLOTHE_REMODEL
+ELSEIF RESULT == 119 && CFLAG:モード != 2 && BASE:信仰 >= 80 && GETBIT(CLOTHE_ELE, 3)
+	CALL MOVE_FAITH
+ELSEIF RESULT == 120 && CFLAG:モード != 2
+	CALL QUEST
+ELSEIF RESULT == 121 && CFLAG:モード != 2
+	CALL COLOSSEUM, 1
+;ELSEIF RESULT == 122 && CFLAG:モード != 2
+;	CALL GET_HONOR
+ELSEIF RESULT == 123 && CFLAG:モード != 2
+	CALL CONTACT
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+ELSEIF RESULT == 124 && CFLAG:モード != 2
+	CALL VACATION
+	FLAG:遊びに出かける実行 = 1
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+ELSEIF RESULT == 400
+	CALL DATAROOM
+ELSEIF RESULT == 200
+	CALL SAVEGAME_EX
+ELSEIF RESULT == 300
+	LOADGAME
+ELSEIF RESULT == 500
+	CALL CONFIG
+ELSEIF RESULT == 900
+	DRAWLINE
+	CALL TUTORIAL
+ELSEIF RESULT == 590 && FLAG:王宮追放 && CFLAG:モード != 2 
+	DRAWLINE
+	CALL SIMAI_YUUKAI
+ELSEIF RESULT == 591 && FLAG:王宮追放 && CFLAG:モード != 2 && CFLAG:使用中／夜遊びの球 != 1
+	DRAWLINE
+	CALL SNATCH
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+ELSEIF RESULT == 592 && CFLAG:使用中／夜遊びの球
+	DRAWLINE
+	CALL NIGHT_DECOY
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+ELSEIF RESULT == 593 && CFLAG:使用中／夜遊びの球
+	DRAWLINE
+	CALL GET_INFORMATION
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+ELSEIF RESULT == 600 && TALENT:淫魔 && CFLAG:モード != 2 
+	DRAWLINE
+	CALL ELEMENT_SUCCUBUS
+ELSEIF RESULT == 815 && CFLAG:モード != 2 
+	PRINTFORMW 「8月15日……？　うっ、頭が……」
+ENDIF
+
+;アイテム表示の処理
+SIF RESULT != 102
+	RETURN 0
+
+$ITEM_LOOP
+PRINTFORML 所持金:${MONEY}
+PRINT_ITEM
+CALL SALEITEM_CHECK
+CALL PRINT_ITEMMENU
+SIF A == -1 || RESULT == 1
+	RETURN 0
+PRINT_SHOPITEM
+CALL BUY_ITEM
+GOTO ITEM_LOOP
+
+;-------------------------------------------------------------
+;@ENT_PRINTC
+;PRINTCを管理する変数
+;PRINTCを使う場合、これを挿入すれば管理できる
+;要求する変数：list
+;ARG　listの値をリセットする
+
+;-------------------------------------------------------------
+@ENT_PRINTC, ARG
+#DIM list, 1
+
+IF ARG
+	list = 0
+ELSE
+	list += 1
+	IF list == 3
+		PRINTL 
+		list = 0
+	ENDIF
+ENDIF
+
+;----------------------------------------------------------------------
+;対象選択可能キャラ存在検出関数
+;ARG　対象(0の場合、全体を参照する)
+;----------------------------------------------------------------------
+@CHARA_SELECTABLE, ARG
+#FUNCTION
+#DIM L_LOCAL, 1
+
+VARSET LOCAL, 0
+;引数が無い場合、全部見る
+IF !ARG
+	;保有してる娘の数だけ参照する
+	FOR L_LOCAL, 0, FLAG:保有してる娘+2
+		IF CFLAG:L_LOCAL:対象選択可能
+			LOCAL += 1
+		ENDIF
+	NEXT
+ELSE
+	IF FLAG:保有してる娘 >= ARG && CFLAG:ARG:対象選択可能
+		LOCAL += 1
+	ENDIF
+ENDIF
+
+RETURNF LOCAL
+

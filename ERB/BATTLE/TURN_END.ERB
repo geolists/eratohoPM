@@ -1,0 +1,58 @@
+﻿;===================================================================
+;ターン終了時の処理
+;===================================================================
+@BATTLE_TURNEND
+#DIM L_LOCAL, 1
+
+;取り替え子状態を解除する
+FOR L_LOCAL, 0, 3
+	IF TFLAG:(645+L_LOCAL)
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %STR:L_LOCAL%は入れ替わっていた姿が元に戻った！
+		SWAP STR:(L_LOCAL+6), STR:(TFLAG:(645+L_LOCAL)+6)
+		CFLAG:(L_LOCAL+1):永続状態異常 -= 1p2
+		TFLAG:(645+L_LOCAL) = 0
+		RESETCOLOR
+	ENDIF
+	
+NEXT
+
+;必殺技ゲージを増やす
+TFLAG:必殺技ゲージ = MIN(TFLAG:必殺技ゲージ+1, 6)
+
+;------------------------------------------------------
+;場の処理
+;------------------------------------------------------
+;特殊戦闘(人攫い)の場合、66％の確率で増援が来る
+
+LOCAL = 0
+IF FLAG:特殊戦闘 && TFLAG:敵の数 < 3
+	IF FLAG:特殊戦闘 == 1 && RAND:3 <= 1
+		LOCAL = 1
+	ELSEIF FLAG:特殊戦闘 == 2 && !RAND:3
+		LOCAL = 1
+	ENDIF
+ENDIF
+
+IF LOCAL
+	PRINTFORML 敵が現れた！
+	
+	SELECTCASE RAND:3
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 3
+		CASE 2
+			LOCAL = 11
+	ENDSELECT
+	
+	CALL ENEMY_DATA, LOCAL, TFLAG:敵の数+3, BASE:レベル+RAND:4
+	TFLAG:敵の数 += 1
+ENDIF
+
+
+;行動内容をリセットする
+FOR L_LOCAL, 0, 6
+	TFLAG:(536+L_LOCAL) = 0
+NEXT
+

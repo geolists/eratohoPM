@@ -1,0 +1,113 @@
+﻿;============================================================
+;後宮
+;条件を満たすと働き先がこちらに変更される(一度変更されると戻せない)
+;　一定条件を満たすと特殊エンディングになる
+;============================================================
+@HAREM_DAILY
+
+LOADGLOBAL
+;慰み者回数+1
+GLOBAL:507 += 1
+SAVEGLOBAL
+
+;君主の評価が9000以上の場合、エンディングに入れる
+;(ちなみに3ヶ月に1回呼ばれる)
+;3回までは断れるが、4回目断ると刺青を入れられて追放される
+IF FLAG:君主の評価 >= 9000 && (DAY % 3) == 0
+	IF FLAG:断った回数／君主 >= 3
+		PRINTFORML 君主が獣を見るような目で%CALLNAME:TARGET%を睨んでいる
+		PRINTFORMW どうやらこれ以上断ると後が無いようだ……
+	ELSE
+		PRINTFORMW %CALLNAME:MASTER%の元を訊ねた君主は、%CALLNAME:TARGET%に従属の証を付けてほしいと告げた
+		PRINTFORMW どうやら相当気に入ったらしく、永遠に手元に置いておきたくなったらしい
+		PRINTFORML これを受け入れれば永遠に後宮からは抜け出せなくなるだろう……
+	ENDIF
+	PRINTL 
+	PRINTL どうしますか？
+	PRINTL [0] - 受け入れる
+	PRINTL [1] - 断る
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORMW 君主は%CALLNAME:TARGET%を呼び、目の前で跪かせた
+		PRINTFORMW そして彼女の首に従属の証を付けると、%CALLNAME:TARGET%は恭しく君主の手を舐め口づけをした……
+		PRINTW ・・・
+		PRINTW ・・
+		PRINTW ・
+		PRINTW 
+		PRINTFORMW %CALLNAME:TARGET%は静かにこの場を去る事にした
+		CALL HAREM_END
+	ELSE
+		FLAG:断った回数／君主 += 1
+		IF FLAG:断った回数／君主 >= 4
+			PRINTFORML 君主が指を鳴らすと%CALLNAME:TARGET%が側近に捕まえられた状態で連れられた
+			PRINTFORMW 辺りに不穏な空気が漂う……
+			CALL EXILE_KINGDOM, 3
+		ELSE
+			PRINTFORMW %CALLNAME:MASTER%は君主の要望を断った
+		ENDIF
+	ENDIF
+ELSE
+	CALL CLOTHE_ABL, "淫妖"
+	;入手値：美麗/10+淫妖/10+淫妖補正*10
+	LOCAL = BASE:美麗 / 10 + BASE:淫妖 / 10 + RESULT * 10
+	
+	;母乳体質の場合、+50
+	IF TALENT:母乳体質
+		LOCAL += 50
+	ENDIF
+	
+	PRINTFORML %CALLNAME:TARGET%は後宮で君主と交わり続けた……
+	CALL INSERT, 4, 1
+	PRINTFORML 淫妖経験 + 10
+	EXP:淫妖経験 += 10
+	CALL CALCULATION_INYOU, 15, 90
+	PRINTFORM 淫妖:{BASE:淫妖}　→　
+	BASE:淫妖 = LIMIT(BASE:淫妖+RESULT, 0, 2000)
+	PRINTFORML {BASE:淫妖}
+	
+	CALL SETCOLOR_MONEY
+	PRINTFORML ${LOCAL*50}手に入れた！
+	MONEY += LOCAL*50
+	FLAG:君主の評価 += LOCAL
+	RESETCOLOR
+ENDIF
+
+;---------------------------------------------------------
+;後宮勧誘時
+;3ヶ月に1回勧誘される。断ると$30000取られる
+;---------------------------------------------------------
+@IN_HAREM
+DRAWLINE
+PRINTFORML %CALLNAME:MASTER%の元に来た役人達が、%CALLNAME:TARGET%を後宮へ入れて欲しいと嘆願してきた
+PRINTL 
+PRINTL 弱みを握られているため、断ると何をされるか分からないが……
+PRINTL [0] - 承諾する
+PRINTL [1] - 拒否する
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	PRINTFORML 卑しい笑みを浮かべた役人達は、%CALLNAME:MASTER%にいくつかの条件を突き付け、そそくさと帰っていった……
+	PRINTL ＜働き先を変更することができなくなりました＞
+	PRINTL ＜下着を付けることができなくなりました＞
+	
+	CFLAG:職業 = 99
+	CFLAG:胸部下着 = 0
+	CFLAG:秘所下着 = 0
+ELSE
+	FLAG:断った回数／役人 += 1
+	IF FLAG:断った回数／役人 >= 4
+		PRINTFORML 役人達は根が折れたらしく、%CALLNAME:TARGET%に罵倒を浴びせて去った
+		PRINTFORMW 二度と勧誘されることはなさそうだ……
+	ELSE
+		LOCAL = 20000 + 20000 * FLAG:断った回数／役人
+		CALL SETCOLOR_MONEY
+		PRINTFORML 役人達は${LOCAL}奪っていった……
+		MONEY -= LOCAL
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+

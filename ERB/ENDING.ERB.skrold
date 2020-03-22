@@ -1,0 +1,369 @@
+﻿;=====================================================================================
+;エンディング判定
+;=====================================================================================
+@ENDING_CHECK
+
+LOADGLOBAL
+;エンディング閲覧回数+1
+GLOBAL:503 += 1
+SAVEGLOBAL
+
+DRAWLINE
+PRINTL ・・・
+PRINTL ・・
+PRINTL ・
+PRINTL 
+
+;君主の権力値が0以下
+;→追加エンディングを挟む
+IF FLAG:君主の権力値 <= 0
+	CALL ENDING_EXTRA_DEFEAT_MONARCH
+	
+	;君主陥落回数を1増やす
+	LOADGLOBAL
+	GLOBAL:996 += 1
+	SAVEGLOBAL
+ENDIF
+
+;主人公が死んだ場合
+;　→主人公死亡エンドへ
+IF GETBIT(FLAG:主人公死亡, 0)
+	CALL BADEND_MAIN_DIE
+;新天地エンド用アイテムを持っている場合
+ELSEIF HANTEI_ENDING_NEWWORLD(TARGET)
+	;一部しか持っていない場合、バッドエンドへ
+	IF HANTEI_ENDING_NEWWORLD(TARGET) != 3
+		CALL ENDING_NEWWORLD_BAD
+	;全て持っている場合は新天地エンド(グッドエンド)へ
+	ELSE
+		CALL ENDING_NEWWORLD
+	ENDIF
+;相愛を持っている
+ELSEIF TALENT:相愛
+	;駆け落ちエンドへ
+	CALL ENDING_ELOPEMENT
+;娼婦を獲得している
+;　→娼婦ルートのエンディングへ
+ELSEIF TALENT:娼婦
+	CALL ENDING_SYOUHU
+;姉妹エンドのフラグが立っている
+ELSEIF FLAG:姉妹の作戦 == 9
+	IF BASE:アライメント < 50
+		CALL ENDING_SIMAI_BAD
+	ELSE
+		CALL ENDING_SIMAI_GOOD
+	ENDIF
+;属性ごとにエンディングを分岐
+ELSE
+	LOCAL = MAXARRAY(CFLAG, 220, 228)
+	LOCAL:1 = FINDELEMENT(CFLAG, LOCAL, 220, 228)
+	
+	
+	;姫様
+	IF LOCAL:1 == 220
+		CALL ENDING_HIME
+	;メイド
+	ELSEIF LOCAL:1 == 221
+		CALL ENDING_MAID
+	;シスター
+	ELSEIF LOCAL:1 == 222
+		CALL ENDING_SISTER
+	;ゴスロリ
+	ELSEIF LOCAL:1 == 223
+		CALL ENDING_GOTHIC
+	;花嫁
+	ELSEIF LOCAL:1 == 224
+		CALL ENDING_WEDDING
+	;武士
+	ELSEIF LOCAL:1 == 227
+		CALL ENDING_SAMURAI
+	ENDIF
+ENDIF
+
+LOCAL = RESULT
+
+;GLOBAL変数にエンディングフラグを入れる
+LOADGLOBAL
+
+;主人公が綿月姉妹の場合、エンディング達成のフラグを立てない
+;エンディングIDが0(なんのエンディングにもならなかった)時も、フラグは立てない
+IF NO:TARGET != 2 && NO:TARGET != 3 && LOCAL != 0
+	GLOBAL:LOCAL += 1
+ENDIF
+
+;前世譚ポイントも追加する
+PRINTFORML 前世譚ポイントを1pt獲得した！
+IF !GLOBAL:99
+	CALL TUTORIAL_JATAKA
+ENDIF
+GLOBAL:99 += 1
+SAVEGLOBAL
+
+;評価
+;DRAWLINE
+;PRINTL 教育の評価を見ますか？
+;PRINTL [0] - はい
+;PRINTL [1] - いいえ
+
+;CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+;	CALL ENDING_EXP
+;	;ED毎の評価
+;	CALLFORM ENDING_EXP_{LOCAL}
+ENDIF
+
+
+CALL TARMINATION, 1
+
+;==================================================================
+;新天地エンド_条件分岐判定
+;ARG　キャラ対象
+;==================================================================
+@HANTEI_ENDING_NEWWORLD, ARG
+#FUNCTION
+
+;get_item　エンディング用アイテム所持数
+#DIM get_item, 1
+
+;判定用に使う変数を初期化
+get_item = 0
+
+;解脱の歯車を持っている
+IF ITEM:解脱の歯車
+	get_item++
+ENDIF
+;徳の量子電池を持っている
+IF ITEM:徳の量子電池
+	get_item++
+ENDIF
+;無穢の気体を持っている
+IF ITEM:無穢の気体
+	get_item++
+ENDIF
+
+;get_itemを返り値として使う
+RETURNF get_item
+
+;==================================================================
+;ノットエンド
+;ゲーム期間を完了する前にゲームが終わってしまう
+;==================================================================
+;------------------------------------------
+;後宮にて従属の証を受け取る
+;------------------------------------------
+@HAREM_END
+DRAWLINE
+PRINTFORML ～～途切れた道～～
+PRINTFORML 運命が捻じ曲がってしまったようです……
+DRAWLINE
+PRINTFORMW 月の都はすっかり冬空に包まれ、寒さが身に沁みる風が吹き抜けている
+PRINTFORMW そんな中、%CALLNAME:MASTER%は一人寂しく道を歩いていた
+PRINTFORMW 頭に落ち葉が止まり、ふと見上げると重々しい王宮の門が目に入り立ち止まった
+PRINTFORML 王宮で働いていた日々を思い出し、あの頃のことを懐かしんだが
+PRINTFORMW 今となっては過去の事なので頭を振り、門の前を通り過ぎた
+PRINTFORML 
+PRINTFORMW これは噂話だが、王宮には一日中君主に弄ばれている少女がいるらしく
+PRINTFORMW それによって月の都で行われていた圧政が無くなったらしい……
+PRINTFORMW -NOT END-　～後宮の奴隷～
+TALENT:従属の証 = 1
+
+LOADGLOBAL
+;エンディング閲覧回数+1
+GLOBAL:503 += 1
+SAVEGLOBAL
+
+CALL TARMINATION, 1
+
+;==================================================================
+;バッドエンド
+;==================================================================
+
+;------------------------------------------
+;主人の元で淫妖が1000に達した
+;------------------------------------------
+@BAD_END_1
+DRAWLINE
+PRINTFORML ＜淫妖が1000に達してしまった……＞
+PRINTFORML ・・・・
+PRINTFORML ・・・
+PRINTFORML ・・
+PRINTFORML 
+PRINTFORMW 多数の役人が部屋へ訪れ
+PRINTFORMW 輝夜と夜伽の待ち合わせをしているあなたを捕えた！！
+PRINTFORML 
+PRINTFORMW 「お前には月、しかも由緒正しいこの王宮に穢れを持ちこんだ疑惑がかかっている」
+PRINTFORMW 「このように証拠も取り押さえてある」
+PRINTFORMW 役人はあなたと輝夜が交わっている写真を見せた
+PRINTFORMW 「お前のせいで、罪無き姫様にも何らかの処罰が下るであろう」
+PRINTFORMW 「まあ、お前には関係のない話だ」
+PRINTFORMW 役人は扇を取り出し、あなた目がけて振った
+PRINTFORMW あなたの身体は忽ち分解され、形を失っていく……
+PRINTFORML 
+PRINTFORMW その後、%CALLNAME:MASTER%と輝夜の消息を知る者は居ない……
+PRINTFORMW -HELL END-　～色欲の果てに～
+
+;特殊バッドエンド判定
+CALL HANTEI_BADEND_SP
+
+CALL GAME_RESTART
+
+;------------------------------------------
+;調教中に堕落が1000に達した
+;------------------------------------------
+@BAD_END_2
+DRAWLINE
+PRINTFORML ＜堕落が1000に達してしまった……＞
+PRINTFORML ・・・・
+PRINTFORML ・・・
+PRINTFORML ・・
+PRINTFORML 
+PRINTFORMW 目を覚ましたあなたは、信じられない光景を目の当たりにする
+PRINTFORMW 一糸纏わぬ姿の輝夜が、盗賊の上に跨っているのだ
+PRINTFORMW 「へっへっへ、お前ら王族にとっては大事な姫君なんだろうが……」
+PRINTFORMW 「俺等にとっちゃ、ただの上玉なんでね」
+PRINTFORMW 「あっ、ひゃんっ……だめっ……きもちいぃのっ……」
+PRINTFORMW 盗賊が腰を揺らすと、輝夜は媚声をあげた
+PRINTFORMW 「お前、教育係だったようだな？」
+PRINTFORMW 「信じられない、というような表情をしてるな？　俺等の一味には王族との内通者がいてね……」
+PRINTFORMW 盗賊はあなたの喉元にナイフを押しつけた
+PRINTFORMW 「お前には死んでもらう。教え子の前で死ぬのはどんな気持ちだ？」
+PRINTFORMW 盗賊が%CALLNAME:MASTER%に近寄ると、鈍痛と共に視界が霞み、やがて暗闇に包まれた……
+PRINTFORML 
+PRINTFORMW -HELL END-　～姫→性奴隷～
+
+;特殊バッドエンド判定
+CALL HANTEI_BADEND_SP
+
+CALL GAME_RESTART
+
+;------------------------------------------
+;王宮を追放されている時に所持金が0以下になる
+;------------------------------------------
+@BAD_END_3
+DRAWLINE
+PRINTFORML ＜後ろ盾が無い状態で所持金が底を着いた……＞
+PRINTFORML ・・・・
+PRINTFORML ・・・
+PRINTFORML ・・
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%達は、ついに所持金が無くなってしまった
+PRINTFORMW 身よりの無い状態で金銭を貸してくれる場所などあるわけもなく……
+PRINTFORMW 日々の食事を買う事すらできず、%CALLNAME:TARGET%達は捨てられている食べ物を拾って食べた
+PRINTFORML 
+PRINTFORMW しかし、それだけで腹を満たせるわけがなく、次第に%CALLNAME:TARGET%達は痩せ細っていった……
+PRINTFORMW 限界が達し、立ち上がることすらできない状態になったその時、まるでハゲタカのように山賊がやってきた
+PRINTFORML 山賊達は、立ち上がることができない%CALLNAME:MASTER%の身体を探って金目の物が無いことを確認した後
+PRINTFORMW 同じように倒れている%CALLNAME:TARGET%の身体を抱えた！
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%は、掠れていく意識の中、去っていく山賊に抱えられた%CALLNAME:TARGET%を見続けた……
+PRINTFORML 
+PRINTFORMW -HELL END-　～娼婦の行き詰まり～
+
+;特殊バッドエンド判定
+CALL HANTEI_BADEND_SP
+
+CALL GAME_RESTART
+
+;------------------------------------------
+;調教中に淫妖が1000に達した
+;------------------------------------------
+@BAD_END_4
+DRAWLINE
+PRINTFORML ＜淫妖が1000に達してしまった……＞
+PRINTFORML ・・・・
+PRINTFORML ・・・
+PRINTFORML ・・
+PRINTFORML 
+PRINTFORML 「ぁっ、やめっ……ひゃぁぁぁぁんっ……！」
+PRINTFORMW 盗賊達の責めにより、%CALLNAME:TARGET%はびくんと大きく身体を震わせて達すると同時に気絶してしまった
+PRINTFORML すっかり淫らな身体に開発されてしまった%CALLNAME:TARGET%の身体は
+PRINTFORMW 気絶している状態でも盗賊達に揺らされるだけで微かな喘ぎを発する
+PRINTFORMW その様子を見て盗賊達は何か話をすると、そのまま%CALLNAME:TARGET%を縛りつけて棲み家を跡にした
+PRINTFORML 
+PRINTFORML %CALLNAME:MASTER%が情報を嗅ぎつけ、闇の店で%CALLNAME:TARGET%を見つけた時は
+PRINTFORMW 既に色欲の虜となっていた%CALLNAME:TARGET%が、%CALLNAME:MASTER%が目前に居るにも関わらず腰を振り媚声をあげていた……
+PRINTFORML 
+PRINTFORMW -HELL END-　～姫→性奴隷～
+
+;特殊バッドエンド判定
+CALL HANTEI_BADEND_SP
+
+CALL GAME_RESTART
+
+;------------------------------------------
+;バッドエンド時の再スタート
+;パワポケ3か4にあったゲームオーバー時にメッセージが出る機能が元ネタ
+;------------------------------------------
+@GAME_RESTART
+DRAWLINE
+PRINTFORML ～～謎の女性からの知恵袋～～
+SELECTCASE RAND:4
+	CASE 0
+		PRINTFORML 「服装によって各種能力に補正がかかるのは知っていたかしら？
+		PRINTFORML 　実は、服装による補正はコマンドによる伸びの補正だけじゃないのよ？」
+	CASE 1
+		PRINTFORML 「綿月姉妹は姫様の数少ない王宮内で心を許して付き合える人物よ
+		PRINTFORML 　彼女らを通して触れ合う事は良い刺激を与える事になるんじゃないかしら？」
+	CASE 2
+		PRINTFORML 「輝夜が着てる普段着
+		PRINTFORML 　あれは輝夜の両親から贈呈された物なの
+		PRINTFORML 　両親は今どこに居るか分からないけど……
+		PRINTFORML 　上質な布でできていることは間違いないわね」
+	CASE 3
+		PRINTFORML 「淫妖が邪魔して育成が捗らないと思う事はない？
+		PRINTFORML 　実はね、淫妖が育成の伸びを邪魔するのは色欲が気を散らすからなの
+		PRINTFORML 　つまり……その欲を散らしてやると……私からはとてもじゃないけど言えないわ」
+ENDSELECT
+PRINTL 
+PRINTL [0] - データをロードする
+PRINTL [1] - さようなら
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	CALL SHOW_SAVEDATA
+ELSE
+	
+ENDIF
+CALL TARMINATION, 0
+
+@TARMINATION, ARG
+;Ｑ：どうして他のバリアントはロードするか聞いてくるのにわざわざこんな画面を入れるのか？
+;Ａ：「ひぐらしの鳴く頃に」がゲーム終了時に作者に戻ることに影響を受けています
+DRAWLINE
+PRINTFORML ～～終わり～～
+PRINTL お疲れさまでした。
+PRINTL 再びゲームを最初から開始したい場合は、Emuera本体（ゲームウィンドウ）の
+PRINTL [ファイル(F)]から、[再起動(R)]か[タイトル画面へ戻る(T)]をお選びください
+PRINTL
+PRINTFORML 今回のゲームはここで終わりとなります
+
+;ゲームをクリアした場合、0を押すと続きをプレイできる
+IF ARG == 1
+	PRINTFORML なお、続きをプレイしたい方は0を押してください
+	PRINTFORML 続きとはいってもエンディングも何もありませんが……
+ELSE
+	PRINTFORML コマンドは受け付けませんのでご注意を
+ENDIF
+
+;前世譚ポイントを持っている場合は、最初からプレイする際に恩恵を受けられることを報せる
+IF GLOBAL:99
+	PRINTFORML 
+	PRINTFORML 入手した前世譚ポイントは「[0] - 最初から始める」等で新たにゲームを開始する際に使用できます
+	PRINTFORML なお、一度入手した前世譚ポイントは何度でも使用できます
+ENDIF
+
+
+$LOOP
+INPUT
+
+IF RESULT || (RESULT == 0 && ARG == 0)
+	GOTO LOOP
+ELSE
+	DRAWLINE
+	;厨二臭いが、～(場所の名前)～を使ってる時点でそれなりに臭いのであまり気にしない
+	;たまにバッドエンド判定をすり抜けてしまうので削除
+	;PRINTL 箱は、時を止める少し前に時間を戻した
+	;PRINTL その先に待ち受けるのは永遠に続くとも思える喜劇か、はたまた無情の輪廻か……
+ENDIF

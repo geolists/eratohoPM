@@ -1,0 +1,346 @@
+﻿;----------------------------------------------
+;中出し時の地の文
+;妊娠判定も行う(予定)
+;ARG　 状況　0.主人公　1.匪賊　2.その他モブキャラ　3.悪魔等
+;ARG:1 処女喪失時の会得素質　0:依存　1:傷物
+;ARG:2 相手の種族(0:一般的　1:触手　2:アルラウネ)
+;cycle 周期代数
+;----------------------------------------------
+@INSERT, ARG, ARG:1, ARG:2
+#DIM cycle, 1
+#DIM preg, 1
+
+;処女を失ってない場合、[傷物]を得る
+IF TALENT:処女
+	CALL LOST_VIRGIN, ARG:1
+ENDIF
+
+PRINTL 
+PRINTFORML 秘裂に挿入されていた一物が震えると精液が放出され、膣を満たした
+PRINTFORMW 一物が抜かれると、こぽっという音と共に膣口から精液が垂れ出た……
+
+IF ARG == 1
+	;淫魔
+	IF TALENT:淫魔
+		PRINTFORML %CALLNAME:TARGET%は、蕩けた目で相手を見つめ
+		PRINTFORMW 膣に指を挿し入れ、指先についた精子を舐め取った
+	;貞操が20以下
+	ELSEIF BASE:貞操 <= 20
+		PRINTFORML %CALLNAME:TARGET%は、媚びた声で精子をねだり
+		PRINTFORMW 胸に手を添えて弄り始め、火照った身体を震わせた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML %CALLNAME:TARGET%は精子を中に出された事に悦びの表情を浮かべ
+		PRINTFORMW 小声で気持ちいいと何度も呟いた
+	;その他
+	ELSE
+		PRINTFORML 目に涙を浮かべ、瞳から光がすーっと消えていく%CALLNAME:TARGET%
+		PRINTFORMW そんな少女の顔を匪賊は叩き、無理矢理意識を戻させた
+	ENDIF
+ELSEIF ARG == 2
+	;淫魔
+	IF TALENT:淫魔
+		PRINTFORML %CALLNAME:TARGET%は、蕩けた目で相手を見つめ
+		PRINTFORMW 腰を淫靡に揺すって相手を誘った
+	;貞操が20以下
+	ELSEIF BASE:貞操 <= 20
+		PRINTFORML %CALLNAME:TARGET%は、艶を帯びた目を相手に向け
+		PRINTFORMW 秘裂を指で開いて更に精液をねだった
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML %CALLNAME:TARGET%は、満足そうな表情を浮かべてぐったりとし
+		PRINTFORMW 子供ができると身重になって交われなくなる事を心配していた
+	;その他
+	ELSE
+		PRINTFORML 目に涙を浮かべ、瞳から光がすーっと消えていく%CALLNAME:TARGET%
+		PRINTFORMW そんな少女の頭を、相手は嫌に優しい言葉をかけながら撫で続けた
+	ENDIF
+ELSEIF ARG == 3
+	;淫魔
+	IF TALENT:淫魔
+		PRINTFORML %CALLNAME:TARGET%は、中出しされてからも蕩けた目で相手を見つめ
+		PRINTFORMW 尖った胸や濡れた秘裂に手を添え、弄りながら腰をくねらせ更なる交わりを求めた
+	;貞操が20以下
+	ELSEIF BASE:貞操 <= 20
+		PRINTFORML %CALLNAME:TARGET%は、異形の者に膣出しされた異常な感覚に悦びを感じ
+		PRINTFORMW 蕩けた声をあげて腰を揺すり、指を口で咥えた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORML %CALLNAME:TARGET%は、熱が籠った瞳で陵辱の主を見つめ
+		PRINTFORMW もっと穢してほしいと甘い声でねだった
+	;その他
+	ELSE
+		PRINTFORML 目に涙を浮かべ、瞳から光がすーっと消えていく%CALLNAME:TARGET%
+		PRINTFORMW そんな少女の股体に、人ならざる者は再び一物を挿入した……
+	ENDIF
+ELSEIF ARG == 4
+	;君主
+ELSEIF TARGET == 1
+	LOADGLOBAL
+	;主人中出し回数+1
+	GLOBAL:506 += 1
+	SAVEGLOBAL
+ENDIF
+
+;淫魔は妊娠しない
+IF TALENT:淫魔
+	LOCAL = 10 + ABL:淫魔技巧 * 3
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 精力を{LOCAL}得た！
+	MAXBASE:精力 += LOCAL
+	RESETCOLOR
+	RETURN 0
+ENDIF
+
+;妊娠周期計算
+CALL PREGNANCY_CYCLE
+preg = RESULT
+
+;相手が悪魔等の魔物系の場合、2倍の確率で妊娠する
+IF ARG == 3
+	preg /= 2
+ENDIF
+
+;触手やアルラウネの場合、変異因子を上昇させる
+IF ARG:2
+	CALL FACTOR_MUTATION, ARG:2, 100
+ENDIF
+
+;pregを分母に持ってきて乱数を発生させ、0が出たら妊娠
+IF !RAND:preg && !CFLAG:妊娠
+	CFLAG:妊娠 = 1
+	CFLAG:妊娠経過日 = 0
+	;孕まされた相手を保存
+	;1/10の確率で金の子を産む
+	IF !RAND:10
+		CFLAG:妊娠対象 = 4
+	ELSE
+		CFLAG:妊娠対象 = ARG
+	ENDIF
+ENDIF
+
+;=====================================================
+;妊娠経過処理
+;10ヶ月目に出産する
+;=====================================================
+@PREGNANCY
+
+CFLAG:妊娠経過日 += 1
+;2ヶ月目から胸が大きくなり始める
+IF CFLAG:妊娠経過日 >= 2
+	BASE:胸囲 += 1
+	
+	;ウエスト
+	;1～4ヶ月　ウエストが1上がる(合計4)
+	IF CFLAG:妊娠経過日 <= 4
+		BASE:ウエスト += 1
+		BASE:体重 += 10
+	;5ヶ月目　ウエストが4上がる
+	ELSEIF CFLAG:妊娠経過日 == 5
+		BASE:ウエスト += 4
+		BASE:体重 += 20
+	;6ヶ月　ウエストが5上がる(合計5)
+	ELSEIF CFLAG:妊娠経過日 <= 6
+		BASE:ウエスト += 5
+		BASE:体重 += 30
+	;7～10ヶ月　ウエストが6上がる(合計24)
+	;累計37
+	ELSE
+		BASE:ウエスト += 6
+		BASE:体重 += 40
+	ENDIF
+	
+	;6ヶ月目からは2ずつ大きくなる
+	IF CFLAG:妊娠経過日 >= 6
+		BASE:胸囲 += 1
+	ENDIF
+ENDIF
+
+;3ヶ月目に妊娠が判明する
+IF CFLAG:妊娠経過日 == 3
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の様子がおかしい……
+	PRINTFORMW 腹部が僅かに膨らみ始めており、本人も額に汗を掻いている
+	;妊娠対象が主人の場合のみグッドイベント扱い
+	IF CFLAG:妊娠対象 == 0
+		CALL SETCOLOR_PALAMUP
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+	ENDIF
+	PRINTFORMW %CALLNAME:TARGET%は[妊娠]を得た
+	PRINTFORMW %CALLNAME:TARGET%は体調が崩れているようだ
+	TALENT:妊娠 = 1
+	RESETCOLOR
+;6ヶ月目に[母乳体質]を得る
+ELSEIF CFLAG:妊娠経過日 == 6
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の様子がおかしい……
+	PRINTFORMW 膨らんだ胸から母乳が出るようになったようだ
+	PRINTFORMW %CALLNAME:TARGET%は[母乳体質]を得た
+	CALL SETCOLOR_PALAMUP
+	TALENT:母乳体質 = 1
+	RESETCOLOR
+	PRINTFORML %CALLNAME:TARGET%は少し身重になってきている
+	PRINTFORMW 出産するまでの間、あまり行動できなくなりそうだ……
+;10ヶ月目に出産する
+ELSEIF CFLAG:妊娠経過日 == 10
+	;産まれる子どもは相手に依存
+	;匪賊、モブキャラ→堕落が60上昇
+	;主人公　　　　　→好感度が20上昇
+	;悪魔等　　　　　→感度が30上昇し、淫妖も50上昇する
+	
+	DRAWLINE
+	PRINTFORMW %CALLNAME:TARGET%は突然大きな呻き声をあげ、その場に屈み込んだ
+	;悪魔等との交わりの場合、医者の元に駆け寄る前に勝手に出てくる
+	IF CFLAG:妊娠対象 != 3
+		PRINTFORML いつもと違い痛みが治まることはなかったので%CALLNAME:MASTER%は
+		PRINTFORMW 知り合いの闇医者の元へ駆け込み、出産の手助けを嘆願した……
+	ELSE
+		PRINTFORML 医者の元へ連れていこうとする%CALLNAME:MASTER%だったが
+		PRINTFORMW %CALLNAME:TARGET%は一層苦しそうな表情を浮かべて倒れ込み、股から赤子が頭を出した
+	ENDIF
+	PRINTL 
+	;匪賊、モブキャラ
+	IF CFLAG:妊娠対象 == 1 || CFLAG:妊娠対象 == 2
+		PRINTFORML どこの誰とも分からない奴との間にできた赤子が産まれ、母となる少女の横で眠っている
+		PRINTFORMW %CALLNAME:TARGET%は赤子の姿を見つめ、心のどこかが堕ちていく感覚を覚えた……
+		PRINTFORM 堕落：{BASE:堕落}　→　
+		BASE:堕落 += LIMIT(BASE:堕落+60, 0, 1000)
+		PRINTFORMW {BASE:堕落}
+	;主人公
+	ELSEIF CFLAG:妊娠対象 == 0
+		PRINTFORML 一線を%CALLNAME:MASTER%と越えた証を抱いて%CALLNAME:TARGET%は静かに眠っている
+		PRINTFORMW 少女は柔らかい表情を浮かべており、子を産んた事に満足感を得ているようだ……
+		PRINTFORMW 主人への友好度： +60
+		CFLAG:主人への友好度 += 60
+	;悪魔等
+	ELSEIF CFLAG:妊娠対象 == 3
+		PRINTFORML 這い出た赤子はすぐさま%CALLNAME:TARGET%の身体に貼りつき局部を弄り始めた！
+		PRINTFORMW 獲物になった少女はあられもない声をあげて腰を痙攣させた
+		PRINTFORMW 一通り堪能した赤子は、突如現れた次元の裂け目に這って入り、姿を消した……
+		PRINTFORM 感度:{BASE:感度}　→　
+		CALL SETCOLOR_PALAMUP
+		BASE:感度 = LIMIT(BASE:感度+30, 0, 600)
+		PRINTFORML {BASE:感度}
+		RESETCOLOR
+		PRINTFORM 淫妖:{BASE:淫妖}　→　
+		CALL SETCOLOR_PALAMUP
+		BASE:淫妖 = BASE:淫妖 + 50
+		PRINTFORMW {BASE:感度}
+		RESETCOLOR
+	;金の子
+	ELSEIF CFLAG:妊娠対象 == 4
+		CALL SETCOLOR_MONEY
+		PRINTFORML 何故か分からないが金色に輝く赤子が産まれ、母となる少女の周りを浮遊してから旋回し
+		PRINTFORML 祝福していった……
+		RESETCOLOR
+		;590以下の気質1つを60上昇させる
+		;全て590以上ならスキップする
+		IF SUMARRAY(BASE, 40, 50) < 500
+			$LOOP_GOLDEN
+			LOCAL = RAND:10 + 40
+			IF BASE:LOCAL < BASE:LOCAL -10
+				PRINTFORM %BASENAME:LOCAL%:{BASE:LOCAL}　→　
+				CALL SETCOLOR_PALAMUP
+				BASE:LOCAL = LIMIT(BASE:LOCAL+60, 0, 600)
+				PRINTFORMW {BASE:LOCAL}
+				RESETCOLOR
+			ELSE
+				GOTO LOOP_GOLDEN
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	;働き先がハーレムの場合、君主の評価+500
+	IF CFLAG:職業 == 99
+		PRINTFORMW 君主は%CALLNAME:TARGET%が赤子を孕み、出産した事に一種の征服感を覚えている……
+		FLAG:君主の評価 += 500
+	ENDIF
+	
+	;胸囲を12減らす(元の胸囲より2増加する)
+	;ウエストを36減らす
+	;穢れを30増やす
+	;体重を40減らす
+	BASE:胸囲 -= 12
+	BASE:ウエスト -= 36
+	BASE:体重 -= 230
+	
+	;穢れ加算処理
+	CALL CALC_IMP, 30
+	
+	;妊娠フラグと経過日、それに妊娠対象を消す
+	CFLAG:妊娠 = 0
+	CFLAG:妊娠経過日 = 0
+	CFLAG:妊娠対象 = 0
+	TALENT:妊娠 = 0
+ENDIF
+
+;=====================================================
+;妊娠周期
+;=====================================================
+@PREGNANCY_CYCLE
+#DIM cycle, 1
+#DIM preg, 1
+
+;まだ妊娠フラグが立っていない場合、1/32の確率で妊娠する
+;基礎値は1/4～×2の間で周期的に変化し、最高期には1/16の確率で妊娠する
+;1/4→1/3→1/2→1→×2→×3→×4の周期で変化する
+;(1/128→1/96→1/64→1/32→1/16→1/11→1/8)
+;悪魔を相手にした場合、妊娠確率は2倍になる
+;---------------------------------------
+;周期
+;1年で24ターンあり、12個で1サイクルなので
+;1年で2周する
+;よって、月×2+(TIME)/12の余りによって分岐させる
+;0:　1
+;1:　2
+;2:　3
+;3:　4
+;4:　3
+;5:　2
+;6:　1
+;7:　1/2
+;8:　1/3
+;9:　1/4
+;10: 1/3
+;11: 1/2
+;---------------------------------------
+
+IF ((DAY * 2 + TIME)%12) == 0
+	cycle = 1
+ELSEIF ((DAY * 2 + TIME)%12) == 1
+	cycle = 2
+ELSEIF ((DAY * 2 + TIME)%12) == 2
+	cycle = 3
+ELSEIF ((DAY * 2 + TIME)%12) == 3
+	cycle = 4
+ELSEIF ((DAY * 2 + TIME)%12) == 4
+	cycle = 3
+ELSEIF ((DAY * 2 + TIME)%12) == 5
+	cycle = 2
+ELSEIF ((DAY * 2 + TIME)%12) == 6
+	cycle = 1
+ELSEIF ((DAY * 2 + TIME)%12) == 7
+	cycle = 2
+ELSEIF ((DAY * 2 + TIME)%12) == 8
+	cycle = 3
+ELSEIF ((DAY * 2 + TIME)%12) == 9
+	cycle = 4
+ELSEIF ((DAY * 2 + TIME)%12) == 10
+	cycle = 3
+ELSEIF ((DAY * 2 + TIME)%12) == 11
+	cycle = 2
+ENDIF
+
+
+;妊娠判定
+;余りが7以上の場合分数になるので計算式を分岐
+IF ((DAY * 2 + TIME)%12) >= 7
+	preg = 32 * cycle
+ELSE
+	preg = 32 / cycle
+ENDIF
+
+
+RETURN preg
+

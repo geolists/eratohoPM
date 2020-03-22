@@ -1,0 +1,1007 @@
+﻿;=====================================================================================
+;姉妹イベント
+;最終目的：姉妹と協力して君主を撃破する(特殊エンドを見る事ができる)
+;
+;イベントカットフラグ　1ならイベントカット
+;=====================================================================================
+@SIMAI_EVENT,ARG
+;クイズの正解数カウント
+#DIM hit, 1
+#DIM L_LOCAL, 1
+
+DRAWLINE
+;綿月姉妹との友好度が35以上の場合、イベント発生
+IF FLAG:年数 == 1 && DAY == 10 && TIME == 0 && CFLAG:姉妹への友好度 >= 35
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「お姉様。輝夜さんにも都合というのがあるのでしょう」
+		PRINTFORML 「やーねえ、依姫ったら。ぐやちゃんでいいのよ？」
+		PRINTFORML 「し、親しき仲にも礼儀あり……です……」
+		PRINTFORMW 豊姫に責められ、赤面する依姫
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　第１章　姉妹との約束～～
+			PRINTFORML 夜、日が沈み、空が暗くなった頃
+			PRINTFORMW %CALLNAME:TARGET%が庭で一人情景に耽っていた所に、綿月姉妹が訪れた
+			PRINTFORML 「あら、ぐやちゃん元気？」
+			PRINTFORML 「ふふっ、私は元気よ。こうして地球見をしているの」
+			PRINTFORMW 豊姫の問いかけに%CALLNAME:TARGET%は微笑みながら返事をした。
+			PRINTFORML 「か……輝夜……さん。それは語呂が悪いのでは？」
+			PRINTFORML 「依姫ったら、そこまで畏まった言い方しなくていいじゃない。ぐやちゃんでいいのよ」
+			PRINTFORML 「とよちゃん良い事言うわね。よっちゃん緊張しすぎ」
+			PRINTFORML 「し、親しき仲にも礼儀ありと言って……」
+			PRINTFORMW 顔を真っ赤にして弁明を始める依姫を見て、二人は笑った。
+			PRINTL 
+			PRINTFORML 「……でね、女中がお茶碗を落としかけた時にあの人がね――」
+			PRINTFORML 「へー、とよちゃんの教育係って突飛な発想をするのね」
+			PRINTFORMW 「お姉様に感化されたのではないかと私は思っています。資料室の司書の方だったら影響されなかったと思いますが」
+			PRINTFORML 「あはは、あの人結構茶目っ気あるから分からないわ。何しろ副業でイナバのぬいぐるみ作ってるぐらいだし」
+			PRINTFORML 「えー！　そうなの？　わー、そのぬいぐるみとっても柔らかいよね！　あの人まで好きになりそう！」
+			PRINTFORML 「ふふふ、今度イナバのぬいぐるみたくさん持ってきてあげましょうか。一緒にもふもふしましょう」
+			PRINTFORMW 「わー！　ありがとー！　私、大きくなったらイナバ抱いて寝るー！」
+			PRINTFORMW %CALLNAME:TARGET%は綿月姉妹と日常を共有しあった……
+			PRINTL 
+			PRINTFORML 「そうそう、ぐやちゃんに渡したい物があるのよ～」
+			PRINTFORMW 豊姫は懐から箱を取り出した
+			PRINTFORML 「お姉さま……どこに入れてたんですか……」
+			PRINTFORML 「山」
+			PRINTFORMW 妹のツッコミを適当にかわし、豊姫は箱を開けた。
+			PRINTL 
+			PRINTFORML 箱の中には煌びやかな洋服が畳まれて入っていた
+			PRINTFORMW 「わぁ～、きれい～」
+			PRINTFORML 「そうでしょう？　これは私達のよそ行きの服なの」
+			PRINTFORMW 「服の色は私のは赤紫でお姉さまのは青紫なんだけど……これは私達のとは全く違う色をしていますね」
+			PRINTFORML 「ぐやちゃんの為に特別に作ってもらったのよ～。大事に着てね？」
+			PRINTFORMW 「うんっ！　ありがとー」
+			PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべ、嬉しそうな声で言った。
+			PRINTL 
+			PRINTFORMW そして、しばらく経ち――
+			PRINTFORML 「ぐやちゃん、今日は楽しかったわ。また今度ねえ」
+			PRINTFORML 「ぐやさん、とても楽しかったです。また会いましょう」
+			PRINTFORML 「うん、うんっ！　私もとても楽しかった！　また来てね！」
+			;うん、うんっ！　←この辺、ひなビタの主人公を想起してしまう
+			PRINTFORMW %CALLNAME:TARGET%は姉妹と別れた。
+			PRINTFORMW 三人の間で話題を共有した事で、大きな絆ができたようだ……
+		ELSE
+			PRINTFORML ～～姫同士での絆　第１章　姉妹との約束～～(イベントショートカット編)
+			PRINTFORML 「この服あげるね。私達の正装と同じデザインなの」
+			PRINTFORMW 豊姫は懐(遠くの山)から箱を取り出した
+			PRINTFORML 「わぁ～、きれい！」
+			PRINTFORMW 「大事にしてね！」
+		ENDIF
+		
+		CALL SETCOLOR_PALAMUP
+		;姉妹への友好度が20アップ
+		LOCAL = 20
+		PRINTFORML 姉妹への友好度が{LOCAL}上がった！
+		CFLAG:姉妹への友好度 += 20
+		
+		;姉妹の正装を入手
+		PRINTFORML 姉妹の正装を手に入れた！
+		ITEM:姉妹の正装 += 1
+		PRINTFORML [姉妹の許可]を得た
+		PRINTFORMW 商人から特殊な衣服を購入できるようになります
+		TALENT:姉妹の許可 = 1
+		RESETCOLOR
+		
+		
+		FLAG:姉妹イベント = 1
+	ENDIF
+ELSEIF FLAG:年数 == 2 && DAY == 10 && TIME == 0 && FLAG:姉妹イベント == 1 && CFLAG:姉妹への友好度 >= 110
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「一緒に市場に行こうと思っていたのですが、残念ですね」
+		PRINTFORML 「こうして兎も連れてきたのにね。まるまるとして柔らかいわ」
+		PRINTFORML 「……お姉様、帽子の中に兎を入れていたんですか……」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　第２章　姉妹との思い出～～
+			PRINTFORML 「～～♪」
+			PRINTFORMW %CALLNAME:TARGET%は庭に迷い込んだ兎を抱き上げ、微笑んでいた
+			PRINTL 
+			PRINTFORMW その時、突然兎に身体が生え、脚が生えた
+			PRINTFORMW %CALLNAME:TARGET%は突然の出来事に硬直し、顔を青ざめた
+			PRINTFORML 「妖怪兎～、……ん？　ちょっとぐやちゃんったら、驚きすぎ」
+			PRINTFORMW 兎の後ろから金髪の少女が顔を出した
+			PRINTFORML 「ん……とよちゃん、いつここに来たの……」
+			PRINTFORMW 気を持ち直した%CALLNAME:TARGET%は金髪の少女――豊姫に声をかけた
+			PRINTFORML 「え、ええっと……ここなら私の能力を使えばいくらでも忍び込――」
+			PRINTFORML 「……お姉さまっ、いきなり私の前から姿を消さないでくださいっ！」
+			PRINTFORMW 遠くから依姫の声が聴こえた
+			PRINTFORML 
+			PRINTFORML 「全く……私が瞬間移動できない事ぐらい考えてください」
+			PRINTFORML 「依姫も神を降ろせばよかったのに、そうすれば瞬間移動ぐらい余裕でできるでしょう？」
+			PRINTFORML 「そ、そんな事に神様は――」
+			PRINTFORMW 依姫は顔を真っ赤にして固まった
+			PRINTFORML 「でね、今日はぐやちゃんを誘いに来たの」
+			PRINTFORMW 硬直した依姫を尻目に豊姫は笑みを浮かべながら輝夜に言った
+			PRINTFORML 「誘い？　何のお誘いなの？」
+			PRINTFORMW 「ふふっ、それはねー、露天市よ」
+			PRINTFORML 
+			PRINTFORMW 三人は月の都にある露天市場へ来ていた
+			PRINTFORML 「あら～、綺麗な団子ね～」
+			PRINTFORMW 豊姫は団子の硝子細工に見惚れている
+			PRINTFORML 「この本、参考になりますね……」
+			PRINTFORMW 依姫は指南書を流し読みしている
+			PRINTFORML 「ケセランパサラン……？　イナバの亜種かしら……」
+			PRINTFORMW %CALLNAME:TARGET%は珍品展で時間を潰した
+			PRINTFORML 
+			PRINTFORML そして露天市場から王宮への帰り道
+			PRINTFORML 「ふぅ～、楽しかった～」
+			PRINTFORML 「色々な本が読めて楽しかったです」
+			PRINTFORML 「色の付いたイナバ可愛かったなー」
+			PRINTFORMW 思い思いに感想を語る三人
+			PRINTFORML 「ぐやちゃんには渡したい物があるの」
+			PRINTFORMW 突然の豊姫の発言に、%CALLNAME:TARGET%は返事に困った
+			PRINTFORMW 「やる気と癒しがあるんだけど、どちらが欲しい？」
+		ELSE
+			PRINTFORML ～～姫同士での絆　第２章　姉妹との思い出～～(イベントショートカット編)
+			PRINTFORML 「突然なんだけど、やる気と癒し、どっちが欲しい？」
+			PRINTFORMW 豊姫はひょこっと顔を出し、いきなり問いかけてきた
+		ENDIF
+		PRINTL 
+		PRINTL [0] - やる気
+		PRINTL [1] - 癒し
+		CALL SENTAKUSHI, 2 
+		
+		IF RESULT == 0
+			PRINTFORMW 「それならこれね」
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 気付きの種を手に入れた！
+			ITEM:気付きの種 += 1
+			RESETCOLOR
+			
+			PRINTFORMW 「その宝石綺麗でしょう？　覗き込むととやる気が沸きそうよね」
+		ELSEIF RESULT == 1
+			PRINTFORMW 「それならこれね」
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 免厄の妙薬を手に入れた！
+			ITEM:免厄の妙薬 += 1
+			RESETCOLOR
+			
+			PRINTFORMW 「とても癒されるらしいわ。私は桃の方が好きだけどね」
+		ENDIF
+		PRINTFORML 「わー、ありがとー！　大切に使うね！」
+		PRINTFORML 三人の友情が更に深まった……
+		CALL SETCOLOR_PALAMUP
+		LOCAL = 20
+		PRINTFORMW 姉妹への友好度が{LOCAL}上がった！
+		CFLAG:姉妹への友好度 += 20
+		
+		RESETCOLOR
+		FLAG:姉妹イベント = 2
+	ENDIF
+ELSEIF FLAG:年数 == 3 && DAY == 9 && TIME == 0 && FLAG:姉妹イベント == 2 && CFLAG:姉妹への友好度 >= 160
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「問題を出そうと思ったのですが、残念ですね」
+		PRINTFORML 「私は妹じゃないわ。ねえ、依姫？」
+		PRINTFORML 「お姉様の性格のせいだと思いま……いっ、いえ何でもないです」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　第３章　姉妹の出題～～
+			PRINTFORMW 居間に豊姫と依姫、それに%CALLNAME:TARGET%が三角の配置で座っている
+			PRINTFORML 「さ～て、突然だけど、ぐやちゃんに問題出すよ～」
+			PRINTFORMW 指を立て、呑気な口調で豊姫は言った
+			PRINTFORML 「全く、問題考えるのには苦労しましたよ。お姉さまったら突飛な考えをするの――」
+			PRINTFORML 「あら？　古典の本をしきりに調べては「この問題はどうですか？」と嬉しそうに聞いてきたのはどの依姫だったのかしら？」
+			PRINTFORML 「～～～～！」
+			PRINTFORMW 依姫は顔を真っ赤にし、踏みつけられたホースのように言葉を詰まらせた
+			PRINTL 
+		ELSE
+			PRINTFORML ～～姫同士での絆　第３章　姉妹の出題～～(イベントショートカット編)
+			PRINTFORML もんだいすう　3もん
+			PRINTFORML なんいど　　　むずかしい
+			PRINTFORML 
+		ENDIF
+		PRINTFORML 「どんな問題が飛び出すのでしょうか！」
+		PRINTFORML 「私が調べ上げた成果、見せてあげます」
+		PRINTFORMW 豊姫と依姫は%CALLNAME:TARGET%へ近寄り、問題を出した
+		
+		VARSET hit, 0
+		;問題出力関数を3回呼び出す
+		FOR L_LOCAL, 1, 4
+			CALL QUIZ_SIMAI
+			IF RESULT == 1
+				hit += 1
+			ENDIF
+		NEXT
+		
+		DRAWLINE
+		PRINTFORMW 「お疲れさま～！　さ～て、正解数は～」
+		;全問正解
+		IF hit == 3
+			PRINTFORML 「全問正解！　よくここまで知ってたわね！」
+			PRINTFORMW 「ささやかな物ですが、受け取ってください」
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW $25000を手に入れた！
+			RESETCOLOR
+			MONEY += 25000
+		;正解なし
+		ELSEIF hit == 0
+			PRINTFORML 「う～ん……難しすぎた？」
+		ELSE
+			PRINTFORML 「{hit}問正解！　頑張ったわね！」
+		ENDIF
+		PRINTFORML 「さてと、実は問題を出したのはただの思い付きではないの」
+		PRINTFORMW 豊姫は一転して真剣な雰囲気を醸し出した
+		PRINTFORML 「ぐやちゃん、気付いているとは思うけど、あなたは君主に忌み嫌われているわ」
+		;反応を少し変える
+		;知力が500以上
+		IF BASE:知力 >= 500
+			PRINTFORML 「そうだろうと思っていたわ。どうすれば君主を失脚させられるか考えていた所なの」
+			PRINTFORMW 「話が早いわね！　私はその話をしに来たの」
+		;思考力が200以上＆アライメントが-50以下
+		ELSEIF BASE:思考力 >= 200 && BASE:アライメント <= 50
+			PRINTFORML 「薄々気が付いてはいたわ。手段を選んでる場合ではないよね……」
+			PRINTFORMW 「いえ、それは短絡的な考えね。あなたまで穢れに手を染める必要はないわ」
+		;思考力が100以下＆慰み者が80以上
+		ELSEIF BASE:思考力 <= 100 && BASE:慰み者 >= 80
+			PRINTFORML 「ん……君主には結構身体を捧げてきたつもりだったんだけど……妾にならないと駄目？」
+			PRINTFORML 「……もう少し%CALLNAME:TARGET%に接してあげるべきだったのかしら……」
+			PRINTFORMW 豊姫は頭を抱えたが、話を進めるために気を持ち直した
+		ELSE
+			PRINTFORML 「やっぱりね……」
+			PRINTFORMW 「まあ、この環境じゃ薄々気が付いてしまうのも無理はないわ。卑しい事柄が多すぎるものね」
+		ENDIF
+		
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORMW 「でね、私達姉妹としては、同じ立場にあるのにあなただけ存在を消されてしまうのも寂しいじゃない？」
+			PRINTFORMW 「%CALLNAME:MASTER%、険しそうな顔をしている場合じゃないわ。貴方も消される事になるのよ？」
+			PRINTFORMW 豊姫はこちらに目を向けた。たまたま通りがかっただけなのだが
+			PRINTFORMW 「最初教育係になった時、変だと思わなかった？　「なんで資料室の司書ではなく自分が選ばれたのだろう」とか」
+			PRINTFORMW 「それはね、ぐやちゃんを自然に消し去る為なのよ」
+			PRINTFORMW 「あなたが失策してくれれば君主はあなたに育成の責任を擦り付け、ぐやちゃん共々消し去る事ができるの」
+			PRINTFORML 「まあ、目論見は外れてしまったようだけどね」
+			PRINTFORMW 豊姫は人差し指を立て、%CALLNAME:MASTER%に向けてウィンクをした
+			PRINTFORML 「とにかく、君主を倒すには%CALLNAME:MASTER%の協力も必要なの」
+			PRINTFORM 「目標を達成するには
+			CALL SETCOLOR_PALAMUP
+			PRINTFORM 知力と戦闘力が必要
+			RESETCOLOR
+			PRINTFORML ですね」
+			PRINTFORMW 依姫は横から付け加えた。
+		ELSE
+			PRINTFORML 「～～という話です」
+			PRINTFORM 「君主を倒すには
+			CALL SETCOLOR_PALAMUP
+			PRINTFORM 知力と戦闘力が必要
+			RESETCOLOR
+			PRINTFORML なのね」
+			PRINTFORMW 「はい、餞別の袋よ」
+		ENDIF
+		PRINTL 
+		
+		PRINTFORML 「で、あなた達は君主を倒そうと思わない？」
+		PRINTL 
+		PRINTL 姉妹と協力して君主を倒しますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML 「これは餞別よ。立場上私達は表立った協力はできないけど、応援してるからね」
+			PRINTFORMW 豊姫は%CALLNAME:MASTER%に袋を渡した
+			PRINTFORML 「それでは、そろそろ別れましょう」
+			PRINTFORMW 二人は礼をし、この場を去った
+			PRINTFORMW %CALLNAME:MASTER%は餞別の袋を開けた……
+			
+			;干し肉、知力のトリビア、体力のトリビアを1つずつ入手
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 干し肉を手に入れた！
+			PRINTFORML 知力のトリビアを手に入れた！
+			PRINTFORMW 体力のトリビアを手に入れた！
+			
+			ITEM:干し肉 += 1
+			ITEM:知力のトリビア += 1
+			ITEM:体力のトリビア += 1
+			FLAG:姉妹イベント = 3
+		ELSE
+			PRINTFORML 「そう……まあ、あなた達がそれでいいなら無理強いはしないけど……」
+			PRINTFORMW 豊姫は顔を俯けた
+			
+			FLAG:姉妹イベント = -1
+		ENDIF
+		
+		RESETCOLOR
+	ENDIF
+ELSEIF FLAG:年数 == 4 && DAY == 10 && TIME == 0 && FLAG:姉妹イベント == 3
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「決闘して成果を見ようかと思ったのですが、残念ですね」
+		PRINTFORML 「依姫も特訓した方がいいんじゃない？　あなた武術大会において何も特徴がないじゃない」
+		PRINTFORML 「そ、それは私の神降ろしが不調なだけであって……」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		PRINTFORML ～～姫同士での絆　第４章　姉妹の決闘～～
+		PRINTFORML 「さて、１年が経ったわ。ぐやちゃん、これまでの成果を見せてちょうだい」
+		PRINTFORMW 豊姫は笑みを浮かべ、%CALLNAME:TARGET%を見つめている
+		PRINTFORML 「まずは私から挑ませていただきます。いざ尋常に勝負！」
+		PRINTFORMW 依姫が勝負を仕掛けてきた！
+		
+		;依姫(Lv25)と戦闘
+		CALL SET_STATUS, 1
+		CALL HEALING, 1
+		CALL BATTLE, 100, 0, 0, 0, 25, 1
+		
+		;勝った場合
+		IF RESULT == 1
+			PRINTFORMW 「やりますね……熟練された太刀筋だと思います」
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 体力経験 + 15
+			PRINTFORMW 5000の経験値を得た！
+			
+			EXP:体力経験 += 15
+			BASE:経験値／レベル += 5000
+			
+			RESETCOLOR
+			
+			PRINTL 
+			PRINTFORML 「次は私ねー、かかってきてね！」
+			PRINTFORMW 豊姫が勝負を仕掛けてきた！
+			
+			;豊姫(Lv26)と戦闘
+			CALL BATTLE, 101, 0, 0, 0, 26, 1
+			
+			;勝った場合
+			IF RESULT == 1
+				PRINTFORML 「や……やるわね……大分強くなったんじゃない……」
+				PRINTFORMW 豊姫は肩を抑え、後ろへ下がった
+				PRINTL 
+				
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 体力経験 + 15
+				PRINTFORMW 10000の経験値を得た！
+				
+				EXP:体力経験 += 15
+				BASE:経験値／レベル += 10000
+				
+				RESETCOLOR
+				
+				
+				
+			;負けた場合
+			ELSE
+				PRINTFORML 「まあ……さすがに私も強いからね」
+				PRINTFORML 「でもよく頑張ったと思う。この調子なら君主も倒せそうね！」
+				PRINTFORMW 二人は%CALLNAME:TARGET%の手当てをし、その場を去った
+			ENDIF
+		;負けた場合
+		ELSE
+			PRINTFORMW 「あらら……私、強すぎましたか？」
+			PRINTFORML 「結構いい所まで行ってたんだけどね。まあ、引き続きがんばりましょう」
+			PRINTFORMW 二人は%CALLNAME:TARGET%の手当てをし、その場を去った
+		ENDIF
+		FLAG:姉妹イベント = 4
+	ENDIF
+ELSEIF FLAG:年数 == 5 && DAY == 3 && TIME == 0 && FLAG:姉妹イベント == 4
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「君主を襲う前に作戦を立てようと思っていたのですが、残念ですね」
+		PRINTFORML 「こうなったら無策で行くしかないわね」
+		PRINTFORML 「仕方ないですね。私が神降ろしをするからお姉様は空間を繋いでください」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～
+			PRINTFORML 綿月姉妹と%CALLNAME:TARGET%は、あまり使われていない居室に集まっていた
+			PRINTFORML 「いよいよね」
+			PRINTFORMW 豊姫は扇を口元にあて、二人に目配せをした
+			PRINTFORML 「7ヶ月後には君主を襲うのですよね……上手く行くのでしょうか……」
+			PRINTFORMW 依姫は真剣な眼差しを正面に向けており、その視線は二人の間を通る。
+			PRINTFORML 「護衛が付いているから、正面突破は不可能でしょうね。ぐやちゃん、何か考えある？」
+			PRINTFORMW 姉妹の視線は%CALLNAME:TARGET%へと向けられた
+			
+			;知力+(疎通/2)が1200以上
+			IF BASE:知力 + (BASE:疎通/2) >= 1200
+				PRINTFORML 「ん……！　いい戦術を思い付いたわ」
+				PRINTFORML 「えっ、どんな戦術？」
+				PRINTFORML 「それはねー……」
+				PRINTFORMW %CALLNAME:TARGET%は二人に耳打ちをした
+				PRINTFORMW 「それなら君主の意表を突けそうね！」
+				PRINTFORMW 「私も考え付きませんでした」
+				PRINTFORML 「でしょう？　じゃあ半年後、この戦術を実行しましょうね！」
+				PRINTFORMW %CALLNAME:TARGET%は笑顔を浮かべ、二人に振り撒いている
+				FLAG:姉妹の作戦 = 1
+			ELSE
+				PRINTFORMW 「んー……　やっぱり正攻法で行った方がいいんじゃない？」
+				PRINTFORMW 「そうね……下手な戦術を考えても逆効果になる恐れがあるでしょうし」
+				PRINTFORMW 「いざとなれば私が神降ろしして助けますよ」
+				PRINTFORML 「では、私が空間を繋ぐので、それを利用して君主を背後から襲いましょう」
+				PRINTFORMW 豊姫は扇子を口元に当て、笑みを浮かべながら言った
+				PRINTFORMW 「私は側近の兵士を対処します。輝夜さんはその間に君主を叩いてください」
+				FLAG:姉妹の作戦 = 0
+			ENDIF
+		ELSE
+			PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～(イベントショートカット編)
+			PRINTFORML 「作戦決めましょう」
+			
+			;知力+(疎通/2)が1200以上
+			IF BASE:知力 + (BASE:疎通/2) >= 1200
+				PRINTFORML 「イナバを撫でていたらいい作戦を思い付いたわ」
+				PRINTFORMW 「採用するわ！」
+				FLAG:姉妹の作戦 = 1
+			ELSE
+				PRINTFORML 「とよちゃんの力だけに頼りたい」
+				PRINTFORMW 「そうね……」
+				FLAG:姉妹の作戦 = 0
+			ENDIF
+		ENDIF
+		PRINTFORML 
+		PRINTFORML 君主を失脚させる三人の計画
+		PRINTFORMW はたして成功するのでしょうか……
+	ENDIF
+	FLAG:姉妹イベント = 5
+ELSEIF FLAG:年数 == 5 && DAY == 10 && TIME == 0 && FLAG:姉妹イベント == 5
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「これじゃ君主を襲えませんね」
+		PRINTFORML 「ぐやちゃんがいないんじゃねえ……君主を叩くのはお預けね」
+		PRINTFORML 「もしかしたら月夜見様が再臨なされるかもしれませんし、それから再び策を練るのもいいかも知れないですね」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　第５章　姉妹の共闘～～
+			PRINTFORML 挨拶を終え、多数の兵士と共に帰路につく君主
+			PRINTFORMW 「あいつが来てもう５年か、そろそろ失策してもいい頃合いだが……」
+			;作戦Ａ
+			IF FLAG:姉妹の作戦 == 1
+				PRINTFORMW その時である、君主の後ろを歩く多数の兵士達が砂の海に飲み込まれた
+				PRINTFORML 「な……何が起きた！？」
+				PRINTFORML 辺りを見渡す君主、ここは平坦な道、土砂崩れが起こりそうな崖は一つも無い
+				PRINTFORMW そう思っていた所に、%CALLNAME:TARGET%達が姿を表した
+				PRINTL 
+				PRINTFORML 「……驚きましたか？」
+				PRINTFORMW 豊姫は君主の方を向き、静かに口を開いた
+				PRINTFORML 「山は永い時を経て浸食されるんです」
+				PRINTFORML 「先程の雪崩は、私が能力で山と繋げ、雨水の浸食で流れた土砂を転送した結果起こったものです」
+				PRINTFORMW 「もちろん、こんな短時間では急に浸食は進みません。しかし……」
+				PRINTFORML 後ろから%CALLNAME:TARGET%が出てきた
+				PRINTFORML 「私の能力を使えば一発、そうでしょう？」
+				PRINTL 
+				PRINTFORMW 「く……お前の仕業か……！」
+				PRINTFORML 君主は顔を歪ませた。%CALLNAME:TARGET%に一杯喰わされたのが余程気に入らなかったのだろうか
+				PRINTFORMW 「私は永遠と須臾を操れる。変化していない事柄には永遠を与え、逆に変化させたい物には須臾を集める」
+				PRINTFORML 「これは王宮からすれば――」
+				PRINTFORMW 「境界線を操る事と同じ行為だ」
+				PRINTFORML 君主が話を遮った
+				PRINTFORMW 「穢れは物事の変化に関わる重要な概念だ。それに対し、お前の能力は変化を操作するに等しい能力」
+				PRINTFORMW 「そんな能力を持つ奴を放っておけるか。穢れ……つまり、変化を操れるのは我々官僚のみでいいのだ」
+				PRINTFORML 「姫は神と対話してご機嫌を取ってればいいんだよ。文化発展を進める為の根回しをしておれば！」
+				PRINTFORMW 君主は綿月姉妹を指差した。姉妹は眉間に皺を寄せ、君主を睨んでいる
+				PRINTL 
+				PRINTFORML 「貴方、本当に変化を操れているつもりなの？」
+				PRINTFORMW %CALLNAME:TARGET%は再び口を開いた
+				PRINTFORML 「いくら表面を取り繕っても、内部の腐敗までは防げないわ」
+				PRINTFORMW %CALLNAME:TARGET%は口元を押さえながら君主を見つめ、次の言葉を発した
+				PRINTFORMW 「もしかして今の貴方、"生きても死んでもいないんじゃない？"」
+				PRINTL 
+				PRINTFORML 「な……！」
+				PRINTFORMW 君主は言葉を失った
+				PRINTFORML 「ぐやちゃん！　今の内に仕掛けるべきよ」
+				PRINTFORMW 「分かったわ！　今からが本番よね！」
+				PRINTFORML 
+				PRINTFORMW %CALLNAME:TARGET%は、君主に対し戦闘態勢を取った！
+				
+				;君主(Lv31)と戦闘
+				CALL SET_STATUS, 1
+				CALL HEALING, 1
+				CALL BATTLE, 117, 0, 0, 0, 31, 1
+			;作戦Ｂ
+			ELSE
+				PRINTFORMW その時である。君主の背後から豊姫達が現れた
+				PRINTFORML 「ふん、お前たちか」
+				PRINTFORMW 君主は嘲笑うかのように三人を見下ろした
+				PRINTFORML 「いくら綿月の血を引いていようとも、お前達の反逆、しっかりと処罰させてもらうぞ」
+				PRINTFORMW 「兵士達、戦闘陣形を取れ！　私を護衛するのだ！」
+				PRINTFORMW 兵士達は君主を守るように布陣を敷いた
+				PRINTFORML 「言い訳は後で聞こう。さっさとかかってこい」
+				PRINTFORMW 先頭の兵士が%CALLNAME:TARGET%と姉妹の方へにじり寄った……
+				PRINTFORML 
+				PRINTFORMW 君主の指示と同時に兵士の一部が襲いかかってきた！
+				
+				;君主＆兵士(Lv31)と戦闘
+				CALL SET_STATUS, 1
+				CALL HEALING, 1
+				CALL BATTLE, 116, 0, 0, 0, 31, 1
+			ENDIF
+			
+			;勝った場合
+			IF RESULT == 1
+				PRINTFORML 「馬鹿なッ……！　この私が負けるだと……！」
+				PRINTFORMW 君主はその場に膝をついた
+				PRINTFORML 「こうなったら……この扇で全て無に帰してやるわ……」
+				PRINTFORMW 君主は懐から扇を出し、扇ぐ前動作をした
+				PRINTL 
+				PRINTFORML その瞬間、扇が宙を舞った
+				PRINTFORMW 「負けは負けです。観念してください」
+				PRINTFORMW 依姫が君主に剣を向けていた。恐らく神を降ろして邪魔をしたのだろう
+				PRINTFORML 「……くそッ！」
+				PRINTFORMW 君主は自身を扇で扇いだ。君主の姿が消え始める
+				PRINTFORML 「お前らに消されるぐらいなら、自ら消えてやるわ！」
+				PRINTFORMW 「私を消す程に追い込んだ事、後悔するがいい！」
+				PRINTFORMW そして、完全に姿が消えた
+				PRINTL 
+				PRINTFORMW 「……終わったわね」
+				PRINTFORMW %CALLNAME:TARGET%が呟いた
+				PRINTFORMW 「色々聞きだしておきたかったのですが……」
+				PRINTFORMW 「いいじゃない依姫。それよりも、私達ついに……！」
+				PRINTFORMW 「ええ……」
+				PRINTFORMW 「やったー！」
+				PRINTFORMW 豊姫達は目に涙を浮かべ、三人で抱き合った
+				
+				;勝利フラグを立てる
+				FLAG:姉妹の作戦 = 9
+			;負けた場合
+			ELSE
+				PRINTFORML 「ふん……ここまでした割には弱いな」
+				PRINTFORMW 君主は倒れている三人を見下ろした
+				PRINTFORMW 「お前らの事、しっかりと覚えておいてやる。当然、綿月の血もな」
+				PRINTFORML 「子孫に恨まれる事を覚悟しておくがいい」
+				PRINTFORMW 君主は外套を翻し、その場を去った
+				
+				PRINTL 
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORMW 君主からの評価が100下がった……
+				BASE:君主の評価 -= 100
+				RESETCOLOR
+			ENDIF
+		ELSE
+			PRINTFORML ～～姫同士での絆　第５章　姉妹の共闘～～(イベントショートカット版)
+			PRINTFORML 帰路に着く君主達に異変が起こった！
+			;作戦Ａ
+			IF FLAG:姉妹の作戦 == 1
+				PRINTFORML (土砂崩れが起こる音)
+				PRINTFORML 「うわぁーっ！！！！」
+				PRINTFORMW 「兵士達が土砂崩れに巻き込まれただと！？」
+				PRINTFORML うろたえる君主の前に%CALLNAME:TARGET%達が現れ、%CALLNAME:TARGET%が口を開いた
+				PRINTFORMW 「名言集ぐらい読みなさいな。"現状維持は衰退の一歩である"」
+				PRINTFORML 「いきなり喧嘩売りおって……お前らも兵士の後を追わせてやるわ」
+				PRINTFORML 
+				PRINTFORMW %CALLNAME:TARGET%は、君主に対し戦闘態勢を取った！
+				
+				;君主(Lv31)と戦闘
+				CALL SET_STATUS, 1
+				CALL HEALING, 1
+				CALL BATTLE, 117, 0, 0, 0, 31, 1
+			;作戦Ｂ
+			ELSE
+				PRINTFORML 背後に綿月姉妹と%CALLNAME:TARGET%が現れた
+				PRINTFORML 「見損ないました。綿月家の支援やめてやる」
+				PRINTFORMW 「唐突ねえ……まあいいわ。兵士もろとも撃破してあげる」
+				PRINTFORML 
+				PRINTFORMW 君主の指示と同時に兵士の一部が襲いかかってきた！
+				
+				;君主＆兵士(Lv31)と戦闘
+				CALL SET_STATUS, 1
+				CALL HEALING, 1
+				CALL BATTLE, 116, 0, 0, 0, 31, 1
+			ENDIF
+			
+			;勝った場合
+			IF RESULT == 1
+				PRINTFORML 「……くそッ！」
+				PRINTFORMW 君主は扇で自分自身を分解した
+				PRINTL 
+				PRINTFORMW 「やったー！」
+				PRINTFORMW 豊姫達は目に涙を浮かべ、三人で抱き合った
+				
+				;勝利フラグを立てる
+				FLAG:姉妹の作戦 = 9
+			;負けた場合
+			ELSE
+				PRINTFORMW 「お前らの事、しっかりと覚えておいてやる。当然、綿月の血もな」
+				PRINTFORML 「子孫に恨まれる事を覚悟しておくがいい」
+				PRINTFORMW 君主は外套を翻し、その場を去った
+				
+				PRINTL 
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORMW 君主からの評価が100下がった……
+				BASE:君主の評価 -= 100
+				RESETCOLOR
+			ENDIF
+		ENDIF
+	ENDIF
+;君主に勝って1ヶ月後
+ELSEIF FLAG:年数 == 5 && DAY == 11 && TIME == 0 && FLAG:姉妹の作戦 == 9
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「感想戦、楽しみにしていたのですが残念ですね」
+		PRINTFORML 「まあまあ、その内帰ってくるでしょう」
+		PRINTFORML 「そうですね……」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　終章-その１　姉妹の賛歌～～
+			PRINTFORML 君主が失脚して一ヶ月後……
+			PRINTFORMW %CALLNAME:TARGET%達は豊姫の部屋で酒を呑んでいた
+			PRINTFORML 「いやー、とよちゃんからいきなり今回の話を持ちかけられた時はどうなるかと思ったよ」
+			PRINTFORMW %CALLNAME:TARGET%はお猪口を片手に笑いながら話した
+			PRINTFORML 「私としてはそれなりに勝算はあったのよ～？　あなたの成長っぷりを見て確信したの」
+			PRINTFORMW 豊姫は頬を赤くし、依姫に寄りかかっていた
+			PRINTFORML 「私はお姉さまの作戦に穴が無いか確認していました。ところでお姉さま、身体起こしてもらえませんか？」
+			PRINTFORMW 依姫は豊姫に視線を向け、困った表情を浮かべている
+			PRINTFORML 
+			PRINTFORML 「もう私は自由に動けるのよね？」
+			PRINTFORMW %CALLNAME:TARGET%は姉妹に問いかけた
+			PRINTFORMW 「ええ！　だってもう君主は居ないですもの！」
+			PRINTFORML 「民や内部の方も厚く出迎えてくれるでしょう」
+			PRINTFORMW 二人の返答を聞き、%CALLNAME:TARGET%の顔が益々明るくなっていく
+			PRINTFORML 「やった……！　やっと迫害されなくて済むのね……ありがとう……！」
+			PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべ、二人と握手をした
+		ELSE
+			PRINTFORML ～～姫同士での絆　終章-その１　姉妹の賛歌～～(イベントショートカット版)
+			PRINTFORML 「君主は本当に愚昧な人でしたね」
+			PRINTFORML 「……ぐやちゃん。愚昧ってどういう意味？」
+			PRINTFORMW 「……忘れた。もう私は自由なのよね？」
+			PRINTFORML 「もう君主も居ませんから、大丈夫でしょう」
+			PRINTFORMW 「やったー！」
+			PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべ、二人と握手をした
+		ENDIF
+	ENDIF
+;君主に勝って2ヶ月後
+ELSEIF FLAG:年数 == 5 && DAY == 12 && TIME == 1 && FLAG:姉妹の作戦 == 9
+	;誘拐されている場合、イベントを行わない
+	IF CFLAG:モード == 2
+		PRINTFORML ～～姫同士での絆　第５章　姉妹の戦略～～
+		PRINTFORML 「あれ？　ぐやちゃんはいないの？」
+		PRINTFORMW %CALLNAME:TARGET%の部屋を訪ねた豊姫は残念そうな顔をしている
+		PRINTFORML 「色々用意してきたのですが残念ですね」
+		PRINTFORML 「%CALLNAME:MASTER%のことだから大丈夫だと思うけど、ぐやちゃんの心をあまり濁さないでね？　君主の後継者なだけあってみんな敏感になってるんだから」
+		PRINTFORML 「邪道を行くぐらいの心境になっていると危ないということですね」
+		PRINTFORMW %CALLNAME:TARGET%が誘拐されてなければ、何か起こったかもしれない
+		PRINTFORMW そう思うと少し残念ではあった
+		FORCEWAIT
+	ELSE
+		;イベントカットOFF
+		IF !FLAG:イベントカット
+			PRINTFORML ～～姫同士での絆　終章-その２　結束の前夜祭～～
+			PRINTFORML 5年目が過ぎ去る1週間前……
+			PRINTFORML %CALLNAME:TARGET%が兎の毛つくろいをしていた所に、綿月姉妹がやってきた
+			PRINTFORML 「ぐやちゃん～。今日はいい物を持ってきたの～」
+			PRINTFORML 「ちなみに私は何も用意してませんよ」
+			PRINTFORMW 「あら？　「何を持っていくのがいい？」と何度も確認してたのは――」
+			PRINTFORML 「私です」
+			PRINTFORML 「あら……」
+			PRINTFORMW 珍しく依姫に先制され、豊姫は何も言えなくなった。
+			PRINTL 
+			PRINTFORML 「じゃ～ん、私が持ってきたのはこれ！」
+			PRINTFORMW 豊姫は枝を持ってきた
+			PRINTFORML 「……なーに、それは？」
+			PRINTFORML 「蓬莱の玉の枝……のレプリカなの。本物の木みたいでしょう？」
+			PRINTFORMW 一本の立派な枝は樹皮も再現されており、パッと見ただけでは偽物と見抜くことはできない
+			PRINTFORML 「私はこれです」
+			PRINTFORMW 依姫は数個の硝子玉を懐から出した
+			PRINTFORML 「輝夜さんを連想させる桃色の玉と、私を連想させる赤色の玉、そしてお姉さまを連想させる青色の玉です」
+			PRINTFORMW 「綺麗だよね～、これ依姫の提案なのよ～」
+			PRINTFORMW 「そこまで言われると、その……いや、私だってこのような事に疎くはないですから」
+			PRINTFORMW 三人は互いに顔を見合わせ、隣の部屋まで響きそうな声で笑った
+			PRINTFORML 
+			PRINTFORML さあ、いよいよ明日は運命の日
+			PRINTFORMW 新たな歴史を刻み始める、とても大切な日……
+		ELSE
+			PRINTFORML ～～姫同士での絆　終章-その２　結束の前夜祭～～(イベントショートカット版)
+			PRINTFORML -おまけ-
+			PRINTFORML この姉妹イベントを成功させてエンディングを迎える際にアライメントが-50未満の場合、エンディングが……
+			PRINTFORML 
+			PRINTFORMW さあ、いよいよ明日は運命の日
+			PRINTFORMW 新たな歴史を刻み始める、とても大切な日……
+		ENDIF
+	ENDIF
+ENDIF
+
+;大体の流れ(メインイベントは計6回(5年目だけ3月にイベント立案→10月に実行の流れ))
+;
+;1,　姉妹と打ち解ける：秘密を共有しあう。素質[親しみやすい]を入手。
+;2,　姉妹とお出かけ：イベント、友好度+30＆総合評価+40+選択肢によって入手アイテムが変わる(発想の種or干し肉)
+;3,綿月姉妹とクイズ：3問出してくる。若干カルトクイズ臭い(アイテムの名前を聞いてくる)。1つ正解する毎に友好度+5＆記憶水晶。全問正解で+$25000
+;4,綿月姉妹と決闘：二人と戦い、勝つ毎に姉妹との友好度+30＆体力経験+20＆経験値+5000　二人に勝つとボーナスで友好度+50＆青の勾玉を入手(赤の勾玉はサブイベントで入手)
+;5-1,イベントの立案：イベントＡ、Ｂがあり、輝夜の知力+疎通/2によって分岐(イベント6の難易度が変わり、Ａの方が楽)
+;5-2,(5年目の10月)君主と戦闘を行う(収穫祭の挨拶で表舞台に出てくるのを狙う)→勝った場合：特殊エンドのフラグが立つ(エピローグ的なイベントを2回起こす)
+;　　　　　　　　　　　　　　 　　　　　　　　　　　　　　　　　　　　　→負けた場合：イベント終了(数値的には君主からの評価が100下がるだけ)
+;
+;各イベントの発生時期
+;  1,1年目の10月
+;  2,2年目の7月
+;  3,3年目の9月
+;  4,4年目の10月
+;5-1,5年目の3月
+;5-2,5年目の10月
+
+
+
+
+;------------------------------------------------------------------------------
+;クイズ関数
+;クイズを出す
+;------------------------------------------------------------------------------
+@QUIZ_SIMAI
+#DIM res, 1
+#DIM point, 1
+
+;友好度上昇値を一応ここで代入
+point = 5
+
+DRAWLINE
+SELECTCASE RAND:11
+	CASE 0
+		PRINTFORML 問題！
+		PRINTFORML 働き先をメイドにすると得られる経験は、次の内どれ？
+		PRINTL [0] - 家事経験
+		PRINTL [1] - 知力経験
+		PRINTL [2] - 体力経験
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 0
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 1
+		PRINTFORML 問題！
+		PRINTFORML 豊姫「私の髪の色は何色でしょう？」
+		PRINTL [0] - 銀色
+		PRINTL [1] - 黒色
+		PRINTL [2] - 金色
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 2
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 2
+		PRINTFORML 問題！
+		PRINTFORML 以下の弓の中で、最も威力が高い弓はどれ？
+		PRINTL [0] - 赤の軌跡の弓
+		PRINTL [1] - 青の軌跡の弓
+		PRINTL [2] - 白の軌跡の弓
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 1
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 3
+		PRINTFORML 問題！
+		PRINTFORML 竜宮祭の開催間隔は、どれが正しい？
+		PRINTL [0] - 半年に一度
+		PRINTL [1] - 4ヶ月に一度
+		PRINTL [2] - 7ヶ月に一度
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 1
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 4
+		PRINTFORML 問題！
+		PRINTFORML 次の単語で日本語として正しいのはどれ？
+		PRINTL [0] - 完壁
+		PRINTL [1] - 危機一発
+		PRINTL [2] - 弱冠
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 2
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 5
+		$INPUT_QUIZ
+		PRINTFORML 問題！
+		PRINTFORML 豊姫「イナバのぬいぐるみを8個買い、ぐやちゃんにあげました
+		PRINTFORML 　　　友好度はどれぐらい上がる？」
+		PRINTL [0] - 部屋の中がもふもふになる
+		PRINTL [1] - 一発で結婚できるぐらい
+		PRINTL [2] - 640
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 2
+			;正解なら1を出力
+			res = 1
+		ELSEIF RESULT == 0
+			PRINTFORML 豊姫「確かに柔らかい……けど、まじめに答えてね」
+			GOTO INPUT_QUIZ
+		ELSEIF RESULT == 1
+			PRINTFORML 豊姫「……それで足りるのかしらね……」
+			GOTO INPUT_QUIZ
+		ENDIF
+	CASE 6
+		PRINTFORML 問題！
+		PRINTFORML 疎通が280の時に疎通のオーブを一度に8個与えました
+		PRINTFORML 疎通はいくらになるでしょう？
+		PRINTL [0] - 304
+		PRINTL [1] - 312
+		PRINTL [2] - 314
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 1
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 7
+		PRINTFORML 問題！
+		PRINTFORML 豊姫「私の立場はどれでしょう？」
+		PRINTL [0] - 綿月姉妹の姉
+		PRINTL [1] - 綿月姉妹の妹
+		PRINTL [2] - 綿月姉妹は姉妹ではない
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 0
+			;正解なら1を出力
+			res = 1
+		ELSEIF RESULT == 2
+			PRINTFORML 豊姫「そういう人達たまに居るけど、私達は違うよ～」
+			res = 0
+		ELSE
+			res = 0
+		ENDIF
+	CASE 8
+		PRINTFORML 問題！
+		PRINTFORML 依姫「私の特技は？」
+		PRINTL [0] - 剣術
+		PRINTL [1] - 神降ろし
+		PRINTL [2] - 星を食べる
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 1
+			;正解なら1を出力
+			res = 1
+		ELSEIF RESULT == 2
+			PRINTFORML 依姫「何の話かさっぱり……」
+			res = 0
+		ELSE
+			res = 0
+		ENDIF
+	CASE 9
+		PRINTFORML 問題！
+		PRINTFORML 依姫「須臾を単位に直すと？」
+		PRINTL [0] - p(ピコ)
+		PRINTL [1] - μ(マイクロ)
+		PRINTL [2] - f(フェムト)
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 2
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	CASE 10
+		PRINTFORML 問題！
+		PRINTFORML 以下の中で、教育での行動で溜まる疲労度を軽減する方法はどれか？
+		PRINTL [0] - 躾方針の失敗した際の躾で「快楽を与える」を選ぶ
+		PRINTL [1] - 体力を上げる
+		PRINTL [2] - 秘部下着と胸部下着を外す
+		
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 1
+			;正解なら1を出力
+			res = 1
+		ELSE
+			res = 0
+		ENDIF
+	
+		
+	;CASE 10
+	;	PRINTFORML 問題！
+	;	PRINTFORML %CALLNAME:TARGET%の知力を、現在の200から3ヶ月後に320にしたいと考えています。
+	;	PRINTFORML 以下の内、どのような教育法を取れば目標を達成できるでしょうか？
+	;	PRINTL 
+	;	PRINTFORML ただし、目標達成には以下の条件が課されます
+	;	PRINTFORML ・教育では1回の行動につき知力を(12+経過月×2)伸ばせますが、疲労度が8溜まります。
+	;	PRINTFORML ・1回の教育での行動回数は4回です。
+	;	PRINTFORML ・怠惰状態にしたくないので、疲労度が50を超えた時点でその半月での教育は終了します。
+	;	
+	;	PRINTL [0] - p(ピコ)
+	;	PRINTL [1] - μ(マイクロ)
+	;	PRINTL [2] - f(フェムト)
+	;	
+	;	CALL SENTAKUSHI, 3
+	;	
+	;	IF RESULT == 2
+	;		;正解なら1を出力
+	;		res = 1
+	;	ELSE
+	;		res = 0
+	;	ENDIF
+ENDSELECT
+
+DRAWLINE
+IF res == 1
+	PRINTFORML 正解！
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 姉妹への友好度が{point}上昇した！
+	PRINTL 記憶水晶を１つ手に入れた！
+	RESETCOLOR
+	CFLAG:姉妹への友好度 += point
+	ITEM:記憶水晶 += 1
+	
+	RETURN 1
+ELSEIF res == 0
+	PRINTFORML 不正解……
+	
+	RETURN 0
+ENDIF
+
+;=====================================================================================
+;輝夜イベント
+;最終目的：エイジャの赤石を貰う
+;
+;イベントカットフラグ　1ならイベントカット
+;=====================================================================================
+
+
+
+
+

@@ -1,0 +1,158 @@
+﻿;=============================================================
+;夜遊びの球_使用処理
+;ARG 　対象のキャラ
+;ARGS　動作モード設定。"変化"or"戻る"
+;=============================================================
+@TRANSFORM_NIGHT, ARG, ARGS
+
+IF ARGS == "変化"
+	PRINTFORML %CALLNAME:ARG%は、小麦色の肌と茶髪を持つ
+	PRINTFORMW 夜遊びを好む女性に変貌した！
+	PRINTFORML 言葉遣いも乱れており、規則を大して気にしないようだ……
+
+	CALL SETCOLOR_ABL
+
+	PRINTFORML ＜%CALLNAME:ARG%の外見・性格・働き先が変化した！＞
+	PRINTFORML ※%CALLNAME:ARG%の姿が変化している間、王宮に住むことはできません
+	PRINTFORMW 　(王宮を追放された扱いになる)
+
+	CFLAG:元々の髪色／夜遊びの球 = CFLAG:髪色
+	CFLAG:元々の肌の色／夜遊びの球 = CFLAG:肌の色
+	CFLAG:元々の性格／夜遊びの球 = CFLAG:性格
+	CFLAG:元々の服装／夜遊びの球 = CFLAG:服装
+	CFLAG:元々の職業／夜遊びの球 = CFLAG:職業
+
+	;対象キャラの情報を、下記の内容に変更する
+	;髪色＝茶髪
+	;肌の色＝小麦色
+	;性格＝不良
+	;服装＝妖しいキャミソール
+	;職業＝夜の店
+
+	CFLAG:髪色 = 1
+	CFLAG:肌の色 = 2
+	CFLAG:性格 = -3
+	CFLAG:服装 = 73
+	CFLAG:職業 = 8
+
+	CFLAG:使用中／夜遊びの球 = 1
+	CFLAG:使用後経過ターン／夜遊びの球 = 0
+	CFLAG:使用回数／夜遊びの球 += 1
+
+	FLAG:王宮追放 = 1
+
+	RESETCOLOR
+ELSEIF ARGS == "戻る"
+	PRINTFORML ～夜遊びの球　効果消滅～
+	PRINTFORML %CALLNAME:TARGET%の身体が茶色の煙に包まれる……
+	
+	;夜遊びの球の使用回数が4回以上の場合、副作用が発生する
+	IF CFLAG:使用回数／夜遊びの球 >= 4
+		PRINTFORML しかし、%CALLNAME:ARG%の様子がおかしい……
+		PRINTFORML どうやら夜遊びの球を使いすぎたせいで、副作用が出たようだ
+		
+		CALL SIDEEFFECT_NIGHT
+	ENDIF
+	
+	PRINTFORML %CALLNAME:ARG%は元の姿に戻った！
+	
+	CALL SETCOLOR_ABL
+	
+	PRINTFORMW ＜%CALLNAME:MASTER%と%CALLNAME:ARG%は再び王宮に復帰した＞
+	
+	CFLAG:髪色 = CFLAG:元々の髪色／夜遊びの球
+	CFLAG:肌の色 = CFLAG:元々の肌の色／夜遊びの球
+	CFLAG:性格 = CFLAG:元々の性格／夜遊びの球
+	CFLAG:服装 = CFLAG:元々の服装／夜遊びの球
+	CFLAG:職業 = CFLAG:元々の職業／夜遊びの球
+	
+	CFLAG:使用中／夜遊びの球 = 0
+	
+	FLAG:王宮追放 = 0
+	
+	RESETCOLOR
+ELSE
+	CALL SETCOLOR_ABL
+	PRINTFORML ☆設定エラー☆
+	PRINTFORML 想定外の設定で関数「TRANSFORM_NIGHT」が呼びだされました
+	PRINTFORML 報告をお願いします
+	FORCEWAIT
+	RESETCOLOR
+ENDIF
+
+;------------------------------------------------------------
+;夜遊びの球持続処理
+;月始めに発生させる
+;------------------------------------------------------------
+@SUSTAIN_NIGHT
+
+;夜遊びの球変身中(解除可)の場合
+IF CFLAG:使用中／夜遊びの球 == 1
+	;使用後経過ターン／夜遊びの球を1加算する
+	CFLAG:使用後経過ターン／夜遊びの球 += 1
+	
+	;経過ターンが2になったら、延長するか聞く
+	IF CFLAG:使用後経過ターン／夜遊びの球 == 2
+		PRINTFORML 夜遊びの球の効力が切れそうだ……
+		PRINTFORML 言い伝えによると、効果持続中に一度だけ、効果時間を延長することができるらしい
+		PRINTFORML 
+		PRINTFORML 効果時間を延長しますか？
+		PRINTFORML ※延長しても夜遊びの球の球使用回数は増加しません
+		PRINTFORML 
+		PRINTFORML [0] - はい
+		PRINTFORML [0] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML %CALLNAME:MASTER%は夜遊びの球を%CALLNAME:TARGET%の前で掲げた
+			CALL SETCOLOR_PALAMUP
+			PRINTFORMW 夜遊びの球の効果が1ヶ月分延長された！
+			RESETCOLOR
+		ELSE
+			CALL TRANSFORM_NIGHT, TARGET, "戻る"
+		ENDIF
+	;4ターン目には強制解除される
+	ELSEIF CFLAG:使用後経過ターン／夜遊びの球 == 4
+		CALL TRANSFORM_NIGHT, TARGET, "戻る"
+	ENDIF
+ELSE
+	;変身していない、または解除不可な状態の場合、何も起きない
+ENDIF
+DRAWLINE
+
+;------------------------------------------------------------
+;夜遊びの球_副作用
+;4回目以降の使用時は、一部形質が元に戻らなくなる
+;------------------------------------------------------------
+@SIDEEFFECT_NIGHT
+
+
+;形質副作用の優先順位
+;髪の色→肌の色→性格
+
+;元々の形質を、変身後である現在の形質に置き換えることで
+;変化した形式が元に戻らなくなる仕様を実装する
+
+CALL SETCOLOR_PALAMDOWN
+;肌が小麦色ではない場合、小麦色になる
+IF CFLAG:元々の肌の色／夜遊びの球 != 2
+	CFLAG:元々の肌の色／夜遊びの球 = CFLAG:肌の色
+	PRINTFORML %CALLNAME:TARGET%の肌の色は元に戻らなかった……
+;髪の色が茶髪ではない場合、茶髪になる
+ELSEIF CFLAG:元々の髪色／夜遊びの球 != 1
+	CFLAG:元々の髪色／夜遊びの球 = CFLAG:髪色
+	PRINTFORML %CALLNAME:TARGET%の髪色は元に戻らなかった……
+;性格が不良ではない場合、不良になる
+ELSEIF CFLAG:元々の性格／夜遊びの球 != -3
+	CFLAG:元々の性格／夜遊びの球 = CFLAG:性格
+	PRINTFORML %CALLNAME:TARGET%の性格は元に戻らなかった……
+	;服装も変えられないようにするため、服装アイテム追加+服装データも上書きする
+	CFLAG:元々の服装／夜遊びの球 = CFLAG:服装
+	ITEM:73 += 1
+ENDIF
+RESETCOLOR
+
+
+
+

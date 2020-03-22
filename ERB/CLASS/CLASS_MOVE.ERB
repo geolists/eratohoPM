@@ -1,0 +1,229 @@
+﻿;==================================================
+;称号用の日常イベント
+;==================================================
+@CLASS_MOVE
+
+;称号属性毎に呼び分ける
+IF CFLAG:称号属性 != 99
+	CALLFORM CLASS_MOVE_{CFLAG:称号属性}
+ENDIF
+
+;------------------------------------
+;姫様
+;------------------------------------
+@CLASS_MOVE_0
+#DIM tag, 1
+
+VARSET LOCAL, 0
+;邪道の姫様のみ用意
+;君主と役人のどちらかを呼ぶ
+;レベル3以上では貴族も招待する
+IF CFLAG:称号アライメント == 2
+	IF RAND:100 <= 25
+		LOCAL = 0
+	ELSEIF CFLAG:称号レベル >= 3
+		IF RAND:75 <= 45
+			LOCAL = 1
+		ELSE
+			LOCAL = 2
+		ENDIF
+	ENDIF
+
+	PRINTFORML 皆が寝静まり、暗闇と静寂に包まれた貴賓室
+	PRINTFORMW %CALLNAME:TARGET%は%CLASS_TAG_NAME(LOCAL)%を呼び、身体を交わらせた
+	PRINTFORML 暗闇の空間に荒っぽい吐息が響き、時折媚声が混じる
+	PRINTFORMW %CALLNAME:TARGET%は相手の身体を手繰り寄せ、更に強く抱き締めた
+	PRINTFORMW まだまだ夜は終わりそうにない……
+
+	;共通：淫妖経験+8　淫妖上昇基礎値:10
+	;役人　役人の評価+5　　$5000～10000
+	;君主　君主の評価+10　 $15000～20000
+	;貴族　　　　評価+20　 $20000～25000　たまにアイテムを貰える(能力上昇アイテム)
+	LOCAL:1 = 8
+	LOCAL:2 = 10
+	
+	CALL INSERT, 2, 1
+	
+	PRINTFORML 淫妖経験 + {LOCAL:1}
+	EXP:淫妖経験 += LOCAL:1
+	CALL CALCULATION_PALAM, LOCAL:2, "淫妖"
+	CALL SETCOLOR_PALAMUP
+	SELECTCASE LOCAL
+		CASE 0
+			LOCAL:3 = 5
+			LOCAL:4 = 5000+1000*RAND:6
+			CALL CALCULATION_PALAM, LOCAL:3, "役人の評価"
+		CASE 1
+			LOCAL:3 = 10
+			LOCAL:4 = 15000+1000*RAND:6
+			CALL CALCULATION_PALAM, LOCAL:3, "君主の評価"
+		CASE 2
+			LOCAL:3 = 20
+			LOCAL:4 = 20000+1000*RAND:6
+			LOCAL:5 = 522+RAND:5
+			CALL CALCULATION_PALAM, LOCAL:3, "評価"
+			PRINTFORML %ITEMNAME:(LOCAL:5)%を2つ貰った！
+			ITEM:(LOCAL:5) += 2
+	ENDSELECT
+	RESETCOLOR
+	
+	CALL SETCOLOR_MONEY
+	LOCAL:4 += CFLAG:属性／姫様*20
+	PRINTFORMW ${LOCAL:4}を手に入れた！
+	MONEY += LOCAL:4
+	RESETCOLOR
+ENDIF
+
+
+;------------------------------------
+;メイド
+;------------------------------------
+@CLASS_MOVE_1
+
+;正道と邪道のみ存在
+;正道：君主の評価+2　慰み者+1
+;邪道：評価-4　+$8000～12000　慰み者+2
+IF CFLAG:称号アライメント == 0
+	PRINTFORM %CALLNAME:TARGET%は君主の元へ赴き、
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTL 肩を揉んだ
+		CASE 1
+			PRINTL 花瓶を取り換えた
+		CASE 2
+			PRINTL 掃除を行った
+	ENDSELECT
+	PRINTFORML 君主は固い表情のまま頷いているが、口の端で僅かに笑みを浮かべた
+	
+	LOCAL = 2
+	CALL CALCULATION_PALAM, LOCAL, "君主の評価"
+	BASE:慰み者 += 1
+ELSEIF CFLAG:称号アライメント == 2
+	PRINTFORML %CALLNAME:TARGET%は夜な夜な君主の元へ赴き、着衣を解いて身体を重ねた
+	PRINTFORML 互いの熱い吐息が静寂を包み、華奢な股体は妖しくくねる
+	
+	CALL INSERT, 2, 1
+	
+	LOCAL = -4
+	LOCAL:1 = 7
+	LOCAL:2 = 11
+	CALL SETCOLOR_PALAMUP
+	CALL CALCULATION_PALAM, LOCAL, "評価"
+	RESETCOLOR
+	PRINTFORML 淫妖経験 + LOCAL:1
+	EXP:淫妖経験 += LOCAL:1
+	CALL CALCULATION_PALAM, LOCAL:2, "淫妖"
+	BASE:慰み者 += 2
+	
+	CALL SETCOLOR_MONEY
+	LOCAL:3 = 8000+1000*RAND:5+CFLAG:属性／メイド*50
+	PRINTFORMW ${LOCAL:3}を手に入れた！
+	MONEY += LOCAL:3
+ENDIF
+RESETCOLOR
+
+
+;------------------------------------
+;シスター
+;------------------------------------
+@CLASS_MOVE_2
+
+;正道と普通は共通のイベントが発生する
+;正道だと追加で評価+15と$4000～8000が貰える
+;邪道では身体を交わらせて$30000～50000を入手する
+SELECTCASE CFLAG:称号アライメント
+	CASE 0,1
+		PRINTFORML %CALLNAME:TARGET%は空いた時間を使い、道端で布教を行っている……
+		PRINTFORML 通りかかる人がたまに護符を受け取ってくれる
+		PRINTFORMW こうして%CALLNAME:TARGET%自身の評価も上がっていく
+		
+		LOCAL = 10
+		LOCAL:1 = 2000+1000*RAND:5
+		
+		IF CFLAG:称号アライメント == 0
+			PRINTFORML 正道を行く%CALLNAME:TARGET%に天から光が注がれた
+			PRINTFORML %CALLNAME:TARGET%の身体に信仰力が溜まっていく……
+			
+			LOCAL = 5
+			LOCAL:1 += 2000
+			LOCAL:2 = 50+CFLAG:称号レベル*20
+			CALL CALCULATION_PALAM, LOCAL:2, "信仰力"
+		ENDIF
+		
+		CALL CALCULATION_PALAM, LOCAL, "評価"
+	CASE 2
+		PRINTFORML %CALLNAME:TARGET%は真夜中の道端に出て、衣服を肌蹴た
+		PRINTFORML そして通りすがる人を誘い、信教と結びつけて身体の交わりへと持っていく……
+		PRINTFORMW 冷たい空気に二人の熱い吐息が浮かび、媚声と水音が鳴り響く……
+		
+		CALL INSERT, 2, 1
+		
+		LOCAL:1 = 25000+1000*RAND:5
+		BASE:慰み者 += 1
+ENDSELECT
+CALL SETCOLOR_MONEY
+LOCAL:1 += CFLAG:属性／シスター*20
+PRINTFORMW ${LOCAL:1}を手に入れた！
+MONEY += LOCAL:1
+RESETCOLOR
+
+;------------------------------------
+;ゴスロリ
+;------------------------------------
+@CLASS_MOVE_3
+
+;邪道だとコマンドで補完し、正道は知力経験を得た場合に疲労度回復させるので
+;現時点では実装しない
+
+;------------------------------------
+;花嫁
+;------------------------------------
+@CLASS_MOVE_4
+
+;正道：愛情経験+2される
+;邪道：役人と民衆の評価を-5させ、代わりに君主の評価を+5させる
+SELECTCASE CFLAG:称号アライメント
+	CASE 0
+		PRINTFORML %CALLNAME:TARGET%は花嫁として%CALLNAME:MASTER%の事を強く思い
+		PRINTFORM そして、
+		SELECTCASE RAND:3
+			CASE 0
+				PRINTFORML 肩を揉んだ
+			CASE 1
+				PRINTFORML できる範囲の技量で料理を作った
+			CASE 2
+				PRINTFORML 抱き付いた
+		ENDSELECT
+		
+		LOCAL = 2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 愛情経験 + {LOCAL}
+		EXP:愛情経験 += LOCAL
+	CASE 2
+		PRINTFORML %CALLNAME:TARGET%は激しい憎悪を周囲に振り撒き、代わりに君主に笑顔を見せた
+		LOCAL = -5
+		LOCAL:1 = 5
+		
+		BASE:役人の評価 = MAX(BASE:役人の評価+LOCAL, 0)
+		BASE:民衆の評価 = MAX(BASE:民衆の評価+LOCAL, 0)
+		CALL SETCOLOR_PALAMUP
+		CALL CALCULATION_PALAM, LOCAL:1, "君主の評価"
+ENDSELECT
+RESETCOLOR
+
+;------------------------------------
+;娼婦
+;------------------------------------
+@CLASS_MOVE_6
+;後回し
+
+;------------------------------------
+;相手の名称
+;------------------------------------
+@CLASS_TAG_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 4
+SIF LOCALS == ""
+	SPLIT "役人_君主_民衆_貴族", "_", LOCALS
+RETURNF LOCALS:ARG
+

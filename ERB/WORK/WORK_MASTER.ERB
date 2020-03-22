@@ -1,0 +1,125 @@
+﻿;============================================
+;主人の前職による稼ぎ
+;============================================
+@MASTER_WORK_RESULT, ARGS
+
+DRAWLINE
+;賭博師以外は前職によって分岐
+IF FLAG:主人の前職 != 3
+	;稼ぎを計算
+	IF FLAG:主人の前職 == 0
+		LOCAL = 300 + RAND:3 * 100
+	ELSEIF FLAG:主人の前職 == 1
+		LOCAL = 600 + RAND:7 * 100
+	ELSEIF FLAG:主人の前職 == 2
+		LOCAL = 600 + RAND:7 * 100
+	ELSEIF FLAG:主人の前職 == 4
+		LOCAL = 400 + RAND:12 * 100
+	ENDIF
+	
+	;輝夜の手伝いによって働きに出られた場合、メッセージが表示される
+	IF ARGS == "手伝い"
+		PRINTFORML %CALLNAME:TARGET%が雑務を手伝ってくれたおかげで、%CALLNAME:MASTER%は働きに行く時間ができた！
+		
+		;口上を表示できるようにしておく
+		TRYCALLFORM KOJO_COLOR_K{TARGET}
+		TRYCALLFORM KOJO_HELPING_MASTER_K{TARGET}
+		RESETCOLOR
+	ENDIF
+	
+	PRINTFORML %CALLNAME:MASTER%は空いた時間を使って働いてきた！
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW ${LOCAL}を手に入れた！
+	MONEY += LOCAL
+	RESETCOLOR
+	
+	
+	;主人の前職が魔術師の場合、40%の確率でアイテムを拾ってくる
+	IF FLAG:主人の前職 == 4 && RAND:99 + 1 <= 40
+		PRINTFORML ついでに仕事で余ったアイテムを入手した
+		;手に入るアイテム
+		;90％　桃の香り～清めのお香の各種能力上昇アイテム
+		;8％　 アダーストーン：覇王を崇拝した悪魔が幻魔を合体させるために用いたと言われる魂。覗きこんだ者の能力を変化させる。
+		;2％　 バルダンチーズ：摩訶不思議な香りがするチーズ。食べた者の種族を変化させると言い伝えられている。(未実装)
+		
+		;バルダンチーズ
+		IF RAND:99 + 1 <= 10
+			LOCAL = 528
+		ELSE
+			;522～526を等確率で選択
+			LOCAL = 522 + RAND:5
+		ENDIF
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %ITEMNAME:LOCAL%を手に入れた！
+		ITEM:LOCAL += 1
+		RESETCOLOR
+	ENDIF
+;賭博師の場合
+ELSE
+	PRINTFORML %CALLNAME:MASTER%は賭博場へ行き、$3000を賭け金にして賭けを行った……
+	
+	;稼ぎを計算
+	;強運の場合、乱数が20～80になる(期待値:$5000)
+	IF TALENT:MASTER:強運
+		LOCAL = (RAND:61 + 20) * 100 - 3000
+	;不運の場合、乱数が0～60になる(期待値:$3000)
+	ELSEIF TALENT:MASTER:不運
+		LOCAL = RAND:61 * 100 - 3000
+	ELSE
+		LOCAL = RAND:81 * 100 - 3000
+	ENDIF
+	
+	;赤字か黒字によって分岐
+	IF LOCAL > 0
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML ${LOCAL}稼いだ！
+		MONEY += LOCAL
+		RESETCOLOR
+	ELSEIF LOCAL < 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML ${ABS(LOCAL)}の赤字が出てしまった……
+		MONEY += LOCAL
+		FLAG:主人のストレス += LOCAL / 100
+		RESETCOLOR
+		
+		;主人のストレスが100以上
+		IF FLAG:主人のストレス >= 100
+			DRAWLINE
+			PRINTFORML 賭博で負けた腹いせに%CALLNAME:TARGET%を押し倒し
+			PRINTFORM 訳が分からず暴れているのを無視して
+			;全裸以外
+			IF !NUDE(TARGET)
+				PRINTFORM 衣服を剥き、
+			ENDIF
+			PRINTFORMW 一物を挿入した！
+			
+			LOCAL:1 = 10
+			LOCAL:2 = 5
+			LOCAL:3 = 15
+			
+			EXP:淫妖経験 += LOCAL:1
+			EXP:堕落経験 += LOCAL:2
+			;素養補正
+			;感度が関わる
+			IF CFLAG:性格 == -1
+				LOCAL:3 = (LOCAL:3 + BASE:淫妖 / 40) * BASE:感度 / 60
+			ELSE
+				LOCAL:3 = (LOCAL:3 + BASE:淫妖 / 40) * BASE:感度 / 90
+			ENDIF
+			BASE:淫妖 += LOCAL:3
+			
+			PRINTFORML 淫妖経験 + LOCAL:1
+			PRINTFORML 堕落経験 + LOCAL:2
+			PRINTFORM 淫妖: {BASE:淫妖}　→　
+			BASE:淫妖 += LOCAL:3
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML {BASE:淫妖}
+			RESETCOLOR
+			FLAG:主人のストレス = 0
+		ENDIF
+	;損得無しの場合
+	ELSE
+		PRINTFORMW 所持金に変化はなかった
+	ENDIF
+ENDIF
+

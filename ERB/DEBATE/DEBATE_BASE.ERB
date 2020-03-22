@@ -1,0 +1,280 @@
+﻿;========================================================
+;討論会　メイン
+;討論会自体の進行を管理する
+;========================================================
+@DEBATE_BASE
+#DIM L_LOCAL, 1
+;フェイズ管理用変数
+#DIM DEB_LOOP, 1
+#DIM DEB_LOCAL, 1
+#DIM clothe, 2
+
+VARSET clothe, 0
+
+;初期設定
+FOR L_LOCAL, 0, 3
+	TFLAG:(@"グループ{L_LOCAL+1}の好物") = RAND:3
+NEXT
+
+$BACK_LOOP
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～～討論会　会場～～
+RESETCOLOR
+PRINTFORML 多数の要人が集まっています……
+PRINTL 
+PRINTFORML 参加条件
+PRINTFORM ドレスコード(衣服の美麗補正):
+IF FLAG:年数 == 1
+	LOCAL = 0
+ELSE
+	;6年目以降は6で固定するため、上限値を6にする
+	LOCAL = MIN(FLAG:年数-1, 6)
+ENDIF
+CALL SETCOLOR_MONEY
+FOR L_LOCAL, 0, LOCAL
+	PRINT ☆
+NEXT
+RESETCOLOR
+PRINTL 
+DRAWLINE
+CALL CLOTHE_ABL, "美麗"
+LOCAL:1 = RESULT
+;CALL CLOTHE_ABL, "淫妖"
+;LOCAL:1 -= RESULT
+PRINTFORM 現在のドレスコード:
+IF LOCAL:1 >= 1
+	CALL SETCOLOR_PALAMUP
+	FOR L_LOCAL, 0, LOCAL:1
+		PRINT ☆
+	NEXT
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	FOR L_LOCAL, 0, LOCAL:1*-1
+		PRINT ☆
+	NEXT
+ENDIF
+PRINTL 
+RESETCOLOR
+
+PRINTL 
+PRINTL 討論会に参加しますか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+PRINTL [2] - 一時的に着替えさせる
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 1
+	IF clothe:1
+		CFLAG:服装 = clothe
+	ENDIF
+	RETURN 0
+ELSEIF RESULT == 2
+	IF !clothe:1
+		clothe = CFLAG:服装
+	ENDIF
+	clothe:1 = 1
+	CALL CHANGE_CLOTHES
+	GOTO BACK_LOOP
+ELSE
+	IF LOCAL:1 < LOCAL
+		PRINTFORML ドレスコードが足りません
+		GOTO BACK_LOOP
+	ENDIF
+ENDIF
+
+TFLAG:前フェイズの役人の影響力 = 0
+TFLAG:役人の影響力 = 0
+FOR DEB_LOCAL, 0, 3
+	TFLAG:討論フェイズ = DEB_LOCAL
+	CALL DEBATE_MAIN
+NEXT
+
+;結果処理
+;・TFLAG:決議内容
+;　0:君主謁見
+;　1:風紀改善
+;　2:予算改定
+;　3:夜の贄
+;　4:君主に献金
+;　5:晩餐会
+
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～～結果開示～～
+RESETCOLOR
+PRINTFORM 討論内容:
+SELECTCASE TFLAG:討論内容
+	CASE 0
+		PRINTL 君主謁見
+	CASE 1
+		PRINTL 風紀改善
+	CASE 2
+		PRINTL 予算改定
+	CASE 3
+		PRINTL 夜の贄
+	CASE 4
+		PRINTL 君主に献金
+	CASE 5
+		PRINTL 晩餐会
+ENDSELECT
+;PRINTFORML 討論レベル　Lv{TFLAG:討論レベル}
+SELECTCASE TFLAG:討論内容
+	CASE 0
+		PRINTL 役人達は君主を呼ぶ手配をした……
+		
+		CALL SETCOLOR_PALAMUP
+		LOCAL = 50+(TFLAG:討論レベル-1)*100
+		;PRINTFORMW 君主の権力値を{LOCAL}下げた！
+		CALL CALCULATION_PALAM, LOCAL, "君主の権力値"
+		RESETCOLOR
+	CASE 1
+		PRINTL 役人達は風紀の改善に取り組む事を約束した……
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 王宮内の風紀が改善した！
+		FLAG:王宮内の風紀 += TFLAG:討論レベル*10
+		RESETCOLOR
+	CASE 2
+		PRINTL 役人達に予算の改定に着手する事を約束させた……
+		LOCAL = 500*TFLAG:討論レベル
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 教育費が${LOCAL}上がった！
+		FLAG:補正予算額 += LOCAL
+		RESETCOLOR
+	CASE 3
+		PRINTFORML 役人達は%CALLNAME:TARGET%をひっ捕らえ、中央にある供儀台へ上げた……
+		
+		SELECTCASE TFLAG:討論レベル
+			;公開愛撫
+			CASE 1
+				PRINTFORML 役人達は%CALLNAME:TARGET%の衣服を肌蹴させ、身体を弄った
+				IF BASE:感度 >= 300
+					PRINTFORML %CALLNAME:TARGET%は頭を横に振り、髪を振り乱しながらも
+					PRINTFORMW 吐息は熱くなり、頬も上気していった
+					PRINTFORML やがて媚声が会場に響くようになり、太腿を震わせていた%CALLNAME:TARGET%は
+					PRINTFORMW 顎を上向け、艶やかな声をあげて達した
+				ELSE
+					PRINTFORML %CALLNAME:TARGET%は首を横に振り、役人達を追い払おうとしたが
+					PRINTFORMW 途切れなく襲ってくる役人の群れの前に、それは焼け石に水であった
+					PRINTFORML 乳首や秘裂を弄られ、少しずつ%CALLNAME:TARGET%の身体は欲情させられてしまう
+					PRINTFORMW そして長時間の愛撫を受け、ついに%CALLNAME:TARGET%は背を反らし、微かな媚声をあげて達した
+				ENDIF
+				
+				LOCAL = 4
+				LOCAL:1 = 7
+			;公開自慰
+			CASE 2
+				PRINTFORML 役人達は%CALLNAME:TARGET%の衣服を肌蹴させ、自慰するように命令した
+				IF BASE:感度 >= 300
+					PRINTFORML %CALLNAME:TARGET%は目に涙を浮かべ、弱弱しく頭を振る
+					PRINTFORMW しかし、そんな事で役人達が情けをかけるわけもなく、冷たい視線が向けられる
+					PRINTFORML 仕方なく自らの身体を弄り始めた%CALLNAME:TARGET%
+					PRINTFORMW 開発が進んだ身体であったためか、乳首を触れるだけで切ない声が漏れる
+					PRINTFORML 乳首や秘豆を弄り、欲情した%CALLNAME:TARGET%は、太腿をすり合わせながら視線を天に向け
+					PRINTFORMW 衆目の前にも関わらず卑猥な発言をして達した
+				ELSE
+					PRINTFORML %CALLNAME:TARGET%は悲鳴をあげ、頭を振った。長い髪が役人達に当たる
+					PRINTFORMW しかし役人達はその髪を持って引っ張り、自慰をするよう脅した
+					PRINTL 
+					PRINTFORML 仕方なく自慰をすることになった%CALLNAME:TARGET%は
+					PRINTFORMW 衣服を肌蹴、胸先や秘豆を弄り始めた
+					PRINTFORMW 衆目の視線に照らされた身体は熱を帯びていき、やがて荒々しい吐息の音が会場を包み込んだ
+					PRINTFORML 腰が少しずつ震えるようになり、太腿を擦り合わせ始めていた%CALLNAME:TARGET%は
+					PRINTFORMW 背を反らし、目を瞑って達した
+				ENDIF
+				
+				LOCAL = 7
+				LOCAL:1 = 10
+			;公開性交
+			CASE 3
+				PRINTFORML 役人の一人が壇上に上がり、%CALLNAME:TARGET%を押し倒した
+				IF BASE:感度 >= 300
+					PRINTFORML %CALLNAME:TARGET%は両手で役人を必死に剥そうとする
+					PRINTFORMW しかし、力の差は明らかであり、役人は%CALLNAME:TARGET%の両手を縛った
+					PRINTFORMW そして、役人は全く抵抗できなくなった%CALLNAME:TARGET%の衣服を肌蹴させ、身体を軽く愛撫した後、交わりの姿勢をとった
+					PRINTFORML %CALLNAME:TARGET%は否定の言葉を投げつけるが、挿入と共にそれらの言葉は喉奥に溶け
+					PRINTFORMW 代わりに艶を帯びた声が発された
+					PRINTFORMW 否定の言葉と釣り合わない蕩けた声が会場に響き、役人達の野次は熱くなっていく
+					PRINTFORML %CALLNAME:TARGET%の媚声は徐々に高くなり、ついに感極まった声をあげ、目を強く瞑って腰を痙攣させた
+					PRINTFORMW 役人も同時に達し、膣内を精液で満たされる
+					PRINTFORMW 痙攣が終わり、目を開いた%CALLNAME:TARGET%の目尻からは涙が流れ、上気した頬の上を伝った
+				ELSE
+					PRINTFORML %CALLNAME:TARGET%は手足をばたつかせ、役人を近づけまいと抵抗する
+					PRINTFORMW しかし、力の差は明らかであり、難なく近づいた役人は%CALLNAME:TARGET%の両手を縛った
+					PRINTFORMW 役人は%CALLNAME:TARGET%の衣服に手を挿し入れ、身体を愛撫して準備を進めさせる
+					PRINTFORMW 性交に対して適応していない身体は中々熱を持たず、%CALLNAME:TARGET%の瞳が蕩かされるまで念入りに愛撫が行われた
+					PRINTFORML やがて衣服から手を抜かれ、ぼーっと視線を彷徨わせる%CALLNAME:TARGET%を尻目に、役人は下半身を露出し
+					PRINTFORMW %CALLNAME:TARGET%の股体を開かせた
+					PRINTFORML %CALLNAME:TARGET%は退こうとするが、快楽で火が灯った身体の反応が鈍く、容易く挿入されてしまった
+					PRINTFORMW 愛撫による熱でのぼせた身体に鈍痛が走り、%CALLNAME:TARGET%は目を瞑る
+					PRINTFORMW しかし、抽送を続ける内に熱と痛覚はかき回され、%CALLNAME:TARGET%は小さく媚声をあげ始めた
+					PRINTFORMW そして、長きに渡る交わりの末、%CALLNAME:TARGET%は一際大きな媚声をあげ、役人と共に達した
+				ENDIF
+				
+				CALL INSERT, 2, 1
+				
+				LOCAL = 10
+				LOCAL:1 = 15
+			;乱交
+			CASE 4
+				PRINTFORML 役人達は%CALLNAME:TARGET%の衣服を肌蹴させ、身体の全てを性欲発散に充てた
+				IF BASE:感度 >= 300
+					PRINTFORML 乱暴極まりない性交に、%CALLNAME:TARGET%は抵抗の限りを尽くした
+					PRINTFORMW しかし、あまりに数が多すぎて、容易く%CALLNAME:TARGET%は押し倒されてしまった
+					PRINTFORMW 役人達は%CALLNAME:TARGET%の口、膣口、尻穴、そして両手に自身の卑しい化身を宛がい、抽送を始めた
+					PRINTFORML %CALLNAME:TARGET%はくぐもった悲鳴をあげるが、開発された身体はすぐに欲情を始め
+					PRINTFORMW やがて、悲鳴は甘くて蕩けた声へと変わっていった
+					PRINTFORML 腰を振り、蕩けた視線を宙に浮かせる%CALLNAME:TARGET%は感極まった声を漏らし
+					PRINTFORMW 腰を大きく痙攣させ始めた
+					PRINTFORMW 周囲の役人達も痙攣に共鳴したかのように腰を震わせ、白濁液を%CALLNAME:TARGET%の身体にかけていく
+					PRINTFORML 
+					PRINTFORMW 役人達が去り、壇上に残されたのは、白濁塗れの身体となり、身を時折震わせては微かに声を漏らす%CALLNAME:TARGET%だけだった
+				ELSE
+					PRINTFORML 討論会とは思えない力のみの催しに、%CALLNAME:TARGET%は全身で否定を示す
+					PRINTFORMW しかし、多勢にそれは虚しく抵抗であった。容易く%CALLNAME:TARGET%は押し倒され、衣服を肌蹴させられる
+					PRINTFORML そして、役人達は%CALLNAME:TARGET%の穴という穴に一物を挿入し、手や足も使った
+					PRINTFORMW くぐもった声は役人達の野次に掻き消され、%CALLNAME:TARGET%の身体は痛みを感じながら抽送の餌食となる
+					PRINTFORMW 防衛反応から出した痺れを快楽と錯覚し、%CALLNAME:TARGET%はこの状況にも関わらず発情する身体に戸惑いを覚えた
+					PRINTFORML そして、%CALLNAME:TARGET%は腰を痙攣させた
+					PRINTFORMW 周囲の役人達も痙攣に共鳴したかのように腰を震わせ、白濁液を%CALLNAME:TARGET%の身体にかけていく
+					PRINTFORML 
+					PRINTFORMW 役人達が去り、壇上に残されたのは、白濁塗れの身体となり、身を時折震わせては微かに声を漏らす%CALLNAME:TARGET%だけだった
+				ENDIF
+				
+				CALL INSERT, 2, 1
+				
+				LOCAL = 13
+				LOCAL:1 = 21
+		ENDSELECT
+		PRINTFORML 淫妖経験 + {LOCAL}
+		EXP:淫妖経験 += LOCAL
+		CALL CALCULATION_PALAM, LOCAL, "淫妖"
+		CALL CALC_IMP, TFLAG:討論レベル
+	CASE 4
+		PRINTFORML 役人達は%CALLNAME:MASTER%に教育費の一部を君主に献金する事を告げた……
+		LOCAL = 200*TFLAG:討論レベル
+		
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW 教育費が${LOCAL}下がった……
+		FLAG:補正予算額 -= LOCAL
+		RESETCOLOR
+	CASE 5
+		PRINTL 役人達は晩餐会を執り行う事を決定した……
+		PRINTL 貴重な時間を割いた割には内容が薄かった事に、君主は腹を立てている……
+		CALL SETCOLOR_PALAMDOWN
+		LOCAL = 5*TFLAG:討論レベル
+		PRINTFORMW 君主の評価が{LOCAL}下がった……
+		BASE:君主の評価 -= LOCAL
+		RESETCOLOR
+ENDSELECT
+
+IF clothe:1
+	CFLAG:服装 = clothe
+ENDIF
+
+;討論会中の純狐フラグをリセットする
+TFLAG:純狐フラグ／討論会中 = 0
+

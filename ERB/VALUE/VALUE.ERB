@@ -1,0 +1,103 @@
+﻿;===========================================
+;経験の評価
+;フロー図
+;
+;各種経験が、経験レベル以上になっているかを見る
+;↓
+;なっていた場合、レベルアップ処理を行い、同時に報酬を与える
+;===========================================
+@VALUE_EXP
+#DIM L_LOCAL, 1
+
+;LOCALの初期化
+LOCAL = 0
+;淫妖、堕落、背徳、愛情を除いた経験の合計値を算出する
+FOR L_LOCAL, 71, 77
+	LOCAL += EXP:L_LOCAL
+NEXT
+
+DRAWLINE
+CALL SETCOLOR_MONEY
+PRINTFORML ～～奨励制度～～
+RESETCOLOR
+PRINTFORML 経験の合計(淫妖、堕落、背徳、愛情除く)が一定以上になると、奨励金が貰えます
+PRINTL 
+PRINTFORML 　奨励金レベル {FLAG:奨励金レベル}
+PRINTFORML 　　現在の合計:{LOCAL}
+PRINTFORML 次の奨励金まで:{MAX(VALUE_EXP_LV(FLAG:奨励金レベル+1)-LOCAL, 0)}
+LOCAL:1 = VALUE_EXP_LV(FLAG:奨励金レベル+1)-VALUE_EXP_LV(FLAG:奨励金レベル)
+PRINTFORM [
+CALL SETCOLOR_ABL
+FOR L_LOCAL, 0, (LOCAL-VALUE_EXP_LV(FLAG:奨励金レベル))*40/LOCAL:1
+	PRINTFORM %UNICODE(0x258A)%
+NEXT
+;空白担当
+FOR L_LOCAL, 0, (VALUE_EXP_LV(FLAG:奨励金レベル+1)-LOCAL)*20/LOCAL:1
+	SETCOLOR 0,0,0
+	PRINTFORM %UNICODE(0x258A)%
+NEXT
+RESETCOLOR
+PRINTL ]
+
+
+;経験の合計が現在の奨励金レベルより高ければ奨励金が貰える
+IF LOCAL >= VALUE_EXP_LV(FLAG:奨励金レベル+1)
+	FLAG:奨励金レベル += 1
+	CALL GET_EXP_REWARD, FLAG:奨励金レベル
+ENDIF
+DRAWLINE
+
+
+;-----------------------------------
+;報酬授与
+;ARG　　 レベル
+;-----------------------------------
+@GET_EXP_REWARD, ARG
+
+;レベル5の場合のみ、絹の布を渡される
+IF ARG == 5
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 特別報酬として絹の布を貰った！
+	ITEM:絹の布 += 1
+ELSE
+	CALL SETCOLOR_MONEY
+	;レベル4以下の場合、レベルに応じた金銭を入手する
+	IF ARG <= 4
+		LOCAL = 10000+5000*(ARG-1)
+	;レベル6以上の場合、30000を貰える
+	ELSE
+		LOCAL = 30000
+	ENDIF
+	PRINTFORML 報酬として${LOCAL}を貰った！
+	MONEY += LOCAL
+ENDIF
+RESETCOLOR
+PRINTFORMW 
+
+;-----------------------------------
+;経験レベル
+;-----------------------------------
+@VALUE_EXP_LV, ARG
+#FUNCTION
+
+LOCAL = 0
+;レベルが6以上
+IF ARG >= 6
+	LOCAL = 300+(150+50*(ARG-6))*(ARG-6)
+ELSE
+	SELECTCASE ARG
+		CASE 1
+			LOCAL = 10
+		CASE 2
+			LOCAL = 40
+		CASE 3
+			LOCAL = 80
+		CASE 4
+			LOCAL = 130
+		CASE 5
+			LOCAL = 200
+	ENDSELECT
+ENDIF
+
+RETURNF LOCAL
+

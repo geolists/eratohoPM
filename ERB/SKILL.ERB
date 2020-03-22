@@ -1,0 +1,727 @@
+﻿;----------------------------------------------------------------------------------------
+;知識取得処理
+;各種レベル上げの項目からリンク
+;----------------------------------------------------------------------------------------
+;・ツリー図
+;
+;時間管理---」
+;　　　　　 --------経営者------支配者-------------革命者
+;コスト管理-」　　　　　　　　　|
+;　　　　　　　　　　　　　　　 |
+;　　　　　　　　　　　　　　　 |
+;心理学-----」　　　　　　　　　|
+;　　　　   --------人員管理----」
+;資源管理---」
+;
+;
+;
+;科学の知識--」
+;　　　　　　-------研究者------精神と時の間-------時間生産の術
+;文章力------」　　　　　　↑
+;　　　　　　　　　　　時間管理
+;
+;脱出術Lv1------脱出術Lv2
+
+;お茶入れの作法
+
+@SKILL
+#DIM WORD, 2
+#DIM SKILL, 1
+#DIM type, 2
+#DIM PAL_SKILL, 1
+
+$BACK_LOOP
+DRAWLINE
+
+PRINTL どのスキルを取得しますか？
+PRINTFORM 現在の技能ポイント:
+CALL SETCOLOR_SKILL
+PRINTFORML {BASE:技能}
+WORD:1 = 13
+FOR COUNT:1, 0, WORD:1
+	PRINT 　
+NEXT
+PRINTFORML 必要技能ポイント
+RESETCOLOR
+
+;スキルの選択範囲
+
+REPEAT 21
+	LOCAL = 310 + COUNT
+	CALLFORM SKILL_COST_{LOCAL}
+	;経営者
+	IF LOCAL == 316
+		IF TALENT:時間管理 && TALENT:コスト管理 && !TALENT:経営者
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;人員管理
+	ELSEIF LOCAL == 318
+		IF TALENT:心理学 && TALENT:資源管理 && !TALENT:人員管理
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;支配者
+	ELSEIF LOCAL == 317
+		IF TALENT:経営者 && TALENT:人員管理 && !TALENT:支配者
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;革命者
+	ELSEIF LOCAL == 319
+		IF TALENT:支配者 && !TALENT:革命者
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;研究者
+	ELSEIF LOCAL == 320
+		IF TALENT:科学知識 && TALENT:文章力 && !TALENT:研究者
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;精神と時の間
+	ELSEIF LOCAL == 321
+		IF TALENT:研究者 && TALENT:時間管理 && !TALENT:精神と時の間
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;時間生産の術
+	ELSEIF LOCAL == 322
+		IF TALENT:精神と時の間 && !TALENT:時間生産の術
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;脱出術Lv2
+	ELSEIF LOCAL == 324
+		IF TALENT:脱出術Lv1 && !TALENT:脱出術Lv2
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	;325～330のスキルまで
+	ELSEIF INRANGE(LOCAL, 325, 330)
+		LOCAL:1 = RESULT
+		CALL MUST_SKILL(LOCAL, "判定")
+		IF RESULT && TALENT:LOCAL < 2
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 18, LEFT%
+			PRINTFORM  Lv{TALENT:LOCAL+1} 
+			CALL SETCOLOR_SKILL
+			PRINTFORM {LOCAL:1,5,LEFT}
+			
+			;属性技能ポイントで代用できるようにする
+			;CALL SKILL_PAL_COST, LOCAL
+			CALL PAL_SKILL_ELEMENT, LOCAL
+			;PAL_SKILL = RESULT
+			PRINTFORML or(%STR,8%の技能ポイント){PAR_SKILL(LOCAL), 5, LEFT}
+			
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			;淫行の習わしはLv1まで
+			IF TALENT:LOCAL < 2 && LOCAL != 330
+				SETCOLOR 96,96,96
+				
+				PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 18, LEFT%
+				PRINTFORM  Lv{TALENT:LOCAL+1} 
+				CALL SETCOLOR_SKILL
+				PRINTFORM {LOCAL:1,5,LEFT}
+				
+				;属性技能ポイントで代用できるようにする
+				;CALL SKILL_PAL_COST, LOCAL
+				CALL PAL_SKILL_ELEMENT, LOCAL
+				;PAL_SKILL = RESULT
+				PRINTFORML or(%STR,8%の技能ポイント){PAR_SKILL(LOCAL), 5, LEFT}
+				
+				RESETCOLOR
+				CFLAG:LOCAL = 1
+			ELSE
+				CFLAG:LOCAL = 0
+			ENDIF
+		ENDIF
+	ELSE
+		IF !TALENT:LOCAL
+			PRINTFORM [{LOCAL}] - %TALENTNAME:LOCAL, 24, LEFT%
+			LOCAL:1 = RESULT
+			CALL SETCOLOR_SKILL
+			PRINTFORML {LOCAL:1,5,LEFT}
+			RESETCOLOR
+			CFLAG:LOCAL = 1
+		ELSE
+			CFLAG:LOCAL = 0
+		ENDIF
+	ENDIF
+REND
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT >= 310 && CFLAG:RESULT
+	DRAWLINE
+	PRINTFORML ～～%TALENTNAME:RESULT%～～
+	LOCAL = RESULT
+	CALLFORM SKILL_DETAIL_{RESULT}
+	CALL SETCOLOR_ABL
+	IF INRANGE(LOCAL, 325, 330)
+		CALL MUST_SKILL(LOCAL, "表示")
+	ENDIF
+	RESETCOLOR
+	CALLFORM SKILL_COST_{LOCAL}
+	SKILL = RESULT
+	DRAWLINE
+	
+	CALL MUST_SKILL(LOCAL, "判定")
+	IF !RESULT
+		PRINTW 必要経験が足りません
+		RESTART
+	ENDIF
+	IF INRANGE(LOCAL, 325, 330)
+		CALL PAL_SKILL_ELEMENT, LOCAL
+		PRINTFORML 習得には技能ポイント{SKILL}、もしくは%STR%の技能ポイント{PAR_SKILL(LOCAL)}が必要です
+		PRINTFORML [%TALENTNAME:LOCAL%]を習得しますか？
+		PRINTFORML [0] - 技能ポイントを使って習得する
+		PRINTFORML [1] - %STR%の技能ポイントを使って習得する
+		PRINTFORML [2] - 習得しない
+		
+		CALL SENTAKUSHI, 3
+	ELSE
+		PRINTFORML 習得には技能ポイント{SKILL}が必要です
+		PRINTFORML [%TALENTNAME:LOCAL%]を習得しますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+	ENDIF
+	
+	LOCAL:2 = RESULT
+	IF RESULT == 0 || (RESULT == 1 && INRANGE(LOCAL, 325, 330))
+		IF LOCAL:2 == 0 && BASE:技能 < SKILL
+			PRINTL 技能ポイントが足りません
+			GOTO BACK_LOOP
+		ELSEIF LOCAL:2 == 1 && BASE:@"%STR%技能" <= PAR_SKILL(RESULT)
+			PRINTFORML %STR%の技能ポイントが足りません
+			GOTO BACK_LOOP
+		ENDIF
+		
+		;特殊技能の場合、Lv2まで習得可能
+		IF INRANGE(LOCAL, 325, 330)
+			PRINTFORMW [%TALENTNAME:LOCAL%] Lv{TALENT:LOCAL+1}を習得しました
+		ELSE
+			PRINTFORMW [%TALENTNAME:LOCAL%]を習得しました
+		ENDIF
+		TALENT:LOCAL += 1
+
+		;属性の技能ポイントを使用した場合
+		IF LOCAL:2 == 1
+			BASE:@"%STR%技能" -= SKILL
+		ELSE
+			BASE:技能 -= SKILL
+		ENDIF
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 1 || (INRANGE(LOCAL, 325, 330) && RESULT == 2)
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 1
+ELSEIF RESULT < 310
+	PRINTL 選択範囲外です
+	GOTO INPUT_LOOP
+ELSE
+	PRINTL 条件を満たしていません
+	RESTART
+ENDIF
+
+;======================================
+;条件を満たしていない場合に出るメッセージを出す関数
+;製作予定
+;======================================
+
+;====================================
+;代替技能ポイント　出力関数
+;ARG　スキルID
+;====================================
+@PAL_SKILL_ELEMENT, ARG
+
+SELECTCASE ARG
+	CASE 325
+		STR = 姫様
+	CASE 326
+		STR = ゴスロリ
+	CASE 327
+		STR = 花嫁
+	CASE 328
+		STR = メイド
+	CASE 329
+		STR = シスター
+	CASE 330
+		STR = 花魁
+ENDSELECT
+
+
+;======================================
+;スキルの解説
+;======================================
+
+;時間管理
+@SKILL_DETAIL_310
+PRINTL 時間の活用方法が上手くなる技能
+PRINTL 注力すると疲労時のCP減少の影響が小さくなる
+
+;コスト管理
+@SKILL_DETAIL_311
+PRINTL 資産の管理が巧くなる技能
+PRINTL 注力すると入浴剤の使用回数が2倍になり、人形作成や旅行時にかかる費用が半分になる
+
+;心理学
+@SKILL_DETAIL_312
+PRINTL 人が持つ心のメカニズムを研究する技能
+PRINTL 技巧を持つ者のアライメントによって注力した際の結果が変わる
+
+;資源管理
+@SKILL_DETAIL_313
+PRINTL 自分が持つ資源の管理に関する技能
+PRINTL 注力すると、ターン終了時に所持金に応じた金額を獲得する
+
+;科学知識
+@SKILL_DETAIL_314
+PRINTL 薬に対する知識
+PRINTL 注力すると夜伽時に薬系のコマンドを使えるようになり、調教時に媚薬の効果を受けなくなる
+
+;文章力
+@SKILL_DETAIL_315
+PRINTL 文章を書く技能
+PRINTL 注力するとターン終了時に疎通+3
+
+;経営者
+@SKILL_DETAIL_316
+PRINTL 何らかの組織を経営できる程度の技能
+PRINTL 注力すると教育・夜伽で行動する度に、ストレス増加と引き換えに疎通が2上がる。
+
+;支配者
+@SKILL_DETAIL_317
+PRINTL 何らかの組織を支配できる程度の技能
+PRINTL 注力すると調教以外で行動する度に、ストレス増加と引き換えに疎通が上がる
+PRINTL また、ターン終了時に$2,000獲得する
+
+;人員管理
+@SKILL_DETAIL_318
+PRINTL 感情を挟まず人員を効率的に管理する技能
+PRINTL 注力すると警備費がかからなくなるが、反感を買うので誘拐時の救出率が下がる
+
+;革命者
+@SKILL_DETAIL_319
+PRINTL 旧体制を打ち負かすほどの実行力を会得する技能
+PRINTL 注力すると教育・夜伽での行動回数が2減る代わりに、数値が高い能力の成長がよくなる
+
+;研究者
+@SKILL_DETAIL_320
+PRINTL 一つの道を徹底的に分析・調査し、世の真理を探究する技能
+PRINTL 注力すると同じ成長属性を持ったコマンドを連続して実行すると伸びがよくなる
+PRINTL しかし、ストレスも少しだけかかる
+
+;精神と時の間
+@SKILL_DETAIL_321
+PRINTL 異常に時の進みが遅い空間を作り出す技能
+PRINTL 注力すると教育費コストは$8,000増加するが、行動回数が2回増える
+
+;時間生産の術
+@SKILL_DETAIL_322
+PRINTL 時間を創りだす技能
+PRINTL 注力すると教育費コストは$15,000増加するが、教育・夜伽終了時に疲労度が-20される
+
+;脱出術Lv1
+@SKILL_DETAIL_323
+PRINTL 閉じ込められた空間から脱出する技能
+PRINTL 注力すると誘拐された場合、20％の確率で調教開始前に脱出して戻ってくる
+
+;脱出術Lv2
+@SKILL_DETAIL_324
+PRINTL 閉じ込められた空間から脱出する技能。脱出術Lv1と比べると巧妙になっている
+PRINTL 注力すると誘拐された場合、33％の確率で調教開始前に脱出して戻ってくる
+
+;魅惑の術法
+@SKILL_DETAIL_325
+PRINTL 魅惑を上手に活用する技能
+PRINTL 目立ちやすさが一定以上あると時間経過時に民衆の評価が上がる
+
+;主人への入れ知恵
+@SKILL_DETAIL_326
+PRINTFORML %CALLNAME:MASTER%にお金を稼ぐ方法を教える
+PRINTFORML 何故か%CALLNAME:MASTER%が仕事で稼ぐ金額が増える
+PRINTFORML (取得すると自動で効力を発揮する)
+
+;交渉術
+@SKILL_DETAIL_327
+PRINTFORML 交渉が上手くなる技能
+PRINTFORML 交渉時のコマンドで削れる交渉値が上がる
+PRINTFORML (取得すると自動で効力を発揮する)
+
+;お茶入れの作法
+@SKILL_DETAIL_328
+PRINTFORML お茶を入れる作法
+PRINTFORML 討論会の時に複数のグループにお茶を入れる事ができる
+PRINTFORML (取得すると自動で効力を発揮する)
+
+;聖なる後光
+@SKILL_DETAIL_329
+PRINTFORML 神の御導きなのか後光が射すようになる
+PRINTFORML 信仰が上がった時、民衆の評価も上がる
+PRINTFORML (取得すると自動で効力を発揮する)
+
+;淫行の習わし
+@SKILL_DETAIL_330
+PRINTFORML 淫行を使った交流術を獲得します
+PRINTFORML 半月経過時に、%CALLNAME:TARGET%が淫行を起こします
+PRINTFORML (効果の方針はアライメントの正負によって変わる)
+
+
+
+;=====================================
+;必要な経験
+;ARG　 対象スキル
+;ARGS　動作モード選択(判定or表示)
+;=====================================
+@MUST_SKILL, ARG, ARGS
+#DIM L_LOCAL, 1
+#DIM DEM_EXP, 1
+
+DEM_EXP = 100
+
+IF ARGS == "判定"
+	;経験順に配列したスキルは一括処理する
+	IF INRANGE(ARG, 325, 329)
+		CALL PALAM_CONVERT_NAME(ARG-325)
+	;淫行の習わしは淫妖経験を見る
+	ELSEIF ARG == 330
+		STR = 淫妖
+	ELSE
+		RETURN 1
+	ENDIF
+	IF EXP:@"%STR%経験" >= DEM_EXP+100*TALENT:ARG
+		;お茶入れの作法は美麗も見る
+		IF ARG == 328 && EXP:美麗経験 < 100
+			RETURN 0
+		ENDIF
+		RETURN 1
+	ELSE
+		RETURN 0
+	ENDIF
+ENDIF
+
+IF ARGS == "表示"
+	;経験を見るスキルはこの分岐で処理を行う
+	IF INRANGE(ARG, 325, 330)
+		;経験順に配列したスキルは一括処理する
+		;LOCALは必要経験の数
+		IF INRANGE(ARG, 325, 329)
+			CALL PALAM_CONVERT_NAME(ARG-325)
+			LOCALS = %STR%
+		ELSE
+			LOCALS = 淫妖
+		ENDIF
+		LOCAL = 1
+		LOCAL:1 = DEM_EXP+100*TALENT:ARG
+	ENDIF
+	
+	;お茶入れの作法は美麗経験も見る
+	IF ARG == 328
+		LOCAL += 1
+		LOCALS:1 = 美麗
+	ENDIF
+	
+	PRINTFORML ・必要経験
+	FOR L_LOCAL, 0, LOCAL
+		PRINTFORM 　[%LOCALS:L_LOCAL%経験　{LOCAL:1}]　
+	NEXT
+	PRINTL 
+ENDIF
+
+
+;======================================
+;必要技能ポイント
+;======================================
+;時間管理
+@SKILL_COST_310
+RETURN 800
+
+;コスト管理
+@SKILL_COST_311
+RETURN 800
+
+;心理学
+@SKILL_COST_312
+RETURN 800
+
+;資源管理
+@SKILL_COST_313
+RETURN 800
+
+;科学知識
+@SKILL_COST_314
+RETURN 800
+
+;文章力
+@SKILL_COST_315
+RETURN 800
+
+;経営者
+@SKILL_COST_316
+RETURN 1700
+
+;支配者
+@SKILL_COST_317
+RETURN 2400
+
+;人員管理
+@SKILL_COST_318
+RETURN 1900
+
+;革命者
+@SKILL_COST_319
+RETURN 4000
+
+;研究者
+@SKILL_COST_320
+RETURN 1700
+
+;精神と時の間
+@SKILL_COST_321
+RETURN 2400
+
+;時間生産の術
+@SKILL_COST_322
+RETURN 4400
+
+;脱出術Lv1
+@SKILL_COST_323
+RETURN 400
+
+;脱出術Lv2
+@SKILL_COST_324
+RETURN 1100
+
+;魅惑の術法
+@SKILL_COST_325
+RETURN 1000+TALENT:魅惑の術法*800
+
+;主人への入れ知恵
+@SKILL_COST_326
+RETURN 1000+TALENT:主人への入れ知恵*800
+
+;交渉術
+@SKILL_COST_327
+RETURN 1000+TALENT:交渉術*800
+
+;お茶入れの作法
+@SKILL_COST_328
+RETURN 1000+TALENT:お茶入れの作法*800
+
+;聖なる後光
+@SKILL_COST_329
+RETURN 1000+TALENT:聖なる後光*800
+
+;淫行の習わし
+@SKILL_COST_330
+RETURN 1000+TALENT:淫行の習わし*800
+
+;----------------------------------------------------------------------------------------
+;スキル設定
+;注力するスキルを設定する
+;----------------------------------------------------------------------------------------
+@SKILL_SET
+#DIM SET_TAG, 1
+#DIM L_LOCAL, 1
+
+$BACK_LOOP_1
+DRAWLINE
+PRINTFORML 変更したいスキルを選んでください
+IF !CFLAG:セットスキル1
+	PRINTFORML [0] - スキル1:なし
+ELSE
+	PRINTFORML [0] - スキル1:%TALENTNAME:(CFLAG:セットスキル1)%
+ENDIF
+IF !CFLAG:セットスキル2
+	PRINTFORML [1] - スキル2:なし
+ELSE
+	PRINTFORML [1] - スキル2:%TALENTNAME:(CFLAG:セットスキル2)%
+ENDIF
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN 1
+ELSEIF RESULT <= 1
+	SET_TAG = 382 + RESULT
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+$BACK_LOOP
+DRAWLINE
+PRINTL 注力するスキルを選んでください
+PRINTL
+PRINTL [0] - 注力を止める
+REPEAT 15
+	LOCAL = 310 + COUNT
+	IF TALENT:LOCAL
+		PRINTFORML [{LOCAL}] - %TALENTNAME:LOCAL%
+		CFLAG:LOCAL = 1
+	ELSE
+		CFLAG:LOCAL = 0
+	ENDIF
+REND
+PRINTL [999] - 戻る
+
+$INPUT_LOOP_1
+INPUT
+
+IF CFLAG:SET_TAG == RESULT
+	PRINTL そのスキルは既にセットしています
+	GOTO INPUT_LOOP_1
+ELSEIF RESULT >= 310 && CFLAG:RESULT
+	DRAWLINE
+	PRINTFORML ～～%TALENTNAME:RESULT%～～
+	LOCAL = RESULT
+	CALLFORM SKILL_DETAIL_{RESULT}
+	DRAWLINE
+	PRINTFORML [%TALENTNAME:LOCAL%]を注力しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		;持っている入浴剤の個数を半分にする
+		IF CFLAG:SET_TAG == 311
+			FOR L_LOCAL, 490, 500
+				IF ITEM:L_LOCAL
+					ITEM:L_LOCAL /= 2
+				ENDIF
+			NEXT
+		ENDIF
+		CFLAG:SET_TAG = LOCAL
+		;持っている入浴剤の個数を2倍にする
+		IF LOCAL == 311
+			FOR L_LOCAL, 490, 500
+				IF ITEM:L_LOCAL
+					ITEM:L_LOCAL *= 2
+				ENDIF
+			NEXT
+		ENDIF
+	ENDIF
+	GOTO BACK_LOOP_1
+ELSEIF RESULT == 0
+	PRINTFORML スキルの注力を止めますか？
+	LOCAL = RESULT
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		;持っている入浴剤の個数を半分にする
+		IF CFLAG:SET_TAG == 311
+			FOR L_LOCAL, 490, 500
+				IF ITEM:L_LOCAL
+					ITEM:L_LOCAL /= 2
+				ENDIF
+			NEXT
+		ENDIF
+		CFLAG:SET_TAG = LOCAL
+	ENDIF
+	GOTO BACK_LOOP_1
+ELSEIF RESULT == 999
+	GOTO BACK_LOOP_1
+ELSEIF RESULT < 310
+	PRINTL 選択範囲外です
+	GOTO INPUT_LOOP_1
+ELSE
+	PRINTL 条件を満たしていません
+	GOTO INPUT_LOOP_1
+ENDIF
+
+;=======================================
+;PAR_SKILL
+;ファンクション関数
+;消費スキルを計算する
+;=======================================
+@PAR_SKILL, ARG
+#FUNCTION
+
+SELECTCASE ARG
+	CASE 325
+		LOCAL = 1000+TALENT:魅惑の術法*800
+	CASE 326
+		LOCAL = 1000+TALENT:主人への入れ知恵*800
+	CASE 327
+		LOCAL = 1000+TALENT:交渉術*800
+	CASE 328
+		LOCAL = 1000+TALENT:お茶入れの作法*800
+	CASE 329
+		LOCAL = 1000+TALENT:聖なる後光*800
+ENDSELECT
+
+RETURNF LOCAL
+
+;=======================================
+;CHECKSKILL
+;ファンクション関数
+;セットしたスキルを監視し、スキル1か2にセットされていれば1を返す
+;=======================================
+@CHECKSKILL, ARG
+#FUNCTION
+IF CFLAG:セットスキル1 == ARG || CFLAG:セットスキル2 == ARG
+	RETURNF 1
+ELSE
+	RETURNF 0
+ENDIF

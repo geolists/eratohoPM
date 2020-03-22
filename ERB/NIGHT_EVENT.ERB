@@ -1,0 +1,48 @@
+﻿;================================================================
+;情報収集
+;夜遊びの球の効力がある時のみ使用可能
+;================================================================
+@GET_INFORMATION
+
+DRAWLINE
+PRINTFORML 君主に関する情報収集を行い、君主の権力値にダメージを与えます
+CALL SETCOLOR_ABL
+PRINTFORML 実行には半月を要します
+RESETCOLOR
+PRINTFORML 実行しますか？
+PRINTL
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	PRINTFORMW %CALLNAME:TARGET%は君主についての情報を集めた……
+	CALL PROCESSING_GET_INFORMATION
+	LOCAL = 1
+ELSE
+	
+ENDIF
+
+;ターン経過の返り値を返す
+;1:ターンを経過させる　0:ターンを経過させない
+RETURN LOCAL
+
+;----------------------------------------
+;情報収集_処理部
+;権力値を下げる処理を実装する
+;----------------------------------------
+@PROCESSING_GET_INFORMATION
+
+;権力値降下値
+#DIM down_power, 1
+
+down_power = MIN((FLAG:年数+BASE:美麗/300)*50+300, 700)
+
+CALL SETCOLOR_PALAMUP
+PRINTFORML 君主の権力値が{down_power}下がった！
+FLAG:君主の権力値 -= down_power
+
+
+
+

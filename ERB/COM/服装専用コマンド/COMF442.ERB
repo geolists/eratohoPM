@@ -1,0 +1,51 @@
+﻿;-------------------------------------------------
+;淫行料理
+;服装固有コマンド
+;花嫁属性の服限定
+;家事経験10と背徳経験11は優秀だが、淫妖4があり成功判定が感度依存な上に失敗時の評価-6が痛い
+;-------------------------------------------------
+@COM442
+
+;消費CP
+LOSEBASE:0 = 5
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+PRINTL 淫行料理
+STR:0 = 淫行料理
+
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+;成功率
+CALL SUC_PAR, (LIMIT(BASE:感度-300, 0, 600)+BASE:献身-100)*4
+
+PRINTL 
+IF RESULT == 1
+	SOURCE:家事 = 10
+	SOURCE:淫妖 = 8
+	
+	TFLAG:家事経験 = 11
+	TFLAG:淫妖経験 = 6
+	
+	LOSEBASE:主人への友好度 = 2
+ELSE
+	SOURCE:家事 = 2
+	SOURCE:淫妖 = 11
+	
+	TFLAG:家事経験 = 1
+	TFLAG:淫妖経験 = 9
+	;CALL SETCOLOR_PALAMDOWN
+	;PRINTFORML 評価が6下がった……
+	LOSEBASE:評価 = -6
+	;RESETCOLOR
+ENDIF
+TFLAG:背徳経験 = 5
+
+RETURN 1
+

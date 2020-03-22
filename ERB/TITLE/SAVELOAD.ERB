@@ -1,0 +1,173 @@
+﻿;[ライセンス]パブリックドメイン
+;本ファイルに係る著作権を放棄する。
+;本ファイルに係る著作人格権は行使しない。
+;2009/3/28 MinorShift(Emuera作者)
+
+;独自のセーブ・ロードシステムの例（Emuera  ver 1.50以降対象）
+;LOADGAMEの代わりにCALL LOADGAME_EX、SAVEGAMEの代わりにCALL SAVEGAME_EXを実行してください。
+;実際に使用するには旧来の@SAVEINFOに合わせて@SAVEINFO_EXを編集する必要があります。
+;使用している命令の詳細についてはEmueraの拡張文法.txtを参照してください。
+;
+
+@SAVEGAME_EX
+;セーブする前に、プレイ時間反映
+TIME:1 += GETMILLISECOND() / 1000 - TIME:2
+TIME:2 = GETMILLISECOND() / 1000
+
+PRINTL ○紺珠の薬
+PRINTL 何番にセーブしますか？
+CALL PRINT_SAVEDATA
+PRINTL [100] 戻る
+INPUT
+IF (RESULT == 100)
+	RETURN
+ELSEIF ((RESULT < 0) || (RESULT >= 20))
+	RESTART
+ELSE
+	LOCAL = RESULT
+	CHKDATA LOCAL
+	;RESULT == 1は"ファイルが存在しない"
+	IF RESULT != 1
+		PRINTL 既にデータが存在します。上書きしますか？
+		PRINTL [0] はい
+		PRINTL [1] いいえ
+$INPUT_LOOP
+		INPUT
+		IF RESULT == 1
+			RESTART
+		ELSEIF RESULT != 0
+			GOTO INPUT_LOOP
+		ENDIF
+	ENDIF
+	CALL SAVEINFO_EX
+	SAVEDATA LOCAL, RESULTS
+	
+	LOADGLOBAL
+	;ロード回数+1
+	GLOBAL:501 += 1
+	SAVEGLOBAL
+ENDIF
+
+@LOADGAME_EX
+PRINTL ○紺珠の薬
+PRINTL 何番をロードしますか？
+CALL PRINT_SAVEDATA
+
+CHKDATA 99
+PRINTFORML [99] %RESULTS:0%
+PRINTL [100] 戻る
+INPUT
+IF (RESULT == 100)
+	RETURN
+ELSEIF ((RESULT < 0) || (RESULT >= 20)) && (RESULT != 99)
+	RESTART
+ELSE
+	LOCAL = RESULT
+	CHKDATA LOCAL
+	;RESULT == 0ならロード可能
+	IF RESULT != 0
+		RESTART
+	ENDIF
+	
+	LOADGLOBAL
+	;ロード回数+1
+	GLOBAL:502 += 1
+	SAVEGLOBAL
+	
+	LOADDATA LOCAL
+ENDIF
+
+@PRINT_SAVEDATA
+;呼び出し元でCOUNTを使っているかも知れないのでCOUNTを保護
+LOCAL:0 = COUNT
+REPEAT 20
+	CHKDATA COUNT
+	IF COUNT < 10
+		PRINTFORML [ {COUNT}] %RESULTS:0%
+	ELSE
+		PRINTFORML [{COUNT}] %RESULTS:0%
+	ENDIF
+REND
+COUNT = LOCAL:0
+RETURN
+
+@SAVEINFO_EX
+;SAVEDATA命令は@SAVEINFO関数を呼ばないのでPUTFORMの代わりの文字列を用意する必要がある
+;GETTIME命令でRESULTSに現在時刻を代入
+GETTIME
+
+IF TIME == 0
+	RESULTS:0 = %RESULTS:0% {FLAG:年数}年目 {DAY}月(上期)
+ELSE
+	RESULTS:0 = %RESULTS:0% {FLAG:年数}年目 {DAY}月(下期)
+ENDIF
+
+IF CFLAG:モード == 2
+	RESULTS:0 += "(誘拐!)"
+ENDIF
+
+	RESULTS:0 += @"美{BASE:美麗} 知{BASE:知力} 疎{BASE:疎通} 家{BASE:家事} 信{BASE:信仰} 体{BASE:体力} 淫{BASE:淫妖} 堕{BASE:堕落}"
+
+
+RETURN
+
+@TITLE_LOADGAME
+;タイトル画面のロードでも独自のロード画面を使う場合、@TITLE_LOADGAMEを定義する
+;@TITLE_LOADGAMEが定義されていると、標準のロード画面の代わりにTITLE_LOADGAMEが呼ばれる。
+CALL LOADGAME_EX
+RETURN
+;RETURNするとタイトルへ戻る。
+
+@SYSTEM_AUTOSAVE
+;オートセーブの処理を独自に行う場合、@SYSTEM_AUTOSAVEを定義する
+;@SYSTEM_AUTOSAVEが定義されていると、標準のオートセーブの代わりにSYSTEM_AUTOSAVEが呼ばれる。
+CALL AUTO_SAVE
+
+
+;独自のオートセーブ処理
+@AUTO_SAVE
+CALL SAVEINFO_EX
+SAVEDATA 99, RESULTS
+
+;TIMEを文字に変換
+@CONVERT_TIME
+#FUNCTIONS
+
+IF TIME:0 == 0
+	LOCALS:0 = 朝
+ELSEIF TIME:0 == 1
+	LOCALS:0 = 昼
+ELSEIF TIME:0 == 2
+	LOCALS:0 = 夕
+ELSE
+	LOCALS:0 = 夜
+ENDIF
+
+RETURNF LOCALS:0
+
+;プレイ時間表示
+;ARG:0	プレイ時間(秒数)
+;戻り値	表示する時間。hh:mm:ss表記
+@PRINT_TIME(ARG:0)
+#FUNCTIONS
+
+;時
+LOCAL:0 = ARG:0 / 3600
+
+;分
+LOCAL:1 = (ARG:0 % 3600) / 60
+
+;秒
+LOCAL:2 = ARG:0 % 60
+
+FOR LOCAL:3, 0, 3
+	IF LOCAL:(LOCAL:3) < 10
+		LOCALS:(LOCAL:3) = {0}{LOCAL:(LOCAL:3)}
+	ELSE
+		LOCALS:(LOCAL:3) = {LOCAL:(LOCAL:3)}
+	ENDIF
+NEXT
+
+RETURNF (LOCALS:0 + ":" + LOCALS:1 + ":" + LOCALS:2)
+
+

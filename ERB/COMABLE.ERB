@@ -1,0 +1,1522 @@
+﻿;===============================================================
+;コマンド実行判定
+;===============================================================
+;----------------------------------------------
+;教育コマンド
+;----------------------------------------------
+
+;基礎コマンド
+
+;本を読む
+@COM_ABLE0
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;会話を楽しむ
+@COM_ABLE1
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;作法を教える
+@COM_ABLE2
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;走り込み
+@COM_ABLE3
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;読み聞かせ
+@COM_ABLE4
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;--------------------
+;発展コマンド
+;--------------------
+
+;青空教室
+@COM_ABLE10
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;2年目から解禁
+ELSEIF FLAG:年数 < 2
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;裁縫を教える
+@COM_ABLE11
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;2年目から解禁
+ELSEIF FLAG:年数 < 2
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;都見学
+@COM_ABLE12
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;4年目から解禁
+ELSEIF FLAG:年数 < 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;着付けを教える
+@COM_ABLE13
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;4年目から解禁
+ELSEIF FLAG:年数 < 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;筋力トレーニング
+@COM_ABLE14
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;2年目から解禁
+ELSEIF FLAG:年数 < 2
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;--------------------
+;発展コマンド
+;経験によって発展
+;--------------------
+
+;授業を行う
+@COM_ABLE20
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;知力経験が20必要
+ELSEIF EXP:知力経験 < 20
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;実習
+@COM_ABLE21
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;知力経験が40必要
+ELSEIF EXP:知力経験 < 40
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;自由課題を与える
+@COM_ABLE22
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;知力経験が80必要
+ELSEIF EXP:知力経験 < 80
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;短距離走
+@COM_ABLE23
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;体力経験が50必要
+ELSEIF EXP:体力経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;お稽古
+@COM_ABLE30
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;美麗経験が20必要
+ELSEIF EXP:美麗経験 < 20
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;手芸品作り
+@COM_ABLE32
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;裁縫技術がないと行えない
+ELSEIF !TALENT:裁縫技術
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;整体運動
+@COM_ABLE33
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;美麗経験が60必要
+ELSEIF EXP:美麗経験 < 60
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;姉妹と会話
+@COM_ABLE40
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;疎通経験が20必要
+ELSEIF EXP:疎通経験 < 20
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;お使い
+@COM_ABLE41
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;疎通経験が30必要
+ELSEIF EXP:疎通経験 < 30
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;姉妹と授業を受ける
+@COM_ABLE42
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;姉妹への友好度が10必要
+ELSEIF CFLAG:姉妹への友好度 < 10
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;姉妹と着付けする
+@COM_ABLE43
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;姉妹への友好度が30必要
+ELSEIF CFLAG:姉妹への友好度 < 30
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;姉妹とでかける
+@COM_ABLE44
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;1度の教育で1回のみ
+ELSEIF TFLAG:姉妹と出かける
+	RETURN 0
+;姉妹への友好度が50必要
+ELSEIF CFLAG:姉妹への友好度 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;姉妹と特訓
+@COM_ABLE45
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;姉妹への友好度が30必要
+ELSEIF CFLAG:姉妹への友好度 < 30
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;裏コマンド
+;----------------------------------------------
+
+;姉妹と身体を絡ませる
+@COM_ABLE60
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;姉妹への友好度が50必要
+ELSEIF CFLAG:姉妹への友好度 < 50
+	RETURN 0
+;淫妖経験が70必要
+ELSEIF EXP:淫妖経験 < 70
+	RETURN 0
+;姉妹と夜伽フラグが立っていなければ実行できない
+ELSEIF !CFLAG:姉妹と夜伽可能フラグ
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;売春
+@COM_ABLE61
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;堕落が60必要
+ELSEIF BASE:堕落 < 60
+	RETURN 0
+;淫妖経験が100必要
+ELSEIF EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫行授業
+@COM_ABLE62
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;淫妖経験が50必要
+ELSEIF EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫行野外学習
+@COM_ABLE63
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;淫妖経験が80必要
+ELSEIF EXP:淫妖経験 < 80
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫妖お使い
+@COM_ABLE64
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;淫妖経験が100必要
+ELSEIF EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;回復コマンド
+;----------------------------------------------
+
+;カウンセリング
+@COM_ABLE70
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;堕落がある時にのみ使用可能
+ELSEIF !BASE:堕落
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;技能学習
+@COM_ABLE71
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;信仰コマンド
+;----------------------------------------------
+;祈る
+@COM_ABLE80
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;参拝
+@COM_ABLE81
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;信仰経験が15以上
+ELSEIF EXP:信仰経験 <15
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;断食
+@COM_ABLE82
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;信仰経験が25以上
+ELSEIF EXP:信仰経験 < 25
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;家事コマンド
+;----------------------------------------------
+;家事
+@COM_ABLE85
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;掃除
+@COM_ABLE86
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;家事経験が15以上
+ELSEIF EXP:家事経験 <15
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;調理
+@COM_ABLE87
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;家事経験が25以上
+ELSEIF EXP:家事経験 < 25
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;----------------------------------------------
+;体力コマンド
+;----------------------------------------------
+;仮想訓練
+@COM_ABLE90
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;体力経験が15以上
+ELSEIF EXP:体力経験 <15
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;長距離走
+@COM_ABLE91
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;体力経験が30以上
+ELSEIF EXP:体力経験 <30
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;合同合宿
+@COM_ABLE92
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;体力経験が60以上
+ELSEIF EXP:体力経験 < 60
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;野外対面立位
+@COM_ABLE93
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;体力経験が80以上＆淫妖経験が100以上
+ELSEIF EXP:体力経験 < 80 || EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;----------------------------------------------
+;服装固有コマンド
+;----------------------------------------------
+
+;お茶会に出る
+@COM_ABLE390
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が姫様属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,1)
+	RETURN 0
+;美麗経験が40必要
+ELSEIF EXP:美麗経験 < 40
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;披露宴に出る
+@COM_ABLE391
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が姫様属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,1)
+	RETURN 0
+;美麗経験が80必要
+ELSEIF EXP:美麗経験 < 80
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;民と話す
+@COM_ABLE392
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が姫様属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,1)
+	RETURN 0
+;評価が200必要
+ELSEIF BASE:評価 < 200
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;物乞い
+@COM_ABLE400
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が布切れの場合使用可能
+;夜遊びの球使用中も使用可能
+ELSEIF CFLAG:服装 >= 0 && !TALENT:娼婦 && !(CFLAG:服装 == 14 || CFLAG:服装 == 24) && !CFLAG:使用中／夜遊びの球
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;自慰物乞い
+@COM_ABLE401
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が布切れor淫魔の布切れまでの淫魔属性の衣服の場合使用可能
+;夜遊びの球使用中も使用可能
+ELSEIF CFLAG:服装 >= 0 && !TALENT:娼婦 && !(CFLAG:服装 == 14 || CFLAG:服装 == 24) && !CFLAG:使用中／夜遊びの球
+	RETURN 0
+;アライメントが-1以下でないと使えない
+ELSEIF BASE:アライメント > 100
+	RETURN 0
+;堕落が30以上でないと使えない
+ELSEIF BASE:堕落 < 30
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;性交物乞い
+@COM_ABLE402
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が布切れの場合使用可能
+;夜遊びの球使用中も使用可能
+ELSEIF CFLAG:服装 >= 0 && !TALENT:娼婦 && !CFLAG:使用中／夜遊びの球
+	RETURN 0
+;淫妖75と堕落100が必要
+ELSEIF (BASE:淫妖 < 75 || BASE:堕落 < 100) && !TALENT:傷物
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;整理
+@COM_ABLE410
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がメイド属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,2)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;性なる奉仕
+@COM_ABLE411
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がメイド属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,2)
+	RETURN 0
+;家事経験と淫妖経験が50以上必要
+ELSEIF EXP:家事経験 < 50 || EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫行家事
+@COM_ABLE412
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がメイド属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,2)
+	RETURN 0
+;家事経験と淫妖経験が100以上必要
+ELSEIF EXP:家事経験 < 100 || EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;路上奉仕
+@COM_ABLE413
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がメイド属性を持ち、半裸以上である場合のみ使用可能
+ELSEIF !GETBIT(RESULT,2) || !DITEMTYPE:(CFLAG:服装):11
+	RETURN 0
+;家事経験と淫妖経験が80以上必要
+ELSEIF EXP:家事経験 < 80 || EXP:淫妖経験 < 80
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;まかない作り
+@COM_ABLE414
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;行動がメイドで無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／行動, 2)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;聖歌
+@COM_ABLE420
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がシスター属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,3)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;身体の提供
+@COM_ABLE421
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がシスター属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,3)
+	RETURN 0
+;信仰経験と淫妖経験が50以上必要
+ELSEIF EXP:信仰経験 < 50 || EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;穢れを受ける
+@COM_ABLE422
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がシスター属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,3)
+	RETURN 0
+;信仰経験と淫妖経験が100以上必要
+ELSEIF EXP:信仰経験 < 100 || EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;渡り巫女
+@COM_ABLE423
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が巫女服の属性を持つ場合のみ使用可能
+ELSEIF CFLAG:服装 >= 0 && !DITEMTYPE:(CFLAG:服装):12
+	RETURN 0
+ELSEIF CFLAG:服装 < 0
+	RETURN 0
+;信仰経験と淫妖経験が100以上必要
+ELSEIF EXP:信仰経験 < 100 || EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;滝行
+@COM_ABLE424
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が巫女服の属性を持つ場合のみ使用可能
+ELSEIF CFLAG:服装 >= 0 && !DITEMTYPE:(CFLAG:服装):12
+	RETURN 0
+ELSEIF CFLAG:服装 < 0
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;神に捧げる
+@COM_ABLE425
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が全裸のシスター属性持ちの衣服である場合のみ使用可
+ELSEIF !NUDE(TARGET) || !GETBIT(RESULT,3)
+	RETURN 0
+;信仰経験と淫妖経験が100以上必要
+ELSEIF EXP:信仰経験 < 100 || EXP:淫妖経験 < 100
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;実技の実践
+@COM_ABLE430
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;瞑想
+@COM_ABLE431
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫行魔術
+@COM_ABLE432
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+;淫妖経験が150以上＆淫妖が200以上なければならない
+ELSEIF EXP:淫妖経験 < 150 || BASE:淫妖 < 200
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;触手召喚
+@COM_ABLE433
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+;淫妖経験が150以上＆淫妖が200以上なければならない
+ELSEIF EXP:淫妖経験 < 150 || BASE:淫妖 < 200
+	RETURN 0
+;[触手召喚術]を持っていないと使えない
+ELSEIF !TALENT:触手召喚術
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;精神移行訓練
+@COM_ABLE434
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+;思考がゴスロリで無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 4)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;惚気る
+@COM_ABLE440
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;服装が花嫁属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,5)
+	RETURN 0
+;思考が花嫁で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 5)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;スキンシップ
+@COM_ABLE441
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;服装が花嫁属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,5)
+	RETURN 0
+;思考が花嫁Lv2以上で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 5) || CFLAG:習慣レベル／思考 < 2
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;淫行料理
+@COM_ABLE442
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;服装が花嫁属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,5)
+	RETURN 0
+;思考が花嫁Lv2以上で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 5) || CFLAG:習慣レベル／思考 < 2
+	RETURN 0
+;淫妖経験が50以上必要
+ELSEIF EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;脱がせ羞恥
+@COM_ABLE443
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;服装が花嫁属性を持ち、[半裸]である場合のみ使用可能
+ELSEIF !GETBIT(RESULT,5) || !DITEMTYPE:(CFLAG:服装):11 != 1
+	RETURN 0
+;思考が花嫁で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 5)
+	RETURN 0
+;淫妖経験が50以上必要
+ELSEIF EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;女体盛り
+@COM_ABLE444
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育モードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 3
+	RETURN 0
+;服装が花嫁属性を持ち、[全裸]である場合のみ使用可能
+ELSEIF !GETBIT(RESULT,5) || !NUDE(TARGET)
+	RETURN 0
+;思考が花嫁で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／思考, 5)
+	RETURN 0
+;淫妖経験が50以上必要
+ELSEIF EXP:淫妖経験 < 50
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;刀術訓練
+@COM_ABLE450
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が武士属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,8)
+	RETURN 0
+;剣道着(要素)でないと行えない
+ELSEIF CFLAG:服装 >= 0 && !GETBIT(DITEMTYPE:(CFLAG:服装):15, 0)
+	RETURN 0
+ELSEIF CFLAG:服装 < 0
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;弓術訓練
+@COM_ABLE451
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育か住み込みモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4
+	RETURN 0
+;服装が武士属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,8)
+	RETURN 0
+;弓道着(要素)でないと行えない
+ELSEIF CFLAG:服装 >= 0 && !GETBIT(DITEMTYPE:(CFLAG:服装):15, 1)
+	RETURN 0
+ELSEIF CFLAG:服装 < 0
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;精液摂取
+@COM_ABLE460
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;淫魔でなければ使用できない
+ELSEIF !TALENT:淫魔
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;粘性体で誘拐
+@COM_ABLE530
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;邪道のゴスロリのみ使用可能
+ELSEIF CFLAG:称号アライメント != 2 || CFLAG:称号属性 != 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;野外強制魅惑術
+@COM_ABLE531
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;邪道のゴスロリLv2以上のみ使用可能
+ELSEIF CFLAG:称号アライメント != 2 || CFLAG:称号属性 != 3 || CFLAG:称号レベル < 2
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;--------------------
+;職業訓練
+;--------------------
+
+;姫様訓練
+@COM_ABLE599
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が姫様属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,1)
+	RETURN 0
+;生活習慣が姫様で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／生活習慣, 1)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;メイド訓練
+@COM_ABLE600
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がメイド属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,2)
+	RETURN 0
+;生活習慣がメイドで無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／生活習慣, 2)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;シスター訓練
+@COM_ABLE601
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がシスター属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,3)
+	RETURN 0
+;生活習慣がシスターで無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／生活習慣, 3)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;ゴスロリ訓練
+@COM_ABLE602
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装がゴスロリ属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,4)
+	RETURN 0
+;生活習慣がゴスロリで無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／生活習慣, 4)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;花嫁訓練
+@COM_ABLE603
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が花嫁属性を持つ場合使用可能
+ELSEIF !GETBIT(RESULT,5)
+	RETURN 0
+;生活習慣が花嫁で無ければ使用できない
+ELSEIF !GETBIT(CFLAG:習慣職業／生活習慣, 5)
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;花魁訓練
+@COM_ABLE605
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;服装が布切れor淫魔の布切れまでの淫魔属性の衣服の場合使用可能
+ELSEIF CFLAG:服装 >= 0 && !TALENT:娼婦 && !(CFLAG:服装 == 14 || CFLAG:服装 == 24)
+	RETURN 0
+;思考力が200以上無いと使用できない
+ELSEIF BASE:思考力 < 200
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;人魚の舞
+@COM_ABLE620
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;人魚でないと使えない
+ELSEIF !TALENT:人魚
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;欲情花粉
+@COM_ABLE621
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;アルラウネでないと使えない
+ELSEIF !TALENT:アルラウネ
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;触手絡め
+@COM_ABLE622
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;触手娘でないと使えない
+ELSEIF !TALENT:触手娘
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;スライムベッド
+@COM_ABLE623
+;教育or物乞いモードのみ
+IF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+;スライム娘でないと使えない
+ELSEIF !TALENT:スライム娘
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;-------------------------------------------------------------------
+;夜伽コマンド
+;-------------------------------------------------------------------
+;--------------------
+;初級
+;--------------------
+;愛撫
+@COM_ABLE100
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;キス
+@COM_ABLE101
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;手淫
+@COM_ABLE102
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;性の座学
+@COM_ABLE103
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;淫乱だと行えない
+ELSEIF CFLAG:性格 == -1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;卑猥な会話
+@COM_ABLE104
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+;--------------------
+;中級
+;--------------------
+;フェラチオ
+@COM_ABLE110
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;依存が150以上
+ELSEIF BASE:依存 < 150
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;自慰
+@COM_ABLE111
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;依存が150以上
+ELSEIF BASE:依存 < 150
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;焦らし
+@COM_ABLE112
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;依存が150以上
+ELSEIF BASE:依存 < 150
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;--------------------
+;上級
+;--------------------
+;性交
+@COM_ABLE120
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;依存が350以上
+ELSEIF BASE:依存 < 350
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;立ち性交
+@COM_ABLE121
+;夜伽モードのみ
+IF CFLAG:モード != 1
+	RETURN 0
+;処女の場合実行不可
+ELSEIF TALENT:処女
+	RETURN 0
+;依存が350以上
+ELSEIF BASE:依存 < 350
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;-------------------------------------------------------------------
+;調教コマンド
+;基本的には選択不可能
+;-------------------------------------------------------------------
+;愛撫
+@COM_ABLE200
+RETURN 0
+
+;キス
+@COM_ABLE201
+RETURN 0
+
+;指挿し入れ
+@COM_ABLE210
+RETURN 0
+
+;フェラチオ
+@COM_ABLE211
+RETURN 0
+
+;性交
+@COM_ABLE220
+RETURN 0
+
+;野外性交
+@COM_ABLE221
+RETURN 0
+
+;輪姦
+@COM_ABLE230
+RETURN 0
+
+;見せしめ強姦
+@COM_ABLE231
+RETURN 0
+
+;染髪
+@COM_ABLE232
+RETURN 0
+
+;刺青を入れる
+@COM_ABLE233
+RETURN 0
+
+;-------------------------------------------------------------------
+;住み込み時専用コマンド
+;-------------------------------------------------------------------
+
+;授業を行う
+@COM_ABLE700
+;寺小屋で働いてないと実行できない
+IF CFLAG:職業 != 21
+	RETURN 0
+;教育or物乞いモードのみ
+ELSEIF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;相談に乗る
+@COM_ABLE701
+;寺小屋で働いてないと実行できない
+IF CFLAG:職業 != 21
+	RETURN 0
+;教育or物乞いモードのみ
+ELSEIF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;舞踊実演
+@COM_ABLE703
+;天女の社で働いてないと実行できない
+IF CFLAG:職業 != 22
+	RETURN 0
+;教育or物乞いモードのみ
+ELSEIF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;客をもてなす
+@COM_ABLE704
+;天女の社で働いてないと実行できない
+IF CFLAG:職業 != 22
+	RETURN 0
+;教育or物乞いモードのみ
+ELSEIF CFLAG:モード != 0 && CFLAG:モード != 4 && CFLAG:モード != 3
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;-------------------------------------------------------------------
+;特殊コマンド
+;-------------------------------------------------------------------
+
+;結婚指輪を贈る
+@COM_ABLE899
+;教育モードのみ
+IF CFLAG:モード != 0
+	RETURN 0
+;輝夜にしか使えない
+ELSEIF TARGET != 1
+	RETURN 0
+;すでに相愛を持っている場合、使えない
+ELSEIF TALENT:相愛
+	RETURN 0
+;翡翠の指輪を持っている事が条件
+ELSEIF !ITEM:翡翠の指輪
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+
+
+;-------------------------------------------------------------------
+;姉妹調教コマンド
+;-------------------------------------------------------------------
+;強制夜伽
+@COM_ABLE900
+;物乞いモードのみ
+IF CFLAG:モード != 3
+	RETURN 0
+;姉妹を1人は攫っていないと不可
+ELSEIF !FLAG:攫った姉妹の数
+	RETURN 0
+;対象が輝夜の時のみ可能
+ELSEIF NO:TARGET != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;強制公開自慰
+@COM_ABLE901
+;物乞いモードのみ
+IF CFLAG:モード != 3
+	RETURN 0
+;姉妹を1人は攫っていないと不可
+ELSEIF !FLAG:攫った姉妹の数
+	RETURN 0
+;対象が輝夜の時のみ可能
+ELSEIF NO:TARGET != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;強制性交物乞い
+@COM_ABLE902
+;物乞いモードのみ
+IF CFLAG:モード != 3
+	RETURN 0
+;姉妹を1人は攫っていないと不可
+ELSEIF !FLAG:攫った姉妹の数
+	RETURN 0
+;対象が輝夜の時のみ可能
+ELSEIF NO:TARGET != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;強制複数P
+@COM_ABLE903
+;物乞いモードのみ
+IF CFLAG:モード != 3
+	RETURN 0
+;姉妹を1人は攫っていないと不可
+ELSEIF !FLAG:攫った姉妹の数
+	RETURN 0
+;対象が輝夜の時のみ可能
+ELSEIF NO:TARGET != 1
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+

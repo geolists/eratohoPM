@@ -1,0 +1,111 @@
+﻿;========================================================
+;カウンセリング
+;1ターンかけて堕落と淫妖を下降させます
+;通常の減少だと5％の両者ですが、このコマンドでは12.5％減少してくれます
+;========================================================
+@COUNSELING
+#DIM DOWN_ABL, 1
+DRAWLINE
+
+PRINTFORML ～～王宮の治療室～～
+PRINTFORML 医師「あら、いらっしゃい
+IF !FLAG:医師との親密度
+	PRINTFORML 　　　私は王宮に雇われている医師よ
+	PRINTFORML 　　　色々とあったのでしょう？　可哀想に……」
+	FLAG:医師との親密度 = 1
+ELSEIF BASE:堕落 < 50
+	PRINTFORML 　　　いくら長寿だからといって、心まで傷付かないとは限らないわ
+	PRINTFORML 　　　心が穢れるとやがて身体にも回るの。それだけは意識して」
+ELSEIF BASE:堕落 < 250
+	PRINTFORML 　　　……どうしたの？　かなりやつれてるみたいね
+	PRINTFORML 　　　何でもいいから私に話してみて？」
+ELSEIF BASE:堕落 < 500
+	PRINTFORML 　　　これは大変ね……
+	PRINTFORML 　　　私、こんなの持ってるんだけど……飴玉食べる？」
+ELSE
+	PRINTFORML 　　　……
+	PRINTFORML 　　　(これは長期に渡る治療が必要ね……)
+ENDIF
+
+;[純狐の虜]を持っている
+IF TALENT:純狐の虜
+	PRINTFORML 　　　……視線が定まってないけど大丈夫？
+	PRINTFORML 　　　他の誰かのことを考えてない？
+ENDIF
+
+$BACK_LOOP
+PRINTL 
+PRINTL [0] - カウンセリングを行う　　治療費は必要無いわ
+IF TALENT:純狐の虜
+	PRINTL [1] - 純狐の虜を消す　　　　　少し時間がかかってしまうかも……
+ENDIF
+PRINTL [2] - さようなら　　　　　　　無理しないでね
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML 「カウンセリングね？　それじゃあ少しこちらに来て頂戴」
+	PRINTFORMW 医師は%CALLNAME:TARGET%の手を持ち、そのまま連れて奥の部屋へと歩いていった
+	PRINTFORML 「半月はこちらで預かることになるわ。終わったら知らせるから安心して」
+	PRINTFORMW %CALLNAME:MASTER%は治療室を出る事にした
+	
+	FLAG:治療 = 1
+	DRAWLINE
+	PRINTFORML 治療により、以下の数値が変化した！
+	REPEAT 2
+		LOCAL = COUNT + 8
+		CALL PALAM_CONVERT, LOCAL
+		LOCALS = %STR%
+		
+		;淫妖は150未満にはならない
+		IF STR == "淫妖" && BASE:淫妖 <= 150
+			CONTINUE
+		;また、堕落が30未満の場合減少しない
+		ELSEIF STR == "堕落" && BASE:堕落 < 30
+			CONTINUE
+		ENDIF
+		
+		;淫妖の減少率は12.5％
+		IF STR == "淫妖"
+			DOWN_ABL = (BASE:STR * 125) / 1000 + 10
+		ELSE
+			DOWN_ABL = (BASE:STR * 125) / 1000 + 10
+		ENDIF
+		IF DOWN_ABL < 1
+			DOWN_ABL = 1
+		ENDIF
+		PRINTFORM %STR%　{BASE:STR}
+		BASE:STR -= DOWN_ABL
+		;堕落が30以下の場合、完全に消し去る
+		;淫妖を消す手段に使わせないために
+		;IF STR == "堕落" && BASE:堕落 < 30
+		;	BASE:堕落 = 0
+		;ENDIF
+		PRINTFORML 　→　{BASE:STR}
+	REND
+	BEGIN TURNEND
+ELSEIF RESULT == 1 && TALENT:純狐の虜
+	DRAWLINE
+	PRINTFORML 治療には1.5ヶ月かかるけど、それでもいい？
+	PRINTL [0] - 治療を依頼する
+	PRINTL [1] - やっぱりやめる
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		PRINTFORML 「分かった。%CALLNAME:TARGET%を預かるわ」
+		PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%を医師に預け、治療室を後にした
+		
+		;治療フラグを立てる
+		CFLAG:体調 |= 1p3
+		CFLAG:長期間治療の対象 |= 1p0
+		CFLAG:長期間治療の期間 = 3
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 2
+	RETURN 1
+ENDIF
+

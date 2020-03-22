@@ -1,0 +1,262 @@
+﻿;==================================================================
+;市民との交流
+;==================================================================
+@CONTACT_CITIZ
+#DIM L_LOCAL, 1
+#DIM SENT, 1
+#DIM IMP, 1
+
+$BACK_LOOP1
+DRAWLINE
+PRINTFORML ～～王宮と月の都を結ぶ道～～
+PRINTFORML 守衛「民の支持を得るのは大切な事ですからね
+PRINTFORML 　　　お気をつけて」
+PRINTL 
+CALL SETCOLOR_ABL
+PRINTFORML このコマンドでは民からの評価を得る事ができます
+RESETCOLOR
+PRINTFORML 何を行いますか？
+PRINTL 
+PRINTFORML [0] - 素を配る　　　　　　困っている人に属性の素を配ります
+PRINTFORML [1] - 慈善活動　　　　　　家事や信仰が高いといい効果が出やすくなります
+PRINTFORML [2] - 人助け　　　　　　　野党や魔物に襲われている人を助けます　※戦闘が発生します
+;[淫乱]かアライメントが-40以下
+IF CFLAG:性格 == -1 || BASE:アライメント <= 60
+	PRINTFORML [3] - 夜の慈善活動　　　　困っている人に身体を捧げます。支持を得る事はできますが……
+ENDIF
+PRINTFORML [9] - 戻る　　　　　　　　一つ前の項目に戻ります
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	CALL ELEMENT_CONVERT, FLAG:需要属性
+	
+	DRAWLINE
+	PRINTFORML どの素を配りますか？
+	PRINTFORML 現在需要が高い属性：%STR%
+	PRINTFORML 
+	
+	FOR L_LOCAL, 0, 8
+		CALL ELEMENT_CONVERT, L_LOCAL
+		
+		PRINTFORML [{L_LOCAL}] - %STR%の素　×　{ITEM:(800+L_LOCAL)}
+	NEXT
+	PRINTFORML [999] - 戻る
+	
+	$INPUT_LOOP2
+	INPUT
+	
+	IF RESULT == 999
+		GOTO BACK_LOOP1
+	ELSEIF (RESULT < 0 || RESULT > 8)
+		PRINTFORML 入力が不正です。
+		GOTO INPUT_LOOP2
+	ELSEIF !ITEM:(800+RESULT)
+		PRINTFORML その素は持っていません
+		GOTO INPUT_LOOP2
+	ELSEIF ITEM:(800+RESULT)
+		SENT = RESULT
+		
+		CALL ELEMENT_CONVERT, SENT
+		PRINTFORML %STR%の素を１つ困っている人に渡します。
+		PRINTFORML よろしいですか？
+		PRINTL 
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			PRINTFORML %CALLNAME:TARGET%は、%STR%の素を渡した……
+			
+			IF FLAG:需要属性 == SENT
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %STR%の素は需要が高いらしく、大変喜んでもらえたようだ
+				RESETCOLOR
+				LOCAL = 12
+			ELSE
+				LOCAL = 5
+			ENDIF
+			
+			CALL CALCULATION_PALAM, LOCAL, "民衆の評価"
+			ITEM:(800+SENT) -= 1
+		ELSEIF RESULT == 1
+			
+		ENDIF
+	ELSEIF RESULT == 999
+		GOTO BACK_LOOP1
+	ENDIF
+	
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML 半月の間、慈善活動を行います
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		
+		;基礎値
+		LOCAL = 10
+		
+		PRINTFORML %CALLNAME:TARGET%は道端のゴミ拾いや草むしりを行った……
+		
+		;家事+信仰/50の値を追加する
+		LOCAL += (BASE:家事+BASE:信仰)/50
+		
+		CALL CALCULATION_PALAM, LOCAL, "民衆の評価"
+		RETURN 1
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 2
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は襲われている人を発見した！
+	
+	FLAG:特殊戦闘 = 1
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	CALL BATTLE, 300+RAND:2, RAND:3+1, RAND:3+1, 0, FLAG:年数*4+RAND:5
+	FLAG:特殊戦闘 = 0
+	
+	IF RESULT == 2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は救助に成功した！
+		
+		;上昇値
+		LOCAL = 15
+		
+		BASE:民衆の評価 = LIMIT(BASE:民衆の評価+LOCAL, 0, MAXBASE:民衆の評価)
+		PRINTFORMW 民衆の評価が{LOCAL}上がった！
+		RESETCOLOR
+	ELSEIF RESULT == 1
+		PRINTFORML 助ける事ができなかった……
+		PRINTFORMW 胸が痛いが過ぎた事は仕方がない。次に繋げよう
+	ELSEIF RESULT == 0
+		PRINTFORML 命からがら逃げることに成功した
+		PRINTFORMW 民が心配だが自分の身には替えられない……
+	ELSE
+		;捕まってしまい、３回行為を受けてしまう
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は盗賊に捕まってしまった……
+		RESETCOLOR
+		DRAWLINE
+		
+		;不具合回避のため、一旦調教モードに入る
+		LOCAL = FLAG:モード
+		CFLAG:モード = 2
+		
+		FOR L_LOCAL, 1, 5
+			;上級コマンド判定
+			IF BASE:堕落 >= 500 || (BASE:堕落 >= 150 && CFLAG:性格 == 2)
+				SELECTCASE RAND:2
+					;性交
+					CASE 0
+						LOCAL = 220
+					;野外性交
+					CASE 1
+						LOCAL = 221
+						IMP = 1
+				ENDSELECT
+			;中級コマンド判定
+			ELSEIF BASE:堕落 >= 150 || L_LOCAL >= 3 || CFLAG:性格 == 2
+				SELECTCASE RAND:2
+					;指挿し入れ
+					CASE 0
+						LOCAL = 210
+					;フェラチオ
+					CASE 1
+						LOCAL = 211
+				ENDSELECT
+			;上記の判定を満たさなかった場合、基礎コマンドへ
+			ELSE
+				SELECTCASE RAND:2
+					;愛撫
+					CASE 0
+						LOCAL = 200
+					;キス
+					CASE 1
+						LOCAL = 201
+				ENDSELECT
+			ENDIF
+			
+			DRAWLINE
+			VARSET SOURCE, 0
+			SELECTCOM = LOCAL
+			CALLFORM COM{LOCAL}_T
+			CALL SOURCE_CALCURATE
+			CALL EVENTCOMEND_T
+			
+			CALL CALC_IMP, IMP
+			VARSET IMP, 0
+		NEXT
+		
+		DRAWLINE
+		PRINTFORMW 駆けてきた兵士たちに助けられた……
+		
+		;通常モードに戻る
+		CFLAG:モード = LOCAL
+	ENDIF
+	
+	RETURN 1
+	
+	;PRINTFORML 未実装です
+	;RESTART
+ELSEIF RESULT == 3 && (CFLAG:性格 == -1 || BASE:アライメント <= 60)
+	DRAWLINE
+	PRINTFORML 半月の間、困っている人に身体を捧げる事で支持を得る事ができます
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		PRINTFORML %CALLNAME:TARGET%は困っている人々相手に股を開き、野外にも関わらず交わり始めた
+		PRINTFORML 身体からは白い湯気が出て、喘ぎ声は周囲の暗闇へと響き渡った……
+		PRINTL 
+		
+		PRINTFORML 淫妖経験+12
+		PRINTFORML 堕落経験+4
+		
+		;上昇量は感度が僅かに関わり、後はスキルや称号が大きく関わる
+		;基礎上昇値は15+感度/60
+		LOCAL = 15+BASE:感度/60
+		CALL CLASS_EFFECT, "特殊", "市民との交わり", LOCAL
+		LOCAL = RESULT
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 民衆の評価が{LOCAL}上昇した！
+		RESETCOLOR
+		
+		CALL CALC_IMP, 4
+		CALL INSERT, 2, 1
+		
+		CALL COMMON_ABLUP, "淫妖", 18, "WAIT"
+		BASE:民衆の評価 = LIMIT(BASE:民衆の評価+LOCAL, 0, MAXBASE:民衆の評価)
+		EXP:淫妖経験 += 12
+		EXP:堕落経験 += 4
+		RETURN 1
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+

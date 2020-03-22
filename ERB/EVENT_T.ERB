@@ -1,0 +1,649 @@
+﻿;EVENT_T.ERB、EVENT_TRAIN、調教時及び調教前後のイベント
+@EVENTTRAIN
+#PRI
+#DIM L_LOCAL, 1
+
+;行動回数をリセットさせる
+BASE:行動回数 = MAXBASE:行動回数
+
+;ピリオドもリセットしておく
+BASE:ピリオド = MAXBASE:ピリオド
+
+;嫌悪感等をリセットする
+FOR L_LOCAL, 0, 3
+	BASE:NAME_YOTOGI(L_LOCAL) = 0
+NEXT
+
+;開始時の経験を保存しておく
+FOR L_LOCAL, 0, 10
+	TFLAG:("開始時の"+GETNAME_PALAM(L_LOCAL)+"経験") = EXP:(GETNAME_PALAM(L_LOCAL)+"経験")
+NEXT
+
+;精神と時の間を付けている場合、行動回数を2回増やす
+IF CHECKSKILL(321)
+	BASE:行動回数 += 2
+ENDIF
+
+;妊娠6ヶ月目からは2回減る
+IF CFLAG:妊娠経過日 >= 6
+	BASE:行動回数 -= 2
+;妊娠3ヶ月目以降は1回減る
+ELSEIF CFLAG:妊娠経過日 >= 3
+	BASE:行動回数 -= 1
+ENDIF
+
+;革命者を付けている場合、行動回数を2回減らす
+IF CHECKSKILL(319)
+	BASE:行動回数 -= 2
+ENDIF
+
+;最低でも1回は行動できる
+IF BASE:行動回数 < 0
+	BASE:行動回数 = 1
+ENDIF
+
+;CPも回復させる
+;疲労の割合によって回復量が変化
+
+;75％以上の場合は2/3に
+IF (BASE:ストレス >= MAXBASE:ストレス * 75 / 100) && !CHECKSKILL(310)
+	BASE:ＣＰ = MAXBASE:ＣＰ * 2 / 3
+;50％以上の場合は半分に
+ELSEIF ((BASE:ストレス >= MAXBASE:ストレス * 50 / 100) && !CHECKSKILL(310)) || ((BASE:ストレス >= MAXBASE:ストレス * 75 / 100) && CHECKSKILL(310))
+	BASE:ＣＰ = MAXBASE:ＣＰ / 2
+ELSE
+	BASE:ＣＰ = MAXBASE:ＣＰ
+ENDIF
+
+;前回実行したコマンド属性をリセットする
+CFLAG:前回実行したコマンド属性 = 0
+
+;行動前の数値を記録させる
+TFLAG:開始前の美麗 = BASE:美麗
+TFLAG:開始前の知力 = BASE:知力
+TFLAG:開始前の疎通 = BASE:疎通
+TFLAG:開始前の家事 = BASE:家事
+TFLAG:開始前の信仰 = BASE:信仰
+TFLAG:開始前の体力 = BASE:体力
+TFLAG:開始前の淫妖 = BASE:淫妖
+TFLAG:開始前の堕落 = BASE:堕落
+
+
+;主人公の射精を0に
+BASE:MASTER:2 = 0
+;いちおう調教対象と助手も
+;BASE:TARGET:2 = 0
+;SIF ASSI >= 0
+;	BASE:ASSI:2 = 0
+;BASE:TARGET:3 = 0
+;BASE:MASTER:4 = 0
+
+;射精限界数の確保
+REPEAT CHARANUM
+	IF COUNT == MASTER
+		CFLAG:COUNT:11 = 10
+		SIF TALENT:COUNT:152 == 1
+			CFLAG:COUNT:11 += 5
+	ELSEIF COUNT == ASSI
+		CFLAG:COUNT:11 = 10
+	ELSEIF COUNT == TARGET
+		CFLAG:COUNT:11 = 10
+	ENDIF
+REND
+
+;射精後の充填時間をリセット
+CFLAG:MASTER:24 = 0
+CFLAG:TARGET:24 = 0
+SIF ASSI >= 0
+	CFLAG:ASSI:24 = 0
+
+;射精フラグ、処女喪失フラグなどをリセット
+REPEAT 200
+	TFLAG:COUNT = 0
+REND
+
+;膣内にヴァギナ汚れを付加
+SIF TALENT:140 == 0
+	STAIN:6 |= 1
+SIF TALENT:MASTER:140 == 0
+	STAIN:MASTER:6 |= 1
+IF ASSI >= 0
+	SIF TALENT:ASSI:140 == 0
+		STAIN:ASSI:6 |= 1
+ENDIF
+
+;コンドーム自動装着設定のリセット
+FLAG:98 = 0
+
+;コンドーム射精フラグをリセット
+CFLAG:107 = 0
+
+;調教者は誰か
+IF ASSIPLAY == 0
+	PLAYER = MASTER
+ELSE
+	PLAYER = ASSI
+ENDIF
+
+;人魚の社で働いている場合、1/4の確率で君主が来る
+IF CFLAG:モード == 4 && !RAND:4
+	
+ENDIF
+
+
+;@EVENTTURNEND
+;#PRI
+;
+;RETURN 0
+
+@EVENTTURNEND
+
+@EVENTCOMEND
+CALL EVENTCOMEND_T
+
+@EVENTCOMEND_T
+#DIM L_LOCAL, 1
+#DIM train_point, 1
+
+
+;コマンド属性を移動させる
+CFLAG:２回前に実行したコマンド属性 = CFLAG:前回実行したコマンド属性
+CFLAG:前回実行したコマンド属性 = CFLAG:今回実行するコマンド属性
+
+;住み込みで働いている場合、ここで独自の処理を行う
+;人魚の社
+IF CFLAG:モード == 4 && CFLAG:職業 >= 20 && NAME_METAWORK(CFLAG:職業-21) == "天女の社" && !TALENT:人魚
+	;舞踏コマンドを使った場合、+2される
+	IF TFLAG:舞踏
+		BASE:変異値／人魚 += 2
+		;PRINTFORML 職業:{CFLAG:職業}
+		;人魚変異属性の衣装を身に着けていると、更に+1
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):16
+			BASE:変異値／人魚 += 1
+			;PRINTFORML 舞踏:{TFLAG:舞踏}
+		ENDIF
+	ENDIF
+ENDIF
+
+;触手かスライム要因のコマンドを使用した場合、穢れ+1
+IF TFLAG:スライム || TFLAG:触手
+	CALL CALC_IMP, 1
+ENDIF
+
+;[花粉]要因のコマンドを使用した場合
+;女性を匿っていない場合、一定の確率で攫う
+IF TFLAG:花粉 || TFLAG:スライム || TFLAG:触手 && 5+BASE:淫妖/250 >= RAND:99+1
+	IF !CFLAG:攫った女性種目 && (5+BASE:淫妖/250) <= (RAND:99+1)
+		PRINTFORM %CALLNAME:TARGET%は捕らえた
+		IF FLAG:王宮追放
+			CFLAG:攫った女性種目 = RAND:2+1
+			PRINTFORM %CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%
+		ELSE
+			;輝夜の種族によって傾向が異なる
+			;アルラウネ:女中が多い
+			;触手娘　　:ランダムで攫う
+			;スライム娘:貴族か都の娘を中心に攫う
+			IF TALENT:アルラウネ
+				;女中を2/3の確率で誘拐する
+				IF RAND:3
+					LOCAL = 1
+				;その他
+				;(貴族の娘は1/9の確率で誘拐可能)
+				ELSE
+					IF !RAND:3
+						LOCAL = 3
+					ELSE
+						LOCAL = 2
+					ENDIF
+				ENDIF
+			ELSEIF TALENT:触手娘
+				;貴族の娘は1/6の確率でのみ誘拐可能
+				IF !RAND:6
+					LOCAL = 3
+				ELSE
+					LOCAL = 1+RAND:2
+				ENDIF
+			ELSEIF TALENT:スライム娘
+				;貴族か都の娘を2/3の確率で誘拐する
+				;(貴族の娘は1/3の確率で誘拐可能)
+				IF RAND:3
+					IF !RAND:2
+						LOCAL = 3
+					ELSE
+						LOCAL = 2
+					ENDIF
+				;その他
+				ELSE
+					LOCAL = 1
+				ENDIF
+			ENDIF
+			CFLAG:攫った女性種目 = LOCAL
+			PRINTFORM %CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%
+		ENDIF
+		PRINTFORML を気に入ったようだ……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %CALLNAME:TARGET%は%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%を自室に誘拐した！
+		RESETCOLOR
+ENDIF
+
+IF CFLAG:攫った女性種目 && TFLAG:淫妖経験
+	;女性を攫っている間に淫妖コマンドを使用した場合、乱交させる
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は誘拐した%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%と交わった……
+		
+		train_point = 25+BASE:淫妖/60
+		
+		;使ったコマンドに花粉orスライムor触手属性がある場合、1.2倍になる
+		IF TFLAG:花粉 || TFLAG:スライム || TFLAG:触手
+			TIMES train_point, 1.2
+		ENDIF
+		
+		CFLAG:攫った女性／調教ポイント += MIN(1000 ,train_point)
+
+		PRINTFORML 調教ポイント({CFLAG:攫った女性／調教ポイント}/1000)
+		PRINTFORM [
+		CALL SETCOLOR_ABL
+		FOR L_LOCAL, 0, CFLAG:攫った女性／調教ポイント*60/1000
+			PRINTFORM %UNICODE(0x258A)%
+		NEXT
+		;ゲージの空白担当
+		FOR L_LOCAL, 0, (1000-CFLAG:攫った女性種目)*60/1000
+			SETCOLOR 0,0,0
+			PRINTFORM %UNICODE(0x258A)%
+		NEXT
+		RESETCOLOR
+		PRINTL ]
+	ENDIF
+	
+	;調教ポイントをチェックする
+	CALL CHECK_TRAINPOINT
+ENDIF
+
+VARSET TFLAG, 0, 201, 211
+VARSET TFLAG, 0, 230, 233
+
+;調教フラグもリセット
+TFLAG:調教経験 = 0
+TFLAG:性交 = 0
+TFLAG:成功 = 0
+TFLAG:舞踏 = 0
+TFLAG:花粉 = 0
+
+;ピリオド4の時に存在する快楽によって分岐する
+IF BASE:ピリオド == MAXBASE:ピリオド && BASE:行動回数 != 0
+	DRAWLINE
+	;快楽　90～100
+	IF BASE:快楽 >= 90
+		PRINTFORML 達せないまま終えてしまった%CALLNAME:TARGET%は自室で頻繁に自身を慰めていたらしく
+		;アライメントが100未満
+		IF BASE:アライメント < 100
+			PRINTFORML 出会った途端突然押し倒され、そのまま達するまで事を致されてしまった……
+			BASE:貞操 = LIMIT(BASE:貞操-5, 0, 200)
+		ELSE
+			PRINTFORML 次の夜伽の日に出会った時には頬を赤らめており、熱っぽい吐息を吐きだしていた
+		ENDIF
+		LOCAL = 5
+	;快楽　70～89
+	ELSEIF BASE:快楽 >= 70
+		PRINTFORML 達せないまま終えてしまった%CALLNAME:TARGET%は自室で何度か自身を慰めていたらしく
+		;アライメントが100未満
+		IF BASE:アライメント < 100
+			PRINTFORML 出会った途端突然押し倒され、そのまま達するまで事を致されてしまった……
+			BASE:貞操 = LIMIT(BASE:貞操-4, 0, 200)
+		ELSE
+			PRINTFORML 次の夜伽の日に出会った時には頬を赤らめており、熱っぽい吐息を吐きだしていた
+		ENDIF
+		LOCAL = 3
+	;快楽　50～69
+	ELSEIF BASE:快楽 >= 50
+		PRINTFORML 達せないまま終えてしまった%CALLNAME:TARGET%はしきりに太腿を擦り合わせ
+		;アライメントが100未満
+		IF BASE:アライメント < 100
+			PRINTFORML 艶めかしい声で卑猥な言葉を発し、疼きが収まらない様を表した
+			BASE:貞操 = LIMIT(BASE:貞操-3, 0, 200)
+		ELSE
+			PRINTFORML 甘い声で%CALLNAME:MASTER%を引きとめようと懇願した
+		ENDIF
+		LOCAL = 2
+	ELSE
+		LOCAL = 0
+	ENDIF
+	
+	IF LOCAL
+		PRINTFORML 淫妖経験 + {LOCAL}
+		TFLAG:淫妖経験 += LOCAL
+	ENDIF
+	BASE:快楽 = LOCAL
+ENDIF
+
+
+;1回行動終了後のチュートリアル
+IF FLAG:モード == 1 && !GETBIT(FLAG:夜伽チュートリアルビット, 1) && !FLAG:夜伽チュートリアル済
+	CALL TUTORIAL_YOTOGI, 1
+	FLAG:夜伽チュートリアルビット |= 1p1
+ENDIF
+
+
+RETURN 0
+
+@EVENTEND
+#LATER
+PRINTL 教育を終了しました
+
+;背徳経験/30だけ栄養値を-2させる
+BASE:栄養値 -= (EXP:背徳経験-TFLAG:開始時の背徳経験)/30*2
+
+;コマンド使用回数のリセット
+TFLAG:読み聞かせ使用回数 = 0
+
+
+;調教後行為のチェック
+;CALL SELF_CHECK
+
+;搾乳した母乳の売却
+;CALL SELL_MILK
+
+;調教時に録画したビデオを売却
+;CALL SELL_VIDEO
+
+;調教時に撮影した写真を売却
+;CALL SELL_PICTURE
+
+;何の珠を得られたか
+CALL JUEL_CHECK
+
+;否定の珠の打ち消しチェック
+CALL DENIAL_CHECK
+
+;媚薬状態になっていた場合、解除しておく
+IF CFLAG:媚薬状態 == 1
+	CFLAG:媚薬状態 = 0
+ENDIF
+
+;時間生産の術を付けている場合、ストレス・疲労が20減る
+IF CHECKSKILL(322)
+	DRAWLINE
+	PRINTFORML [時間生産の術]の効果により、疲労度が減少した！
+	PRINTFORM 疲労度　{BASE:ストレス}　→　
+	BASE:ストレス -= 20
+	IF BASE:ストレス < 0
+		BASE:ストレス = 0
+	ENDIF
+	PRINTFORML {BASE:ストレス}
+	DRAWLINE
+ENDIF
+
+
+;住み込みで働いている場合、評価フェイズに入る
+IF CFLAG:モード == 4 && BASE:達成値 >= 1
+	CALL WORK_EXPERIENCE
+ENDIF
+
+BEGIN ABLUP
+
+@JUEL_CHECK
+
+
+@DENIAL_CHECK
+SIF JUEL:100 == 0
+	RETURN 0
+
+$LABEL_1
+A = RAND:3 + 5
+B = JUEL:100 / 2
+SIF B == 0 && JUEL:100 > 0
+	B = 1
+SIF JUEL:A < B
+	B = JUEL:A
+JUEL:A -= B
+JUEL:100 -= B
+
+SIF B > 0
+	PRINTFORML %PALAMNAME:A%の珠×{B}減少
+SIF JUEL:100 > 0 && (JUEL:5 + JUEL:6 + JUEL:7) > 0
+	GOTO LABEL_1
+
+$LABEL_2
+A = RAND:3 + 5
+B = JUEL:100 / 2
+SIF B == 0 && JUEL:100 > 0
+	B = 1
+SIF JUEL:A < B
+	B = JUEL:A
+JUEL:A -= B
+JUEL:100 -= B
+SIF B > 0
+	PRINTFORML %PALAMNAME:A%の珠×{B}個減少
+SIF JUEL:100 > 0 && (JUEL:5 + JUEL:6 + JUEL:7) > 0
+	GOTO LABEL_2
+
+DRAWLINE
+PRINTL 否定の珠と他の珠の打ち消しが発生しています
+PRINTL その結果、
+D = 0
+REPEAT 13
+	IF COUNT == 0
+		D = 0
+	ELSEIF COUNT == 1
+		D = 1
+	ELSEIF COUNT == 2
+		D = 2
+	ELSEIF COUNT == 3
+		D = 3
+	ELSEIF COUNT == 4
+		D = 4
+	ELSEIF COUNT == 5
+		D = 5
+	ELSEIF COUNT == 6
+		D = 6
+	ELSEIF COUNT == 7
+		D = 7
+	ELSEIF COUNT == 8
+		D = 8
+	ELSEIF COUNT == 9
+		D = 9
+	ELSEIF COUNT == 10
+		D = 10
+	ELSEIF COUNT == 11
+		D = 11
+	ELSEIF COUNT == 12
+		D = 12
+	ENDIF
+	
+
+	IF D == 12
+		PRINTFORML %PALAMNAME:100%の珠×({JUEL:100})
+	ELSEIF D != 4
+		PRINTFORML %PALAMNAME:D%の珠×({JUEL:D})
+	ENDIF
+
+REND
+
+PRINTW 以上のように変化しました
+
+;-----------------------------------------
+;匿った女性種目
+;式中関数
+;本来はSTRで処理すべき項目だが、STR絡みは頻繁に変更されないこと前提で使われているので諦めることに
+;
+;使用引数
+;ARG　攫った娘のID
+;-----------------------------------------
+@CALLNAME_SHELTERGIAL, ARG
+#FUNCTIONS
+
+SELECTCASE ARG
+	CASE 1
+		LOCALS = 女中
+	CASE 2
+		LOCALS = 都の娘
+	CASE 3
+		LOCALS = 貴族の娘
+ENDSELECT
+
+RETURNF LOCALS
+
+;---------------------------------------------
+;調教ポイント増加値計算
+;式中関数
+;---------------------------------------------
+@TRAIN_POINT
+#FUNCTION
+
+LOCAL = 25 + BASE:淫妖/60
+
+RETURNF LOCAL
+
+;---------------------------------------------
+;調教ポイント確認
+;---------------------------------------------
+@CHECK_TRAINPOINT
+
+;調教ポイントが1000以上になった場合
+IF CFLAG:攫った女性／調教ポイント
+	PRINTFORML %CALLNAME:TARGET%が誘拐していた%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%は完全に%CALLNAME:TARGET%の手に堕ちたようだ
+	PRINTFORML 頭を項垂れ頬を染める%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%を見て、%CALLNAME:TARGET%は身体を抱きしめ、自分の身体に取り込み始めた
+	PRINTFORML %CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%は何度も背をビクンと震わせ、媚声をあげて秘部から液体を垂れ流す
+	PRINTFORML 瞳は桃色に染まり、籠った吐息を%CALLNAME:TARGET%に吐き出す
+	PRINTFORML そんな様子も長くは続かず、媚声や吐息の音は徐々に小さくなっていく
+	PRINTFORML やがて%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%の媚声が止んだ時、%CALLNAME_SHELTERGIAL(CFLAG:攫った女性種目)%は脚を残して%CALLNAME:TARGET%に取り込まれていた
+	PRINTFORMW その脚も太腿が大きく痙攣し、つま先の指をくっと丸めたのを最期にして完全に吸収された
+	
+	;捕らえた娘の種目によって分岐
+	;女中　　　　$10000(40％)、$20000(25％)、桃の香り(12％)、$25000(10％)、女中の服(8％)、前世譚ポイント+1(5％)
+	;都の娘　　　$5000(40％)、$10000(25％)、美麗のトリビア(12％)、疎通のトリビア(10％)、里娘の小袖(8％)、前世譚ポイント+1(5％)
+	;貴族の娘　　　$10000(40％)、$20000(25％)、美麗のトリビア(22％)、前世譚ポイント+1(13％)
+	SELECTCASE CFLAG:攫った女性種目
+		;女中
+		CASE 1
+			IF RAND:99+1 <= 40
+				CALL SETCOLOR_MONEY
+				PRINTFORML $10000を手に入れた！
+				MONEY += 10000
+				RESETCOLOR
+			ELSEIF RAND:59+1 <= 25
+				CALL SETCOLOR_MONEY
+				PRINTFORML $20000を手に入れた！
+				MONEY += 20000
+				RESETCOLOR
+			ELSEIF RAND:34+1 <= 12
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 桃の香りを手に入れた！
+				ITEM:桃の香り += 1
+				RESETCOLOR
+			ELSEIF RAND:22+1 <= 10
+				CALL SETCOLOR_MONEY
+				PRINTFORML $25000を手に入れた！
+				MONEY += 25000
+				RESETCOLOR
+			ELSEIF RAND:12+1 <= 8
+				IF !ITEM:女中の服
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 女中の服を手に入れた！
+					ITEM:女中の服 += 1
+					RESETCOLOR
+				ELSE
+					CALL SETCOLOR_MONEY
+					PRINTFORML $25000を手に入れた！
+					MONEY += 25000
+					RESETCOLOR
+				ENDIF
+			ELSE
+				LOADGLOBAL
+				;前世譚ポイントも追加する
+				PRINTFORML 前世譚ポイントを1pt獲得した！
+				IF !GLOBAL:99
+					CALL TUTORIAL_JATAKA
+				ENDIF
+				GLOBAL:99 += 1
+				SAVEGLOBAL
+			ENDIF
+		;都の娘
+		CASE 2
+			IF RAND:99+1 <= 40
+				CALL SETCOLOR_MONEY
+				PRINTFORML $5000を手に入れた！
+				MONEY += 5000
+				RESETCOLOR
+			ELSEIF RAND:59+1 <= 25
+				CALL SETCOLOR_MONEY
+				PRINTFORML $10000を手に入れた！
+				MONEY += 10000
+				RESETCOLOR
+			ELSEIF RAND:34+1 <= 12
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 美麗のトリビアを手に入れた！
+				ITEM:美麗のトリビア += 1
+				RESETCOLOR
+			ELSEIF RAND:22+1 <= 10
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 疎通のトリビアを手に入れた！
+				ITEM:疎通のトリビア += 1
+				RESETCOLOR
+			ELSEIF RAND:12+1 <= 8
+				IF !ITEM:里娘の小袖
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML 里娘の小袖を手に入れた！
+					ITEM:里娘の小袖 += 1
+					RESETCOLOR
+				ELSE
+					CALL SETCOLOR_MONEY
+					PRINTFORML $25000を手に入れた！
+					MONEY += 25000
+					RESETCOLOR
+				ENDIF
+			ELSE
+				LOADGLOBAL
+				;前世譚ポイントも追加する
+				PRINTFORML 前世譚ポイントを1pt獲得した！
+				IF !GLOBAL:99
+					CALL TUTORIAL_JATAKA
+				ENDIF
+				GLOBAL:99 += 1
+				SAVEGLOBAL
+			ENDIF
+		;貴族の娘
+		CASE 3
+			IF RAND:99+1 <= 40
+				CALL SETCOLOR_MONEY
+				PRINTFORML $10000を手に入れた！
+				MONEY += 10000
+				RESETCOLOR
+			ELSEIF RAND:59+1 <= 25
+				CALL SETCOLOR_MONEY
+				PRINTFORML $20000を手に入れた！
+				MONEY += 20000
+				RESETCOLOR
+			ELSEIF RAND:34+1 <= 12
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 美麗のトリビアを手に入れた！
+				ITEM:美麗のトリビア += 1
+				RESETCOLOR
+			ELSEIF RAND:22+1 <= 10
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML 美麗のトリビアを手に入れた！
+				ITEM:美麗のトリビア += 1
+				RESETCOLOR
+			ELSEIF RAND:12+1 <= 8
+				LOADGLOBAL
+				;前世譚ポイントも追加する
+				PRINTFORML 前世譚ポイントを1pt獲得した！
+				IF !GLOBAL:99
+					CALL TUTORIAL_JATAKA
+				ENDIF
+				GLOBAL:99 += 1
+				SAVEGLOBAL
+			ELSE
+				LOADGLOBAL
+				;前世譚ポイントも追加する
+				PRINTFORML 前世譚ポイントを1pt獲得した！
+				IF !GLOBAL:99
+					CALL TUTORIAL_JATAKA
+				ENDIF
+				GLOBAL:99 += 1
+				SAVEGLOBAL
+			ENDIF
+	ENDSELECT
+ENDIF
+
+

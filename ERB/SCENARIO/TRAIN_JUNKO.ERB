@@ -1,0 +1,52 @@
+﻿;=============================================================
+;純狐調教コマンド
+;[純狐の虜]を持つキャラが対象
+;=============================================================
+@TRAIN_JUNKO
+
+;for文専用一時変数
+#DIM L_LOCAL, 1
+
+DRAWLINE
+PRINTFORML ～～純狐の夜伽～～
+PRINTFORML 純狐「あらあら、準備が早いわね
+PRINTFORML 　　　今日も始めましょうか」
+
+;基本は匪賊誘拐時の「調教」と同じだが、実行されるコマンドが異なる
+;(実行回数は1回)
+
+;実行されるコマンド群
+;(以下の中からランダムで実行される)
+;
+;属性淫行(一番高い属性に関連した淫行をする)
+;淫具挿入(既に挿入されているものは、それを弄る地の文になる)
+;指挿し入れ
+
+DRAWLINE
+
+SELECTCASE RAND:3
+	CASE 0
+		;淫具挿入
+		LOCAL = 235
+	CASE 1
+		;指挿し入れ
+		LOCAL = 210
+	CASE 2
+		;属性淫行
+		LOCAL = 236
+ENDSELECT
+
+;コマンド実行処理
+VARSET SOURCE, 0
+SELECTCOM = LOCAL
+CALLFORM COM{LOCAL}_T
+CALL SOURCE_CALCURATE
+CALL EVENTCOMEND_T
+
+
+
+
+
+
+
+

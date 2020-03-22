@@ -1,0 +1,42 @@
+﻿;-------------------------------------------------
+;走り込み
+;基礎コマンド
+;　なぜか評価も上がる
+;-------------------------------------------------
+@COM3
+
+;消費CP
+LOSEBASE:0 = 1
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+
+PRINTL 走り込み
+STR:0 = 走り込み
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+;獲得基礎能力
+SOURCE:体力 = 2
+
+;獲得経験
+TFLAG:体力経験 = 2
+
+;評価上昇値
+LOCAL = 2
+
+CALL SETCOLOR_VALUE
+PRINTFORML 評価が{LOCAL}上がった！
+PRINTFORML 君主の評価が{LOCAL/2}上がった！
+CFLAG:評価 += LOCAL
+BASE:君主の評価 += LOCAL/2
+RESETCOLOR
+
+RETURN 1
+

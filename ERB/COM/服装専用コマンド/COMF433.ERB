@@ -1,0 +1,46 @@
+﻿;-------------------------------------------------
+;触手召喚
+;服装固有コマンド
+;ゴスロリ属性の服限定
+;淫妖25な上に経験も20増加するが、疲労度が30回復する。
+;-------------------------------------------------
+@COM433
+
+;消費CP
+LOSEBASE:0 = 12
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+PRINTL 触手召喚
+STR:0 = 触手召喚
+
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+SOURCE:知力 = 8
+SOURCE:淫妖 = 25
+SOURCE:堕落 = 15
+
+TFLAG:知力経験 = 7
+TFLAG:淫妖経験 = 20
+TFLAG:堕落経験 = 5
+
+LOSEBASE:アライメント = -3
+
+;穢れ加算処理
+CALL CALC_IMP, 4
+
+CALL SETCOLOR_PALAMUP
+LOCAL = LIMIT(BASE:ストレス, 0, 30)
+PRINTFORMW 疲労度が{LOCAL}回復した！
+RESETCOLOR
+BASE:ストレス = LIMIT(BASE:ストレス-30, 0, 100)
+
+RETURN 1
+

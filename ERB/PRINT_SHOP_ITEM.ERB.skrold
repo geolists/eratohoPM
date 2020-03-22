@@ -1,0 +1,2960 @@
+﻿;================================================
+;販売アイテム表示
+;ARG　表示するアイテムの種類
+;================================================
+;店主の台詞、購入処理等は「ITEM.ERB」に格納されています
+
+
+@PRINT_SHOP_ITEM, ARG
+#DIM WORD, 2
+#DIM kosuu, 1
+#DIM kyosei, 2
+#DIM kanraku, 1
+#DIM L_LOCAL, 1
+#DIM check, 1
+#DIM ITEM_LIST, 6
+
+$BACK_LOOP
+DRAWLINE
+PRINTFORML 何を購入しますか？
+PRINTFORM 現在の所持金(
+CALL SETCOLOR_MONEY
+PRINTFORM ${MONEY}
+RESETCOLOR
+PRINTL )
+DRAWLINE
+;1:　衣装販売
+IF ARG == 1
+	;通常の衣装
+	REPEAT 6
+		LOCAL = COUNT + 1
+		
+		IF LOCAL == 6
+			LOCAL = 8
+		ENDIF
+		
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;姫メイドレスは姫様属性とメイド属性を50％ずつ持っていないと購入できない
+		ELSEIF LOCAL == 8 && (CFLAG:属性／メイド < 50 || CFLAG:属性／姫様 < 50)
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,26,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	REND
+	
+	;コスプレ用
+	;それぞれ経験が高くないと売り出されない
+	;普段着を持っていない場合も解禁される
+	REPEAT 7
+		LOCAL = COUNT + 10
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;メイド服は家事経験が20以上で売り出される
+		ELSEIF LOCAL == 10 && EXP:家事経験 < 20 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		;修道服は信仰経験が20以上で売り出される
+		ELSEIF LOCAL == 11 && EXP:信仰経験 < 20 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		;ゴスロリは知力経験が20以上で売り出される
+		ELSEIF LOCAL == 12 && EXP:知力経験 < 20 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		;ドレスは背徳経験が20以上で売り出される
+		ELSEIF LOCAL == 13 && EXP:背徳経験 < 20 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		;呪詛の布切れは普段着を持っていない場合のみ購入可
+		ELSEIF LOCAL == 14 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		;各種道着は体力経験が20以上で売り出される
+		ELSEIF (LOCAL == 15 || LOCAL == 16) && EXP:体力経験 < 20 && ITEM:0
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,26,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			
+			;呪詛の布切れ以外は値段を5倍にする
+			IF LOCAL != 14
+				A *= 5
+			ENDIF
+			
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	REND
+	
+	;中級コスプレ服
+	;それぞれの割合が15％を超えると売り出される
+	REPEAT 7
+		IF COUNT == 4
+			COUNT += 1
+		ENDIF
+		
+		LOCAL = COUNT + 20
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;メイド服属性が15％必要
+		;以下、同様の条件で解禁
+		ELSEIF LOCAL == 20 && CFLAG:属性／メイド < 15
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 21 && CFLAG:属性／シスター < 15
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 22 && CFLAG:属性／ゴスロリ < 15
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 23 && CFLAG:属性／花嫁 < 15
+			ITEMSALES:LOCAL = 0
+		ELSEIF (LOCAL == 25 || LOCAL == 26) && CFLAG:属性／武士 < 15
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,26,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	REND
+	
+	;上級コスプレ服
+	;それぞれの割合が30％を超えると売り出される
+	REPEAT 7
+		IF COUNT == 4
+			COUNT += 1
+		ENDIF
+		
+		LOCAL = COUNT + 30
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;メイド服属性が30％必要
+		;以下、同様の条件で解禁
+		ELSEIF LOCAL == 30 && CFLAG:属性／メイド < 30
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 31 && CFLAG:属性／シスター < 30
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 32 && CFLAG:属性／ゴスロリ < 30
+			ITEMSALES:LOCAL = 0
+		ELSEIF LOCAL == 33 && CFLAG:属性／花嫁 < 30
+			ITEMSALES:LOCAL = 0
+		ELSEIF (LOCAL == 35 || LOCAL == 36) && CFLAG:属性／武士 < 30
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,26,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	REND
+	
+	LOCAL = 50
+	
+	;その他衣装
+	;それぞれに条件がある
+	FOR L_LOCAL, 50, 71
+		IF L_LOCAL == 52
+			L_LOCAL = 53
+		ELSEIF L_LOCAL == 55
+			L_LOCAL = 56
+		ELSEIF L_LOCAL == 61
+			L_LOCAL = 65
+		ELSEIF L_LOCAL == 66
+			L_LOCAL = 69
+		ENDIF
+		LOCAL = L_LOCAL
+		
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;ブレザーは知力60以上でないと売り出されない
+		ELSEIF LOCAL == 50 && BASE:知力 < 60
+			ITEMSALES:LOCAL = 0
+		;ワンピース制服は知力80でないと売り出されない
+		ELSEIF LOCAL == 51 && BASE:知力 < 80
+			ITEMSALES:LOCAL = 0
+		;特殊修道服はシスター属性が20％以上ないと売り出されない
+		ELSEIF (LOCAL == 53 || LOCAL == 54) && CFLAG:属性／シスター < 20
+			ITEMSALES:LOCAL = 0
+		;裸エプロンは花嫁属性が20％以上ないと売り出されない
+		ELSEIF LOCAL == 56 && CFLAG:属性／花嫁 < 20
+			ITEMSALES:LOCAL = 0
+		;エプロンメイドはメイド属性が30％以上ないと売り出されない
+		ELSEIF LOCAL == 57 && CFLAG:属性／メイド < 30
+			ITEMSALES:LOCAL = 0
+		;エプロンドレスは花嫁属性が20％以上ないと売り出されない
+		ELSEIF LOCAL == 58 && CFLAG:属性／花嫁 < 20
+			ITEMSALES:LOCAL = 0
+		;姫巫女装束は姫様属性とシスター属性を50％ずつ持っていないといけない
+		ELSEIF LOCAL == 59 && (CFLAG:属性／シスター < 50 || CFLAG:属性／姫様 < 50)
+			ITEMSALES:LOCAL = 0
+		;ゴスロリメイド服はメイド属性とゴスロリ属性を50％ずつ持っていないといけない
+		ELSEIF LOCAL == 60 && (CFLAG:属性／メイド < 50 || CFLAG:属性／ゴスロリ < 50)
+			ITEMSALES:LOCAL = 0
+		;姉妹の書生服は[姉妹の許可]が無いと販売されない
+		ELSEIF LOCAL == 65 && !TALENT:姉妹の許可
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,26,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL += 1
+	NEXT
+
+ENDIF
+
+;2:　娼婦用衣装
+IF ARG == 2
+	REPEAT 4
+		LOCAL = COUNT + 100
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,20,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	REND
+ENDIF
+
+;3:　裏アイテム
+IF ARG == 3
+	LOCAL = 496
+	REPEAT 10
+		IF LOCAL == 498
+			LOCAL = 500
+		ELSEIF LOCAL == 502
+			LOCAL = 506
+		ELSEIF LOCAL == 508
+			LOCAL = 527
+		ELSEIF LOCAL == 528
+			LOCAL = 529
+		ELSEIF LOCAL == 530
+			LOCAL = 537
+		ELSEIF LOCAL == 538
+			DRAWLINE
+			LOCAL = 545
+		ENDIF
+		
+		IF ITEM:LOCAL
+			ITEMSALES:LOCAL = 0
+		;ロープ付き首輪は隷属が入ってないと売られない
+		ELSEIF LOCAL == 506 && !BASE:隷属
+			ITEMSALES:LOCAL = 0
+		;天使の施しは隷属が1000以上入ってないと売られない
+		;2013/08/28　販売中止。再販は恐らく2ヶ月近く後になるでしょう
+		;2013/09/01　名称変更しました(天使の施し→インコヒーレンス)。販売再開
+		ELSEIF LOCAL == 527 && BASE:隷属 < 1000
+			ITEMSALES:LOCAL = 0
+		ELSE
+			ITEMSALES:LOCAL = 1
+			PRINTFORM [{LOCAL,3}] - %ITEMNAME:LOCAL,20,LEFT%
+			BOUGHT = LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL += 1
+	REND
+ENDIF
+
+;4:　装飾品
+IF ARG == 4
+	LOCAL:1 = 400
+	REPEAT 6
+		IF LOCAL:1 == 402
+			LOCAL:1 = 410
+		ELSEIF LOCAL:1 == 412
+			LOCAL:1 = 420
+		ENDIF
+		
+		IF ITEM:(LOCAL:1)
+			ITEMSALES:(LOCAL:1) = 0
+		ELSE
+			ITEMSALES:(LOCAL:1) = 1
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+			BOUGHT = LOCAL:1
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL:1 += 1
+	REND
+	DRAWLINE
+	
+	LOCAL:1 = 428
+	;救済の書
+	IF !ITEM:(LOCAL:1)
+		ITEMSALES:(LOCAL:1) = 1
+		PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+		BOUGHT = LOCAL:1
+		CALL SETCOLOR_MONEY
+		CALL ITEM_MONEY
+		PRINTFORML ${A,6}
+		RESETCOLOR
+	ENDIF
+	
+	;入浴剤
+	FOR L_LOCAL, 490, 496
+		IF ITEM:L_LOCAL
+			ITEMSALES:L_LOCAL = 0
+		ELSE
+			ITEMSALES:L_LOCAL = 1
+			PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),20,LEFT%
+			BOUGHT = L_LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	NEXT
+ENDIF
+
+;5:　技巧
+IF ARG == 5
+	LOCAL:1 = 350
+	REPEAT 3
+		IF TALENT:(LOCAL:1)
+			ITEMSALES:(LOCAL:1) = 0
+		ELSE
+			ITEMSALES:(LOCAL:1) = 1
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+			BOUGHT = LOCAL:1
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL:1 += 1
+	REND
+ENDIF
+
+;6:　裏装飾品
+IF ARG == 6
+	LOCAL:1 = 503
+	
+	kyosei = 0
+	kyosei:1 = 0
+	kanraku = 0
+	
+	;**ここからPetitPatch4**
+	;大きく書き換えるので原型保持
+	;FOR COUNT, 2, 2+FLAG:攫った姉妹の数
+	;	IF GETBIT(CFLAG:COUNT:矯正アイテム, 0)
+	;		kyosei += 1
+	;	ENDIF
+	;	
+	;	IF GETBIT(FLAG:姉妹陥落フラグ, COUNT+1)
+	;		kanraku += 1
+	;	ENDIF
+	;	
+	;	IF GETBIT(CFLAG:COUNT:矯正アイテム, 1)
+	;		kyosei:1 += 1
+	;	ENDIF
+	;NEXT
+	
+	;里娘の分を考慮する必要がある
+	;とりあえず素質で判断するように
+	;CHARANUM使えば落ちないよね
+	FOR COUNT, 2, CHARANUM
+		;夢見る妖精モードなら堕落のお香について輝夜も見る必要があるはず、たぶん
+		IF TALENT:COUNT:530 || TALENT:COUNT:553 || TALENT:COUNT:554
+			IF GETBIT(CFLAG:COUNT:矯正アイテム, 0)
+				kyosei += 1
+			ENDIF
+			IF GETBIT(CFLAG:COUNT:矯正アイテム, 1)
+				kyosei:1 += 1
+			ENDIF
+		ENDIF
+		;問題は数なのでこっちはこのまま
+		IF GETBIT(FLAG:姉妹陥落フラグ, COUNT+1)
+			kanraku += 1
+		ENDIF
+	NEXT
+	;**ここまで**(その1)
+	
+	REPEAT 4
+		IF LOCAL:1 != 503 && ITEM:(LOCAL:1)
+			ITEMSALES:(LOCAL:1) = 0
+		;矯正アイテムは装着できる姉妹がいなければならない
+		ELSEIF LOCAL:1 == 504 && (kyosei == FLAG:攫った姉妹の数 || kanraku == FLAG:攫った姉妹の数)
+			ITEMSALES:(LOCAL:1) = 0
+		;矯正アイテムは装着できる姉妹がいなければならない
+		ELSEIF LOCAL:1 == 505 && (kyosei:1 == FLAG:攫った姉妹の数 || kanraku == FLAG:攫った姉妹の数)
+			ITEMSALES:(LOCAL:1) = 0
+		ELSE
+			ITEMSALES:(LOCAL:1) = 1
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+			BOUGHT = LOCAL:1
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL:1 += 1
+	REND
+ENDIF
+
+;7:　娼婦用技能
+IF ARG == 7
+	LOCAL:1 = 380
+	REPEAT 1
+		IF TALENT:(LOCAL:1) && LOCAL:1 != 380
+			ITEMSALES:(LOCAL:1) = 0
+		;謎の魅力はLv3まである
+		;Lv3にするには　$80000に加えて淫妖経験が800必要
+		ELSEIF LOCAL:1 == 380 && TALENT:380 == 2
+			IF EXP:淫妖経験 <= 800
+				ITEMSALES:(LOCAL:1) = 0
+				BOUGHT = LOCAL:0
+				SETCOLOR 128, 128, 128
+			ELSE
+				ITEMSALES:(LOCAL:1) = 1
+				BOUGHT = LOCAL:1
+			ENDIF
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%　Lv3　-　淫妖経験が800必要
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		;謎の魅力はLv3まである
+		;Lv3にするには　$80000に加えて淫妖経験が400必要
+		ELSEIF LOCAL:1 == 380 && TALENT:380 == 1
+			IF EXP:淫妖経験 <= 400
+				ITEMSALES:(LOCAL:1) = 0
+				BOUGHT = LOCAL:0
+				SETCOLOR 128, 128, 128
+			ELSE
+				ITEMSALES:(LOCAL:1) = 1
+				BOUGHT = LOCAL:1
+			ENDIF
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%　Lv2　-　淫妖経験が400必要
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		;謎の魅力がLv3の場合、ここでストップをかける
+		ELSEIF LOCAL:1 == 380 && TALENT:380 >= 3
+			ITEMSALES:(LOCAL:1) = 0
+		ELSE
+			ITEMSALES:(LOCAL:1) = 1
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+			BOUGHT = LOCAL:1
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+		LOCAL:1 += 1
+	REND
+ENDIF
+
+;8:　消耗品
+IF ARG == 8
+	LOCAL:1 = 533
+	REPEAT 4
+		;淡水色の聖水は一度しか販売されない
+		IF FLAG:淡水色の聖水購入済み && LOCAL:1 == 536
+			BREAK
+		ENDIF
+		ITEMSALES:(LOCAL:1) = 1
+		IF LOCAL:1 == 536
+			CALL SETCOLOR_PALAMUP
+			PRINTFORM ☆[{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),18,LEFT%
+		ELSE
+			PRINTFORM [{LOCAL:1,3}] - %ITEMNAME:(LOCAL:1),20,LEFT%
+		ENDIF
+		BOUGHT = LOCAL:1
+		CALL SETCOLOR_MONEY
+		CALL ITEM_MONEY
+		IF LOCAL:1 == 536
+			PRINTFORML ${A,6}　一個限りの貴重品！
+		ELSE
+			PRINTFORML ${A,6}
+		ENDIF
+		RESETCOLOR
+		LOCAL:1 += 1
+	REND
+	FOR L_LOCAL, 810, 818
+		IF L_LOCAL != 813 && L_LOCAL != 814
+			ITEMSALES:(L_LOCAL) = 1
+			PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),20,LEFT%
+			BOUGHT = L_LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	NEXT
+	
+	L_LOCAL = 822
+	
+	ITEMSALES:(L_LOCAL) = 1
+	PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),20,LEFT%
+	BOUGHT = L_LOCAL
+	CALL SETCOLOR_MONEY
+	CALL ITEM_MONEY
+	PRINTFORML ${A,6}
+	RESETCOLOR
+	
+	L_LOCAL = 824
+	
+	ITEMSALES:(L_LOCAL) = 1
+	PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),20,LEFT%
+	BOUGHT = L_LOCAL
+	CALL SETCOLOR_MONEY
+	CALL ITEM_MONEY
+	PRINTFORML ${A,6}
+	RESETCOLOR
+	
+	;翡翠の指輪は主人への友好度が500を超えないと販売されない
+	IF NO:TARGET == 1 && CFLAG:主人への友好度 >= 500
+		L_LOCAL = 710
+		
+		ITEMSALES:(L_LOCAL) = 1
+		PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),20,LEFT%
+		BOUGHT = L_LOCAL
+		CALL SETCOLOR_MONEY
+		CALL ITEM_MONEY
+		PRINTFORML ${A,6}
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+;10:　装備品
+IF ARG == 10
+	FOR L_LOCAL, 560, 601
+		IF L_LOCAL <= 564 || (L_LOCAL >= 575 && L_LOCAL <= 579)
+			IF ITEM:L_LOCAL
+				ITEMSALES:L_LOCAL = 0
+			ELSE
+				ITEMSALES:L_LOCAL = 1
+				PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:L_LOCAL,20,LEFT%
+				BOUGHT = L_LOCAL
+				CALL SETCOLOR_MONEY
+				CALL ITEM_MONEY
+				PRINTFORML ${A,6}
+				RESETCOLOR
+			ENDIF
+			;弓と刀の境目に線を引く
+			IF L_LOCAL == 564
+				DRAWLINE
+			ENDIF
+		ENDIF
+	NEXT
+	DRAWLINE
+	FOR L_LOCAL, 601, 603
+		IF ITEM:L_LOCAL >= 100
+			ITEMSALES:L_LOCAL = 0
+		ELSE
+			ITEMSALES:L_LOCAL = 1
+			PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:L_LOCAL,20,LEFT%
+			BOUGHT = L_LOCAL
+			CALL SETCOLOR_MONEY
+			CALL ITEM_MONEY
+			PRINTFORML ${A,6}
+			RESETCOLOR
+		ENDIF
+	NEXT
+ENDIF
+
+;11:行商アイテム
+;・傾国のロープ
+;・高脂肪ミルク
+;以下ランダムに2種類
+;・職業固有のアクセサリー
+IF ARG == 11
+	;傾国のロープ
+	L_LOCAL = 68
+	
+	ITEMSALES:L_LOCAL = 1
+	IF ITEM:L_LOCAL
+		SETCOLOR 96,96,96
+	ENDIF
+	PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:L_LOCAL,20,LEFT%
+	BOUGHT = L_LOCAL
+	CALL SETCOLOR_MONEY
+	CALL ITEM_MONEY
+	PRINTFORML ${A,6}
+	RESETCOLOR
+	
+	;高脂肪ミルク
+	L_LOCAL = 539
+	
+	ITEMSALES:L_LOCAL = 1
+	IF FLAG:行商ミルク購入済み
+		SETCOLOR 96,96,96
+	ENDIF
+	PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:L_LOCAL,20,LEFT%
+	BOUGHT = L_LOCAL
+	CALL SETCOLOR_MONEY
+	CALL ITEM_MONEY
+	PRINTFORML ${A,6}
+	RESETCOLOR
+	
+	
+	
+	FOR L_LOCAL, 0, 3
+		;部位とアドレスをそれぞれランダムに選出
+		LOCAL:2 = FLAG:(810+L_LOCAL)
+		
+		ITEMSALES:(LOCAL:2) = 1
+		IF ITEM:(LOCAL:2)
+			SETCOLOR 96,96,96
+		ENDIF
+		PRINTFORM [{LOCAL:2,3}] - %ITEMNAME:(LOCAL:2),20,LEFT%
+		BOUGHT = (LOCAL:2)
+		CALL SETCOLOR_MONEY
+		CALL ITEM_MONEY
+		PRINTFORML ${A,6}
+		RESETCOLOR
+	NEXT
+	
+ENDIF
+
+;12:　娼婦用消耗品
+;Ver0.997時点では娼婦のオーラのみ
+IF ARG == 12
+	;娼婦のオーラ
+	L_LOCAL = 545
+	
+	ITEMSALES:L_LOCAL = 1
+	PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:L_LOCAL,20,LEFT%
+	BOUGHT = L_LOCAL
+	CALL SETCOLOR_MONEY
+	CALL ITEM_MONEY
+	PRINTFORML ${A,6}
+	RESETCOLOR
+ENDIF
+
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF ARG == 11 && RESULT == 539 && FLAG:行商ミルク購入済み
+	PRINTL 売り切れです
+	GOTO BACK_LOOP
+ELSEIF RESULT == 68 && ITEM:RESULT
+	PRINTL そのアイテムは既に持っています
+	GOTO BACK_LOOP
+ELSEIF INRANGE(RESULT, 400, 450) && ITEM:RESULT
+	PRINTL そのアイテムは既に持っています
+	GOTO BACK_LOOP
+ELSEIF INRANGE(RESULT , 0 , VARSIZE("ITEM") - 1) && ITEMSALES:RESULT == 1
+	BOUGHT = RESULT
+	CALL ITEM_MONEY
+	;呪詛の布切れ以外は値段を5倍にする
+	IF INRANGE( BOUGHT, 10, 19 ) && ITEMNAME:BOUGHT != "呪詛の布切れ"
+		A *= 5
+	ENDIF
+	DRAWLINE
+	PRINTFORML ○%ITEMNAME:BOUGHT%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{BOUGHT}
+	IF ARG == 1 || ARG == 2 || BOUGHT == 68
+		LOCAL = CFLAG:服装
+		CALL DATA_CHANGE_CLOTHE, BOUGHT, "表示変更"
+		CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+	ENDIF
+	DRAWLINE
+	
+	;最悪の目覚めとジェルクリーナー、退魔の松明のみ複数購入可
+	IF BOUGHT == 503 || BOUGHT == 601 || BOUGHT == 602
+		IF MONEY < A
+			PRINTL 所持金が足りないようですね……
+			GOTO BACK_LOOP
+		ENDIF
+		
+		PRINTL いくつ買いますか？(0でキャンセル)
+		PRINTL [1] - 1個
+		IF MONEY >= A*2
+			PRINTL [2] - 2個
+		ENDIF
+		IF MONEY >= A*5
+			PRINTL [5] - 5個
+		ENDIF
+		PRINTFORML [{MONEY/A}] - 買えるだけ
+		PRINTFORML [0] - キャンセル
+
+		$INPUT_LOOP_503
+		INPUT
+		
+		;0が入力された場合、キャンセルする
+		IF RESULT == 0
+			GOTO BACK_LOOP
+		ELSEIF MONEY >= A*RESULT
+			A *= RESULT
+			kosuu = RESULT
+		ELSE
+			PRINTL 所持金が足りませんね……
+			GOTO INPUT_LOOP_503
+		ENDIF
+	ENDIF
+	
+	IF BOUGHT >= 490 && BOUGHT <= 500
+		PRINTFORML %ITEMNAME:BOUGHT%は${A}となります。購入しますか？
+		PRINTFORML （10ターン使用すると無くなります）
+	ELSE
+		PRINTFORML %ITEMNAME:BOUGHT%は${A}となります。購入しますか？
+	ENDIF
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		IF MONEY < A
+			PRINTL 所持金が足りないようですね……
+			GOTO BACK_LOOP
+		;**ここからPetitPatch4**（その2）
+		;現在手元にいる姉妹が全員陥落している場合、矯正アイテムを購入できない
+		ELSEIF BOUGHT == 504 || BOUGHT == 505
+			;変数の初期化
+			VARSET check, 0
+			FOR COUNT, 2, CHARANUM
+				;該当するアイテムを装着していない場合、表示
+				;(陥落していないことも条件に入る)
+				;姉妹陥落フラグじゃなくてこっちを使うことに
+				;IF !GETBIT(CFLAG:COUNT:矯正アイテム, BOUGHT-504) && !GETBIT(FLAG:姉妹陥落フラグ, COUNT-1)
+				IF (TALENT:COUNT:530 || TALENT:COUNT:553 || TALENT:COUNT:554) && !GETBIT(CFLAG:COUNT:矯正アイテム, BOUGHT-504) && !CFLAG:COUNT:対象選択可能
+					LOCAL:COUNT = 1
+					check += 1
+				ELSE
+					LOCAL:COUNT = 0
+				ENDIF
+			NEXT
+			;手元に居る姉妹が全員陥落している
+			IF !check
+				PRINTL 装着する対象がいませんね……
+				GOTO BACK_LOOP
+			ENDIF
+		ENDIF
+		MONEY -= A
+		
+		;矯正アイテムの場合、装着対象を選ぶ
+		IF BOUGHT == 504 || BOUGHT == 505
+			PRINTL 誰に装着しますか？
+			FOR COUNT, 2, CHARANUM
+				;該当するアイテムを装着していない場合、表示
+				;(陥落していないことも条件に入る)
+				IF LOCAL:COUNT
+					PRINTFORML [{COUNT}] - %CALLNAME:COUNT%
+				ENDIF
+			NEXT
+			
+			$INPUT_LOOP_S
+			INPUT
+			
+			IF LOCAL:RESULT && RESULT <= CHARANUM-1
+				PRINTFORML %CALLNAME:RESULT%に%ITEMNAME:BOUGHT%を装着した
+				IF BOUGHT == 504
+					CFLAG:RESULT:矯正アイテム |= 1p0
+				ELSEIF BOUGHT == 505
+					CFLAG:RESULT:矯正アイテム |= 1p1
+				ENDIF
+			ELSE
+				PRINTL 入力が不正です
+				GOTO INPUT_LOOP_S
+			ENDIF
+		;**ここまで**
+		
+		;技能の場合
+		ELSEIF ARG == 5 || ARG == 7
+			;謎の魅力はレベルアップ制
+			IF BOUGHT == 380
+				TALENT:BOUGHT += 1
+				PRINTFORML %TALENTNAME:BOUGHT%　Lv{TALENT:BOUGHT}を習得した
+			ELSE
+				TALENT:BOUGHT = 1
+				PRINTFORML %TALENTNAME:BOUGHT%を習得した
+			ENDIF
+		;装備品の場合
+		ELSEIF ARG == 10 && BOUGHT <= 600
+			PRINTFORML ここで装備しますか？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:BOUGHT%を装備した
+				CFLAG:装備 = BOUGHT
+			ENDIF
+			ITEM:BOUGHT += 1
+		;入浴剤の場合
+		ELSEIF BOUGHT >= 490 && BOUGHT <= 499
+			ITEM:BOUGHT = 10
+			PRINTFORML %ITEMNAME:BOUGHT%を購入した
+			
+			;装備条件を満たしている場合、その場で変更できるようにする
+			IF ABLE_ACC(BOUGHT)
+				PRINTFORML 早速[入浴剤]として設定しますか？
+				PRINTL [0] - はい
+				PRINTL [1] - いいえ
+				
+				CALL SENTAKUSHI, 2
+				
+				IF !RESULT
+					PRINTFORML %ITEMNAME:BOUGHT%を入浴剤として設定した！
+					CFLAG:日用品／入浴剤 = BOUGHT
+				ENDIF
+			ENDIF
+		ELSE
+			IF BOUGHT == 503 || (BOUGHT >= 601 && ARG == 10)
+				ITEM:BOUGHT += kosuu
+			;消耗品の場合は増やす
+			ELSEIF ARG == 8
+				ITEM:BOUGHT += 1
+			;高脂肪ミルクの場合も増やす
+			ELSEIF BOUGHT == 539
+				ITEM:BOUGHT += 1
+			ELSE
+				ITEM:BOUGHT = 1
+			ENDIF
+			PRINTFORML %ITEMNAME:BOUGHT%を購入した
+			
+			;行商ミルク
+			IF ARG == 11 && BOUGHT == 539
+				FLAG:行商ミルク購入済み = 1
+			ENDIF
+			;淡水色の聖水
+			IF ARG == 8 && BOUGHT == 536
+				FLAG:淡水色の聖水購入済み = 1
+			ENDIF
+		ENDIF
+		GOTO BACK_LOOP
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSE
+	PRINTL 売っていません
+	GOTO INPUT_LOOP
+ENDIF
+
+;================================================
+;アイテムの説明
+;14文字目から記入するようにスペースを調整する
+;================================================
+
+;-------------------------------------------
+;0,普段着
+;-------------------------------------------
+@ITEM_DETAIL_0
+PRINTFORML %CALLNAME:TARGET%が何時も着ている服
+PRINTL 　上質な布が使われているらしい
+PRINTL 
+
+;-------------------------------------------
+;1,制服
+;-------------------------------------------
+@ITEM_DETAIL_1
+PRINTL 学校で定められている制服
+PRINTL 
+
+;-------------------------------------------
+;2,月のワンピース
+;-------------------------------------------
+@ITEM_DETAIL_2
+PRINTL 綿月姉妹が着ているのと似た意匠を持つ服
+PRINTL 　着ると親近感が沸く
+PRINTL 
+
+;-------------------------------------------
+;3,ミニスカート＆ノースリーブ
+;-------------------------------------------
+@ITEM_DETAIL_3
+PRINTL 露出の多い服装
+PRINTL 　美しさに興味が出るが、道行く男性をも刺激してしまう
+PRINTL 
+
+;-------------------------------------------
+;4,キャミソール
+;-------------------------------------------
+@ITEM_DETAIL_4
+PRINTL 非常に露出度が高い服装
+PRINTL 　ボディラインが正確に出るので気を払うようになるが、男性を強く刺激してしまう
+PRINTL 
+
+;-------------------------------------------
+;5,ボーイッシュな服
+;-------------------------------------------
+@ITEM_DETAIL_5
+PRINTL 地味な色をしたズボンとシャツで構成された服
+PRINTL 　自分らしさは相殺されてしまうが、男性の目にも止まらない
+PRINTL 
+
+;-------------------------------------------
+;6,透明な服
+;-------------------------------------------
+@ITEM_DETAIL_6
+PRINTL 心が清らかな者にしか見えない服
+PRINTL 　とある逸話が残っているが、今では知る者はほとんどおらず
+PRINTL 　別の目的で用いられることが多い
+PRINTL 
+
+;-------------------------------------------
+;7,天の羽衣
+;-------------------------------------------
+@ITEM_DETAIL_7
+PRINTL 天人が着ている服
+PRINTL 　地上に降りた月の民らがこれを着ると地上の記憶を忘れる代わりに月の記憶を取り戻すらしい
+PRINTL 
+
+
+;-------------------------------------------
+;8,姫メイドレス
+;-------------------------------------------
+@ITEM_DETAIL_8
+PRINTL 普段着にメイド服の意匠を施した物
+PRINTL 　家事に適してなさそうだが、これでも家事をこなせるよう工夫されているらしい
+PRINTL 
+
+;-------------------------------------------
+;10,メイド服
+;-------------------------------------------
+@ITEM_DETAIL_10
+PRINTL メイドが着ている服
+PRINTL 　きらびやかなデザインが目につく
+PRINTL 
+;本来はそんな仕様じゃないらしいのですが…気にしないでおきましょう
+;キリがないです
+
+;-------------------------------------------
+;11,修道服
+;-------------------------------------------
+@ITEM_DETAIL_11
+PRINTL シスターが着ている服
+PRINTFORML 　髪の毛をすっぽりと覆ってしまうデザインだが、%CALLNAME:TARGET%の長髪までは収まり切らない
+PRINTL 
+
+;-------------------------------------------
+;12,ゴスロリ
+;-------------------------------------------
+@ITEM_DETAIL_12
+PRINTL 姫への憧れの象徴を表現し、幼い少女のイメージを強調する服
+PRINTL 　本物の姫が着るとなぜか魔術を究めたくなるらしい
+PRINTL 
+
+
+;-------------------------------------------
+;13,ドレス
+;-------------------------------------------
+@ITEM_DETAIL_13
+PRINTL 洋風のお姫様なら必ずといっていいほど着用しているであろう服
+PRINTL 　残念ながら(？)　和風なお姫様なので普段着は和服に近い意匠となっている
+PRINTL 
+
+;-------------------------------------------
+;14,呪詛の布切れ
+;-------------------------------------------
+@ITEM_DETAIL_14
+PRINTL 淫魔が呪いを込めたと言い伝えられている布
+PRINTL 　貴重な物でもなくとある場所にはよく落ちていたりする
+PRINTL 
+
+;-------------------------------------------
+;15,剣道着
+;-------------------------------------------
+@ITEM_DETAIL_15
+PRINTL 剣道を嗜む者が身に着ける衣服
+PRINTL 　剣道は精神鍛錬の為によく行われている
+PRINTL 
+
+;-------------------------------------------
+;16,弓道着
+;-------------------------------------------
+@ITEM_DETAIL_16
+PRINTL 弓道を嗜む者が身に着ける衣服
+PRINTL 　剣道着とは違い裾の広がり方が美しい
+PRINTL 
+
+;-------------------------------------------
+;20,メイド服(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_20
+PRINTL メイドが着ている服
+PRINTL 　きらびやかなデザインが目につく
+PRINTL 　スカートの丈の長さが短くなっただけでなく、その他の装飾も価値が高い物になっているようだ
+PRINTL 
+
+;-------------------------------------------
+;21,修道服(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_21
+PRINTL シスターが着ている服
+PRINTFORML 　髪の毛をすっぽりと覆ってしまうデザインだが、%CALLNAME:TARGET%の長髪までは収まらない
+PRINTL 　スカートの丈の長さが短くなっただけでなく、その他の装飾も価値が高い物になっているようだ
+PRINTL 
+
+;-------------------------------------------
+;22,ゴスロリ(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_22
+PRINTL 姫への憧れの象徴を表現し、幼い少女のイメージを強調する服
+PRINTL 　本物の姫が着るとなぜか魔術を究めたくなるらしい
+PRINTL 　スカートの丈の長さが短くなっただけでなく、その他の装飾も価値が高い物になっているようだ
+PRINTL 
+
+;-------------------------------------------
+;23,ドレス(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_23
+PRINTL 洋風のお姫様なら必ずといっていいほど着用しているであろう服
+PRINTL 　残念ながら(？)　和風なお姫様なので普段着は和服に近い意匠となっている
+PRINTL 　スカートの丈の長さが短くなっただけでなく、その他の装飾も価値が高い物になっているようだ
+PRINTL 
+
+;-------------------------------------------
+;24,淫魔の布切れ
+;-------------------------------------------
+@ITEM_DETAIL_24
+PRINTL 呪いが増幅した布
+PRINTL 　着用者に集まる堕落を元に成長したらしい
+PRINTL 
+
+;-------------------------------------------
+;25,剣道着(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_25
+PRINTL 剣道を嗜む者が身に着ける衣服
+PRINTL 　剣道は精神鍛錬の為によく行われている
+PRINTL 　スカートの丈の長さが短くなっただけでなく、布の面積を減らして動きやすいデザインにしているようだ
+PRINTL 
+
+;-------------------------------------------
+;26,弓道着(ミニスカート)
+;-------------------------------------------
+@ITEM_DETAIL_26
+PRINTL 弓道を嗜む者が身に着ける衣服
+PRINTL 　剣道着とは違い裾の広がり方が美しい
+PRINTL 　スカートの丈の長さが短くなっただけでなく、布の面積を減らして動きやすいデザインにしているようだ
+PRINTL 
+
+;-------------------------------------------
+;30,メイド服(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_30
+PRINTL メイドが着ている服
+PRINTL 　きらびやかなデザインが目につく
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;31,修道服(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_31
+PRINTL シスターが着ている服
+PRINTFORML 　髪の毛をすっぽりと覆ってしまうデザインだが、%CALLNAME:TARGET%の長髪までは収まらない
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;32,ゴスロリ(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_32
+PRINTL 姫への憧れの象徴を表現し、幼い少女のイメージを強調する服
+PRINTL 　本物の姫が着るとなぜか魔術を究めたくなるらしい
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;33,ドレス(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_33
+PRINTL 洋風のお姫様なら必ずといっていいほど着用しているであろう服
+PRINTL 　残念ながら(？)　和風なお姫様なので普段着は和服に近い意匠となっている
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;34,サキュバスキャミソール
+;-------------------------------------------
+@ITEM_DETAIL_34
+PRINTL 淫魔が着ている服
+PRINTL 　全体的にかなりきわどいデザインになっている
+PRINTL 
+
+;-------------------------------------------
+;25,剣道着(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_35
+PRINTL 剣道を嗜む者が身に着ける衣服
+PRINTL 　剣道は精神鍛錬の為によく行われている
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;26,弓道着(マイクロミニ)
+;-------------------------------------------
+@ITEM_DETAIL_36
+PRINTL 弓道を嗜む者が身に着ける衣服
+PRINTL 　剣道着とは違い裾の広がり方が美しい
+PRINTL 　丈の短さだけでなく、その職の雰囲気を強く感じられるよう洗練されている
+PRINTL 　スカートの丈がかなり短く、少し激しく動いただけで下着が見えてしまいそうだ
+PRINTL 
+
+;-------------------------------------------
+;50,ブレザー
+;-------------------------------------------
+@ITEM_DETAIL_50
+PRINTL 制服のバリエーションの一つ
+PRINTL 
+
+;-------------------------------------------
+;51,ワンピース制服
+;-------------------------------------------
+@ITEM_DETAIL_51
+PRINTL 制服のバリエーションの一つ
+PRINTL 
+
+;-------------------------------------------
+;52,学士服
+;-------------------------------------------
+@ITEM_DETAIL_52
+PRINTL 帽子と法衣のようなローブが印象的な服
+PRINTL 
+
+;-------------------------------------------
+;53,法衣
+;-------------------------------------------
+@ITEM_DETAIL_53
+PRINTL 教えを説く者が着用する服
+PRINTL 神々しい雰囲気を感じ取られ、着た者の信仰への関心が強まる
+PRINTL 
+
+;-------------------------------------------
+;54,巫女服
+;-------------------------------------------
+@ITEM_DETAIL_54
+PRINTL 本来の名称は「巫女装束」
+PRINTL 　赤い袴と白衣が印象的。どちらの意味でも他人と関係を持ちやすくなる
+PRINTL 
+
+;-------------------------------------------
+;55,マイクロミニ制服
+;-------------------------------------------
+@ITEM_DETAIL_55
+PRINTL 学校で定められている制服
+PRINTL 　スカートの丈だけでなく袖や襟等も大きく切られている
+PRINTL 
+
+;-------------------------------------------
+;56,裸エプロン
+;-------------------------------------------
+@ITEM_DETAIL_56
+PRINTL 素肌の上から直にエプロンを身に着ける
+PRINTL 　露出度は非常に高いが、これでも花嫁としての愛情には満ち溢れている
+PRINTL 
+
+;-------------------------------------------
+;57,エプロンメイド
+;-------------------------------------------
+@ITEM_DETAIL_57
+PRINTL 裸エプロンに似た構造を持つメイド服
+PRINTL 　どちらかといえば作業的な面より目の保養を狙ったデザインとなっており
+PRINTL 　大変淫らな格好となる
+PRINTL 
+
+;-------------------------------------------
+;58,エプロンドレス
+;-------------------------------------------
+@ITEM_DETAIL_58
+PRINTL メイド服と似た意匠を持つ服。裸エプロンでは無い
+PRINTL 　地味な印象を受けるが家事を行いやすい構造であるため
+PRINTL 　家事に対する興味が沸く
+PRINTL 
+
+;-------------------------------------------
+;59,姫巫女装束
+;-------------------------------------------
+@ITEM_DETAIL_59
+PRINTL 普段着に巫女服の意匠を加えた衣服
+PRINTL 　美しさと神聖さを兼ね備えたその雰囲気は素晴らしいものを感じるが
+PRINTL 　近寄りがたさを失ったせいか、ある種の好奇心を持つ悪い者も呼び寄せやすい
+PRINTL 
+
+;-------------------------------------------
+;60,ゴスロリメイド服
+;-------------------------------------------
+@ITEM_DETAIL_60
+PRINTL ゴシックロリータの要素を合わせたメイド服
+PRINTL 　家事を行うためというよりは着飾る要素が強まっている
+PRINTL 
+
+;-------------------------------------------
+;61,女中の服
+;-------------------------------------------
+@ITEM_DETAIL_61
+PRINTL 女中と同じデザインの服
+PRINTL 　女中に紛れて生活を過ごすことができる
+PRINTL 
+
+;-------------------------------------------
+;62,人身御供の服
+;-------------------------------------------
+@ITEM_DETAIL_62
+PRINTL 神への生け贄が身に着ける装飾品
+PRINTL 　身体の神秘性を引きたてる為の金具しか用意されておらず
+PRINTL 　身に着けた者は全身を曝け出す事になる
+PRINTL 　ちなみに巫女服の一種に入る
+PRINTL 
+
+;-------------------------------------------
+;63,人魚の衣
+;-------------------------------------------
+@ITEM_DETAIL_63
+PRINTL 人魚をイメージして作られた衣服
+PRINTL 　天女の社で働く女性の制服としても採用されている
+PRINTL 　透き通った布が特徴的で、全裸の上に布をかけた格好となる
+PRINTL 　稀に見かける人魚が同じ衣服を纏っているらしいが、関係性は不明
+PRINTL 
+
+;-------------------------------------------
+;64,姉妹の正装
+;-------------------------------------------
+@ITEM_DETAIL_64
+PRINTL 綿月姉妹が畏まった場所へ赴く際に着用する衣服
+PRINTL 　ゴテゴテしたフリルや硬い素材のせいで運動には全く適さない
+PRINTL 
+
+;-------------------------------------------
+;65,姉妹の書生服
+;-------------------------------------------
+@ITEM_DETAIL_65
+PRINTL 綿月姉妹が勉学に努める際に着用する衣服
+PRINTL 　袴の色は姉妹に合わせられている
+PRINTL 
+
+;-------------------------------------------
+;66,里娘の小袖
+;-------------------------------------------
+@ITEM_DETAIL_66
+PRINTL 月の都に住む一般的な少女が身に着けている衣服
+PRINTL 　現代で例えると江戸時代～大正時代の衣服に近い意匠を持つ
+PRINTL 
+
+;-------------------------------------------
+;67,白百合の十二単
+;-------------------------------------------
+@ITEM_DETAIL_67
+PRINTL 白と桜色をベースに構成された十二単
+PRINTL あまりにも重い為運動には適さないが、その色調から織りなす美しさは周囲を惹きつける
+PRINTL 
+
+;-------------------------------------------
+;68,傾国のロープ
+;-------------------------------------------
+@ITEM_DETAIL_68
+PRINTL 縄で局部を隠した身体を、薄くて白い布で隠しただけの衣服
+PRINTL 　とある小国の姫君が、隣接する強大国の君主を堕落させるために着用したらしい
+PRINTL 
+
+
+;-------------------------------------------
+;69,浴衣
+;-------------------------------------------
+@ITEM_DETAIL_69
+PRINTL 着物と同じで帯を締めて着用するが、風通しを良くするために薄めの生地を使用している
+PRINTL 　その涼しさと見た目からか、主に7月辺りに行われる祭りにて着られる事が多い
+CALL SETCOLOR_ABL
+PRINTL [行楽服]
+PRINTL 　BMI条件:～22
+PRINTL 　旬:6～9月
+RESETCOLOR
+
+
+;-------------------------------------------
+;70,純白の薄衣
+;-------------------------------------------
+@ITEM_DETAIL_70
+PRINTL 真っ白な薄い布で作られたワンピース
+PRINTL 　すらっとした身体の線を出すために作られており、人の目を惹きつけやすい
+CALL SETCOLOR_ABL
+PRINTL [行楽服]
+PRINTL 　BMI条件:～18
+PRINTL 　旬:3～5月
+RESETCOLOR
+
+;-------------------------------------------
+;71,悪魔のメイド服
+;-------------------------------------------
+@ITEM_DETAIL_71
+PRINTL 禍々しい気を放つメイド服。艶々しい装飾や意匠が印象的
+PRINTL 　淫魔と化した使用人が身に着けていたらしい
+PRINTL 
+
+;-------------------------------------------
+;73,妖しいキャミソール
+;-------------------------------------------
+@ITEM_DETAIL_73
+PRINTL 極端に薄着な衣装
+PRINTL 　都の裏通りで稀に流通するとの噂がある
+PRINTL 　胸と股間しか隠さない大胆な恰好は、異性の劣情を誘う
+PRINTL 
+
+
+;-------------------------------------------
+;100,透けるメイド服
+;-------------------------------------------
+@ITEM_DETAIL_100
+PRINTL メイドが着ている服
+PRINTL 　きらびやかなデザインが目につく
+PRINTL 　とても薄い布で作られており、胸元やふとももの部分は肌の色がうっすらと見えてしまう
+PRINTL 
+
+;-------------------------------------------
+;101,透ける修道服
+;-------------------------------------------
+@ITEM_DETAIL_101
+PRINTL シスターが着ている服
+PRINTFORML 　髪の毛をすっぽりと覆ってしまうデザインだが、%CALLNAME:TARGET%の長髪までは収まらない
+PRINTL 　とても薄い布で作られており、胸元やふとももの部分は肌の色がうっすらと見えてしまう
+PRINTL 
+
+;-------------------------------------------
+;102,透けるゴスロリ
+;-------------------------------------------
+@ITEM_DETAIL_102
+PRINTL 姫様への憧れの象徴を表現し、幼い少女のイメージを強調する服
+PRINTL 　本物の姫が着るとなぜか魔術を究めたくなるらしい
+PRINTL 　とても薄い布で作られており、胸元やふとももの部分は肌の色がうっすらと見えてしまう
+PRINTL 
+
+;-------------------------------------------
+;103,透けるドレス
+;-------------------------------------------
+@ITEM_DETAIL_103
+PRINTL 洋風のお姫様なら必ずといっていいほど着用しているであろう服
+PRINTL 　残念ながら(？)　和風なお姫様なので普段着は和服に近い意匠となっている
+PRINTL 　とても薄い布で作られており、胸元やふとももの部分は肌の色がうっすらと見えてしまう
+PRINTL 
+
+;-------------------------------------------
+;350,囲い込み戦略
+;-------------------------------------------
+@ITEM_DETAIL_350
+PRINTL 通称「フット・イン・ザ・ドア」
+PRINTL 　一度受け入れた要求は断りづらいという心理的性質を利用した戦略
+
+;-------------------------------------------
+;351,譲歩戦略
+;-------------------------------------------
+@ITEM_DETAIL_351
+PRINTL 通称「ドア・イン・ザ・フェイス」
+PRINTL 　最初に無理な要求を突き付け、後から譲歩していく戦略
+
+;-------------------------------------------
+;352,裁縫技術
+;-------------------------------------------
+@ITEM_DETAIL_352
+PRINTL 裁縫に関する技術
+PRINTL 　持っている服を使って新しい服を作ったり、服に改造を加えたりすることができる
+
+;-------------------------------------------
+;380,謎の魅力
+;-------------------------------------------
+@ITEM_DETAIL_380
+PRINTL 性別構わず他人を魅了する技能
+PRINTL 　その魅力は例え敵であっても虜にしてしまうだろう
+
+;-------------------------------------------
+;400,兎の髪飾り
+;-------------------------------------------
+@ITEM_DETAIL_400
+PRINTL 兎の顔があしらわれている髪飾り。庶民の間ではそれなりに上等な一品
+CALL SETCOLOR_ABL
+PRINTL 　美麗+25
+RESETCOLOR
+
+;-------------------------------------------
+;401,竹の髪飾り
+;-------------------------------------------
+@ITEM_DETAIL_401
+PRINTL 真っ直ぐ伸びる様から神聖物として崇められている植物を使った髪飾り
+CALL SETCOLOR_ABL
+PRINTL 　美麗+50
+RESETCOLOR
+
+;-------------------------------------------
+;402,満月の髪飾り
+;-------------------------------------------
+@ITEM_DETAIL_402
+PRINTL 満月の神聖な光のみを当てて精錬した髪飾り
+PRINTL 　かつては幻の逸品とされていた
+CALL SETCOLOR_ABL
+PRINTL 　美麗+100
+RESETCOLOR
+
+;-------------------------------------------
+;403,すっぽんの髪飾り
+;-------------------------------------------
+@ITEM_DETAIL_403
+PRINTL 月と同じく真ん丸だが輝きがまるで違う
+PRINTL 　物に頼るなという教訓を伝えるために作られたらしい
+CALL SETCOLOR_ABL
+PRINTL 　美麗-200
+RESETCOLOR
+
+;-------------------------------------------
+;404,シルクのカチューシャ
+;-------------------------------------------
+@ITEM_DETAIL_404
+PRINTL 透き通る位白いカチューシャ
+PRINTL 　メイドとしての清楚さを強くアピールする
+CALL SETCOLOR_ABL
+PRINTL 　家事+20
+PRINTL 　【メイド属性の服を着ている時のみ装着可能】
+PRINTL 　【メイド属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;405,藍色の髪留め
+;-------------------------------------------
+@ITEM_DETAIL_405
+PRINTL 後ろ髪を束ねるために用いられる髪留め
+PRINTL 　シスターとしての信仰深さを強くアピールする
+CALL SETCOLOR_ABL
+PRINTL 　信仰+20
+PRINTL 　【シスター属性の服を着ている時のみ装着可能】
+PRINTL 　【シスター属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;406,黒花のヘッドドレス
+;-------------------------------------------
+@ITEM_DETAIL_406
+PRINTL 花をモチーフとした黒い髪飾り
+PRINTL 　ゴスロリとしての神秘性を強くアピールする
+CALL SETCOLOR_ABL
+PRINTL 　美麗+10　知力+10
+PRINTL 　【ゴスロリ属性の服を着ている時のみ装着可能】
+PRINTL 　【ゴスロリ属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;407,純白のヴェール
+;-------------------------------------------
+@ITEM_DETAIL_407
+PRINTL 透き通った白いヴェール
+PRINTL 　花嫁としての美しさを強くアピールする
+CALL SETCOLOR_ABL
+PRINTL 　美麗+30
+PRINTL 　【花嫁属性の服を着ている時のみ装着可能】
+PRINTL 　【花嫁属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;410,草履
+;-------------------------------------------
+@ITEM_DETAIL_410
+PRINTL 普遍的な履物
+PRINTL 　王族向けに上質な素材と優れた職人の手で作られている
+CALL SETCOLOR_ABL
+PRINTL 　疎通+25
+RESETCOLOR
+
+;-------------------------------------------
+;411,早耳の草履
+;-------------------------------------------
+@ITEM_DETAIL_411
+PRINTL 雷に撃たれて死んでしまったらしい兎の革を用いた靴
+PRINTL 　近年、量産するために雷で兎を狩る事例が多く発生しているらしい
+CALL SETCOLOR_ABL
+PRINTL 　疎通+50
+RESETCOLOR
+
+;-------------------------------------------
+;412,神速の草履
+;-------------------------------------------
+@ITEM_DETAIL_412
+PRINTL 「速く走れる靴」として老婆から売られた若者が履いて走ったところ
+PRINTL 　あまりの速さに若者が燃え尽き、靴だけが残ったという逸話がある
+CALL SETCOLOR_ABL
+PRINTL 　疎通+100
+RESETCOLOR
+
+;-------------------------------------------
+;413,鈍いの草履
+;-------------------------------------------
+@ITEM_DETAIL_413
+PRINTL 履いた者はあらゆる攻撃に対し弱くなってしまうらしいが
+PRINTL 　周囲の回復魔法に反応し効力が反転するという現象が有名。多くの冒険者に利用された
+PRINTL 　ちなみにその効力は既に失われている。
+CALL SETCOLOR_ABL
+PRINTL 　疎通-200
+RESETCOLOR
+
+;-------------------------------------------
+;414,エナメル靴
+;-------------------------------------------
+@ITEM_DETAIL_414
+PRINTL エナメルでできた靴
+PRINTL 　ハイヒールになっていることにより光を反射させ、エナメルの艶を強調する
+CALL SETCOLOR_ABL
+PRINTL 　家事+20
+PRINTL 　【メイド属性の服を着ている時のみ装着可能】
+PRINTL 　【メイド属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;415,厚底の革靴
+;-------------------------------------------
+@ITEM_DETAIL_415
+PRINTL 革でできた靴
+PRINTL 　あまりに厚底すぎるせいで歩きづらいのではないかと心配してしまう
+CALL SETCOLOR_ABL
+PRINTL 　信仰+20
+PRINTL 　【シスター属性の服を着ている時のみ装着可能】
+PRINTL 　【シスター属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;416,ワークブーツ
+;-------------------------------------------
+@ITEM_DETAIL_416
+PRINTL 本来は労働者が作業用に履く靴
+PRINTL 　革の色合いと靴紐がチャームポイント
+CALL SETCOLOR_ABL
+PRINTL 　美麗+10　知力+10
+PRINTL 　【ゴスロリ属性の服を着ている時のみ装着可能】
+PRINTL 　【ゴスロリ属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;417,結納の靴
+;-------------------------------------------
+@ITEM_DETAIL_417
+PRINTL 結婚する際に相手から渡され、履かされる靴
+PRINTL 真っ白なハイヒールはドレスの美しさを引き立たせる
+CALL SETCOLOR_ABL
+PRINTL 　美麗+30
+PRINTL 　【花嫁属性の服を着ている時のみ装着可能】
+PRINTL 　【花嫁属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;420,月の雑学辞典
+;-------------------------------------------
+@ITEM_DETAIL_420
+PRINTL 古くから月に伝わる雑学を纏めた本
+PRINTL 　一時期ベストセラーとなった実績もある
+CALL SETCOLOR_ABL
+PRINTL 　知力+25
+RESETCOLOR
+
+;-------------------------------------------
+;421,月の文学辞典
+;-------------------------------------------
+@ITEM_DETAIL_421
+PRINTL 有名な話からカルト的人気を持つ話まで幅広く収録した辞典
+PRINTL 　教育上よろしくない話が一部混じっているとのことで教育要領からは外されてしまった
+CALL SETCOLOR_ABL
+PRINTL 　知力+50
+RESETCOLOR
+
+;-------------------------------------------
+;422,歴史実感辞書
+;-------------------------------------------
+@ITEM_DETAIL_422
+PRINTL 月の歴史を連続した流れを用いて解説した本
+PRINTL 　読んだ者は将来への展望を予想することができるらしい
+CALL SETCOLOR_ABL
+PRINTL 　知力+100
+RESETCOLOR
+
+;-------------------------------------------
+;423,熟読の書
+;-------------------------------------------
+@ITEM_DETAIL_423
+PRINTL 太古に編みだされた天才育成プログラムに用いられていた本
+PRINTL 　そのプログラムは試験段階で中止されたらしい
+CALL SETCOLOR_ABL
+PRINTL 　知力-200
+RESETCOLOR
+
+;-------------------------------------------
+;424,無名土史料
+;-------------------------------------------
+@ITEM_DETAIL_424
+PRINTL 名が知られていない地方の歴史を綴った本
+PRINTL 　地方の屋敷に赴いて働くなら一度は読んでおくべき物
+CALL SETCOLOR_ABL
+PRINTL 　家事+20
+PRINTL 　【メイド属性の服を着ている時のみ装着可能】
+PRINTL 　【メイド属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;425,星の記憶
+;-------------------------------------------
+@ITEM_DETAIL_425
+PRINTL 月の歴史が初期化してしまう様を表した神話が載っている本
+PRINTL 　過剰な発展は神の見えざる手により我が身を滅ぼしてしまうという教訓が込められているらしい
+PRINTL 　抽象的な挿し絵は読者の信仰心を引き立たせるのに一役買っている
+CALL SETCOLOR_ABL
+PRINTL 　信仰+20
+PRINTL 　【シスター属性の服を着ている時のみ装着可能】
+PRINTL 　【シスター属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;426,異言語呪文集
+;-------------------------------------------
+@ITEM_DETAIL_426
+PRINTL 太古の昔に使われていたかどうかすら怪しい言語で書かれた本
+PRINTL 　一説によると人を武器に変える呪文も載っているらしい
+CALL SETCOLOR_ABL
+PRINTL 　美麗+10　知力+10
+PRINTL 　【ゴスロリ属性の服を着ている時のみ装着可能】
+PRINTL 　【ゴスロリ属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;427,幸せの本
+;-------------------------------------------
+@ITEM_DETAIL_427
+PRINTL 真っ白な革表紙が目印の本
+PRINTL 持っているだけで愛する人のことが頭から離れなくなる
+CALL SETCOLOR_ABL
+PRINTL 　美麗+30
+PRINTL 　【花嫁属性の服を着ている時のみ装着可能】
+PRINTL 　【花嫁属性の高さに応じてコンテスト時の評価補正や仕事時の評価上昇値が変わる】
+RESETCOLOR
+
+;-------------------------------------------
+;428,救済の書　-色欲編-
+;-------------------------------------------
+@ITEM_DETAIL_428
+PRINTL 色欲に堕ちてしまった聖人が復活する様を描いた書物
+PRINTL 　不慮の事故に遭った際に生きる道に迷わなくて済むようになる
+CALL SETCOLOR_ABL
+PRINTL 　淫妖が入るコマンドでアライメントが下がる場合、代わりに下がらなくなる
+RESETCOLOR
+
+;-------------------------------------------
+;430,マーチングバトン
+;-------------------------------------------
+@ITEM_DETAIL_430
+PRINTL とある世界では騎士団が愛用していたこともあると言われているバトン
+PRINTL 　休憩時の疲労度の回復量が+10される
+
+;-------------------------------------------
+;431,ガーターベルト
+;-------------------------------------------
+@ITEM_DETAIL_431
+PRINTL 下着のズレを抑える役目を持つ器具
+PRINTL 　慌ただしく動き回る職業では欠かせない代物である
+CALL SETCOLOR_ABL
+PRINTL 　【メイド属性の服を着ている時のみ装着可能】
+PRINTL 　【教育時の疲労度増加を2抑える】
+RESETCOLOR
+
+;-------------------------------------------
+;432,退魔の祈祷棒
+;-------------------------------------------
+@ITEM_DETAIL_432
+PRINTL 魔を打ち払うと言い伝えられている棒
+PRINTL 　心が清らかな者でないと力を発揮できないらしい
+CALL SETCOLOR_ABL
+PRINTL 　【シスター属性の服を着ている時のみ装着可能】
+PRINTL 　【アライメントが正の場合、調教開始時に脱出することができる(巫女服を着ている場合のみ)】
+RESETCOLOR
+
+
+;-------------------------------------------
+;435,清めの札
+;-------------------------------------------
+@ITEM_DETAIL_435
+PRINTL 役人御用達の札
+PRINTL 　身に着けている者から穢れを遠ざけるらしい
+CALL SETCOLOR_ABL
+PRINTL 　【本物かどうかは不明】
+PRINTL 　【装備すると穢れが付きづらくなる】
+RESETCOLOR
+
+;-------------------------------------------
+;436,清めの礼
+;-------------------------------------------
+@ITEM_DETAIL_436
+PRINTL 役人御用達の札
+PRINTL 　身に着けている者から穢れを遠ざけるらしい
+CALL SETCOLOR_ABL
+PRINTL 　【本物かどうかは不明】
+PRINTL 　【装備すると穢れが付きづらくなる】
+RESETCOLOR
+
+;-------------------------------------------
+;437,月影の御鏡
+;-------------------------------------------
+@ITEM_DETAIL_437
+PRINTL 月で祀られている神鏡
+PRINTL 　噂によると月夜見が精製した物らしいが、本人は使わなかったらしい
+CALL SETCOLOR_ABL
+PRINTL 　【通常攻撃時に一定確率で、攻撃した相手の気力を削る】
+;ちなみに1割の予定
+RESETCOLOR
+
+;-------------------------------------------
+;438,姉妹のお守り
+;-------------------------------------------
+@ITEM_DETAIL_438
+PRINTL 姉妹が持っていたお守り。茶色っぽい色をした珠に紐が付けられている
+PRINTL 　身に着けるとなんだか身体が軽くなった気がする
+CALL SETCOLOR_ABL
+PRINTL 　【武者修行時に、技の消費気力が10％減少する】
+RESETCOLOR
+
+;-------------------------------------------
+;490,ジャスミン
+;-------------------------------------------
+@ITEM_DETAIL_490
+PRINTL 妖精が住むと言われる花
+PRINTL 　その理由は、この花に含まれている成分を人工的に精製する事ができないから
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:490}
+PRINTFORML 　ターン終了時に疲労度の回復と美麗経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;491,ラベンダー
+;-------------------------------------------
+@ITEM_DETAIL_491
+PRINTL 精神安定に効く
+PRINTL 　会議場に併設された休憩所に常備されている事が多い
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:491}
+PRINTFORML 　ターン終了時に疲労度の回復と知力経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;492,クラリセージ
+;-------------------------------------------
+@ITEM_DETAIL_492
+PRINTL 抑うつに効力があることで有名な香り
+PRINTL 　前述の効能は氷山の一角で、嗅ぐと気持ちが前向きになるので友好的になる
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:492}
+PRINTFORML 　ターン終了時に疲労度の回復と疎通経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;493,グレープフルーツ
+;-------------------------------------------
+@ITEM_DETAIL_493
+PRINTL 食欲増進の効能がある果実
+PRINTL 　やはり美味しい料理を作るなら自分自身が貪欲に味を追求しなければならない
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:493}
+PRINTFORML 　ターン終了時に疲労度の回復と家事経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;494,ベルガモット
+;-------------------------------------------
+@ITEM_DETAIL_494
+PRINTL 昔は魔よけの効能があると信じられていた果実を利用した風呂
+PRINTL 　病気の予防作用があると分かった今でも教会や神社の食堂に設けられている
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:494}
+PRINTFORML 　ターン終了時に疲労度の回復と信仰経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;495,漢方風呂
+;-------------------------------------------
+@ITEM_DETAIL_495
+PRINTL 数十種類の漢方を配合！
+PRINTL 　疲れに効く湯は運動に対するやる気も引き上げる
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:495}
+PRINTFORML 　ターン終了時に疲労度の回復と体力経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;496,精液風呂
+;-------------------------------------------
+@ITEM_DETAIL_496
+PRINTL 好事家の間で用いられている風呂
+PRINTL 　精液健康法という物があるらしいが、効能は確かではない
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:496}
+PRINTFORML 　ターン終了時に疲労度の回復と精飲経験を得られる
+PRINTFORML 　【精飲経験が50以上無いと使えない】
+RESETCOLOR
+
+;-------------------------------------------
+;497,山芋風呂
+;-------------------------------------------
+@ITEM_DETAIL_497
+PRINTL 痒み成分がとても強い山芋で満たされた浴槽に浸かる。ひそかに媚薬も混ぜられているらしい
+PRINTL 　とある地域では、使えない侍女をこの風呂に浸けて淫蕩にし
+PRINTL 　売春宿に売り飛ばすという慣習があった
+CALL SETCOLOR_ABL
+PRINTFORML 　香り：残り{ITEM:497}
+PRINTFORML 　ターン終了時に疲労度の回復と淫妖経験を得られる
+RESETCOLOR
+
+;-------------------------------------------
+;500,バイブ
+;-------------------------------------------
+@ITEM_DETAIL_500
+PRINTL 秘裂に挿入して用いられるバイブ
+PRINTL 　裏社会で普及している責め具である
+CALL SETCOLOR_ABL
+PRINTL 　【ターン終了時に淫妖が上昇し、上昇した淫妖の分に応じた疲労が解消される】
+RESETCOLOR
+
+;-------------------------------------------
+;501,悪魔のお香
+;-------------------------------------------
+@ITEM_DETAIL_501
+CALL SETCOLOR_ABL
+PRINTL 嗅ぐととても気分が悪くなるお香
+PRINTL 魔界で作られたお香で、悪魔達が外界から攫った者を堕落させるために使っているらしい
+PRINTL 【装着させて生活を送った場合、疲労が解消されるが堕落経験が溜まる】
+RESETCOLOR
+
+;-------------------------------------------
+;502,妖しい装置
+;-------------------------------------------
+@ITEM_DETAIL_502
+PRINTL 胸と股間の敏感な部位に取り付けるかなり小さな装置
+CALL SETCOLOR_ABL
+PRINTL 　【装着させて生活を送った場合、淫妖や経験が溜まり
+PRINTL 　　上昇した淫妖の分に応じて資金が手に入る】
+RESETCOLOR
+
+;-------------------------------------------
+;503,最悪の目覚め
+;-------------------------------------------
+@ITEM_DETAIL_503
+PRINTL 危ない薬の中毒作用を中和するために作られた薬
+PRINTL 　まだ試験段階で止まっており、現時点では媚薬にしか作用しない
+PRINTL 　利用方法としてはあらかじめ歯に詰めておき、有事の際に舌で舐めて服用する
+CALL SETCOLOR_ABL
+PRINTL 　【一度使うとなくなる】
+PRINTL 　【媚薬効果が出るのを防ぐ】
+RESETCOLOR
+
+;-------------------------------------------
+;504,矯正バイブ
+;-------------------------------------------
+@ITEM_DETAIL_504
+PRINTL 拘束具とセットになったバイブ
+PRINTL 　一度取り付けると破壊以外の方法で外せないので一人にしか使えない
+CALL SETCOLOR_ABL
+PRINTL 　【従順になっていない綿月姉妹に対して使う】
+PRINTL 　【ターン終了時に淫妖と淫妖経験を貯める】
+RESETCOLOR
+
+;-------------------------------------------
+;505,堕落のお香
+;-------------------------------------------
+@ITEM_DETAIL_505
+PRINTL 攫った娘を悪魔が同族に変異させる際に用いるお香
+PRINTL 　腐った魚のような腐臭が対象者の倫理観を破壊する
+CALL SETCOLOR_ABL
+PRINTL 　【従順になっていない綿月姉妹に対して使う】
+PRINTL 　【ターン終了時に堕落経験を貯める】
+RESETCOLOR
+
+;-------------------------------------------
+;506,ロープ付き首輪
+;-------------------------------------------
+@ITEM_DETAIL_506
+PRINTL 人を部屋に幽閉するために用いられる
+PRINTL 　本来はSMプレイで前述のような情景を作り出す為に使われている
+CALL SETCOLOR_ABL
+PRINTL 　【矯正アイテム。購入後は[躾・羞恥の環境を変える]で設定してください】
+PRINTL 　【ターン終了時に隷属と堕落を貯める】
+RESETCOLOR
+
+
+;-------------------------------------------
+;507,アナルバイブ
+;-------------------------------------------
+@ITEM_DETAIL_507
+PRINTL 不浄の穴に挿入して用いられるバイブ
+PRINTL 　裏社会では身体つきの平坦な女性の身体を発育させる為に用いられているらしい
+CALL SETCOLOR_ABL
+PRINTL 　【淫妖経験が100以上無いと装着できない】
+PRINTL 　【ターン終了時に淫妖が上昇し、上昇した淫妖の分に応じた疲労が解消される】
+RESETCOLOR
+
+
+;-------------------------------------------
+;510,須臾のモチーフ
+;-------------------------------------------
+@ITEM_DETAIL_510
+PRINTFORML 可視化できるよう須臾を幾何学状の結晶にしたもの
+PRINTFORML 　使用するとこの世界における須臾の重みが大きくなり、一部の武器や動作に影響を及ぼす
+CALL SETCOLOR_ABL
+PRINTFORML 　【使用すると須臾ポイント+2】
+RESETCOLOR
+
+;-------------------------------------------
+;511,前世譚のモチーフ
+;-------------------------------------------
+@ITEM_DETAIL_511
+PRINTFORML 可視化できるよう前世譚を真円状の結晶にしたもの
+PRINTFORML 　持っていても使うことはできないが、とある次元においては重要物として重宝されるらしい
+CALL SETCOLOR_ABL
+PRINTFORML 　【周回プレイ開始時に、前世譚ポイントとして使用することができる】
+RESETCOLOR
+
+;-------------------------------------------
+;515,悪魔の書
+;-------------------------------------------
+@ITEM_DETAIL_515
+PRINTL 昔は悪魔が現世から攫った女性を堕落させ、性欲の虜とするために使われていたらしい
+PRINTL 　対象者の堕落が100増加する
+
+;-------------------------------------------
+;516,浄化の書
+;-------------------------------------------
+@ITEM_DETAIL_516
+PRINTL かつて世界が悪魔の手に落ちそうだった頃、とある神様が見込みのある者に読ませる様に指示したものらしい
+PRINTL 　対象者の堕落が50減少する
+
+;-------------------------------------------
+;517,葛湯
+;-------------------------------------------
+@ITEM_DETAIL_517
+PRINTL 片栗粉を適度な量のお湯で溶かした物。非常食として有名
+PRINTL 　対象者の疲労度を5回復させる
+
+;-------------------------------------------
+;518,おにぎり
+;-------------------------------------------
+@ITEM_DETAIL_518
+PRINTL 非常食の一つで、飽きないよう微量の塩を振り部下の士気を保った逸話が有名
+PRINTL 　対象者の疲労度を10回復させる
+
+;-------------------------------------------
+;519,干し肉
+;-------------------------------------------
+@ITEM_DETAIL_519
+PRINTL 燻製にした後、天日干しで水分を飛ばした代物
+PRINTL 　対象者の疲労度を30回復させる
+
+;-------------------------------------------
+;520,免厄の妙薬
+;-------------------------------------------
+@ITEM_DETAIL_520
+PRINTL 数十種類の漢方を調合して作った薬
+PRINTL 　天然由来の成分配合だから安心！　が庶民に対する売り文句
+PRINTL 　用法・用量を守り、正しく使いましょう
+PRINTL 　対象者の疲労度を60回復させる
+
+;-------------------------------------------
+;521,月のドリンク
+;-------------------------------------------
+@ITEM_DETAIL_521
+PRINTL とある女神が決戦を迎える天使に提供するアイテム……とは別物
+PRINTL 　対象者の疲労度を100回復させる
+
+;-------------------------------------------
+;522,桃の香り
+;-------------------------------------------
+@ITEM_DETAIL_522
+PRINTL 桃の香りを凝縮させたエキスを吹きかけて使う
+PRINTL 　これ一本で肌の艶がよくなるらしい
+CALL SETCOLOR_ABL
+PRINTL 　使用すると美麗+4(300毎に効力-1、最低値2)
+RESETCOLOR
+
+;-------------------------------------------
+;523,記憶水晶
+;-------------------------------------------
+@ITEM_DETAIL_523
+PRINTL 透き通った青白い結晶
+PRINTL 　数年分の景色を貯め込んでいるらしい
+CALL SETCOLOR_ABL
+PRINTL 　使用すると知力+4(300毎に効力-1、最低値2)
+RESETCOLOR
+
+;-------------------------------------------
+;524,疎通のオーブ
+;-------------------------------------------
+@ITEM_DETAIL_524
+PRINTL 仄かに暖かい光を出すオーブ
+PRINTL 　その光は使用者の心を解きほぐす
+CALL SETCOLOR_ABL
+PRINTL 　使用すると疎通+4(300毎に効力-1、最低値2)
+RESETCOLOR
+
+;-------------------------------------------
+;525,月刊クックムーン
+;-------------------------------------------
+@ITEM_DETAIL_525
+PRINTL 家事に関するノウハウを取り上げている雑誌
+PRINTL 　初心者だけでなく玄人にもためになる内容が載っている
+CALL SETCOLOR_ABL
+PRINTL 　使用すると家事+4(300毎に効力-1、最低値2)
+RESETCOLOR
+
+;-------------------------------------------
+;526,清めのお香
+;-------------------------------------------
+@ITEM_DETAIL_526
+PRINTL 形式的な儀式を行うために用いられる
+PRINTL 　アイテムの効能よりは使用者の心持が重要である
+CALL SETCOLOR_ABL
+PRINTL 　使用すると信仰+4(300毎に効力-1、最低値2)
+RESETCOLOR
+
+;-------------------------------------------
+;527,インコヒーレンス
+;-------------------------------------------
+@ITEM_DETAIL_527
+PRINTL 体内器官のバランスを狂わせ、幻覚を見せる薬
+PRINTL 　その作用から太古の月社会では霊界と交信する為の薬として用いられていたらしい
+CALL SETCOLOR_ABL
+PRINTL 　使用すると対象者が[隷属]になります
+RESETCOLOR
+
+;-------------------------------------------
+;528,アダーストーン
+;-------------------------------------------
+@ITEM_DETAIL_528
+PRINTL 遥か遠い未来に不時着した異星人が残したとされる石
+PRINTL 　石から漏れ出た光を凝視した者は能力が不規則な変化をするという
+CALL SETCOLOR_ABL
+PRINTL 　使用すると能力がランダムに変化します
+RESETCOLOR
+
+;-------------------------------------------
+;529,妊娠検査薬
+;-------------------------------------------
+@ITEM_DETAIL_529
+PRINTL 淡い桃色を帯びた水晶体
+PRINTL 　捧げると目前の生物の体内に新たな命が宿っているかどうかを見ることができる
+CALL SETCOLOR_ABL
+PRINTL 　相手が妊娠しているかどうかを確かめることができます
+RESETCOLOR
+
+;-------------------------------------------
+;530,檜の人形
+;-------------------------------------------
+@ITEM_DETAIL_530
+PRINTL 香り高い檜で作られた人形
+PRINTL 　人に渡すと信仰に関わらずいい印象を持ってもらえる
+CALL SETCOLOR_ABL
+PRINTL 　評価が100上がります
+RESETCOLOR
+
+;-------------------------------------------
+;531,竹の人形
+;-------------------------------------------
+@ITEM_DETAIL_531
+PRINTL 魔を打ち払い天まで伸びる竹で作られた人形
+PRINTL 　ありがたい素材なので相手が宗教に興味を持って無くても喜ぶ
+CALL SETCOLOR_ABL
+PRINTL 　評価が200上がります
+RESETCOLOR
+
+;-------------------------------------------
+;532,榊の人形
+;-------------------------------------------
+@ITEM_DETAIL_532
+PRINTL 真っ直ぐ伸びる様から魔を払拭すると言われる木材で作られた人形
+PRINTL 　出来がよく、昔から縁起がよいとされているので好印象を持ってもらえる
+CALL SETCOLOR_ABL
+PRINTL 　評価が300上がります
+RESETCOLOR
+
+;-------------------------------------------
+;533,ハートの鱗
+;-------------------------------------------
+@ITEM_DETAIL_533
+PRINTL 恋愛のシンボルである生物が纏っている鱗
+PRINTL 　仲が良い相手に渡す慣習がある
+CALL SETCOLOR_ABL
+PRINTL 　主人への友好度が10上昇します
+RESETCOLOR
+
+;-------------------------------------------
+;534,暖かい言葉
+;-------------------------------------------
+@ITEM_DETAIL_534
+PRINTL 開くと何故か心が温まる手紙
+PRINTL 　渡された相手は渡した人に特別な感情を抱くと言われる
+CALL SETCOLOR_ABL
+PRINTL 　主人への友好度が20上昇します
+RESETCOLOR
+
+;-------------------------------------------
+;535,兎のぬいぐるみ
+;-------------------------------------------
+@ITEM_DETAIL_535
+PRINTL かなり大きくふわふわしたぬいぐるみ
+PRINTL 　毛深く作られており、輝夜やその姉妹達が好んでいるらしい
+CALL SETCOLOR_ABL
+PRINTL 　主人への友好度が40上昇します
+RESETCOLOR
+
+;-------------------------------------------
+;536,淡水色の聖水
+;-------------------------------------------
+@ITEM_DETAIL_536
+PRINTL 透き通った海を思わせる色をした聖水
+PRINTL 　数年に一度降ると言われる清めの雨を集めたもの
+PRINTL 　希少価値は非常に高いが需要は低く、王族や貴族が稀に買う程度である
+CALL SETCOLOR_ABL
+PRINTL 　疲労度が10回復し、主人への友好度が10上昇します
+RESETCOLOR
+
+;-------------------------------------------
+;537,初心に帰れ
+;-------------------------------------------
+@ITEM_DETAIL_537
+PRINTL 透き通った水色の水晶
+PRINTL 　中心部で渦巻いている泡を見続けると身体に刻まれた性交の刻印が消えるらしい
+PRINTL 　しかし、使用者の記憶を少し奪ってしまう
+CALL SETCOLOR_ABL
+PRINTL 　主人への好感度が10下がる代わりに[処女]を復活させます。
+PRINTL 　([傷物]や[依存]は消え、[傷物]を消した場合は代わりに好感度が10上がる)
+RESETCOLOR
+
+;-------------------------------------------
+;539,高脂肪ミルク
+;-------------------------------------------
+@ITEM_DETAIL_539
+PRINTL 牛から採取したミルクに殺菌処理を施しただけの代物
+PRINTL 　甘い香りとまろやかな味は疲労感を消してくれるが、体重減量の大敵である
+CALL SETCOLOR_ABL
+PRINTL 　疲労度-15、後で胸が大きくなるかも！？
+PRINTL 　体重が増加しやすい
+RESETCOLOR
+
+;-------------------------------------------
+;540,禁断のミルク
+;-------------------------------------------
+@ITEM_DETAIL_540
+PRINTL 裏社会で出回っているミルク
+PRINTL 　とても濃いコクと浮くほどの油は至高の味だが……
+CALL SETCOLOR_ABL
+PRINTL 　疲労度-20、淫妖経験+3、後で胸が大きくなるかも！？
+PRINTL 　体重がかなり増加しやすい
+RESETCOLOR
+
+;-------------------------------------------
+;541,牡蠣
+;-------------------------------------------
+@ITEM_DETAIL_541
+PRINTL 冷凍保存した牡蠣
+PRINTL 　海のミルクと呼ばれており、肌に良い成分が含有されている
+CALL SETCOLOR_ABL
+PRINTL 　疲労度-10、美麗経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;542,人魚の雫
+;-------------------------------------------
+@ITEM_DETAIL_542
+PRINTL 透き通った液体
+PRINTL 　保湿成分が潤沢に含まれているが、人魚がよく用いているという噂がある……
+CALL SETCOLOR_ABL
+PRINTL 　使用すると美麗+5(300毎に効力-1、最低値3)
+PRINTL 　危険な兆候が出たら使用を中止すること！
+RESETCOLOR
+
+;-------------------------------------------
+;543,おいしい水
+;-------------------------------------------
+@ITEM_DETAIL_543
+PRINTL 山の森林が濾過した新鮮な水
+PRINTL 　身体の疲れが取れるという
+CALL SETCOLOR_ABL
+PRINTL 　疲労度-7
+PRINTL 　飲んでも全く太らない
+RESETCOLOR
+
+;-------------------------------------------
+;544,まつぼっくり
+;-------------------------------------------
+@ITEM_DETAIL_544
+PRINTL 松の種子を宿した物体
+PRINTL 種子が旋回しながら落ちていく様は、見る者に哲学的な思考をもたらす
+CALL SETCOLOR_ABL
+PRINTL 　技能ポイント+20
+RESETCOLOR
+
+;-------------------------------------------
+;545,娼婦のオーラ
+;-------------------------------------------
+@ITEM_DETAIL_545
+PRINTL 強い娼気を纏った結晶
+PRINTL 　落陽にて天に掲げると、その光を帯びた者は髪や肌の色が変色してしまうらしい
+CALL SETCOLOR_ABL
+PRINTL 　肌の色が変色し、役人達に淫行が原因で取り締まられにくくなります
+RESETCOLOR
+
+;-------------------------------------------
+;546,禁忌の宝箱
+;-------------------------------------------
+@ITEM_DETAIL_546
+PRINTL 穢れの地にて永い間封印されてきた箱
+PRINTL 　伝承によると、天から降りた女性に渡された物らしいが……
+CALL SETCOLOR_ABL
+PRINTL 　使用すると、非常に強い敵が出現します！！！
+PRINTL 　すぐに戦闘に入るので、使用前には必ず準備をしてください
+RESETCOLOR
+
+;-------------------------------------------
+;554,木花の布
+;-------------------------------------------
+@ITEM_DETAIL_554
+PRINTL 「このはなのぬの」と読む
+PRINTL 　輝夜の普段着に用いられている布で、入手はとても困難である
+PRINTL 　普段着を作り出すこともできるが、作り方は元を作製した者か
+PRINTL 　あるいは、長い間着用していた本人にしか分からない……
+CALL SETCOLOR_ABL
+PRINTL 　衣服を作るための素材
+RESETCOLOR
+
+;-------------------------------------------
+;560,銅の太刀
+;-------------------------------------------
+@ITEM_DETAIL_560
+PRINTL 銅でできた太刀
+PRINTL 　安価で入手できるので、駆け出しの冒険者に愛用される
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:10
+RESETCOLOR
+
+;-------------------------------------------
+;561,鉄製の太刀
+;-------------------------------------------
+@ITEM_DETAIL_561
+PRINTL 鉄でできた太刀
+PRINTL 　実戦用として最低限のレベルを満たすので、新人の兵士が用いている
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:18
+RESETCOLOR
+
+;-------------------------------------------
+;562,鋼の太刀
+;-------------------------------------------
+@ITEM_DETAIL_562
+PRINTL 鋼でできた太刀
+PRINTL 　刃が欠けにくいことから熟練者の間でも愛用されている
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:25
+RESETCOLOR
+
+;-------------------------------------------
+;563,銀色の太刀
+;-------------------------------------------
+@ITEM_DETAIL_563
+PRINTL 銀でできた太刀
+PRINTL 　竹や榊と同様に魔を打ち払うという風習がある地域もある
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:32
+RESETCOLOR
+
+;-------------------------------------------
+;564,合金の太刀
+;-------------------------------------------
+@ITEM_DETAIL_564
+PRINTL 合金でできた太刀
+PRINTL 　刀身にかつてない弾性があり、手入れ無しでも切れ味が衰えないらしい
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:40
+RESETCOLOR
+
+;-------------------------------------------
+;565,月夜見の太刀
+;-------------------------------------------
+@ITEM_DETAIL_565
+PRINTL 月夜見の力が籠っていると言い伝えられる太刀
+PRINTL 　伝統ある太刀なので、間違っても売らないようにしよう
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:36
+PRINTL 　特殊技[夜の帳]　命中:100　消費MP:2　相手の気力を15％削る
+RESETCOLOR
+
+;-------------------------------------------
+;572,どうだぬき
+;-------------------------------------------
+@ITEM_DETAIL_572
+PRINTL 名工達によって鍛え抜かれた日本刀
+PRINTL 　飾り気の無い外見からは職人の意気込みを感じる
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:36
+PRINTL 　特殊技[3回攻撃]　命中:95　消費MP:12　3回攻撃できる
+RESETCOLOR
+
+;-------------------------------------------
+;575,赤の軌跡の弓
+;-------------------------------------------
+@ITEM_DETAIL_575
+PRINTL 弓の名前に色がついているのは軌跡を表す
+PRINTL 　ちなみに青に近づく程速度が速く、殺傷力も高いらしい
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:6
+RESETCOLOR
+
+;-------------------------------------------
+;576,黄の軌跡の弓
+;-------------------------------------------
+@ITEM_DETAIL_576
+PRINTL 矢の軌跡が黄色を帯びる弓
+PRINTL 　月の都にはこの軌跡が色を帯びる瞬間を見ることができる者もいるらしい
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:12
+RESETCOLOR
+
+;-------------------------------------------
+;577,白の軌跡の弓
+;-------------------------------------------
+@ITEM_DETAIL_577
+PRINTL 矢の軌跡が白色を帯びる弓
+PRINTL 　白色は観賞用に適しているらしく、見世物によく使われる
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:18
+RESETCOLOR
+
+;-------------------------------------------
+;578,緑の軌跡の弓
+;-------------------------------------------
+@ITEM_DETAIL_578
+PRINTL 矢の軌跡が緑色を帯びる弓
+PRINTL 　職人の手によってしか作れないらしく、非常に値が張る一品となる
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:25
+RESETCOLOR
+
+;-------------------------------------------
+;579,青の軌跡の弓
+;-------------------------------------------
+@ITEM_DETAIL_579
+PRINTL 矢の軌跡が緑色を帯びる弓
+PRINTL 　月の都には周期を操れる者がいるらしく
+PRINTL 　矢の早さ自体も変えられるのではないかと一部で噂になっている
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:32
+RESETCOLOR
+
+;-------------------------------------------
+;580,エクシーの弓
+;-------------------------------------------
+@ITEM_DETAIL_580
+PRINTL 浄化の女神エクシーの力が籠った弓
+PRINTL 　力を込めて放つと相手の性質を純化させることができる
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:29
+PRINTL 　特殊技[純化の儀]　命中:100　消費MP:6　敵1体の肩書きを名無しに変える
+RESETCOLOR
+
+;-------------------------------------------
+;581,ヤグの弓
+;-------------------------------------------
+@ITEM_DETAIL_581
+PRINTL 光の神ヤグの力が籠った弓
+PRINTL 　この弓に触れた者は長い間痛みに悩まされることになる
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:26
+PRINTL 　特殊技：[ヤグショット]　威力:95　命中:100　消費MP:7　敵1体を損傷状態にする
+RESETCOLOR
+
+;-------------------------------------------
+;582,ワイボの弓
+;-------------------------------------------
+@ITEM_DETAIL_582
+PRINTL 光速の女神ヤグの力が籠った弓
+PRINTL 　素早く行動するものに共鳴し真価を発揮すると言い伝えられている
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:30
+PRINTL 　優先度が高い攻撃(フェムトショットなど)の威力が+30される
+RESETCOLOR
+
+;-------------------------------------------
+;583,へカドの弓
+;-------------------------------------------
+@ITEM_DETAIL_583
+PRINTL 記録の神ヘカドの力が籠った弓
+PRINTL 　光の当て方一つで脳内の情報や思考を書き換えることができるらしい
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:28
+PRINTL 　特殊技：[メモリーライト]　威力:95　命中:100　消費MP:7　敵の行動を通常攻撃に書き換える
+RESETCOLOR
+
+;-------------------------------------------
+;592,魔槍キャンサー
+;-------------------------------------------
+@ITEM_DETAIL_592
+CALL SETCOLOR_PALAMDOWN
+PRINTL あなたなら大丈夫だと信じていたのに……
+RESETCOLOR
+PRINTL 　そんな少女の怨嗟が聞こえてきそうな槍
+PRINTL 　黒く節くれ立った竹のような外見をしている
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:1
+PRINTL 　対応技:打術
+PRINTL 　特殊技[キャンサーロック]　命中:100　気力にダメージを与える。この効果で気力を0にした敵を即死させる
+PRINTL 　装備していると穢れを蓄積していく
+RESETCOLOR
+
+;-------------------------------------------
+;596,モップ
+;-------------------------------------------
+@ITEM_DETAIL_596
+PRINTL どこにでもある普通のモップ
+PRINTL 　とりわけ丈夫そうな物を調達したので、中々折れない
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:1
+PRINTL 　対応技：打術
+RESETCOLOR
+
+;-------------------------------------------
+;597,木の錫杖
+;-------------------------------------------
+@ITEM_DETAIL_597
+CALL SETCOLOR_PALAMDOWN
+PRINTL 木でできた錫杖
+PRINTL 　鈴が鳴らす音には外敵を遠ざける効果があると言われている
+PRINTL 　……が実際には効果がない
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:3
+PRINTL 　対応技：打術
+RESETCOLOR
+
+;-------------------------------------------
+;598,不思議なモップ
+;-------------------------------------------
+@ITEM_DETAIL_598
+PRINTL 由来が不明なモップ
+PRINTL 　擦った物を消し去る不思議な力があるという
+PRINTL 　掃除好きな持ち主の気質でも乗り移ったのだろうか？
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:2
+PRINTL 　対応技：打術
+PRINTL 　通常攻撃時、25％の確率で[粘性体]系を即死させる
+RESETCOLOR
+
+;-------------------------------------------
+;597,竹の錫杖
+;-------------------------------------------
+@ITEM_DETAIL_599
+PRINTL 竹でできた錫杖
+PRINTL 　竹が持つ穢れを打ち払う能力は、応用すれば精霊にも効く
+CALL SETCOLOR_ABL
+PRINTL 　攻撃力:5
+PRINTL 　対応技：打術
+PRINTL 　[精霊]系へ与えるダメージが20％アップ
+RESETCOLOR
+
+;-------------------------------------------
+;601,ジェルクリーナー
+;-------------------------------------------
+@ITEM_DETAIL_601
+PRINTL 魔術ギルドが失敗を基に作りだした画期的なアイテム
+PRINTL 　揮発性の液体でできており、粘性体の活動を鈍らせることができる
+CALL SETCOLOR_ABL
+PRINTL 　【武者修行専用アイテム】
+PRINTL 　粘性体1体のＨＰを1/2にします
+RESETCOLOR
+
+;-------------------------------------------
+;602,退魔の松明
+;-------------------------------------------
+@ITEM_DETAIL_602
+PRINTL どこかの姫君「私が名前を考えたのよ。いい名前だと思わない？」
+PRINTL 　相手に投げて使用する使い捨てアイテム。箱系の相手に投げよう
+CALL SETCOLOR_ABL
+PRINTL 　【武者修行専用アイテム】
+PRINTL 　箱系の敵を損傷状態にします
+RESETCOLOR
+
+;-------------------------------------------
+;700,嫦娥文書
+;-------------------------------------------
+@ITEM_DETAIL_700
+PRINTL 嫦娥が裁判にかけられた時の議事録
+PRINTL 　嫦娥について知る者に見せれば反応してくれるだろう
+CALL SETCOLOR_ABL
+PRINTL 　【イベントアイテム】
+PRINTL 　穢れの地へ行くために必要なアイテムの一つです
+RESETCOLOR
+
+
+;-------------------------------------------
+;710,翡翠の指輪
+;-------------------------------------------
+@ITEM_DETAIL_710
+PRINTL 月では稀にしか採掘できない宝石を用いた指輪
+PRINTL 　この宝石は模造が行いやすく、偽名を用いた石が多数出回っているが
+PRINTL 　その事が却って本物の価値を高めている
+CALL SETCOLOR_ABL
+PRINTL 　【婚約用アイテム】
+PRINTL 　この物語の主役となる女性と結婚する事ができます(要:CP100)
+RESETCOLOR
+
+;-------------------------------------------
+;711,ワールブルクの石
+;-------------------------------------------
+@ITEM_DETAIL_711
+PRINTL 黒い石
+PRINTL 　黒胆汁を凝固させて精製するらしいが、真偽の程は不明
+PRINTL 　持っているだけで戦闘中に穢れを纏ったように振舞えるが、所有者に穢れは溜まらない
+CALL SETCOLOR_ABL
+PRINTL 　所持者は戦闘中のみ穢れが溜まった状態で振舞うことができる(実際に穢れが溜まるわけではない)
+RESETCOLOR
+
+
+;-------------------------------------------
+;712,リセットウェーバー
+;作ろうと思ったけど没にしました
+;-------------------------------------------
+@ITEM_DETAIL_712
+PRINTL 使用者を一度絶命させ、瞬時に蘇生させる薬
+PRINTL 　不老不死を実現するために作られたのだが……
+CALL PALAMDOWN
+PRINTL 　このアイテムは、絶対に使ってはいけない
+PRINTL 　please, dont use it
+RESETCOLOR
+
+;-------------------------------------------
+;714,ワールブルクの欠片
+;-------------------------------------------
+@ITEM_DETAIL_714
+PRINTL ワールブルクの石が砕けたもの
+PRINTL 　郊外をうろつく魔物や、身元が安定しない盗賊が持っているが、どこで入手したかは不明
+CALL SETCOLOR_ABL
+PRINTL 　8個集めると[ワールブルクの石]に変化する
+RESETCOLOR
+
+;-------------------------------------------
+;715,天照の石
+;-------------------------------------------
+@ITEM_DETAIL_715
+PRINTL 天照が作ったと言い伝えられる石
+PRINTL 　仄かに放たれる橙色の光は、理屈のない障壁を崩してしまうらしい
+CALL SETCOLOR_ABL
+PRINTL 　純化された敵の防壁を無力化し、与えるダメージも増加させる
+RESETCOLOR
+
+;-------------------------------------------
+;716,部屋飼いイナバ
+;-------------------------------------------
+@ITEM_DETAIL_716
+PRINTL とても人懐っこいイナバ
+PRINTL 　撫でるだけで疲れが取れる気がする……
+CALL SETCOLOR_ABL
+PRINTL 　教育で溜まる疲労度が少し軽減される
+RESETCOLOR
+
+;-------------------------------------------
+;717,解脱の歯車
+;-------------------------------------------
+@ITEM_DETAIL_717
+PRINTL 過去に悟りを開いた者のありがたいお話が書かれた歯車
+PRINTL 　回転させるだけでこの世の理から解放されるらしい
+CALL SETCOLOR_ABL
+PRINTL 　[エンディング用アイテム]
+PRINTL 　特定のエンディングを見るために必要なアイテムの一つ
+RESETCOLOR
+
+
+;-------------------------------------------
+;800,姫様の素
+;-------------------------------------------
+@ITEM_DETAIL_800
+PRINTL 姫様としての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用すると姫様属性+1　美麗経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;801,メイドの素
+;-------------------------------------------
+@ITEM_DETAIL_801
+PRINTL メイドとしての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用するとメイド属性+1　家事経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;802,シスターの素
+;-------------------------------------------
+@ITEM_DETAIL_802
+PRINTL シスターとしての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用するとシスター属性+1　信仰経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;803,ゴスロリの素
+;-------------------------------------------
+@ITEM_DETAIL_803
+PRINTL ゴスロリとしての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用するとゴスロリ属性+1　知力経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;804,花嫁の素
+;-------------------------------------------
+@ITEM_DETAIL_804
+PRINTL 花嫁としての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用すると花嫁属性+1　好感度+2
+RESETCOLOR
+
+;-------------------------------------------
+;805,淫魔の素
+;-------------------------------------------
+@ITEM_DETAIL_805
+PRINTL 淫魔としての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用すると淫魔属性+1　堕落経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;806,乞食の素
+;-------------------------------------------
+@ITEM_DETAIL_806
+PRINTL 乞食としての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用すると乞食属性+1　淫妖経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;807,武士の素
+;-------------------------------------------
+@ITEM_DETAIL_807
+PRINTL 武士としての経験を凝縮した結晶
+PRINTL 　覗き込むと更なる経験を得る事ができる
+CALL SETCOLOR_ABL
+PRINTL 　使用すると武士属性+1　体力経験+1
+RESETCOLOR
+
+;-------------------------------------------
+;810,美麗のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_810
+PRINTL 美麗に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、美麗への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;811,知力のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_811
+PRINTL 知力に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、知力への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;812,疎通のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_812
+PRINTL 疎通に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、疎通への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;813,淫妖のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_813
+PRINTL 淫妖に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、淫妖への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;814,堕落のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_814
+PRINTL 堕落に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、堕落への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;815,家事のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_815
+PRINTL 家事に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、家事への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;816,信仰のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_816
+PRINTL 信仰に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、信仰への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;817,体力のトリビア
+;-------------------------------------------
+@ITEM_DETAIL_817
+PRINTL 体力に関する無駄知識を纏めた紙
+PRINTL 　興味深い内容は読んだ者の好奇心を刺激する
+CALL SETCOLOR_ABL
+PRINTL 　使用すると半月の間、体力への興味が沸く
+RESETCOLOR
+
+;-------------------------------------------
+;821,気付きの種
+;-------------------------------------------
+@ITEM_DETAIL_821
+PRINTL 七色が代わる代わる浮き出る石
+PRINTL 　覗き込むと自分の視野が広まる気がする
+CALL SETCOLOR_ABL
+PRINTL 　使用すると１ヶ月の間教育や夜伽で得られる経験が+1される
+RESETCOLOR
+
+;-------------------------------------------
+;822,癒しのオーラ
+;-------------------------------------------
+@ITEM_DETAIL_822
+PRINTL 淡い光が灯る結晶
+PRINTL 　荒んだ心を癒す作用がある
+CALL SETCOLOR_ABL
+PRINTL 　使用するとやる気が1回復する
+RESETCOLOR
+
+;-------------------------------------------
+;823,討論会招待券
+;-------------------------------------------
+@ITEM_DETAIL_823
+PRINTL 特別な階級を持つ者にしか配布されないという券
+PRINTL 　非常に高価であり、貴族がこぞって購入するらしい
+CALL SETCOLOR_ABL
+PRINTL 　討論会を開催する事ができる
+RESETCOLOR
+
+;-------------------------------------------
+;824,正道の輝石
+;-------------------------------------------
+@ITEM_DETAIL_824
+PRINTL 艶やかな乳白色をした石。手のひらに収まる程度の大きさなのでお守り代わりに持ち歩ける
+PRINTL 　持ち主が道を逸れるきっかけとなる事柄に出会った時、自ら輝いて撃退すると言われている
+CALL SETCOLOR_ABL
+PRINTL 　一部のバッドイベントを回避することができる
+PRINTL 　効果発揮後、一定確率で壊れる
+RESETCOLOR
+
+;-------------------------------------------
+;825,渾沌の力
+;-------------------------------------------
+@ITEM_DETAIL_825
+PRINTL 栗色の勾玉
+PRINTL 　中には熊らしき動物の毛が埋め込まれている
+PRINTL 　天地が開闢した頃に暴れた化け物である渾沌の力が、この玉に込められているらしい
+PRINTL 　純化とは正反対の力を持つことから、とある狐を遠ざけることができる
+PRINTL 
+CALL SETCOLOR_ABL
+PRINTFORML 　使用すると%CALLNAME:TARGET%と純狐が出会った記憶が抹消され、
+PRINTFORML 　純狐に付きまとわれなくなります
+RESETCOLOR
+
+;-------------------------------------------
+;826,夜遊びの球
+;-------------------------------------------
+@ITEM_DETAIL_826
+PRINTL 濃い紫色の勾玉
+PRINTL 　使用者の天命と真逆の姿や気質を、使用者に与える力を持つ
+PRINTL 　月人が穢れの地に降りる際に用いられたという噂もあるが、真相は不明
+PRINTL 
+CALL SETCOLOR_ABL
+PRINTFORML 　使用すると%CALLNAME:TARGET%の姿が一変し、特殊なコマンドが使えるようになります
+PRINTFORML 　効果は1ヶ月で切れます
+PRINTFORML 　4回以上使用すると、姿が戻る際に悪影響が出るようになります(現在の使用回数:{CFLAG:使用回数／夜遊びの球}回)
+RESETCOLOR
+
+;==========================================================================
+;衣服補正表示
+;==========================================================================
+@INDICATE_CLOTHE
+#DIM hosei, 1
+
+PRINT 　
+FOR COUNT, 0, 10
+	CALL PALAM_CONVERT, COUNT
+	IF COUNT <= 5 || COUNT >= 8
+		LOCAL = 0
+		
+		;布切れ系統はIDがマイナスのため、関数名が独立している
+		IF CFLAG:服装 < 0
+			STR:1 = REV
+		ELSE
+			STR:1 = 
+		ENDIF
+		
+		;布切れ系統はIDがマイナスのため、関数名が独立している
+		IF CFLAG:服装 < 0
+			CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, STR
+		ELSE
+			CALLFORM CLOTHE_ID_{CFLAG:服装}, STR
+		ENDIF
+		LOCAL = RESULT
+		CALLFORM REMODEL_HOSEI, STR
+		LOCAL += RESULT
+		IF LOCAL
+			PRINTFORM %STR%:
+			
+			;改造して属性が付与されている場合、色を変える
+			IF RESULT >= 1
+				CALL SETCOLOR_PALAMUP
+			ELSEIF RESULT <= -1
+				CALL SETCOLOR_PALAMDOWN
+			ENDIF
+			
+			IF LOCAL < 0
+				FOR COUNT:1, 0, -1*LOCAL
+					PRINT -
+				NEXT
+			ELSE
+				FOR COUNT:1, 0, LOCAL
+					PRINT +
+				NEXT
+			ENDIF
+			RESETCOLOR
+			PRINT 　
+		ENDIF
+	ENDIF
+NEXT
+
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF CFLAG:服装 < 0
+	CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, "姉妹への友好度"
+ELSE
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, "姉妹への友好度"
+ENDIF
+;アライメント&姉妹or主人への好感度補正も表示
+IF RESULT
+	PRINT 姉妹への友好度:
+	IF RESULT < 0
+		FOR COUNT:1, 0, -1*RESULT
+			PRINT -
+		NEXT
+	ELSE
+		FOR COUNT:1, 0, RESULT
+			PRINT +
+		NEXT
+	ENDIF
+	PRINT 　
+ENDIF
+
+
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF CFLAG:服装 < 0
+	CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, "主人への友好度"
+ELSE
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, "主人への友好度"
+ENDIF
+IF RESULT
+	PRINT 主人への友好度:
+	IF RESULT < 0
+		FOR COUNT:1, 0, -1*RESULT
+			PRINT -
+		NEXT
+	ELSE
+		FOR COUNT:1, 0, RESULT
+			PRINT +
+		NEXT
+	ENDIF
+	PRINT 　
+ENDIF
+
+
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF CFLAG:服装 < 0
+	CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, "アライメント"
+ELSE
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, "アライメント"
+ENDIF
+IF RESULT
+	PRINT アライメント:
+	IF RESULT < 0
+		FOR COUNT:1, 0, -1*RESULT
+			PRINT -
+		NEXT
+	ELSE
+		FOR COUNT:1, 0, RESULT
+			PRINT +
+		NEXT
+	ENDIF
+	PRINT 　
+ENDIF
+
+;補正属性表示
+
+
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF CFLAG:服装 < 0
+	CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, "属性"
+ELSE
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, "属性"
+ENDIF
+LOCAL = RESULT
+FOR COUNT, 0, 7
+	CALL ELEMENT_CONVERT, COUNT
+	IF GETBIT(LOCAL, COUNT+1)
+		PRINTFORM %STR%属性:
+		IF LOCAL > 0
+			PRINT +
+		ENDIF
+		
+		;布切れ系統はIDがマイナスのため、関数名が独立している
+		IF CFLAG:服装 < 0
+			CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, "属性強度"
+		ELSE
+			CALLFORM CLOTHE_ID_{CFLAG:服装}, "属性強度"
+		ENDIF
+		PRINTFORM {RESULT}
+		PRINT 　
+	ENDIF
+NEXT
+PRINTL 

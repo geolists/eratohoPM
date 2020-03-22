@@ -1,0 +1,208 @@
+﻿;=============================================================
+;特殊技能判定
+;=============================================================
+@SPECIAL_TALENT
+
+;お転婆
+IF TALENT:お転婆
+	DRAWLINE
+	;(100-貞操)+淫妖/10が70以上ある場合、妖しい遊びをする
+	IF (100-BASE:貞操) + BASE:淫妖/10 >= 70 && !RAND:3
+		;3通り用意する
+		IF BASE:淫妖 >= 800
+			;PRINTFORMW %CALLNAME:TARGET%は真夜中に%CALLNAME:MASTER%の元から抜け出し、都へ繰り出した
+			;PRINTFORML 
+			PRINTFORML 真夜中の都にて、粘性質の音が木霊する
+			PRINTFORML 兵士は吐息を荒げ、%CALLNAME:TARGET%は何度も腰をくねらせては声を漏らす
+			PRINTFORMW これが彼女にとっての日課になり、ただの余暇潰しの範疇を逸脱していることに、彼女自信も気づいてはいない……
+		ELSEIF BASE:淫妖 >= 300
+			PRINTFORMW %CALLNAME:TARGET%は真夜中に%CALLNAME:MASTER%の元から抜け出し、都へ繰り出した
+			PRINTFORML 見張りをする兵士の前に出て、衣服を少し肌蹴ながら誘いの言葉を吐いた
+			PRINTFORML すると、兵士のどんよりとした目が見る見るうちに滾っていく……！
+			PRINTFORMW 同意の言葉代わりに%CALLNAME:TARGET%に手が伸び、夜空の下に肌色が曝された
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の目を盗んで、あまり治安がよくない場所へ行った
+			PRINTFORMW ぼろ布を纏った浮浪者がいる中、%CALLNAME:TARGET%は衣服をずらして太腿や胸元を露出する
+			PRINTFORMW すると浮浪者達は次々と%CALLNAME:TARGET%に近づき、身体を好きなように撫で始めた
+			;感度300以上で反応が変わる
+			IF BASE:感度 >= 300
+				PRINTFORMW %CALLNAME:TARGET%はあられもない声をあげ、瞳を潤わせていく
+				PRINTFORMW 浮浪者達の覚束ない手つきにも関わらず、情欲を貪るかのように身体を震わせる
+				PRINTFORMW そのような淫靡な身体になってしまった%CALLNAME:TARGET%は、恥も知らずにその場で達した
+				PRINTFORMW 地に膝をついて深呼吸する%CALLNAME:TARGET%の瞳は、妖しく蠢いている……
+			ELSE
+				PRINTFORMW %CALLNAME:TARGET%は眉間を顰め、不快感を顕にした
+				PRINTFORMW 浮浪者達の爪は伸びていて、肌も汚れている。嫌悪感を抱くのも無理はない
+				PRINTFORMW しかし、%CALLNAME:TARGET%はまだ気づいていなかった
+				PRINTFORMW 身体の奥深くで情欲の火は灯り、少しずつ吐息が荒くなっていくことに
+			ENDIF
+		ENDIF
+	ELSE
+		;やる気が上がるor疎通が上がるor体力が上がるor疲労度軽減のいずれかを起こす
+		;体力が上がる以外の行為はお金を$5000～$15000程度消費する($2000単位で変動)
+		;疎通が上がる行為の場合、知力が300以上あると10％の確率でアイテムを拾ってくる
+		SELECTCASE RAND:4
+			;やる気が上がる
+			CASE 0
+				PRINTFORMW %CALLNAME:TARGET%は勝手に抜け出し、兎達と遊んだ
+				PRINTFORMW 兎達が浮かべる表情を前に、%CALLNAME:TARGET%の頬は緩んでいく
+				
+				IF CFLAG:やる気 < 7
+					
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML %CALLNAME:TARGET%のやる気が上がった！
+					CFLAG:やる気 = MAX(CFLAG:やる気+1, 7)
+				ENDIF
+			;話術が上がる
+			CASE 1
+				PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の目を盗んで、市場へ抜け出した
+				PRINTFORMW 様々な物が売られており、中には代々受け継いできた逸品を売る店もあった
+				PRINTFORMW %CALLNAME:TARGET%は自分だけの宝物を買って懐に隠し、%CALLNAME:MASTER%の元へと帰った
+				
+				LOCAL = 1+RAND:3
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %CALLNAME:TARGET%の話術が{LOCAL}上がった！
+				BASE:話術 = MAX(BASE:話術+LOCAL, 600)
+				
+				IF BASE:知力 >= 300
+					PRINTFORML %CALLNAME:TARGET%は老人に目を止められた
+					PRINTFORMW どうやら話の折々に、知る人が少ない話題が入っていて、それを知っていることに感心したらしい
+					PRINTFORMW 老人は%CALLNAME:TARGET%にお礼の品を渡し、会釈をして去っていった
+					;能力アップアイテムがランダムで1つ手に入る
+					LOCAL = 522+RAND:6
+					
+					CALL SETCOLOR_PALAMUP
+					PRINTFORML %ITEMNAME:LOCAL%を手に入れた！
+					RESETCOLOR
+					ITEM:LOCAL += 1
+					
+				ENDIF
+			;体力が上がる
+			CASE 2
+				PRINTFORMW %CALLNAME:TARGET%はお忍びで武道場へ行った
+				PRINTFORMW 道場で修業する人達を見ると、裾から覗き見える腕に筋肉が盛られている
+				PRINTFORMW そんな身体を鍛えることに余念がない人に%CALLNAME:TARGET%はお辞儀をし、一緒に修行を行った
+				PRINTFORMW 夕暮れ頃、%CALLNAME:TARGET%は謝礼としていくらかを渡し、手を振って道場を去った
+				
+				LOCAL = 1+RAND:3
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML %CALLNAME:TARGET%のスタミナが{LOCAL}上がった！
+				BASE:スタミナ = MAX(BASE:スタミナ+LOCAL, 600)
+			;疲労度軽減
+			CASE 3
+				;イナバや兎でもいいんだけど、汎用性優先
+				PRINTFORMW %CALLNAME:TARGET%は動物を囮にして%CALLNAME:MASTER%の目をごまかし、湖へ出かけた
+				PRINTFORMW 日を反射する水面。涼しい風。揺れる草木
+				PRINTFORMW 自然が彼女の五感を刺激し、日頃の疲れを癒していく……！
+				PRINTFORML 
+				PRINTFORMW %CALLNAME:TARGET%は起き上がった。辺りが暗くなっている。思ったより時間が経っていた
+				PRINTFORMW 慌てて%CALLNAME:MASTER%の元へと戻っていった
+				
+				LOCAL = 2+RAND:3
+				PRINTFORML %CALLNAME:TARGET%の疲労度が{LOCAL}回復した！
+				BASE:ストレス = MIN(BASE:ストレス-LOCAL, 0)
+		ENDSELECT
+		RESETCOLOR
+	ENDIF
+ELSEIF TALENT:依代
+	;1/5の確率で神が何も憑かない
+	IF !RAND:5
+		IF CFLAG:憑りついた神
+			PRINTFORML %CALLNAME:TARGET%に憑りついていた神が抜けた！
+			CALL GOD_POSSESS, CFLAG:憑りついた神, -1
+		ENDIF
+	ELSE
+		DRAWLINE
+		;ランダムで名も無き神が憑りつく
+		;美の神、知力の神、交流の神、家事の神、信仰の神、武道の神
+		;淫売の神
+		
+		PRINTFORM 依代である%CALLNAME:TARGET%の身体に
+		LOCAL = RAND:7
+		SELECTCASE LOCAL
+			CASE 0
+				PRINT 美の神
+			CASE 1
+				PRINT 知の神
+			CASE 2
+				PRINT 交流の神
+			CASE 3
+				PRINT 家事の神
+			CASE 4
+				PRINT 信仰の神
+			CASE 5
+				PRINT 武道の神
+			CASE 6
+				PRINT 淫売の神
+		ENDSELECT
+		PRINTFORMW が憑りついた！
+		
+		
+		;既に神が憑りついている場合、神を抜く
+		IF CFLAG:憑りついた神
+			CALL GOD_POSSESS, CFLAG:憑りついた神, -1
+		ENDIF
+		
+		CFLAG:憑りついた神 = LOCAL
+		;憑りついた神に対応する気質を+100させる
+		;(この処理は関数に分離)
+		CALL GOD_POSSESS, LOCAL, 1
+	ENDIF
+ENDIF
+
+
+
+;========================================================
+;憑りついた神毎の処理
+;ARG　　憑りつく神のID
+;ARG:1　脱着(1:着く　-1:抜ける)
+;========================================================
+@GOD_POSSESS, ARG, ARG:1
+
+;憑りつく神
+SELECTCASE ARG
+	;美の神
+	CASE 0
+		IF BASE:気品 < 600
+			BASE:気品 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+		IF BASE:プライド < 600
+			BASE:プライド += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;知の神
+	CASE 1
+		IF BASE:常識 < 600
+			BASE:常識 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+		IF BASE:思考力 < 600
+			BASE:思考力 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;交流の神
+	CASE 2
+		IF BASE:話術 < 600
+			BASE:話術 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;家事の神
+	CASE 3
+		IF BASE:献身 < 600
+			BASE:献身 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;信仰の神
+	CASE 4
+		IF BASE:信仰心 < 600
+			BASE:信仰心 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;武道の神
+	CASE 5
+		IF BASE:スタミナ < 600
+			BASE:スタミナ += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+	;淫売の神
+	CASE 6
+		IF BASE:感度 < 600
+			BASE:感度 += LIMIT(100*ARG:1, 0, 600)
+		ENDIF
+ENDSELECT
+
+
+

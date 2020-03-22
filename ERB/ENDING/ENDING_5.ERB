@@ -1,0 +1,775 @@
+﻿;========================================================
+;ゴスロリルート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;(2015/03/29)ごめんなさい実装忘れていました
+;エンディング処理のファイルに振った番号が職業属性の番号と一致していなかったのが悪い
+;========================================================
+@ENDING_GOTHIC
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落+淫妖が900以上
+IF BASE:堕落 + BASE:淫妖 >= 900
+	CALL ENDING_GOTHIC_1
+	LOCAL:1 = 760
+;600以上
+ELSEIF BASE:堕落 + BASE:淫妖 >= 600
+	CALL ENDING_GOTHIC_2
+	LOCAL:1 = 761
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	CALL ENDING_GOTHIC_18
+	LOCAL:1 = 777
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_GOTHIC_19
+	LOCAL:1 = 778
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_GOTHIC_20
+	LOCAL:1 = 779
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_GOTHIC_3
+			LOCAL:1 = 762
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_GOTHIC_4
+			LOCAL:1 = 763
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_GOTHIC_5
+			LOCAL:1 = 764
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_GOTHIC_6
+			LOCAL:1 = 765
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_GOTHIC_7
+			LOCAL:1 = 766
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_GOTHIC_8
+			LOCAL:1 = 767
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_GOTHIC_9
+			LOCAL:1 = 768
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_GOTHIC_10
+			LOCAL:1 = 769
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_GOTHIC_11
+			LOCAL:1 = 770
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_GOTHIC_12
+			LOCAL:1 = 771
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_GOTHIC_13
+			LOCAL:1 = 772
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_GOTHIC_14
+			LOCAL:1 = 773
+		ENDIF
+	;信仰
+	ELSEIF LOCAL:1 == 9
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_GOTHIC_15
+			LOCAL:1 = 774
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_GOTHIC_16
+			LOCAL:1 = 775
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_GOTHIC_17
+			LOCAL:1 = 776
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　魔界に魅入られし者
+;---------------------------------------------------------
+@ENDING_GOTHIC_1
+PRINTFORMW %CALLNAME:TARGET%は高い魔術への知識と豊富な経験を買われ、魔術ギルドへの正式な加入が認められた
+PRINTFORMW その報せを受け取り大変喜んだ%CALLNAME:TARGET%であったが、この時気づいてはいなかった
+PRINTFORMW 魔術への強い興味が、やがて自身の破滅へ繋がることを……
+PRINTFORML 
+PRINTFORMW ここは魔術ギルドの一室
+PRINTFORMW 仄かに薄暗く、壁に空いた窓にはカーテンがかかっている。カーテンは黄ばんでいて、端は少し破けている
+PRINTFORMW ここは普段は滅多に行われない術。いわゆる"禁呪"の実験を行うために用意された部屋だ。
+PRINTFORML 
+PRINTFORML 「さて、これでいいかな」
+PRINTFORMW 一通り用意を終えた%CALLNAME:TARGET%。魔法陣の前に立つと呪文の詠唱を開始した
+PRINTFORMW これで禁呪は完成する。%CALLNAME:TARGET%の口の端に笑みが浮かぶ。無理はない。ここまで来るのに相当時間がかかったのだから
+PRINTFORMW 魔法陣は詠唱に反応して輝きを増していき、やがて最高潮に達した
+PRINTFORML 
+PRINTFORMW その時、生温い感触が%CALLNAME:TARGET%の喉を撫でた
+PRINTFORML 
+PRINTFORML 生暖かい物体の正体は触手であった。魔法陣から飛び出している
+PRINTFORMW 魔法陣の全体を覆うほどの大量の触手が蠢き、その内の一本が%CALLNAME:TARGET%の喉元を捉えたのだ
+PRINTFORML %CALLNAME:TARGET%はたじろいだ。想定していた物と違うのが出てきたからだ
+PRINTFORMW そしてもう一つ違う点があった。魔法陣から出てきた生物――触手を制御できないということだ
+PRINTFORML 
+PRINTFORMW 喉元を突いた触手は撫でながら胸元へ向かっていく
+PRINTFORMW そして胸元に触手が入り込むと%CALLNAME:TARGET%は額に冷や汗を流すが、この触手、ただの快楽目的で動く輩ではなかった
+PRINTFORMW 獲物が逃げられないようにするため、こうして確実な手法を選んだのだ。衣服越しでは衣服を脱いで逃げられる可能性が残ってしまう
+PRINTFORMW 奥まで潜った触手が腰を縛ると、%CALLNAME:TARGET%は苦悶の表情を浮かべた
+PRINTFORMW しかし、それと同時に自分の脳裏に矛盾する感情が芽生えるのも感じたのであった
+PRINTFORML 
+PRINTFORMW 触手に拘束され、手足で必死に抵抗を試みる%CALLNAME:TARGET%
+PRINTFORMW 身体に伸びる触手は数を増やし、今や手足や股までもが触手の占拠下にある
+PRINTFORMW 生温い粘液が、素肌に塗りたくられていく。触手が蠢く様子が音に変換され、触れてもない耳までもが浸食されてしまう
+PRINTFORMW あまりの気持ち悪さに頭を振るが、矛盾するもう一つの感情が強くなっていた
+PRINTFORMW 身体の奥がじんじんと熱くなっている。誰かに依存したい。抗えない力に虐げられたい
+PRINTFORMW この場で抱いてはいけない感情が、%CALLNAME:TARGET%の判断を鈍らせた
+PRINTFORMW ここで叫んでおけば少しは展開が違ったかも知れないのに……
+PRINTFORML 
+PRINTFORML 「だれかぁ……たす――」
+PRINTFORMW ようやく決心して叫ぼうとした%CALLNAME:TARGET%の口は触手に塞がれ、魔法陣へ身体を引き摺られていく
+PRINTFORMW これが、%CALLNAME:TARGET%が月の都で見せた最後の姿であった
+PRINTFORML 
+PRINTFORML 
+PRINTFORMW あれから遥かに長い時が過ぎた
+PRINTFORMW 月の都では地球との月面戦争が起き、表の月には旗が立てられた
+PRINTFORMW 魔界でも一部では地球のとある世界と繋がる所があったようだが、無限に広がる世界の中では染みの一つに過ぎない
+PRINTFORMW あまりにも広すぎるが故に、同じ魔界であっても場所が変われば文化も変わる
+PRINTFORML 
+PRINTFORMW ここはそんな魔界の一角である
+PRINTFORMW 往々しい王座に座る悪魔が目の前に座す少女の頭を撫でる
+PRINTFORMW 少女は衣服を一つも纏わず、目を瞑って悪魔の股間に生える巨大な物を咥えている
+PRINTFORMW この少女こそが遥か昔、月の都で禁呪を試し無礼にも悪魔の棲家に接続してしまった少女なのだ
+PRINTFORMW 悪魔の従者はそんな少女の様子を見て軽蔑の目線を向ける。魔界に触れようとした人間は皆こうした運命を辿っている。当然の報いである
+PRINTFORMW だがこの少女の扱いは多少なりとも違った。
+PRINTFORML 普段は捕らえた女性は数年足らずで飽き、淫魔化して世に放ってしまうのだが
+PRINTFORMW この少女のあまりの妖艶さに気をとられ、ついには身体の時を止めてまで飼うことになったのだ
+PRINTFORML 「んぅ……っん……！」
+PRINTFORMW 悪魔が股間の物から精液を吐き出すと、少女は苦悶の声を漏らした
+PRINTFORMW 悪魔の精液には飲んだ者を発情させる物質が含まれている。日々昼夜を問わず飲まされている少女の脳裏は最早色欲しかない
+PRINTFORMW 少女がごくと喉を鳴らした後、目を開いた。瞳は光を灯しておらず、焦点が合わないままぼーっとしている
+PRINTFORML 「はぃ……っんぁ……ぉいしかった……です……」
+PRINTFORMW 悪魔が少女の頭を撫でながら目を合わせると少女は言葉を漏らした。どうやら悪魔は言葉を介さずに意思疎通ができるらしい
+PRINTFORMW 少女は突然身体を持ち上げられ、悪魔の上に座らされた。股間には悪魔の自慢の物がある
+PRINTFORMW 通常騎乗位というのは女性が男性より優位であるという象徴であるが、悪魔の世界では多少違う
+PRINTFORMW 悪魔の代わりに卑しい身分である自分が動き奉仕をするという意味が込められている
+PRINTFORML 「はぁ……っん……くぅ……っぁ……」
+PRINTFORMW 物を股間で咥えると少女は苦しそうに声をあげるが、微かに色も混じっている
+PRINTFORMW 痛さに嫌がる一方で悦んでもいるのだ。自分が虐げられていることに
+PRINTFORML 
+PRINTFORMW こうして少女は長い髪を揺らしながら腰を振り、悪魔を悦ばせた
+PRINTFORMW 悪魔より先に達してはいけない。このルールが少女の声を甲高くさせ、詰まったものに仕立て上げる
+PRINTFORMW そして股間から白い液体が漏れた後、少女は頭を後ろに下げて大きな声をあげ、達した
+PRINTFORMW 達した少女は悪魔の膝から逸れ、床に背を預ける
+PRINTFORMW 股間からは白い液体が垂れ出ている
+PRINTFORML 
+PRINTFORMW 魔界で飼われるまで彼女は気づいていなかったのだろう
+PRINTFORMW 自身の知識への探究心は、実は悦びのために突き動かされたものだったと
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.1　魔界に魅入られた者-
+
+;---------------------------------------------------------
+;ED2　淫靡な魔術師
+;---------------------------------------------------------
+@ENDING_GOTHIC_2
+PRINTFORMW 真夜中の路地裏
+PRINTFORMW ゴミ袋と薄汚れたチラシが散乱する道を男が駆ける
+PRINTFORML 後ろには彼を追う少女の姿。男性は少女に追われていた
+PRINTFORMW なぜ狙われるのか、そしてどうして自分なのか。夜道を歩いていただけの彼にとってその理由を知る由もない
+PRINTFORML そして目の前に壁が現れ、ついに男は追い詰められてしまった
+PRINTFORMW 壁は無慈悲にも冷たく、男性の将来を物語るかのようだ
+PRINTFORMW ついに少女が目の前に迫る。少女は洋風の可愛らしい衣服を身に纏っているが、この状況ではとても怖ろしい物に見えてしまう
+PRINTFORMW 男は壁に背を沿わせ頭を振って命乞いをするが、その願いが聞き入れられることはなく……
+PRINTFORML 
+PRINTFORMW 数刻後……
+PRINTFORMW 男は地面に押し倒され、少女の餌食となった
+PRINTFORMW 股間の一物を少女に咥えられ、何度も精力を吸われる破目になったのだ
+PRINTFORMW 最初は口で、次は胸、そして股と来て最後には秘裂で何度も味わられた
+PRINTFORMW 今、少女は彼の股間に跨り、自ら腰を動かしている
+PRINTFORML 胸元のリボンは解かれ、綺麗な肌と膨らみを外気に曝している
+PRINTFORMW 千切られたり引っ張られたりした形跡がないことから、恐らく彼女自ら露出したのだろう
+PRINTFORMW 目の前で裸身を露わにされる男性の気持ちは如何なものだっただろうか、懼れただろうか、それでも本能には抗えず勃ったのだろうか
+PRINTFORMW その時の感情を知る方法は最早なかった。なぜなら男性は既に快楽を引き出されていたし、応える術もないからだ
+PRINTFORML 「ぁっ……はぁ……んん……！」
+PRINTFORML 少女が声をあげたかと思うと背を震わせ、達した
+PRINTFORMW 太腿がきつく締められ、狭くなった秘裂が男の一物を搾り取る
+PRINTFORMW 白い液体が何度も裂内に吐き出され、少女の顔は恍惚に染まっていく。この液体こそが、彼女が求めていた物で、男を襲った理由であった
+PRINTFORMW 液体が一吐きされるたび、男の命は削られていく。何度も出され、生きる意思が休息に薄らいでいく
+PRINTFORMW そして最期に一物が大きく震えて一際多い液体が吐き出されると、男性の息は止まってしまった
+PRINTFORML 男が事切れたことは少女にも分かった。熟した目で見降ろした後、早すぎる旨の言葉を呟いた
+PRINTFORMW 少女はこういうものの、彼女に襲われた男は大抵同じ頃合いに事切れていた。少女が求める理想が高すぎるだけだった
+PRINTFORML 名残惜しそうに腰を揺すり、最期の残り火を味わう。切なそうに漏れる吐息が夜空に浮かぶ
+PRINTFORML 
+PRINTFORMW 男の身体の硬直が始まり、それと共に一物から剛性が抜けていく
+PRINTFORMW そろそろ頃合いだろう。余韻に浸っていた彼女は腰をあげ、彼だったものから離れた
+PRINTFORMW 短いスカートから露出した太腿に白い液体が垂れる
+PRINTFORMW そして彼女は衣服も直さぬまま呪文を詠唱する。呪文を唱える彼女の息遣いは艶っぽく、顔は赤く腫れたままだ
+PRINTFORMW そして詠唱が終わると共に目の前に時空の裂け目が開き、彼の身体が吸い込まれる
+PRINTFORMW 身体を全て吸い込んだ後、少し間を置いて触手が飛び出した
+PRINTFORMW 触手の主が少しずつ裂け目から這い出る。全身から触手を生やしており、触手の塊にしか見えない
+PRINTFORMW 少女の身体は瞬く間に触手に拘束された。肌蹴たままの胸や露出した太腿に触手が這い、少女は悦びの声をあげる
+PRINTFORML 
+PRINTFORMW 精液で魔力を得た少女は、おすそ分けと言わんがばかりに魔界の生物に身体を渡し、悦楽を愉しむのである
+PRINTFORMW この行いは必要に応じて行われている。少女の魔力が尽きた時か――少女の身体が疼いた時かだ
+PRINTFORMW まだ夜は始まったばかり、少女の濡れた声が路地裏に響き渡る……
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.2　淫靡な魔術師-
+
+;---------------------------------------------------------
+;ED3　美の探究者
+;---------------------------------------------------------
+@ENDING_GOTHIC_3
+PRINTFORMW %CALLNAME:TARGET%は魔術者としての終着点の一つに辿り着いた
+PRINTFORML 
+PRINTFORMW 朝、魔術ギルドの祭壇の上がった彼女は、頭を見せる朝日を見ながら背伸びをした
+PRINTFORMW 彼女曰く「明けたばかりの朝日には特別な力が宿る」とのことだった
+PRINTFORMW そして昼になるまで彼女は仕込みを行う
+PRINTFORMW これは都に住む人に配る。一種の宣伝材のようなものだった
+PRINTFORML 
+PRINTFORMW そして昼がやってきた
+PRINTFORMW 都に出た彼女は道行く人々に光輝く布を配った
+PRINTFORMW この布には拭いた物を美しくする力が宿っているらしい
+PRINTFORML 
+PRINTFORMW 毎日このことをする彼女の狙いとは何なのだろうか
+PRINTFORMW 本人に直接訊いてみると「みんなが綺麗になればうれしい。それ以上に狙っていることはない」とのことだった
+PRINTFORMW 本当なのだろうか。しかし屈託のない笑顔を見せられると疑う事に罪悪感を抱いてしまう
+PRINTFORMW 彼女の活動をこれからも見守るしかないだろう
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.3　美の探究者
+
+
+;---------------------------------------------------------
+;ED4　魅惑の魔術師
+;---------------------------------------------------------
+@ENDING_GOTHIC_4
+PRINTFORMW %CALLNAME:TARGET%は美しさを武器とした魔法使いへと成長した
+PRINTFORML 
+PRINTFORMW 彼女は魔術も一通り使えるのだが、それ以上に美しかった
+PRINTFORMW 仕事の合間に飲食店に入り軽食を摂っている間にも男性から熱い目線を向けられた
+PRINTFORMW それは彼女が彼らを魅了しようとしているのではなく、魅力が作法や仕草から仄かに滲み出てしまうからだった
+PRINTFORML 
+PRINTFORMW 魅惑の力はこれだけに留まらなかった
+PRINTFORMW プライベートにおいても彼女は多くの連れ人を連れていたのだ
+PRINTFORML 彼女曰く「同じ趣味を持っていたのでお友達になった」とのことだが
+PRINTFORMW 見た目や年齢があまりにもかけ離れている様子に違和感を感じざるを得ない
+PRINTFORMW そもそも彼らは本当に彼女と趣味が合うのだろうか
+PRINTFORML 
+PRINTFORMW いずれにしろ、今の%CALLNAME:TARGET%が自身の美しさを活かして暮らしていることに違いはなさそうだ
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.4　魅惑の魔術師-
+
+;---------------------------------------------------------
+;ED5　綺麗好きな魔法使い
+;---------------------------------------------------------
+@ENDING_GOTHIC_5
+PRINTFORML %CALLNAME:TARGET%は魔法使いとして育った。
+PRINTFORML 
+PRINTFORMW 彼女の特徴は綺麗好きなところだろう
+PRINTFORMW 実験が終わると合間を置かず魔術用の実験道具を仕舞い始めた
+PRINTFORMW かと思えば今度は叩きを手に取り、家具に溜まった埃を落とし始めた
+PRINTFORMW 背の高く、そして幅も広い家具がたくさんあるので結構大変な作業なのだが、これを週に1回は行っている
+PRINTFORML 
+PRINTFORMW なぜそこまで整理整頓に凝るのか
+PRINTFORMW お茶を飲んで兎形の饅頭を頬張る彼女に聞いたところ「綺麗な方が魔術に集中できる」とのことだった
+PRINTFORMW なるほど、確かに納得できる話だった
+PRINTFORML 
+PRINTFORMW しかし一つだけ疑問が浮かぶ
+PRINTFORMW 彼女は時間の大部分を掃除に使っているのだ
+PRINTFORMW それならもう少し魔術に時間を使ってもいいのではないだろうか……
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.5　綺麗好きな魔法使い-
+
+;---------------------------------------------------------
+;ED6　飽くなき探求
+;---------------------------------------------------------
+@ENDING_GOTHIC_6
+PRINTFORMW %CALLNAME:TARGET%は魔術師として魔術への探究を極めた
+PRINTFORML 
+PRINTFORMW 彼女がここまで魔術を極められるのは知力の高さによるものが大きい
+PRINTFORMW ギルドの蔵書を隅から隅まで読むことができたので彼女は魔術への興味を逸らさず、そして深めることができたのだ
+PRINTFORMW 魔術に対する彼女の知識に勝てる者は存在しないだろう
+PRINTFORML 
+PRINTFORMW そんな彼女は次なる挑戦を行うらしい
+PRINTFORMW どうやら実際に魔界に行って探索をするということだった
+PRINTFORML 「いつも魔力を分けてもらっているから、たまには挨拶をしないと」
+PRINTFORMW 彼女はそう言っているが、本当に理由はそれだけなのだろうが？
+PRINTFORML 
+PRINTFORMW いずれにしろ彼女の探究心は未だ止まらず、いずれは月の都に革命をもたらす日も来るかも知れない
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.6　飽くなき探求-
+
+;---------------------------------------------------------
+;ED7　魔術とは知識なり
+;---------------------------------------------------------
+@ENDING_GOTHIC_7
+PRINTFORML 「魔術というのはね。その人の知識なの」
+PRINTFORMW 魔術というのは何なのかを%CALLNAME:TARGET%に聞いたところ、すんなりと答えてくれた
+PRINTFORML 「魔術の成り立ちや用例。成立させた人の生涯等調べていけば魔術を使う方法や注意すべき事項など色々なことが分かるのよ」
+PRINTFORMW %CALLNAME:TARGET%は得意げに語る。それもそのはず、彼女は毎日寝る間を惜しんで本を読んでいるのだから
+PRINTFORMW きっと魔術とは直接関係ないような逸話も知っているのだろう
+PRINTFORML 
+PRINTFORMW 会話を楽しんでいると扉を叩かれた
+PRINTFORMW %CALLNAME:TARGET%が返事をして扉まで駆け寄って開けると、数人の若い男女が入ってきた
+PRINTFORML 「彼らは読書会をするために来たの。こうして定例的に読書会を開催しているのよ」
+PRINTFORMW 読書会とは各自事前に本を読んでおき、その本について仲間と語り合う会合のことである
+PRINTFORMW 部屋に入ってきた彼らはそれぞれ違う本を持っている。どうやらこの読書会では各自本を選んで読むらしい
+PRINTFORML 「一応テーマは決めてあるのよ。それに沿ってそれぞれが本を選んで発表するの」
+PRINTFORMW 確かにそのやり方だと自分の発表に熱が入りそうだ。何しろ自分で選んだ本なのだから自分の意見も出しやすいだろう
+PRINTFORML 
+PRINTFORMW 部屋を去ろうとしたとき、%CALLNAME:TARGET%に裾を掴まれた
+PRINTFORML 「あら、あなたも読書会見学してよ。今度はあなたにも参加してもらおうと思ってるのだから」
+PRINTFORMW 屈託のない笑みを向けられた。どうやらこれからは忙しくなりそうだ……
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.7　信仰知識-
+
+;---------------------------------------------------------
+;ED8　どこで得たのかその知識
+;---------------------------------------------------------
+@ENDING_GOTHIC_8
+PRINTFORML 最近、%CALLNAME:TARGET%が話す内容がおかしい
+PRINTFORML 「魔界に生えているキノコってとても甘いらしいわ」
+PRINTFORML 「魔界の温泉はとても冷たくて寒気が止まらなくなるんだって」
+PRINTFORML 「魔界では大豆が育たないんですって」
+PRINTFORMW ありそうなことからなさそうなことまで何でも話してくる
+PRINTFORMW 一つ共通していることは、話の内容に信憑性がないことであった
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%は勇気を出して聞いてみた
+PRINTFORML 「え？　どこで知識を得ているのか？　ですって？」
+PRINTFORMW %CALLNAME:TARGET%は顎に指を置いて悩み始めた。情報の出処を答えるだけで悩む必要なんてあるのだろうか
+PRINTFORML 「そうだ。この本に載ってたのよ」
+PRINTFORMW そう言って%CALLNAME:TARGET%は本棚から本を取り出し、%CALLNAME:MASTER%に渡した
+PRINTFORMW 本の題名は"知って仰天！？　魔界の事実88選"だった
+PRINTFORML 「その本が面白くてね。寝る前に毎日読んでるのよ。適当に眠気に襲われたら枕元に置いてそのまま寝るの」
+PRINTFORML 幸せそうに語る%CALLNAME:TARGET%を見て%CALLNAME:MASTER%は指摘する気を喪った
+PRINTFORMW この調子で大丈夫なのだろうか……
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.8　どこで得たのかその知識-
+
+;---------------------------------------------------------
+;ED9　魔術の共唱
+;---------------------------------------------------------
+@ENDING_GOTHIC_9
+PRINTFORMW 月の都には魔術ギルドがある
+PRINTFORMW このことは諸君なら既知のことだとは思うが、どうして彼らがギルドを組んでいるかは知っているだろうか
+PRINTFORMW 設立当初の本来の目的は「大魔法を完成させ、この世に新たな法則を与える」ことだったのだ
+PRINTFORMW 設立から随分と時が経ち資料が散逸してしまっているので事実かは分からないが、今の時点ではこの説が有力である
+PRINTFORML 
+PRINTFORMW さて、%CALLNAME:TARGET%は魔術師でありながら他者との意思疎通に長けた人物に育った
+PRINTFORMW これがどのような結果を及ぼすのか前述した事項から考えてほしい
+PRINTFORML 
+PRINTFORMW ここは魔術ギルドの屋上
+PRINTFORMW 年老いた魔術師が輪になって集まっている。輪の中心には%CALLNAME:TARGET%、何をするか打ち合わせをしているようだ
+PRINTFORMW そうそうたる面子が揃い踏み。これで革新的なことが行われないはずがない
+PRINTFORMW 恐らくこの場で実現させるつもりなのだろう――伝承にのみ残る大魔法の完成を
+PRINTFORML 
+PRINTFORMW 円陣を組み、周囲の魔導士達が座して頭を地に着け詠唱を始めた
+PRINTFORMW 各魔術師に光が灯り、一斉に宙に打ち上げられる。%CALLNAME:TARGET%は宙に光が溜まるのを待って呪文を唱え始めた
+PRINTFORMW 光球は%CALLNAME:TARGET%の詠唱に応じて形を変え、やがては人の形を取る様になった
+PRINTFORMW そうだ。これが伝承に残る大魔法――精霊生成の術である
+PRINTFORMW 精霊が完全に人の形を取った時、%CALLNAME:TARGET%は詠唱終了の合図を上げ、一斉に詠唱を止めた
+PRINTFORMW そして%CALLNAME:TARGEt%は精霊と向き合う。精霊は一体一体が自然の法則に関わる力を持っている
+PRINTFORMW はたしてこの精霊はどんな力を持っているのだろうか……
+PRINTFORMW その真相は%CALLNAME:TARGET%と周囲の魔術師のみが知る
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.9　魔術の共唱-
+
+;---------------------------------------------------------
+;ED10　君主の有効活用
+;---------------------------------------------------------
+@ENDING_GOTHIC_10
+PRINTFORMW 長きにわたる教育の結果、%CALLNAME:TARGET%はそれなりの疎通力を備えた魔術師として育った
+PRINTFORML 
+PRINTFORMW 彼女はギルド内の魔術師と力を合わせ、君主を捕まえることに成功した
+PRINTFORMW 捕らえた君主だが、魔術のために使われる予定とのことだ
+PRINTFORMW 彼女は"一応"止めたのだが周囲の魔術師、特に古参の方々が譲らなかった
+PRINTFORML 
+PRINTFORMW ここは魔術ギルドの地下室
+PRINTFORMW 石造りの壁で四方を覆われ、中央には黒錆びた釜が佇んでいる
+PRINTFORMW 釜の中には妖しい色をした液体が注がれ、薪の火によってぐつぐつと煮立てられている
+PRINTFORMW 釜の湯気は立ち昇り、天井から逆さに吊るされている君主の頭を突く
+PRINTFORML 「なにをするつもりだ！？　こんなことをすると私の側近が黙っていないぞ！」
+PRINTFORMW 魔術師が指を鳴らすと、君主の命乞い虚しく釜の中へ落とされていく
+PRINTFORMW 液面に君主の頭がついたとき、部屋中に大きな悲鳴が響き渡った
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%が地下室を訪ねた時、既に実験は終わっていた
+PRINTFORMW 釜から引き揚げられた君主はぐったりとし、時折うわ言を吐いた
+PRINTFORMW 瞼は下がり、瞳から光は抜けていた
+PRINTFORMW 君主は薬に身も心も蝕まれ、木偶の坊と化していた
+PRINTFORML 
+PRINTFORML 「――ということがあったのよ」
+PRINTFORMW とある喫茶店。%CALLNAME:MASTER%は%CALLNAME:TARGET%から話を聞かされた
+PRINTFORML 「まあ、確かに君主は無力化したんだけど、少しやりすぎたかなと思う……」
+PRINTFORMW %CALLNAME:TARGET%は俯きながら言った
+PRINTFORMW 一応君主の魔の手からは逃れられたが、今度は魔術師という因果に囚われてしまったのかも知れない
+PRINTFORMW 将来が少し心配になった
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.10　君主の有効活用-
+
+;---------------------------------------------------------
+;ED11　魔術師の輪
+;---------------------------------------------------------
+@ENDING_GOTHIC_11
+PRINTFORMW %CALLNAME:TARGET%は他者との交流を得意とする魔術師へと育った
+PRINTFORML 
+PRINTFORMW 魔術は論理的な発生原理が判っていないことが多い
+PRINTFORML それ故に魔術を成功させるコツや手順は口伝になることが多く、中には一子相伝のものもあるらしい
+PRINTFORMW つまり、本を読むだけでは極めることができないというわけだ
+PRINTFORML 
+PRINTFORMW 本を読むだけでは極められない、となればやる事は決まってくる
+PRINTFORMW 他者と交流し、口伝された知識を集約させるのだ
+PRINTFORMW そのことに気付いた%CALLNAME:TARGET%はギルドの魔術師に呼びかけ、交流の輪を作り出した
+PRINTFORMW 今やこの輪は幅広い年齢層の参加者で成り立っている
+PRINTFORML %CALLNAME:TARGET%曰く「ここまで人脈を築き上げるのは苦労した」とのことだが
+PRINTFORMW 苦労に見合うだけの価値はあっただろう
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.11　魔術師の輪-
+
+;---------------------------------------------------------
+;ED12　料理とは魔術である
+;---------------------------------------------------------
+@ENDING_GOTHIC_12
+PRINTFORMW %CALLNAME:TARGET%は魔術師でありながら、他の分野にて注目されている
+PRINTFORML 
+PRINTFORML その分野とは――
+PRINTFORML 「%CALLNAME:MASTER%、少し私のお手伝いをしてくれない？」
+PRINTFORML %CALLNAME:TARGET%は手を振って%CALLNAME:MASTER%を呼ぶ。机の上には料理が盛られた皿が置かれている
+PRINTFORMW 肉と野菜をとても香ばしい香辛料にてまとめ上げ、クセのある両者の風味がバランスよく調和している
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%が編み出した新たな料理の意見役として協力しているというわけだ
+PRINTFORML 
+PRINTFORMW そう、つまり%CALLNAME:TARGET%が一目置かれている分野とは、料理の分野である
+PRINTFORMW 魔術を行う際に香辛料を使うケースは結構多い
+PRINTFORMW 魔術は使用者の心理状態に左右され、その心理状態も特異なものが求められるからだ
+PRINTFORML %CALLNAME:TARGET%は様々な魔術の詠唱方法について学ぶうちに香辛料についての知識も身に着き
+PRINTFORMW 今こうして料理に応用しているというわけだ
+PRINTFORML 
+PRINTFORML さて、今回の料理はどのような味になったのだろう
+PRINTFORMW テーブルでは%CALLNAME:MASTER%が料理を口に入れた後、しきりに水を飲んでいる
+PRINTFORML 「あら、辛すぎたのかしら。臭みを消す為に辛い成分の薬味をたくさん入れたのだけど……」
+PRINTFORMW どうやら%CALLNAME:TARGET%は少し勇み足をしたらしい
+PRINTFORMW このように%CALLNAME:TARGET%が出す試作品の味には結構ばらつきがある
+PRINTFORMW まあ、大抵の場合結局は美味しく食べられるのだが、今回は違ったようだ
+PRINTFORMW この調子で行けば、やがては伝説の料理人として歴史に名を残す日が来るかも知れない……
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.12　家事に宿る信仰-
+
+;---------------------------------------------------------
+;ED13　魔界の食べ物探訪記
+;---------------------------------------------------------
+@ENDING_GOTHIC_13
+PRINTFORMW 魔界――この世とは別の次元にある世界である
+PRINTFORML 
+PRINTFORMW 倫理観も棲む生物も雰囲気も異なるが、それでも共通していることはある
+PRINTFORMW それは食材として使えそうな物があることだ
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はたくさんの物を抱えて帰ってきた
+PRINTFORMW 腕の中には変な色をしたキノコや獣が収められている
+PRINTFORML 「今回は逸材がたくさん手に入ったの。期待していてね」
+PRINTFORMW 今回の収穫にそんな評価を下す%CALLNAME:TARGET%だが、毎回そんなことを言っている気がする
+PRINTFORML 「……ん？　疑ったでしょう？　でも今回は本当に別なのよ。これは人食い植物で、こっちはイバラ。姿は似ているけど色が違うでしょう？」
+PRINTFORMW 机の上に並べられた二つの植物を見比べた。どちらも花の中央に大きな口が開いており、歯が生えている
+PRINTFORML 「ああ、ちゃんと抜歯するからそこは安心してね」
+PRINTFORMW 屈託のない笑顔を向ける%CALLNAME:TARGET%。どう安心すればいいのだろうか
+PRINTFORML 
+PRINTFORMW 魔界ではこちらの世界で見かけることのない生物がたくさん存在している
+PRINTFORMW %CALLNAME:TARGET%は教育の結果得た高い料理知識を活かし、こうして魔界の物で新たな料理を作り出そうとしているのだ
+PRINTFORML 今のところ失敗の方が多いが、いつか万人に受け入れられる名作が誕生することだろう
+PRINTFORML ……それまで%CALLNAME:MASTER%の身体がもてばいいが
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.13　魔界の食べ物探訪記
+
+;---------------------------------------------------------
+;ED14　術式前の掃除
+;---------------------------------------------------------
+@ENDING_GOTHIC_14
+PRINTFORMW 魔術において大切なことがある
+PRINTFORMW それは整理整頓である
+PRINTFORML 今更こんなことを言い出すとはと軽蔑されそうだが、意外と侮れない話である
+PRINTFORMW %CALLNAME:TARGET%はそのことにある程度長けていたおかげでギルドの窮地を救ったのだから
+PRINTFORML 
+PRINTFORMW とある日の魔術ギルドでは大きな問題が発生していた
+PRINTFORMW 先代から引き継いできた儀式用装飾品。それを失くしてしまったというのだ
+PRINTFORML 昨日の夜実験を終え帰宅した魔術師が翌朝部屋に戻るとあるはずの装飾品が消えていたという
+PRINTFORMW 一体どこに置いたのか。責任の所在はどこにあるのか。そもそもその魔術師がくすねたのではないか？
+PRINTFORML ギルド内の雰囲気は一気に険悪になり、連携はぐずぐずになっていく
+PRINTFORMW 長い歴史を持つギルドもこれで終わりだろうか。誰もがそれを実感したその時であった
+PRINTFORML 
+PRINTFORML 「まずは掃除しましょう？」
+PRINTFORMW %CALLNAME:TARGET%の一声にみんなが振り返った
+PRINTFORML 「ほら、こことか本積み上げたままじゃない。ここなんて書類置きっぱなしだし」
+PRINTFORML 「こんなんじゃ装飾品の一つや二つ失くすに決まってるじゃない」
+PRINTFORMW 疑いの目が%CALLNAME:TARGET%に向けられる。唐突に掃除しようと言い出したのだ、くすねた物を見つけたふりをして誤魔化すに違いない
+PRINTFORML 「私を疑って仕方ないのであればこの場で裸になってもいいのよ？」
+PRINTFORMW そう言って%CALLNAME:TARGET%は自分の肩に手をかけた
+PRINTFORML これにはみんなも気圧されてしまう。さすがに実際に脱げとは言いづらいし、あまり言いたくないからだ
+PRINTFORMW ……多少なりとも身体自体に興味を持つ者も中にはいたようだが……
+PRINTFORML 
+PRINTFORMW 掃除を開始して半日が過ぎた
+PRINTFORML 吉報が流れた。なんと装飾品が見つかったというのだ
+PRINTFORMW 見つかった場所は魔術師が失くしたと主張すた実験室から遠く離れた部屋
+PRINTFORML 物を仕舞うために部屋を開けたところ、装飾品を咥えた猫を見つけたとのことだった
+PRINTFORML この部屋は地下にあり、滅多に開けられることのない部屋であった
+PRINTFORMW なぜそんな部屋に猫が入り込めたのか
+PRINTFORMW 後ほどの調査で分かったことだがこの部屋には物品棚の上に抜け道があり、石壁を押せば開けるとのことだった
+PRINTFORMW 現に調査した頃には既にその抜け道は開いており、検証を行った所猫ほどの力でも容易に押すことができた
+PRINTFORMW 抜け道が必要になるほどの出来事が過去にあったのだろうか……？
+PRINTFORMW 何はともあれ見つかってよかった。これも%CALLNAME:TARGET%が掃除を提案したおかげである
+PRINTFORMW こうしてギルドの平和は保たれた
+PRINTFORMW 
+PRINTFORMW -ゴスロリED No.14　術式前の掃除
+
+;---------------------------------------------------------
+;ED15　神界への挑戦
+;---------------------------------------------------------
+@ENDING_GOTHIC_15
+PRINTFORMW 魔術ギルドは日々新たな挑戦を行う
+PRINTFORMW 時には今まで常識だと考えられてきた事柄にも挑戦する必要があるのだ
+PRINTFORMW 今回はそんな彼らの挑戦について触れようと思う
+PRINTFORMW 
+PRINTFORMW ここは月の都にある魔術ギルド
+PRINTFORMW このギルドの部の一つでは、ある壮大なプロジェクトが進められていた
+PRINTFORMW プロジェクトリーダーは%CALLNAME:TARGET%。若くして長に上り詰めた期待の新人である
+PRINTFORML 
+PRINTFORMW 「私は昔から神の世界というのを信じてきたんです」
+PRINTFORMW 熱く語る彼女の眼にはぎらぎらとした情熱が籠っていた
+PRINTFORMW 彼女は幼いころから信仰について深く学び、その影響を受けて魔術の研究も進めてきた
+PRINTFORMW そうした中で考え付いたのが「神がいるのなら、神が住む世界――神界も存在するのではないか」ということだった
+PRINTFORML 
+PRINTFORMW 「今日は星を見ましょう」
+PRINTFORMW プロジェクトメンバー達は泊まる準備をし、各自屋上にて寝袋に入って夜空を見つめた
+PRINTFORMW 毎日星の流れを見る事で気の流転を測り、世界の通行路が変わる日が来るのか確かめているのである
+PRINTFORMW 「１日だけ魔界から神界に繋がる日があるんです。それを見つけることができれば、この計画は上手く行ったも同然です」
+PRINTFORMW 彼女はそう語る。だが、その僅か1ピースが揃わないが故に計画が大成せず、志半ばで倒れる挑戦者も決して少なくはないのだ
+PRINTFORML 
+PRINTFORMW 彼女の挑戦はこれからも続く。彼女が諦めるまでは――
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.15　神界への挑戦-
+
+;---------------------------------------------------------
+;ED16　魔界にも布教を
+;---------------------------------------------------------
+@ENDING_GOTHIC_16
+PRINTFORMW 魔界にも信仰が必要である
+PRINTFORMW そんな主張を行うのは%CALLNAME:TARGET%であった
+PRINTFORML 信仰について高い教養を身に着けた彼女は、無秩序に満ちた魔界に信仰をもたらすことこそが魔術師において
+PRINTFORMW いや、月の都において最も大切なことだと確信したのであった
+PRINTFORML 
+PRINTFORML 「で、これが信仰を広めるための販促材よ」
+PRINTFORML そう言って%CALLNAME:TARGET%から渡されたのは一枚の紙だった
+PRINTFORMW 可愛らしい兎と%CALLNAME:TARGET%を模したと思われる少女の絵が描かれている
+PRINTFORML 「兎は信仰の象徴だからね。かわいらしさで興味を惹くの」
+PRINTFORMW 誰が描いたんだ？　そう思いながら視線を向けると%CALLNAME:TARGET%は勝ち誇った表情を向けた
+PRINTFORML 「ちょっと夜更かしすぎたかな、なんてね……ふわぁー……」
+PRINTFORMW %CALLNAME:TARGET%は口に手を当て大きな欠伸をした。販促材ってことは魔界にばら撒くはずだが、相当な枚数に絵を描いたのだろうか
+PRINTFORML 
+PRINTFORML 「さて、実際にばら撒きましょうか。魔界に行くのは少し怖いから他の手段を使うわね」
+PRINTFORMW %CALLNAME:TARGET%は呪文を詠唱し、魔法陣に光を灯らせた
+PRINTFORML 「ここに大量の販促材をばら撒く！」
+PRINTFORMW 彼女は自分の努力の結晶を魔法陣へ躊躇いもなく放り投げた。すると魔法陣の光と販促材が反応し、瞬く間に姿を消していく
+PRINTFORML 「どう？　これで魔界に販促ができたはずだわ」
+PRINTFORML %CALLNAME:MASTER%に振り向く%CALLNAME:TARGET%。瞳は輝いている
+PRINTFORML 
+PRINTFORMW 本当に効果は出るのだろうか。それは神のみぞ知る
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.16　魔界にも布教を-
+
+;---------------------------------------------------------
+;ED17　魔術信仰
+;---------------------------------------------------------
+@ENDING_GOTHIC_17
+PRINTFORMW %CALLNAME:TARGET%は信心深い魔術師として育った
+PRINTFORML 
+PRINTFORMW そんな彼女がまず手をつけたことは、月の都に対する魔術の浸透である
+PRINTFORML というのも魔術は穢れ者を呼ぶ恐れがあることから異端的に見られることが多かったからだ
+PRINTFORMW まず彼女は魔術を篭めた人形を作り、それで人形劇を行うことにした
+PRINTFORMW 恐らく魔術の安全性と実用性を周知させるための催しなのだろう
+PRINTFORML この劇自体は人気があり、回を重ねる毎に客の数が増えていき、次第には開場から数分で満席になるようになった
+PRINTFORMW ここで人形を売れば一儲けできそうではあるが、彼女はまだ何も販売しなかった
+PRINTFORMW 陰謀論が出回るのを恐れたのだろう。人形劇で安心させて人形を売り、穢れをばら撒くつもりだ――そんな喧伝をされては何もできなくなってしまう
+PRINTFORML 
+PRINTFORMW では彼女は次に何をするつもりなのか？　人形劇だけで終わる予定なのか？
+PRINTFORMW もちろん、彼女の計画はこれで終わりではなかった
+PRINTFORMW 彼女は他の行事に参加して人形を使った芸を見せたのだ
+PRINTFORMW 客がすぐに満席になる人形劇の時点で人気は充分に取れていたのになぜこんなことをするのか
+PRINTFORMW その大きな目的としては、人形劇の地位向上が挙げられるだろう
+PRINTFORML こうして大きな行事に参加すると、それができるだけの価値があるものとして認識されやすくなる
+PRINTFORMW 彼女はそうした効果を狙って色々な行事に参加をするのである
+PRINTFORML 
+PRINTFORMW 「ほう、人形を使った芸なんてするようになったのか」
+PRINTFORML 君主は%CALLNAME:TARGET%の芸を見て感心している
+PRINTFORMW もちろん芸目的で参加しているわけではない。君主は例年この行事を見学しているのだから
+PRINTFORML 「しかし……どこかで見たことある女性だな……」
+PRINTFORMW %CALLNAME:TARGET%は煌びやかなかつらや装飾品を付け、姫君に見えないよう変装していた
+PRINTFORMW 王宮の一族が行事に参加して人形芸を見せるのは多面的に見て問題があったからだ
+PRINTFORML 「どこにでもいる芸者ですよ。君主殿は気にかける必要などありません」
+PRINTFORML 君主の側近がそう答えた。実は彼は彼女の正体に気付いていたのだが、あえて黙殺したのだ
+PRINTFORMW この劇を潰されては興が削がれてしまう――この感情が彼に"黙殺"という立場に反した行為に至らせた
+PRINTFORML 
+PRINTFORMW 君主の側近ですら魅了したこの人形芸。月の都での伝統行事として根付く日も遠くはないだろう
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.17　魔術信仰-
+
+;---------------------------------------------------------
+;ED18　永世の大魔術師
+;---------------------------------------------------------
+@ENDING_GOTHIC_18
+PRINTFORMW 魔術師は短命である
+PRINTFORMW これが月の都における常識であった
+PRINTFORML 
+PRINTFORMW しかし%CALLNAME:TARGET%は違った。培った類稀な能力の高さにより、彼女は手に入れたのだ
+PRINTFORMW 永久に渡る寿命を
+PRINTFORML 
+PRINTFORML 「ほう、それで穢れを恐れずに研究を行えるようになったと？」
+PRINTFORMW 君主は深々と椅子に座り、肘をついて%CALLNAME:TARGET%の話を聞く
+PRINTFORMW 椅子の黒々とした艶は彼の莫大な資産と人脈、そして血筋からくる余裕を醸し出す
+PRINTFORMW しかし彼女には全く羨ましく思えなかった。理由としてはここで語る必要もないだろう
+PRINTFORMW そんな彼女がこの場にいるのは君主が呼びつけたからなのだが、例え何を提案されようとも%CALLNAME:TARGET%としては乗る気は全くない
+PRINTFORMW 君主が例えどんな立場であろうとも今の%CALLNAME:TARGET%が従う利点など何一つとしてないからだ
+PRINTFORML 「どうだ、私に研究の成果を教えてくれないか？」
+PRINTFORMW 君主は手元の盃を手に取り、それを傾けながら訊いた。盃に注がれた僅かな酒が揺れる
+PRINTFORMW 「お断りします。貴方に教えると私がしてきた研究の成果が一瞬で水泡と化すので」
+PRINTFORMW 「ほう。ならばこれでどうかな？」
+PRINTFORML 君主が指を鳴らすと、%CALLNAME:TARGET%の後ろに若い男が3人現れた
+PRINTFORMW 彼らは全員布で頭巾をしており、顎には無精髭を生やしている。恐らく匪賊なのだろう
+PRINTFORMW %CALLNAME:TARGET%が提案を断るのも彼にとっては想定の範囲内だったということだろうか
+PRINTFORML 「お前が逃げようとするものならそこの奴らが身体を抑え、縛り上げてやる。後は地下牢に閉じ込め、彼らの報酬にでもしてやろうか」
+PRINTFORMW 君主の眼が妖しく光る。獲物を絡め取ったという確信に満ちている目だ
+PRINTFORMW 心の中では恐らく彼女が取る行動が想定されているのだろう。地位が高い彼女がわざわざそれを手放すことを選ぶはずがない
+PRINTFORMW ならば――と、まるで蜘蛛の巣に嵌った獲物を見る様な目で君主は彼女を見やる
+PRINTFORML 
+PRINTFORMW しかし君主は一つ見落としていた
+PRINTFORMW いや、見落とすからこそ君主はこの立場に甘んじていたのだろう。完璧な目を持っていれば今頃こんな対峠をしなくて済んだはずである
+PRINTFORMW 「さて、どうするのだ？　まあ既に答えは決まっているだろうがな。賢明なお前なら私に協――あれ」
+PRINTFORMW 君主が再び前に視線を向けると、先ほどまでいたはずの%CALLNAME:TARGET%の姿が一切なくなっており、匪賊3人が気絶していた
+PRINTFORMW 「どういう……ことだ？」
+PRINTFORMW 間抜けな君主は未だに気付かないのだろうか。いや、気づいていたとしても知らないふりをしているのだろう
+PRINTFORMW %CALLNAME:TARGET%は都の内では誰も打ち勝てない魔術師へと成長していたのだ
+PRINTFORMW このような窮地を抜ける事ぐらい難題ではなかった。ただそれだけのことだ。
+PRINTFORML 
+PRINTFORMW そして時代は遥か未来へと下る
+PRINTFORMW 月の都では様々な変化があった。地球のとある地方とも戦争を行った
+PRINTFORMW 君主は既に息絶え、新たな主権者によって民主的な政治が敷かれている
+PRINTFORMW そんな時代だが、一つの伝説があり、そして噂があった
+PRINTFORMW それはこの国において主権者より優秀で且つ優しい魔術師が存在し、それが今も生きているという話であった
+PRINTFORML 
+PRINTFORML 「まさかここまで噂になるだなんて……少しやりすぎたかも……」
+PRINTFORMW %CALLNAME:TARGET%はその崖の上に立っていた。崖からは月の都を一望できる
+PRINTFORMW 「まあ、私は私にできることをするだけだよね？　ね、%CALLNAME:MASTER%？」
+PRINTFORMW 後ろを振り返り、誰かに話しかけるように言う%CALLNAME:TARGET%
+PRINTFORMW この伝説は今後も受け継がれるだろうし、彼女も生き続けるだろう
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.18　永世の大魔術師-
+
+;---------------------------------------------------------
+;ED19　伝説の魔術師
+;---------------------------------------------------------
+@ENDING_GOTHIC_19
+PRINTFORMW 魔術師――
+PRINTFORMW 穢れを嫌う月の都において、あえて穢れを受ける可能性がある研究を行うという挑戦者達
+PRINTFORMW そんな彼らの中で後に伝説となる人物がいた
+PRINTFORMW 
+PRINTFORMW 「%CALLNAME:MASTER%ー、見て見て、これ、珍しい色してると思わない？」
+PRINTFORMW 河川敷に来た%CALLNAME:TARGET%と%CALLNAME:MASTER%は、魔術の材料を探していた
+PRINTFORMW 彼女は才気溢れており実績も残している。他にすべきことがあるのではないか？
+PRINTFORMW そんな不安からか%CALLNAME:TARGET%に尋ねた。もうそろそろ戻った方がいいのではないか、と
+PRINTFORMW 「いいのよ。これも私の大切な習慣なんだから」
+PRINTFORMW 彼女は先ほど拾った石を仕舞い、再び石の選別を始めた
+PRINTFORMW 「こういう地道な作業をしながら色々考えるの。すると新たな魔術のアイデアが思い浮かんだりするのよ」
+PRINTFORML 「そうね、例えば今なら、もしも私が別の石を選べば世界はどのように変わるのだろう。とかね」
+PRINTFORMW 石一つならあまり変わらない気もするが、%CALLNAME:MASTER%が考え事に耽るのを見て%CALLNAME:TARGET%は言葉を続けた
+PRINTFORML 「私達の未来も星の数だけあるのよ。その星を一つ一つ確かめることができたら、それはきっと歴史を塗り替えることになるわ」
+PRINTFORMW %CALLNAME:TARGET%に言われて%CALLNAME:MASTER%は空を見上げた。薄っすらと明るい空にはいくつかの星が浮かんでいる
+PRINTFORML 
+PRINTFORMW 君主――
+PRINTFORMW 現在の月の都において一定の影響力を持っている。あるいは持っていた人物
+PRINTFORML これが追い打ちか、あるいは失脚への一歩になるか
+PRINTFORMW どちらに触れるか分からないが%CALLNAME:TARGET%は何か策を練っていたらしい
+PRINTFORML 「ごきげんよう。王宮暮らしは充分満喫したかしら？」
+PRINTFORMW 魔術を展開して適当に君主の裏に近寄った彼女は、君主の頭に指を添えた
+PRINTFORML 「何のつもりだ？　それで私の弱みを握ったと思うなら、浅はかな自分の脳を悔やむのだな」
+PRINTFORMW %CALLNAME:TARGET%は前方に目を向けた。弓を構える従者が数人現れた
+PRINTFORML 「あら、そう？　なら従おうかしら」
+PRINTFORMW あっさりと%CALLNAME:TARGET%は認めた。君主は背後で布擦れの音が鳴るのを耳にする
+PRINTFORML 「お詫びの印として私の身体でも味わってくださる？」
+PRINTFORMW 彼女の言葉に君主は困惑する本当に屈したのか？　信じられない。今の彼女は比類なき力を身に着けているはず。こんなことで屈服するとは……
+PRINTFORML そう思いながら彼が振り向くと――
+PRINTFORML 
+PRINTFORMW 「貴方たち。どうしてそこにいるの？」
+PRINTFORML %CALLNAME:TARGET%は従者に問いかけた
+PRINTFORMW 従者は状況を確認する。衣服を纏った%CALLNAME:TARGET%の前には、空の座席が一席
+PRINTFORML 「この都では長い間主権者が決まらなかったのよね。だから貴方たちは王座を守っていた」
+PRINTFORMW それで間違いない？　と彼女は従者に近寄りながら問いかける
+PRINTFORML 彼女の歩き方や言葉遣い。そして白百合のように美しい顔や身体に彼らは魅了され、動くことができなくなっていた
+PRINTFORMW そしてついに目の前に彼女が迫った。顎を持たれ、艶々しい瞳で凝視される
+PRINTFORML もう心は彼女の視線で凍ってしまった
+PRINTFORMW 「ふふ、私を前にして混乱してしまったのね。仕方ないわね。私程の魔術師になると、みんな恐れ慄くもの」
+PRINTFORML 従者が弱々しく頷くのを見て、%CALLNAME:TARGET%は一歩、また一歩と退いた
+PRINTFORMW そして彼らに手を振った後、こつ然と姿を消した
+PRINTFORMW この瞬間。歴史は改竄されたのだ
+PRINTFORML 
+PRINTFORMW こうして彼女は種々様々な場所で改竄を行い、歴史を変えていった
+PRINTFORML 後の歴史書ではこのような記述が書かれる。
+PRINTFORMW "まるで彼女が現れた場所に歴史が生まれるようだ"と
+PRINTFORML 編纂者は比喩のつもりで使ったのだろうが、実はこれこそが事実であり、彼女を伝説たらしめる所以なのである
+PRINTFORML 
+PRINTFORMW こうして彼女は歴史を作り続けた。もしかしたら、今も姿を隠して歴史を作っているのかも知れない
+PRINTFORMW だが、誰も真相に辿り着くことはできないだろう
+PRINTFORML 
+PRINTFORMW -ゴスロリED No.19　伝説の魔術師-
+
+;---------------------------------------------------------
+;ED20　著名の魔術師
+;---------------------------------------------------------
+@ENDING_GOTHIC_20
+PRINTFORML 「"魔術とは世に散らばる知識や伝説を体現させる創作活動である"っと……」
+PRINTFORMW %CALLNAME:TARGET%は机に向かって呟いていた
+PRINTFORML 「なーに？　……ああ、これね、本を書いていたのよ。今度出版するの」
+PRINTFORMW %CALLNAME:MASTER%は脳内にある記憶を引き当てた。そういえば以前そんなこと言っていた覚えがある。と
+PRINTFORML 
+PRINTFORML 「前回出した本は結構好評でね。今でも売り上げは十本の指に入るのよ」
+PRINTFORML 確か前回出した本は魔術について、素養がない人でも分かるよう解説された本であった
+PRINTFORMW 挿絵として%CALLNAME:TARGET%が描いた柔らかめでありながら綺麗な絵がとても好評だった覚えがある
+PRINTFORML 「今回はもう少し専門的な内容にするの。とはいっても前回の本を読まないと置いてけぼりになるわけではないわ」
+PRINTFORML そう言って%CALLNAME:TARGET%は原稿を捲った。挿絵が挿入されると想定される箇所には走り書きで挿絵の方向性が文章で書かれている
+PRINTFORMW 後で絵を描くつもりなのだろう
+PRINTFORML 「ほら、こうやって日常生活で起こる不可思議なことについて魔術を踏まえて書いているのよ。これだけだと非科学的と批判されるから……」
+PRINTFORMW また他の原稿を表に出した。今度は言い伝えや風習が纏められた用紙であった
+PRINTFORML 「このように古くから言い伝えられてきた内容が魔術とどのように関係するかも書いてあるのよ。これなら科学側から見ても幾分か実用的でしょう？」
+PRINTFORML %CALLNAME:TARGET%は笑顔を浮かべながら言った。魔術と科学は両輪の輪なのだが、性質上互いに対立しているところが少なからずある
+PRINTFORMW 片や理論を基に発展した学問。片や風習を基に発展した文化。互いに互いを相容れないのは当然ではあるのだが
+PRINTFORML そんな状況を少しでも打開するため、%CALLNAME:TARGET%は本を書き、そして講演活動もしている
+PRINTFORMW 科学側の人間と対談を行うこともあるらしい。ここまで幅広い活動ができるのも全ては%CALLNAME:TARGET%が平均的に水準以上の力を持っているからだろう
+PRINTFORML 
+PRINTFORMW 魔術と科学が和解する日は意外と近くにあるのかも知れない
+PRINTFORML 
+PRINTFORMW ゴスロリED No.20　著名の魔術師-

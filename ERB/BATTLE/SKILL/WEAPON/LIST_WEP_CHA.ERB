@@ -1,0 +1,112 @@
+﻿;===========================================
+;固有技処理
+;===========================================
+@SPE_SKILL, ARG
+#DIM L_LOCAL, 1
+#DIM skill, 12
+#DIM temp, 1
+#DIM res, 1
+
+VARSET res, 0
+
+FOR L_LOCAL, 0, 6
+	DRAWLINE
+	IF EQUIP_SKILL(CON_EQUIPNAME(L_LOCAL))
+		CALL SETCOLOR_ABL
+		PRINTFORML ～～%CON_EQUIPNAME(L_LOCAL)%　固有技～～
+		RESETCOLOR
+		FOR L_LOCAL, 0, 2
+			IF EQUIP_SKILL(CON_EQUIPNAME(L_LOCAL), L_LOCAL)
+				LOCAL = EQUIP_SKILL(CON_EQUIPNAME(L_LOCAL), L_LOCAL)
+				skill:temp = LOCAL
+				PRINTFORML [{LOCAL}] - %SKILLNAME(LOCAL)%
+				
+				temp += 1
+			ENDIF
+		NEXT
+	ENDIF
+NEXT
+PRINTFORML [999] - 戻る
+
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN -1
+ELSE
+	FOR L_LOCAL, 0, 13
+		IF RESULT == skill:L_LOCAL
+			CALLFORM SPE_SKILL_{RESULT}
+			res = 1
+			BREAK
+		ENDIF
+	NEXT
+	IF !res
+		PRINTL 入力が不正です
+		GOTO INPUT_LOOP
+	ENDIF
+ENDIF
+
+
+;===========================================
+;装備分類　名称変換
+;式中関数版
+;===========================================
+@CON_EQUIPNAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 6
+SIF LOCALS == ""
+	SPLIT "武器_髪飾り_靴_入浴剤_本_その他", "_", LOCALS
+RETURNF LOCALS:ARG
+
+
+;=============================================================
+;特殊技装備判定
+;式中関数
+;特殊技を持つ武器を装備しているか判定する
+;
+;ARGS　装備品の種類
+;ARG　 参照する技リスト(0:1番目　1:2番目)
+;返り値　使えるようになる技の番号
+;=============================================================
+@EQUIP_SKILL, ARGS, ARG
+#FUNCTION
+#DIM L_LOCAL, 1
+#DIM temp, 2
+
+VARSET temp, 0
+VARSET LOCAL, 0
+
+IF ARGS == "武器" || ARGS == "確認"
+	;刀編
+	;月夜見の太刀
+	IF CFLAG:装備 == 565
+		temp = 303
+	;弓編
+	;エクシーの弓を装備している場合
+	ELSEIF CFLAG:装備 == 580
+		temp = 300
+	;ヤグの弓
+	ELSEIF CFLAG:装備 == 581
+		temp = 301
+	;ヘカドの弓
+	ELSEIF CFLAG:装備 == 583
+		temp = 302
+	
+	;その他編
+	;魔槍キャンサー
+	ELSEIF CFLAG:装備 == 592
+		temp = 304
+	ENDIF
+ELSEIF ARGS == "その他" || ARGS == "確認"
+	;赤の勾玉
+	
+	;青の勾玉
+ENDIF
+
+
+RETURNF temp:ARG
+
+
+

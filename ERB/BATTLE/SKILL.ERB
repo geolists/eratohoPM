@@ -1,0 +1,75 @@
+﻿;=======================================================
+;特技選択
+;3つに分けられる
+;基本的に気力を消費する
+
+;体術:　刀or弓術
+;魔術:　気力を使って攻撃
+;淫術:　相手の気力を奪う系統の攻撃
+;=======================================================
+@BATTLE_SKILL, ARG
+
+DRAWLINE
+;刀
+IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+	PRINTL [0] - 刀術
+;弓
+ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+	PRINTL [0] - 弓術
+ELSE
+	PRINTL [0] - 打術
+ENDIF
+PRINTL [1] - 魔術
+IF FLAG:闘技大会
+	SETCOLOR 96, 96, 96
+ENDIF
+PRINTL [2] - 淫術
+RESETCOLOR
+;固有技を持つアイテムを装備しているか判別する式中関数を入れる
+IF !EQUIP_SKILL("確認")
+	SETCOLOR 96, 96, 96
+ENDIF
+PRINTL [3] - 特殊技
+RESETCOLOR
+PRINTL [4] - 戻る
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 0
+	;刀
+	IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+		CALL KATANA_SKILL
+	;弓
+	ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+		CALL ARROW_SKILL
+	ELSE
+		CALL BEAT_SKILL
+	ENDIF
+ELSEIF RESULT == 1
+	CALL MAGIC_SKILL
+	IF RESULT == 1
+		RESTART
+	ENDIF
+ELSEIF RESULT == 2
+	IF FLAG:闘技大会
+		PRINTL 公の大会で淫術を使うことはできない！
+		RESTART
+	ENDIF
+	CALL NINFO_SKILL, ARG
+ELSEIF RESULT == 3
+	IF !EQUIP_SKILL("確認")
+		PRINTL 特殊技を持つ物を身に着けていない！
+		RESTART
+	ENDIF
+	CALL SPE_SKILL, ARG
+ELSEIF RESULT == 4
+	RETURN -2
+ENDIF
+
+;戻るor実行後
+IF RESULT == -1
+	RESTART
+ELSEIF RESULT == -2
+	RETURN -2
+ENDIF
+

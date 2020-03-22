@@ -1,0 +1,261 @@
+﻿;======================================================
+;通常日常イベント
+;能力や属性を問わず発生するイベントはこの関数に入れる
+;======================================================
+@EVENT_NORMAL
+
+;イベント番号格納変数を初期化
+LOCAL = 0
+
+;(170-(アライメント+貞操))×2％の確率で発生(最大100％　最少0％)
+IF (170-(BASE:アライメント+BASE:貞操))*2 >= RAND:99+1
+	LOCAL = 1
+;思考力が50未満だと発生、発生確率は100-思考力×2％(最大75%)
+ELSEIF 100 - BASE:思考力*2 >= RAND:99+1
+	LOCAL = 3
+;美麗/25+10％の確率でオークションが発生する(最大25％)
+ELSEIF MIN(BASE:美麗/25+10, 25)
+	LOCAL = 2
+ENDIF
+
+;何にも当てはまらなかった場合、妖しい薬に移行する
+DRAWLINE
+TRYCALLFORM EVENT_NORMAL_{LOCAL}
+
+
+
+;--------------------------------------------------
+;0:　妖しい薬
+;--------------------------------------------------
+@EVENT_NORMAL_0
+PRINTFORML ～～人通りの少ない町通り～～
+PRINTFORML 謎の女性「あら、こんばんは
+PRINTFORML 　　　　　早速なんだけど良い薬があるの。使ってみない？」
+PRINTL [0] - 使ってみる
+PRINTL [1] - 断る
+
+CALL SENTAKUSHI, 2
+
+IF !RESULT
+	PRINTFORML 謎の女性「ありがとう。じゃあ少し衣服捲って、腰の辺りに塗るからねー」
+	PRINTFORMW ・
+	PRINTFORMW ・
+	PRINTFORMW ・
+	PRINTFORMW 薬を塗り終えた謎の女性は礼をして去った
+	IF RAND:3
+		PRINTFORMW %CALLNAME:TARGET%は心なしか身体が軽くなった気がした！
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 疲労度が10回復した！
+		BASE:ストレス = MAX(BASE:ストレス-10, 0)
+		RESETCOLOR
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%は胸を抑え、吐息を荒くしている
+		PRINTFORMW どうやら薬には発情させる成分が少し混じっていたらしい……
+		PRINTFORM 感度:{BASE:感度}　→　
+		CALL SETCOLOR_PALAMDOWN
+		BASE:感度 = MIN(BASE:感度+10, 600)
+		PRINTFORMW {BASE:感度}
+		BASE:快楽動機づけ += 20
+		RESETCOLOR
+	ENDIF
+ELSE
+	PRINTFORMW 謎の女性「そう……それは残念ねえ……会心の出来だったのに」
+ENDIF
+
+;--------------------------------------------------
+;1:　悪友の誘い
+;--------------------------------------------------
+@EVENT_NORMAL_1
+
+VARSET LOCAL, 0
+
+DRAWLINE
+PRINTFORML  ～～裏通りと表通りの境目～～
+IF !CFLAG:悪友の誘い回数
+	PRINTFORML ガラが悪そうな少女「あんた、%CALLNAME:TARGET%って言うんだってね。
+	PRINTFORML 　　　　　　　　　　アタシといいことしない？」
+ELSE
+	PRINTFORML ガラが悪そうな少女「お、%CALLNAME:TARGET%じゃん！　お久しぶり―
+	PRINTFORML 　　　　　　　　　　今日も楽しもうじゃん？」
+ENDIF
+;正道の輝石を持っていると撃退できる
+IF ITEM:正道の輝石
+	PRINTFORML 正道の輝石が光を放つ……
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %CALLNAME:TARGET%の目の前からガラが悪そうな少女が姿を消した！
+	;10％の確率で壊れる
+	IF !RAND:10
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW 正道の輝石は砕けてしまった……
+		ITEM:正道の輝石 -= 1
+	ENDIF
+	RESETCOLOR
+ELSE
+	;5回目　以降は夜の店に行く
+	IF CFLAG:悪友の誘い回数 >= 5
+		PRINTFORML %CALLNAME:TARGET%は悪友と共に夜の店に働きに出かけた
+		PRINTFORMW 多くの男性を前に股を開き、一時の快楽と引き換えに大事な物を失っていく……
+		
+		;アライメント-3、評価-7、淫妖+6、淫妖経験+2、慰み者+2、穢れ+2
+		LOCAL = 3
+		LOCAL:1 = 7
+		LOCAL:2 = 6
+		LOCAL:3 = 2
+		CALL PLAYTHING
+		CALL CALC_IMP, 2
+		CALL INSERT, 2, 1
+	;4回目　見知らぬ男の人に愛撫させる
+	ELSEIF CFLAG:悪友の誘い回数 == 4
+		PRINTFORML %CALLNAME:TARGET%は悪友と共に裏通りに赴き、男性に声をかけて身体を愛撫させた
+		PRINTFORMW 禁忌の刺激が%CALLNAME:TARGET%の心を貞操の道から逸らしていく……
+		
+		;アライメント-2、評価-7、淫妖+5、淫妖経験+1、慰み者+2、穢れ+1
+		LOCAL = 2
+		LOCAL:1 = 7
+		LOCAL:2 = 5
+		LOCAL:3 = 1
+		CALL PLAYTHING
+		CALL CALC_IMP, 1
+	;3回目　男の人に露出する
+	ELSEIF CFLAG:悪友の誘い回数 == 3
+		PRINTFORML %CALLNAME:TARGET%は少女と共に裏通りへ赴き、男性を前に裸体を露出した
+		PRINTFORMW 男性達の見惚れる様子や逃げ出す様子を見て、%CALLNAME:TARGET%は心の中に何か積もる物を感じた……
+		
+		;アライメント-2、評価-3、淫妖+3、慰み者+1
+		LOCAL = 2
+		LOCAL:1 = 3
+		LOCAL:2 = 3
+		CALL PLAYTHING
+	;2回目　数日家出する
+	ELSEIF CFLAG:悪友の誘い回数 == 2
+		PRINTFORML %CALLNAME:TARGET%は少女と共に数日間家出をした……
+		PRINTFORMW 数日後……%CALLNAME:TARGET%は兵士に補導されて戻ってきた
+		
+		;アライメント-1、評価-5
+		LOCAL = 1
+		LOCAL:1 = 5
+	;1回目　夜遅くに帰宅する
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は少女と共に夜の街に姿を消した……
+		PRINTFORMW %CALLNAME:TARGET%が帰ってきたのは門限を過ぎた後だった
+		
+		;アライメント-1
+		LOCAL = 1
+	ENDIF
+	
+	IF LOCAL
+		PRINTFORML アライメント -{LOCAL}
+		BASE:アライメント = MAX(BASE:アライメント-LOCAL, 0)
+	ENDIF
+	IF LOCAL:1
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 評価が{LOCAL:1}下がった……
+		BASE:評価 -= LOCAL:1
+		RESETCOLOR
+	ENDIF
+	IF LOCAL:2
+		CALL COMMON_ABLUP, "淫妖", LOCAL:2, "WAIT"
+	ENDIF
+	IF LOCAL:3
+		PRINTFORML 淫妖経験 + {LOCAL:3}
+		EXP:淫妖経験 += LOCAL:3
+	ENDIF
+	PRINTFORMW 
+	CFLAG:悪友の誘い回数 += 1
+ENDIF
+
+;--------------------------------------------------
+;2:　怪しい選考会
+;--------------------------------------------------
+@EVENT_NORMAL_2
+
+VARSET LOCAL, 0
+
+DRAWLINE
+PRINTFORML ～～とある町通り～～
+PRINTFORML 男性「キミ、とても綺麗だね
+PRINTFORML 　　　ちょうど今美人を集めた選考会を行っている所なんだけど、もしよかったら参加しない？」
+;正道の輝石を持っていると警告してくれる
+IF ITEM:正道の輝石
+	CALL SETCOLOR_ABL
+	PRINTFORML 懐に入れた正道の輝石が赤く光っている
+	PRINTFORML 何かよからぬことを察知したのだろうか
+	RESETCOLOR
+ENDIF
+PRINTFORML 
+PRINTFORML [0] - 参加する
+PRINTFORML [1] - 参加しない
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	PRINTFORMW 男性「よし！　なら会場はこっちだ！」
+	;正道の輝石を持っている場合、必ず男性を追い払ってしまう
+	;(金稼ぎを行うことはできない)
+	IF ITEM:正道の輝石
+		PRINTFORML この時、懐に入れた正道の輝石が光り輝いた！
+		PRINTFORMW 道案内をしようとした男性は忽然と姿を消した！
+		RETURN 0
+	ENDIF
+	PRINTW ・
+	PRINTW ・
+	PRINTW ・
+	;33％の確率で正当な選考会、終了時に$40000貰える
+	IF !RAND:3
+		PRINTFORML 連れられた建物には%CALLNAME:TARGET%の他にも沢山の女性が集まっている……
+		PRINTFORMW どうやら本物の選考会だったらしく、%CALLNAME:TARGET%は他の女性に大差を付けて優勝した！
+		CALL SETCOLOR_MONEY
+		PRINTFORMW $40000手に入れた！
+		RESETCOLOR
+		MONEY += 40000
+	ELSE
+		PRINTFORML 連れられた建物には小汚い男性が沢山集まっていた！
+		PRINTFORMW 好奇の視線が%CALLNAME:TARGET%に寄せられる……
+		;正道の輝石が効かない
+		IF ITEM:正道の輝石
+			PRINTFORML この時、懐に入れた正道の輝石が光り輝き、男性の内一人を消した
+			PRINTFORMW しかし残りの男性には全く効き目が無く、むしろ逆上させただけだった！
+		ENDIF
+		;露出と軽い愛撫を受けるだけで済む。
+		PRINTFORML %CALLNAME:TARGET%は周囲の男性達の要求に折れ、仕方なく衣服を肌蹴た
+		PRINTFORMW 当然これだけで収まるはずのない男性達は手を伸ばし、%CALLNAME:TARGET%の身体を撫で回した……
+		
+		;淫妖+3　＆　淫妖経験+2　＆　慰み者+
+		CALL COMMON_ABLUP, "淫妖", 3, ""
+		PRINTFORMW 淫妖経験 + 2
+		EXP:淫妖経験 += 2
+		CALL PLAYTHING
+	ENDIF
+ELSE
+	PRINTFORML 男性「そうか……まあ仕方ないよな」
+ENDIF
+
+;--------------------------------------------------
+;3:　注文催眠
+;--------------------------------------------------
+@EVENT_NORMAL_3
+
+VARSET LOCAL, 0
+
+DRAWLINE
+PRINTFORML ～～怪しい裏通り～～
+PRINTFORML 見るからに怪しい男性「そこの子、いい事教えてあげるよ
+PRINTFORMW 　　　　　　　　　　　今ってとても暑いだろ？　だからさ、まず服を脱いで――」
+PRINTFORML 
+PRINTFORML %CALLNAME:TARGET%は男性に言いくるめられ、言われるがままに衣服を脱ぎ、身体を男性に預け、そして身体を男性に貪られる
+PRINTFORML 熱い吐息を漏らし視界をぼやけさせる%CALLNAME:TARGET%の後ろで男が口の端を歪ませるが、
+PRINTFORMW 既に頭の中が淫らな思考で埋め尽くされた%CALLNAME:TARGET%は全く気にせず腰を振り続けた……
+
+CALL INSERT, 2, 0
+
+PRINTFORMW 男性から解放された%CALLNAME:TARGET%は四肢を投げ出した姿勢で笑みを浮かべている
+PRINTFORML 言動のおかしさに気付けない程%CALLNAME:TARGET%の思考力が鈍っているのか、
+PRINTFORMW あるいは気づかない振りをしたくなる程淫妖な身体になってしまっていたのか
+PRINTFORMW その真相は%CALLNAME:TARGET%にしか分からない……
+
+;淫妖+11　＆　淫妖経験+8　＆　慰み者+
+CALL COMMON_ABLUP, "淫妖", 11, "WAIT"
+PRINTFORML 淫妖経験 + 8
+EXP:淫妖経験 += 8
+CALL PLAYTHING
+

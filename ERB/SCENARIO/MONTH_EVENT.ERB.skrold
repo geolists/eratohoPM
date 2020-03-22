@@ -1,0 +1,656 @@
+﻿;====================================================
+;教育費の査定
+;6ヶ月に1回行われる
+;追加教育費 = (評価 / 50) * 300で決められる
+;====================================================
+@VALUATION
+#DIM VALUE, 1
+#DIM VALUE_BEFORE, 1
+#DIM VALUE_AFTER, 1
+
+DRAWLINE
+PRINTFORML ～～教育費の査定～～
+PRINTFORML %CALLNAME:MASTER%の行いによって、半年に1回教育費の査定が行われます
+
+;評価値の設定
+VALUE = CFLAG:評価 / 50
+;改訂前の教育費の計算
+VALUE_BEFORE = 2000 + FLAG:補正予算額 + FLAG:評価レベル * 300
+
+;評価レベルと比較する
+IF FLAG:評価レベル < VALUE
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 教育費が上がった！
+	RESETCOLOR
+ELSEIF FLAG:評価レベル > VALUE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 教育費が下がった……
+	RESETCOLOR
+ELSE
+	PRINTFORML 特に変化はなかった
+ENDIF
+
+;今の評価レベルを評価値と合わせる
+FLAG:評価レベル = VALUE
+;PRINTFORML {CFLAG:評価}
+;改訂後の教育費の計算
+VALUE_AFTER = 2000 + FLAG:補正予算額 + FLAG:評価レベル * 300
+
+PRINTFORM {VALUE_BEFORE}　→　
+IF VALUE_BEFORE < VALUE_AFTER
+	CALL SETCOLOR_PALAMUP
+ELSEIF VALUE_BEFORE > VALUE_AFTER
+	CALL SETCOLOR_PALAMDOWN
+ENDIF
+PRINTFORMW {VALUE_AFTER}
+RESETCOLOR
+
+;===================================================
+;時間条件イベント
+;===================================================
+@MONTH_EVENT
+DRAWLINE
+;1年目の前半に発生
+IF FLAG:年数 == 1 && DAY == 1 && TIME == 0
+	PRINTFORML %CALLNAME:MASTER%が%CALLNAME:TARGET%との面会を終えた帰り道、周囲はすっかり暗くなっている
+	PRINTFORML 浮かれた気分になっていた%CALLNAME:MASTER%は道を間違えてしまい、裏通りに入っていた
+	PRINTFORMW ゴミが散らばり、少し汚くなっている道を進んでいた時、横道を少し覗くと……
+	PRINTFORML 
+	PRINTFORMW 擦れた布を纏った女性が男性と交わっていた
+	PRINTFORML その布は随分と使い古しているのかところどころが擦りきれており、結合部が際どい所まで見えていた
+	PRINTFORMW 男性が腰を深く突き出すと、女性は背筋を震わせ、そのまま男性に身体を預けてぐったりとした
+	PRINTFORML 
+	PRINTFORML その後、道を進みながら横道に目を向けると同じような光景が何度か見られた
+	PRINTFORMW %CALLNAME:MASTER%は何か思う所を感じながら裏道を抜け、翌日に備えて床に就いた
+;1年目の後半に発生
+ELSEIF FLAG:年数 == 1 && DAY == 1 && TIME == 1
+	PRINTFORMW %CALLNAME:TARGET%と一緒に都を散策していたところ、1枚の張り紙が目に入った
+	PRINTFORML 
+	CALL SETCOLOR_PALAM
+	PRINTFORML ～～穢れは長寿の天敵！～～
+	RESETCOLOR
+	PRINTFORML ご存知ですか？　穢れは老化の原因となる物質であり、摂取し続けると身体は衰え、やがて死に至ります
+	PRINTFORML 我ら月人は生まれた時に穢れを体内に溜め込んでおり、それを消費して身体の成長を行います
+	PRINTFORML しかし、一定の成長を終えた身体はそれ以上成長することはありません。ですので穢れは不要になります
+	PRINTFORML ですから、過剰に穢れを浴びることは前述した通り老化を引き起こす原因となり、寿命を縮めます
+	PRINTFORML 不要な穢れをばら撒く集団(性行為、薬の売買など)の勧誘には絶対に乗ってはいけません
+	PRINTFORML 万が一穢れを浴びた方は王宮の清め係まで！
+	PRINTFORML 
+	PRINTFORML %CALLNAME:TARGET%は釈然としない表情を浮かべている
+	PRINTFORMW 「穢れを払うのって大変だよね。%CALLNAME:MASTER%は今までどうしてた？」
+	PRINTFORML 「ちなみに役人達はね、「清めの札」を持っていて、彼らは
+	PRINTFORMW 　「この札を持ってるから穢れは受けないし、他人の穢れを払う事ができる」と言っているの」
+	PRINTFORML 「……実際はどうなのかって？　さあ、どうでしょうね？
+	PRINTFORMW 　役人達はぷらいばしー？　の保護とやらで何も話してくれないし……」
+;1年目の2月頭に発生
+ELSEIF FLAG:年数 == 1 && DAY == 2 && TIME == 0
+;	PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%に両親のことについて聞いてみた
+	PRINTFORMW 「私の両親？」
+	PRINTFORMW 「……父親は権威が失墜して王宮を追い出されたわ」
+	PRINTFORML 「母親は遥か昔に失踪したのよね……」
+	PRINTFORMW %CALLNAME:TARGET%は俯き、寂しそうに言った
+	PRINTFORMW 「……でも、今は気にしていないわ」
+	PRINTFORMW 「それに%CALLNAME:MASTER%が居るからもう寂しくもないしね」
+;2年目の2月後半に発生
+ELSEIF FLAG:年数 == 1 && DAY == 2 && TIME == 1
+	PRINTFORML 「こんにちは」
+	PRINTFORMW %CALLNAME:MASTER%の元に二人の少女が訪ねた
+	PRINTFORML 「私は綿月　依姫です。他の方から教育を受けています
+	PRINTFORML 　%CALLNAME:TARGET%様は部屋にいらっしゃらないのですか……よろしくお伝えください」
+	PRINTFORMW 依姫と名乗った少女は一歩前に出ると、礼儀正しく構えお辞儀をした
+	PRINTFORML 「しっかりしすぎよ依姫ー。私は綿月　豊姫というの」
+	PRINTFORMW 豊姫は後ろから二歩出て、依姫の頭を撫でた
+	PRINTFORMW 「依姫はこう見えて抜けた所がありますがよろしくお願いしますね」
+	PRINTFORML 「な、何をっ……！　私は初対面の人に挨拶をしただけで……」
+	PRINTFORMW 豊姫は騒ぐ依姫の肩に手をやり、後ろに下げさせた
+	PRINTFORML 「では、今後とも御見知り置きを……」
+	PRINTFORMW 二人はお辞儀をして部屋から出ていった
+	PRINTL 
+	PRINTFORML 「……もう挨拶は済んだ？」
+	PRINTFORMW 綿月姉妹より一回り小さく見える%CALLNAME:TARGET%が物影から出てきた
+	PRINTFORML 「私、身内の姉妹と目を合わすのが苦手なのよね……
+	PRINTFORML 　だから、あの姉妹とは目を合わせても話す事が滅多になくて……」
+	PRINTFORMW %CALLNAME:TARGET%は目を伏せながら言った
+;2年目の5月後半に発生
+ELSEIF FLAG:年数 == 2 && DAY == 5 && TIME == 1
+	PRINTFORMW ある日、%CALLNAME:MASTER%は%CALLNAME:TARGET%に話しかけられた
+	PRINTFORMW 「ねえ、折角貴方と出会えたのだから、空いた時間に色々活動しない？」
+	PRINTFORMW 「毎月の空き時間というのは結構少ないけど、年単位で見れば結構あると思うのよね」
+	PRINTFORM 「もちろん、
+	CALL SETCOLOR_ABL
+	PRINTFORMW 互いに時間を作るよう努力すればもっと時間は確保できると思うし、教育で会う回数が多ければその分行動もしやすいと思うわ」
+	RESETCOLOR
+	PRINTFORML 「役人達に内緒で二人だけの思い出とか、色々と作りましょうよ」
+	PRINTFORMW %CALLNAME:TARGET%は爽やかな笑みを浮かべた
+;1年目の3月前半に発生
+ELSEIF FLAG:年数 == 1 && DAY == 3 && TIME == 0
+	PRINTFORML ～～大通りにて　月夜見様の再臨日～～
+	PRINTFORML 「貴方が姫様の教育係になられた方ですか。噂には聞いております」
+	PRINTFORMW 妙齢の女性が%CALLNAME:MASTER%に向けて頭を下げた。
+	PRINTL 
+	PRINTFORMW 「私ですか。月夜見様に身を奉げる存在です。月夜見様はかつての月の都での"君主"……いや、この役職で呼ぶのも畏れ多き存在です」
+	PRINTFORMW 「月夜見様は月の神であり、必要な際には人の身に憑いて降臨なされます」
+	PRINTFORMW 「月夜見様に憑かれた者はとても徳が高い人格と、あらゆる物を見渡す視野の広さを得るのです」
+	PRINTFORML 「そう、例え元がどんなに粗暴な人間であろうと……」
+	PRINTFORMW 女性は%CALLNAME:MASTER%から視線を外し、どこか遠くを見つめた。
+	PRINTL 
+	PRINTFORMW 「そんな月夜見様も役目を終え、姿を隠されているようですが、今の君主からは黒い噂が絶えません」
+	PRINTFORMW 「恐らく、近い内に再臨なされることでしょう」
+	PRINTFORM 「私達月夜見様を信仰する者達の間では、
+	CALL SETCOLOR_ABL
+	PRINTFORM 5年後の1月
+	RESETCOLOR
+	PRINTFORMW に月夜見様が再臨なされると噂しております」
+	PRINTFORMW 「根拠ですか？　我々の独自の調査によるものです。物事には全て、周期というものが存在しているのです」
+	;PRINTFORMW 「当然ながら、生物にも生命の周期がございます。我々はこうしたサイクルを大幅に遅らせているに過ぎないのです」
+	PRINTFORMW 「いずれにせよ。月夜見様が依代になされるのは文武両道で俗世に塗れていない、とても優れた者になるでしょう」
+	PRINTFORML 「5年後の1月に姫君がどのような姿になっておられるか、我々は楽しみにしております」
+	PRINTFORMW それでは、と女性は頭を下げ、%CALLNAME:MASTER%の前から去っていった。
+	PRINTFORMW 5年後の1月……その日に、%CALLNAME:TARGET%の運命は決まるのであろうか
+	
+
+	;PRINTFORML 「私は占い師……貴方の将来を占ってみせましょう」
+	;PRINTFORMW 王宮を訪ねてきた占い師が半ば強引に占ってきた。ヴェールで顔を隠しており、胡散臭さが拭えない
+	;PRINTFORML 「ほほっ、そんな怪訝な表情をしなくてもいいのですよ……さーて……おや？」
+	;PRINTFORMW 私は貴族達の間から信頼されている、と彼女（？）は語る。そんな彼女だが、出た結果に戸惑いを感じているようだ
+	;PRINTFORML 「ほう……どうやらそこの姫君は近い将来、激動の波に呑まれるようじゃ」
+	;PRINTFORMW 「具体的な日時か？　そこまでは分からんのう……何かが起こるとすれば、それは5年後になるであろうな」
+;1年目の3月後半に発生
+ELSEIF FLAG:年数 == 1 && DAY == 3 && TIME == 1
+	PRINTFORML ～～王宮内にて～～
+	PRINTFORML 「あっ、輝夜様だ！」
+	PRINTFORMW %CALLNAME:TARGET%の
+;;3年目の3月後半に発生
+;ELSEIF FLAG:年数 == 1 && DAY == 3 && TIME == 0
+;	PRINTFORML 「え？　君主に出会ったの？」
+;	PRINTFORMW 何気ない会話の中で出た、"君主"という言葉に反応する%CALLNAME:TARGET%
+;	PRINTFORML 「あの人はねえ……私はあまり好きじゃないのよね」
+;	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%から視線を逸らしながら語る。過去に何があったのだろうか
+;	PRINTFORML 「まあ、私に話しかけてくること自体滅多にないし、あまり気にしなかったのだけれども……そうだ」
+;	PRINTFORMW %CALLNAME:TARGET%は懐に手を入れ、何かを取り出した。それは布製のお守りであり、手のひらに収まる程度の大きさだ
+;	PRINTFORML 「私の両親がくれたお守りなの。分からないことがあったら、これを両手で握って祈れば教えてくれるのよ」
+;	PRINTFORMW 中に水晶玉が入ってるのよ。と%CALLNAME:TARGET%は語る。形見と言っていたが、こんな大切を他人に渡して大丈夫なのだろうか
+;	PRINTFORML 「？　何を勘違いしているの？　あくまで貴方に預けただけ、あなたが解雇される頃には返してもらうわ」
+;	PRINTFORMW %CALLNAME:TARGET%は首を傾げながら言った
+;	PRINTFORML 
+;	CALL SETCOLOR_ABL
+;	PRINTFORML 預言の水晶を手に入れました
+;	PRINTFORML 
+;	PRINTFORML メニュー画面で「預言の水晶 ON/OFF」を切り替えることができます
+;1年目の6月に発生
+ELSEIF FLAG:年数 == 1 && DAY == 6 && TIME == 0
+	PRINTFORML とある日の事だった。
+	PRINTFORMW いつも通り%CALLNAME:MASTER%が%CALLNAME:TARGET%の部屋に行くと、扉に一通の手紙が挿し込まれていた
+	PRINTFORML 封筒には何も書かれておらず、不審に思いながらも封筒を開封した
+	PRINTFORMW 手紙には以下の文章が書かれており、その下には規定が明記されている
+	PRINTFORML 
+	PRINTFORML ～～討論会開催のお知らせ～～
+	PRINTFORML この度は、定例の討論会に%CALLNAME:TARGET%様と、その教育係である%CALLNAME:MASTER%を招待致します
+	PRINTFORML 歴史ある会です。服装にはお気をつけください
+	PRINTFORML それでは、善きお知らせをお待ちしております
+	PRINTFORMW 
+	PRINTFORML 
+	PRINTFORML 「晩餐会？」
+	PRINTFORMW 部屋に入り%CALLNAME:TARGET%に手紙を渡すと、頭を傾げた
+	PRINTFORML 「聞いた事無いわね……まあ、今まで知らされてなかっただけかも知れないけど……」
+	PRINTFORMW 顎に指をつき、視線を天井に向けて髪を後ろに垂らす
+	PRINTFORMW 何度も唸っては首を振る様子から察するに、どうやら晩餐会の事が記憶には無いらしい
+	PRINTFORML 「とりあえず、出てみましょうか」
+	PRINTFORMW %CALLNAME:TARGET%は決心が付いたらしく視線を%CALLNAME:TARGET%に戻した
+	PRINTFORML 「ほら、ルールの項目に"討論会で相手より多くの支持を得た者は会の内容を決める事ができます"とあるでしょう？」
+	PRINTFORML 「これを上手く使えば、君主を呼び出すことだってできるのよ」
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%に近寄り、額に指先を当てた
+	PRINTFORMW ほんのりと柔らかく、そして微かに熱を持っていた。期待で体温が上がっているのだろう
+	PRINTFORML 「つまりね……一泡吹かせる好機なの」
+	PRINTFORMW 「これは乗るしかないよね？　ね？」
+	PRINTFORML %CALLNAME:TARGET%は期待で瞳を輝かせる
+	PRINTFORMW 確かに君主を撤退させるのが主目的なら、出るのも悪くはないかもしれない
+;純狐出現
+;1年目の5月前半に発生
+;討論会に参加する伏線を残す
+ELSEIF FLAG:年数 == 1 && DAY == 5 && TIME == 0
+	DRAWLINE
+	PRINTFORML ～～討論場　裏の廊下～～
+	PRINTFORML 誰もいない廊下にて、怪しげな雰囲気を纏う女性は独り言を漏らす
+	PRINTFORMW 「嫦娥を探しにここまで来たけど、手がかりが全くないわ……」
+	PRINTFORML 壁を触りながら嘆く彼女は、突然物陰に隠れた。数秒後、通り過ぎる役人達の姿
+	PRINTFORML どうやら、近々王宮で行われる"討論会"を開催する準備を進めているらしい
+	PRINTFORML 「討論会……か。それに参加すれば嫦娥の居場所も分かるのかしら
+	PRINTFORMW 　さて、どうやって忍び込むか考えなければ」
+	PRINTFORMW 役人の背中が随分と小さくなったのを見て、彼女は廊下に出てその場を後にした
+;2年目の3月前半に発生
+ELSEIF FLAG:年数 == 2 && DAY == 3 && TIME == 0
+	PRINTFORMW ～～王宮　君主の間～～
+	PRINTFORML 「なんですと！？　あの家系に報酬を与えるのですか！？」
+	PRINTFORMW 側近は君主に言い渡された勅命に対し、戸惑っている
+	PRINTFORML 「あの家系は盗賊との繋がりが濃いのですよ。そんなことをすれば、忽ち足がついてしまいます！
+	PRINTFORML 　君主のことですから、恐らくあの姫君絡みのことで一策考えてのこととは思いますが、さすがにリスクが高すぎるかと――」
+	PRINTFORMW 「黙れ」
+	PRINTFORMW 君主が一言発すると、側近は萎縮して言葉を止めた
+	PRINTFORMW 「私の言うとおりに動けばすべては上手く行く。口答えするなら辞めてもらおうか」
+	PRINTFORML 「は、はい……失礼いたしました」
+	PRINTFORMW 側近は深々とお辞儀をして、君主の間から去った
+	PRINTFORML 
+	PRINTFORMW 「あの預言者が言う通り、あいつが月夜見の後継者に相応しいのであれば、何としてでも潰さなければならないからな」
+	PRINTFORML 「そのためには手段など選んではおられん」
+	PRINTFORMW 君主は王座に座し、預言者のことを思い返していた
+	PRINTFORMW 預言者は片方しか翼を持たないのが特徴であり、月の都の現状を見抜いていた
+	PRINTFORMW そのような先見の明を持つ者が預言したのだから、恐らく間違いはない
+	PRINTFORMW そう確信した上での行動であった
+;2年目の3月後半に発生
+ELSEIF FLAG:年数 == 2 && DAY == 3 && TIME == 1
+	PRINTFORMW %CALLNAME:MASTER%の元に警備隊が訪ねてきた
+	PRINTFORMW 「最近、王宮の周辺で盗賊達を見かけるという話が続出しております！」
+	;(2016/02/11更新)盗賊の解説を入れました
+	PRINTFORMW 「盗賊と言うのはいわゆる野盗の集まりでして、反社会的な活動を行っているのです」
+	PRINTFORMW 「彼らは私欲や資金源のために女性を誘拐しております。誘拐された女性は彼らの餌食になり、挙句の果てには店に売り払われたりしてしまいます」
+	PRINTFORMW 「我々も予算の範囲で警備には努めますが、万が一誘拐されてしまった場合は資金の援助をよろしくお願いします」
+	PRINTFORMW 「……私たちは慈善事業家ではないのですよ」
+	;オウガバトル64の訓練所の台詞
+;2年目の4月前半に発生
+;サグメイベント発生条件の情報を与える
+ELSEIF FLAG:年数 == 2 && DAY == 4 && TIME == 0 && TALENT:輝夜
+	PRINTFORML %CALLNAME:MASTER%は女中から話を聞いた
+	PRINTFORML 「たまに現れる預言者は、月の都で民衆の噂話を耳にして動いているようですね」
+	PRINTFORM 「
+	CALL SETCOLOR_ABL
+	PRINTFORM %CALLNAME:TARGET%様が民衆から評価されておられるなら
+	RESETCOLOR
+	PRINTFORMW 、何かしら話が聴けるかもしれません……」
+;2年目の1月前半
+ELSEIF FLAG:年数 == 2 && DAY == 1 && TIME == 0
+	PRINTFORML 「ねえ、%CALLNAME:MASTER%。神社にお参りにいきましょう？」
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の袖を引っ張った
+	PRINTFORML 「なぜって？　新年に神社に行くとおみくじを引けるのよ」
+	PRINTFORMW 「神社では月夜見様が祀られているしね」
+;1年目の6月前半に発生
+;夜伽解禁のお知らせ
+ELSEIF FLAG:年数 == 1 && DAY == 6 && TIME == 0
+	PRINTFORMW %CALLNAME:MASTER%の元に女中が訪ねてきた
+	PRINTFORMW 「姫様の教育は通常の教養以外にも存在するのです」
+	PRINTFORMW 「こほん……夜の営みについて教えておくのも度を越さなければ有意義らしいですよ」
+	PRINTFORML 「くれぐれもやりすぎないようにお願いしますね。
+	PRINTFORMW 　特に小さい頃というのはそういった感覚に依存しやすいのですから」
+;5年目の最初に発生
+ELSEIF FLAG:年数 == 5 && DAY == 1 && TIME == 0
+	;娼婦ルート
+	IF CFLAG:ルート／4年目 == 3
+		IF CFLAG:ルート／1年目 == 3
+			PRINTFORML 「ただいまぁ……」
+			;布切れ
+			IF CFLAG:服装 < 0
+				PRINTFORM あまりにも小さすぎる布越しに、膨らんだ胸や太腿が見える
+			ELSE
+				PRINTFORM 衣服と呼ぶにはあまりに薄く、傍から見ても胸や太腿を露出しているようにしか見えない
+			ENDIF
+			PRINTFORML %CALLNAME:TARGET%は、大きく膨らんだ袋を持って帰ってきた
+			PRINTFORMW 手に持っている袋は、揺らされる度に硬貨の音を鳴らす
+			PRINTFORML 「えへへ……今日はいつもよりたくさん交わっちゃった……」
+			PRINTFORMW 淫らな身体を持つ少女は、袋を机の上に置くとシャワーを浴びに行った
+			PRINTFORMW 王宮を追放されてから数年が経ち、今では裏の町ですっかり有名になった
+			PRINTFORMW もはや姫君としての面影はすっかり残っていないが、この調子なら暮らしていけそうだ……
+		ELSE
+			PRINTFORML 「はぁ……王宮で人生を終えるんだろうなと思ってたんだけど……」
+			PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に目を遣った
+			PRINTFORML 「まさか、こんな所で暮らしていくことになるとはね……」
+			PRINTFORMW 熱い吐息をして%CALLNAME:MASTER%に這って近づいてきた
+			PRINTFORMW 淫靡な衣服の隙間から胸が見える
+			PRINTFORML 「これからも、ずっとお願いします……」
+			PRINTFORMW %CALLNAME:TARGET%はゆっくりと腰に手を回し、抱きついた
+		ENDIF
+	;慰み者ルート
+	ELSEIF CFLAG:ルート／4年目 == 2
+		PRINTFORML 「はぁ……ん……！　そこぉ……もっと……！」
+		PRINTFORMW %CALLNAME:TARGET%は目に涙を浮かべ、淫らに腰を振って悦びの声をあげた
+		PRINTFORML 役人達に慰み者にされているという噂はすっかり王宮内外を問わず広がり
+		PRINTFORMW そのはしたなさのせいで、境遇に憐れみを感じた綿月姉妹以外の女性にすっかり退かれている
+		PRINTFORML それでも彼女は、快楽を感じると悦ぶ身体を使い
+		PRINTFORMW 役人達に媚を売って生き続けるだろう……
+		PRINTL 
+		PRINTFORML 腰を跳ねさせ、大きな声をあげるようになってきた
+		PRINTFORMW シーツが水溜りを作っていることからも、頂上がすぐ近くにあることが分かる
+		PRINTFORML 「……ぁ！　ひゃぁぁぁぁんっ……！」
+		PRINTFORMW 身体を痙攣させ、生きる術を性に頼る少女は達した
+	ELSE
+		PRINTFORML 「そう……ついにこの歳になったのね……」
+		PRINTFORML %CALLNAME:TARGET%は遠くに視線を遣った
+		PRINTFORMW 今までの出来事を思い出し、懐かしんでいるように見える
+		PRINTFORML 「貴方の契約だと、今年が最後の契約年になるはず」
+		PRINTFORMW 「その……最後の最後まで、よろしくね？」
+		PRINTFORMW %CALLNAME:TARGET%は恭しくお辞儀をしてから手を伸ばした
+	ENDIF
+;4年目の最初に発生
+ELSEIF FLAG:年数 == 4 && DAY == 1 && TIME == 0
+	;娼婦ルート
+	IF CFLAG:ルート／3年目 == 3
+		PRINTFORML %CALLNAME:TARGET%は淫靡に腰を振って歩く仕草がすっかり板についている
+		IF CFLAG:ルート／1年目 == 3
+			PRINTFORML 習慣的に性の刺激を受けた身体は、出産の準備でも始めたのかすっかり艶を帯びた身体付きに成長した
+			;布切れ
+			IF CFLAG:服装 < 0
+				PRINTFORMW 熟した身体は、申し訳程度に局部を隠す程度の布を持ち上げている
+			ELSE
+				PRINTFORMW その熟した胸や尻は衣服越しに透け、はっきりと見えた
+			ENDIF
+			PRINTFORML 「なぁに？　私に誘惑された？」
+			PRINTFORMW %CALLNAME:TARGET%は振り返り、笑みを返した
+			PRINTFORML 「私は、昔からこんな事しかしてこなかったから、今までも、そしてこれからもこうして稼いでいくしかないの……」
+			PRINTFORMW 胸元に目線を落とし、悲しげな表情を浮かべている
+			PRINTFORML 「まあ、気持ちいいから悪くないんだけどね。はぁ……また交わりたいの……」
+			PRINTFORMW %CALLNAME:TARGET%は扉を開け、ほぼ剥き出しになった股体が目立つように歩いて闇の町に消えていった
+		ELSE
+			PRINTFORMW 純粋無垢な姫君をそのまま身体に表したような平坦な身体は、今では身体付きに目を奪われるぐらい成長している
+			PRINTFORML 「えへへ……お金が目的で嫌々始めたのに、今じゃ交われるだけで満足できる様になっちゃった……」
+			PRINTFORMW %CALLNAME:MASTER%に抱きつき、濡れた瞳で見つめた
+			PRINTFORML 「ねえ……稼ぎに行く前に、私を抱いて……」
+			PRINTFORMW 押し付ける様に腰を揺らし、豊満な胸を揺らした
+		ENDIF
+	;慰み者ルート
+	ELSEIF CFLAG:ルート／3年目 == 2
+		PRINTFORML 「ん……はぁ……ぁん……ただいまぁ……」
+		PRINTFORMW %CALLNAME:TARGET%は色っぽい表情を浮かべ、太腿を擦り合わせながら帰ってきた
+		;服がミニスカート以上
+		IF CFLAG:服装 < 0 || DITEMTYPE:(CFLAG:服装):11 || DITEMTYPE:(CFLAG:服装):0
+			PRINTFORMW 剥き出しの太腿につーっと白濁した液体が伝った
+		ENDIF
+		PRINTFORML 疲れ切った少女はそのままベッドに横になると、衣服を肌蹴て局部に手をやった
+		PRINTFORMW 「ぁん……ひゃぁ……ひゃぁんっ……」
+		PRINTFORML そして自己主張を繰り返す尖った乳首や濡れそぼった秘裂を指で弄り始めた
+		PRINTFORMW 鼻にかかった艶やかな声が部屋に鳴り響くと共に腰を跳ねさせている
+		PRINTL 
+		PRINTFORMW 役人等に慰み者にされるようになってから随分と経つ
+		PRINTFORMW 愉しいからか疲れは全く感じないらしいが、何か大切なものを犠牲にしてしまった
+		PRINTFORMW %CALLNAME:MASTER%の前で痴態を見せる熟した少女を見ているとそう思えてくる
+	ELSE
+		PRINTFORMW 「もう%CALLNAME:MASTER%が来てから随分と経つのよね」
+		PRINTFORMW 「今日は宴会を行いましょう」
+		PRINTFORMW 「景気良く打ちあげたいから、花火とかお年玉とか大目玉とか用意しててちょうだいね」
+	ENDIF
+;3年目の最初に発生
+ELSEIF FLAG:年数 == 3 && DAY == 1 && TIME == 0
+	;娼婦ルート
+	IF CFLAG:ルート／2年目 == 3
+		PRINTFORML 「%CALLNAME:MASTER%……私と交わらない？」
+		;布切れ
+		IF CFLAG:服装 < 0
+			PRINTFORM 裸身をほとんど曝け出している布切れを着た
+		ELSE
+			PRINTFORM 布が非常に薄く、胸や尻が透けて見える衣服を着た
+		ENDIF
+		PRINTFORML %CALLNAME:TARGET%が、%CALLNAME:MASTER%を愛おしそう目で見つめている
+		;1年目から追放されていた
+		IF CFLAG:ルート／2年目 == 3
+			PRINTFORML 追放される前は完全に未熟だった少女の身体は、2年の歳月を経て性に花咲いた
+			PRINTFORMW 衣服越しに胸や腰が自己主張をしている
+		ELSE
+			PRINTFORML 性に溺れた生活により、身体は急速に性を意識した成長を遂げた
+			PRINTFORMW 身体にすっかりくびれがつき、異性を受け入れることに適応していく様が見てとれる
+		ENDIF
+		PRINTFORML 「こうして他人と交わって金を稼いでいるとね、もう交わることが自体が目的になってきて……」
+		PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に抱きついた
+		PRINTFORML 「お願い、一度だけでいいから……」
+		PRINTFORML 剥き出しに近い太腿を絡ませてきた
+		PRINTFORMW もはや性の虜となった少女にとって、これぐらいの仕草はなんてことないのだろう
+	;慰み者ルート
+	ELSEIF CFLAG:ルート／2年目 == 2
+		IF (BASE:アライメント >= 100 || CFLAG:性格 >= 0) && CFLAG:ルート／1年目 != 2
+			PRINTFORMW %CALLNAME:TARGET%は自室の壁にもたれかかると熱い吐息を吐き、太腿をよじった
+			PRINTFORML 「はぁ……だめ……またあの時間が来るのぉっ……？」
+			PRINTFORML 役人達の要求を呑んでからというものの、責めはエスカレートしていき
+			PRINTFORMW ついに定期的に交わる時間が設けられる事になってしまった
+			PRINTFORML 性の経験により艶を帯び始めた身体は、意思とは関係無く悦び
+			PRINTFORMW 最近では時間前になると身体が勝手に発情しはじめるようになったのだ
+			PRINTFORMW 扉をノックする音が聞こえた。役人の不自然に優しい声が聞こえる
+			PRINTFORML 「あぁ……はぁ……もぅ、ぃゃ……」
+			PRINTFORM 足をガクガク震わせ、乳首が
+			IF NUDE(TARGET)
+				PRINTFORM 衣服を押し上げ
+			ENDIF
+			PRINTFORMW 痛々しい程に尖っている。
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%はベッドに仰向けに寝ると、衣服を肌蹴て
+			PRINTFORMW 豊かに育った胸の先端に手をやって弄り始めた
+			PRINTFORML 「ぁ……はぁ……んんぅっ……これぇ……きもちいいのぉ……」
+			PRINTFORMW 充分大きく育った腰回りが、太腿を擦り合わせよじる%CALLNAME:TARGET%をより淫らに醸し出している
+			IF CFLAG:ルート／1年目 == 2
+				PRINTFORML 役人の要求を呑んでから数年以上経つが
+			ELSE
+				PRINTFORML 役人の要求を呑んでから随分と経つが
+			ENDIF
+			PRINTFORMW %CALLNAME:TARGET%は性に関してすっかり嵌り込み、役人達は嫌いでも行為自体を愉しんでいるようだった
+			PRINTFORMW 仮に性から遠ざけようとしても、それを役人たちは許さないだろう
+			PRINTFORML 扉を叩く音と共に役人達の妙に優しい声が聞こえた。時間が来たのだろう
+			PRINTFORMW %CALLNAME:TARGET%はゆっくりと立ち上がり、よろよろとドアへ歩いていった
+		ENDIF
+	ELSE
+		PRINTFORMW 「3年目……ね」
+		PRINTFORMW 「色々とお世話になってて貴方には本当に感謝しているわ」
+		PRINTFORMW 「これからもよろしくね」
+	ENDIF
+;2年目の最初に発生
+ELSEIF FLAG:年数 == 2 && DAY == 1 && TIME == 0
+	;PRINTFORML {CFLAG:ルート／1年目}
+	;娼婦ルート
+	IF CFLAG:ルート／1年目 == 3
+		PRINTFORML 「%CALLNAME:MASTER%が来て、丁度1年が経つのね……」
+		PRINTFORM %CALLNAME:TARGET%は、
+		;布切れ
+		IF CFLAG:服装 < 0
+			PRINTFORML ほとんど機能を果たしていない布切れを身体に纏っている
+		ELSE
+			PRINTFORML 姿勢によっては胸の先端が見えてしまいそうな衣服を着ている
+		ENDIF
+		PRINTFORMW 性に関する様々な経験をしたことにより、身体は歳無相応に色気を帯びている
+		PRINTFORML 「……どうして私もろとも追放されるような教育をするのよ？」
+		PRINTFORML 少女は%CALLNAME:MASTER%を責めるように睨みつけるが
+		PRINTFORMW 虚しさと不安に責められたのか、すぐに視線を逸らした
+		PRINTFORML 「まあ、あのまま屋敷に居てもどうなったかなんて分からないんだけどね……」
+		PRINTFORMW 膨らみを帯びた自分の胸に手を置いた
+		PRINTFORML 「……稼ぎに行ってくるから、もし戻ってこなかったらその時は心配してね？」
+		PRINTFORMW %CALLNAME:TARGET%は戸を開け、いつものように太腿を擦り合わせながら歩いていき、裏の町通りに姿を消した……
+	;慰み者ルート
+	ELSEIF CFLAG:ルート／1年目 == 2
+		IF BASE:アライメント >= 100 || CFLAG:性格 >= 0
+			PRINTFORML 「はぁ……」
+			PRINTFORML %CALLNAME:TARGET%は、突起が主張する胸を撫でた
+			PRINTFORMW 役人達による行為等のせいか、身体付きは歳に無相応な成長をしている
+			PRINTFORML 「私……あまりここから離れたくないの……」
+			PRINTFORMW 「だって……ここを出ると人間扱いしてくれないのでしょう？」
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は、一年間で大きく膨らんだ胸を手を置き
+			PRINTFORMW 尖った頂点を弄んでいる
+			PRINTFORML 「えへへ……この屋敷内でね、大人の男性達が私と遊んでくれるの……」
+			PRINTFORMW 順調に開発された身体は容易く身体を発情させ、吐息が熱くなっている
+			PRINTFORML 「身体さえ開けば私に親切に接してくれるなら、いくらでも気持ちよくなるっ……」
+			PRINTFORMW 快楽のためか、はたまた周囲の反応目当てか、%CALLNAME:TARGET%の心は徐々に蝕まれていく……
+		ENDIF
+	ELSE
+		PRINTFORMW 「%CALLNAME:MASTER%が私の教育係になって1年が経つのね」
+		PRINTFORMW 「年が変わったからと言って大きな変化があるわけでは無いんだけど……」
+		PRINTFORMW 「……なに私の身体ジロジロ見てるのよ」
+	ENDIF
+;2年目の3月前半に発生
+;盗賊
+ELSEIF FLAG:年数 == 2 && DAY == 3 && TIME == 0
+	PRINTFORML 「気になる事があるんだけど……」
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の耳元で囁いた
+	PRINTFORMW 「盗賊が王宮に接近する時間と、警備が交代する時間って一致してるのよね」
+	PRINTFORMW 「……これって、王宮に内通者が居るという証拠にならないかしら」
+	PRINTFORMW 「……別に王宮内部の人間を誰も信用しないとは言ってないのよ」
+ENDIF
+
+IF CFLAG:姉妹への友好度 >= 50 && EXP:淫妖経験 >= 70 && !CFLAG:姉妹と夜伽可能フラグ
+	DRAWLINE
+	PRINTFORMW 『お久しぶりね、ぐやちゃん』
+	PRINTFORML 「あら、とよちゃん、来てくれたのね」
+	PRINTFORMW 部屋を訪ねてきたのは綿月姉妹だった
+	PRINTFORMW 『……理由を知らされずに連れてこられたのですが』
+	PRINTFORMW 『それはぐやちゃんが言ってくれるはずだけど』
+	PRINTFORMW 「実はね……」
+	PRINTL 
+	PRINTFORMW 『な、な、何を言ってるんですか！？』
+	PRINTFORMW 『慌てすぎよ。夜の作法の教育は避けて通れない道でしょう？』
+	PRINTFORMW 『そんな事言われてもですね！　私達は女――』
+	PRINTFORML 「私、よっちゃんに嫌われてるの……？」
+	PRINTFORMW %CALLNAME:TARGET%は上目遣いで依姫を見上げた
+	PRINTFORML 『そ、そんな事は……』
+	PRINTFORML 『ね？　ぐやちゃんが言ってるんだし、やってみましょうよ？』
+	PRINTFORMW 豊姫は困惑する依姫の手を取り、なだめた
+ELSEIF CFLAG:姉妹と夜伽可能フラグ == 2
+	DRAWLINE
+	PRINTFORML 「先日、貴方が担当なさっている姫様が綿月の姉妹姫と身体を重ねたという噂を聞いたのですが……」
+	PRINTFORMW 警備隊が%CALLNAME:MASTER%の元へ訪ねてきた
+	PRINTFORMW 「貴方の教育係としての権限は%CALLNAME:TARGET%様にしか通用致しません。どうかその辺を――」
+	PRINTFORML 『あら？　夜伽を頼んだのは私よ？』
+	PRINTFORMW 警備隊の後ろに豊姫が姿を表した
+	PRINTFORMW 「豊姫様が？　夜伽の教育は教育係が計画を立てて行うべきもので……」
+	PRINTFORML 『"私が教育係に頼んで、それを教育係が採用して計画を立てる"
+	PRINTFORMW 　どこかおかしな所はあるのかしら？』
+	PRINTFORMW 「しかし……」
+	PRINTFORMW 『反論が無いなら引き下がるのが礼儀ってものよ？』
+	PRINTFORML 「は、はい……」
+	PRINTFORMW 警備隊はそそくさと部屋を後にした
+	PRINTFORMW 『%CALLNAME:MASTER%？　私は全く恨んでませんので、これからも遠慮なく行ってくださいね♪』
+	PRINTFORMW 『……妹の依姫の方は先日の話をすると未だに耳を塞いで部屋の隅に縮こまりますが』
+ENDIF
+
+;交渉が可能になった
+IF FLAG:交渉表示フラグ == 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:MASTER%の元に役人が訪れた
+	PRINTFORML 『%CALLNAME:TARGET%もある程度は人との関わりに慣れてきた頃だと思うのだが
+	PRINTFORMW 　そろそろ交渉に手を出してみては如何ですかな？』
+	PRINTFORMW 『半月を利用して貴族等の不労所得者達と交渉を行うのです』
+	PRINTFORMW 『成立すると物品を貰えると共に、半月毎の教育費支給が多くなる。損は無いはずです』
+	PRINTFORMW 『まあ半月だけで終わる場面は少ないと思うが、姫様の疎通力を高めながら挑戦してもよいと思われます』
+	FLAG:交渉表示フラグ = 2
+ENDIF
+
+;家事が可能になった
+IF BASE:家事 >= 80 && !FLAG:家事表示フラグ
+	DRAWLINE
+	IF CFLAG:属性／メイド >= 25
+		PRINTFORML 「あら%CALLNAME:MASTER%、御機嫌よう」
+		PRINTFORMW %CALLNAME:TARGET%は恭しく礼をした
+	ELSE
+		PRINTFORML 「あら%CALLNAME:MASTER%、来てくれたのね」
+		PRINTFORMW %CALLNAME:TARGET%は礼をした
+	ENDIF
+	PRINTFORMW 「私ね、鍛えた家事の技術を生かして食料を作ろうかと思っているの」
+	PRINTFORMW 「半月かけて何時でも食べられるような食料を作って、休憩時間を短縮しようという試みね」
+	PRINTFORMW 「当然だけど、やれる範囲でなら複数個食料を作れるわ」
+	PRINTFORMW 「私の家事が上手くなれば上手くなるほど半月で作れる物や量はよくなるわね」
+	PRINTFORML 誰かに説明するかのように%CALLNAME:TARGET%は語り、振り返って去っていった
+	PRINTFORMW 黒い長髪がばさっと揺れた
+	FLAG:家事表示フラグ = 1
+ENDIF
+
+;===================================================
+;時間条件イベント(フラグ部)
+;イベントショートカットに対応するため、フラグを立てる部分は関数を分ける
+;===================================================
+@MONTH_EVENT_FLAG
+;淫妖経験が70以上＆姉妹への友好度が50以上の場合
+;姉妹と夜伽フラグが立っていない場合はこのイベントの発生と共に立てる
+IF CFLAG:姉妹への友好度 >= 50 && EXP:淫妖経験 >= 70 && !CFLAG:姉妹と夜伽可能フラグ
+	CFLAG:姉妹と夜伽可能フラグ = 1
+ELSEIF CFLAG:姉妹と夜伽可能フラグ == 2
+	CFLAG:姉妹と夜伽可能フラグ = 3
+ENDIF
+
+;1年目の3月前半に発生
+IF FLAG:年数 == 1 && DAY == 3 && TIME == 0
+;	CALL SETCOLOR_PALAMUP
+;	PRINTFORMW 形見のお守りを手に入れた！
+;	ITEM:形見のお守り = 1
+;	RESETCOLOR
+ENDIF
+
+;===================================================
+;嫦娥文書入手イベント
+;導線を貼るために、ヒントも用意しておく
+;===================================================
+@DOCUMENT_EVENT
+PRINTFORML ～～王宮内　廊下にて～～
+PRINTFORML 役人「貴方が%CALLNAME:TARGET%ですか？
+PRINTFORMW 　　　我々役人と仲良くさせていただいているようで、大変光栄です
+PRINTFORMW 　　　私は、最近姿を眩ませがちな君主の部屋に忍び込んだのですが、そこでこんなものを手に入れたのです
+PRINTFORMW 　　　いつも同僚達がお世話になっているお礼に、貴方にさしあげます」
+PRINTFORML 
+
+CALL SETCOLOR_PALAMUP
+PRINTFORMW 嫦娥文書を手に入れた！
+ITEM:嫦娥文書 += 1
+RESETCOLOR
+
+PRINTFORML 
+PRINTFORML 役人「嫦娥という者が処刑された時の記録であるらしいのですが、生憎私達は王宮から出られぬ身
+PRINTFORML 　　　もしかしたら武者修行と称して外に出かけられる貴方なら、使い道が思い浮かぶのではないでしょうか
+PRINTFORMW 　　　一度、この文書を傭兵に見せてみてはいかがでしょう」
+
+
+;ヒント
+@HINT_DOCUMENT_EVENT
+;役人の評価が100未満
+IF BASE:役人の評価 < 100 && !GETBIT(FLAG:嫦娥文書関係フラグ, 0)
+	PRINTFORML 最近、役人達の間で、君主が部屋を留守にすることが多いと噂になっている
+	PRINTFORMW もしかすると、役人からの評判がよくなれば協力してくれるかもしれない……
+	FLAG:嫦娥文書関係フラグ |= 2p0
+	FORCEWAIT
+;君主の権力値が501以上
+ELSEIF FLAG:君主の権力値 >= 501 && !GETBIT(FLAG:嫦娥文書関係フラグ, 1)
+	PRINTFORML 役人達と交流を続け、強い信頼関係を築いた
+	PRINTFORMW 今なら君主に隙さえあれば、何かいい物を手に入れられるかもしれない……
+	FLAG:嫦娥文書関係フラグ |= 2p1
+	FORCEWAIT
+ENDIF
+
+
+
+;-------------------------------------------
+;サグメ預言イベント
+;2年目の7月以降出現、
+;半年に一回登場し、盗賊接近値を上下させる
+;疎通と知力の合計が700以上の場合、イベントを回避する
+;-------------------------------------------
+@SAGUME_PROPHET
+
+;サグメが出るイベント
+;サグメは1月と7月の後半に出る
+;会わないようにするには、輝夜に姫様属性を持たない衣服を着せるのがいい
+;あるいは疎通+知力の合計を400以上にすると、話を遮って回避することができる
+PRINTFORML ～～謎の預言者～～
+PRINTFORML 片翼の女性「ほう……貴方はあの王宮に住む姫君ですね
+PRINTFORML 　　　　　　……！　貴方には受難の相が出ております。恐らく何者かに狙われているのでしょう
+;疎通+知力が700以上
+IF BASE:疎通 + BASE:知力 >= 700
+	PRINTFORML 　　　　　　
+	PRINTFORML %CALLNAME:TARGET, 10, RIGHT%「心配してくれるのは嬉しいのだけど、生憎私は間に合っているの」
+	PRINTFORML 
+	PRINTFORML %CALLNAME:TARGET%は女性の話を遮り、そそくさとその場を去った
+	PRINTFORMW 多少冷たい気はするのだが、変な出来事に巻き込まれるよりはマシだろう……
+ELSE
+	PRINTFORML 　　　　　　ですが、安心してください。私、預言者をしている身です
+	PRINTFORMW 　　　　　　警備隊に進言して不届き者を退治するよう進言いたしますので……」
+	PRINTL 
+	PRINTFORML 　　　　　　片翼の女性はその場を後にした
+	PRINTL 
+	;盗賊接近値が500以下の場合→接近値が250アップする
+	;500以上の場合　　　　　　→接近値が250ダウンする
+	IF CFLAG:盗賊接近値 >= 500
+		PRINTFORML 片翼の女性は警備隊に進言をした
+		PRINTFORML 警備隊達は進言を元に警戒を強め、盗賊達を追い払った！
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 盗賊接近値が250下がった！
+		CFLAG:盗賊接近値 -= 250
+	ELSE
+		PRINTFORML 片翼の女性は警備隊に進言をした
+		PRINTFORML しかし、進言したところを盗賊達に見られ、逆に%CALLNAME:TARGET%への監視を強めてしまった
+		PRINTFORML 結果として、女性の進言は裏目に出てしまったといえるだろう……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 盗賊接近値が250上がった！
+		CFLAG:盗賊接近値 += MIN(CFLAG:盗賊接近値+250, 1000)
+	ENDIF
+ENDIF
+RESETCOLOR
+

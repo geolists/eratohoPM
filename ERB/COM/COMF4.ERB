@@ -1,0 +1,57 @@
+﻿;-------------------------------------------------
+;読み聞かせ
+;基礎コマンド
+;　連続して実行すると経験入手量が増える(同期間中のみ有効)
+;-------------------------------------------------
+@COM4
+
+;消費CP
+LOSEBASE:0 = 2
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+
+PRINTL 読み聞かせ
+STR:0 = 読み聞かせ
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+;獲得経験
+;美麗、知力、疎通の中からランダムで1種類が上昇する
+;上記3つの能力のうちいずれかに興味を持つ場合は、該当する経験の上昇に固定される
+
+;上記3つの能力のいずれかに興味を持つ場合、該当する経験が必ず上昇する
+IF GETBIT(CFLAG:興味, 0) || GETBIT(CFLAG:興味, 1) || GETBIT(CFLAG:興味, 2)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORM %CALLNAME:TARGET%はその中でも
+	IF GETBIT(CFLAG:興味, 0)
+		PRINT 美麗
+		LOCAL = 0
+	ELSEIF GETBIT(CFLAG:興味, 1)
+		PRINT 知力
+		LOCAL = 1
+	ELSEIF GETBIT(CFLAG:興味, 2)
+		PRINT 疎通
+		LOCAL = 2
+	ENDIF
+	PRINTFORMW に興味を持っており、関心深く読み込んだ！
+	TFLAG:(201+LOCAL) = 2+TFLAG:読み聞かせ使用回数
+	RESETCOLOR
+ELSE
+	LOCAL = RAND:3
+	TFLAG:(201+LOCAL) = 2+TFLAG:読み聞かせ使用回数
+ENDIF
+
+SOURCE:(5+LOCAL) = 1
+
+;読み聞かせ使用回数を1増やす
+TFLAG:読み聞かせ使用回数 += 1
+
+RETURN 1
+

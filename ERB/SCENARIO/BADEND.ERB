@@ -1,0 +1,320 @@
+﻿;======================================================
+;バッドエンド後イベント判定処理
+;効率化のため関数化
+;======================================================
+@HANTEI_BADEND_SP
+
+;原則として、各イベントを見られる機会は1回のみ
+;5年目である＆このイベントを見たことがない
+IF !GLOBAL:950 && FLAG:年数 == 5
+	CALL BADEND_SP, 0
+;月夜見の太刀を持っている＆このイベントを見たことがない
+ELSEIF !GLOBAL:951 && ITEM:月夜見の太刀
+	CALL BADEND_SP, 1
+;結婚している
+ELSEIF !GLOBAL:952 && TALENT:相愛
+	CALL BADEND_SP, 2
+ENDIF
+
+
+
+;====================================================================
+;特殊エンド処理
+;迎えると何らかの恩恵があるなどするエンド後処理をここに纏める
+;ARG　エンディング番号
+;====================================================================
+@BADEND_SP, ARG
+
+;0:　5年目に輝夜が堕ちる＆死ぬ
+IF ARG == 0
+	DRAWLINE
+	PRINTL ・
+	PRINTL ・
+	PRINTL ・
+	DRAWLINE
+	PRINTFORML ～～輝夜が5年目で……　現在地：？？？～～
+	FORCEWAIT
+	PRINTFORML ……気が付くと、あなたは仄暗い暗闇の底に居た
+	PRINTFORML 前へ歩くと黒い塊に突き当たり、手でそれに触れると柔らかい感触があった
+	PRINTFORMW 手でそれを開くと中から真っ黒な人間が飛び出し、低い声で囁いた
+	PRINTFORML 
+	PRINTFORML 「ここは穢れの底……
+	PRINTFORML 　大いなる望みを果たせず息絶えた者はここに留まるのだ
+	PRINTFORMW 　その者達は恨みでこの竹槍へと姿を変え、恨みの主を待つ……」
+	PRINTFORML 
+	PRINTFORMW 節くれだった黒き竹槍を渡された。
+	CALL SETCOLOR_ABL
+	PRINTFORML ＜魔槍キャンサーを入手できるようになりました＞
+	PRINTFORMW ＜次回プレイ時から資料室奥にある泉から洞穴に行く事で入手できます＞
+	RESETCOLOR
+	
+	;キャンサー入手フラグを立てる
+	LOADGLOBAL
+	GLOBAL:950 = 1
+	SAVEGLOBAL
+	
+;1:　月読命の太刀を持っている
+ELSEIF ARG == 1
+	DRAWLINE
+	PRINTL ・
+	PRINTL ・
+	PRINTL ・
+	DRAWLINE
+	PRINTFORML ～～月夜見の太刀を持つ者　現在地：？？？～～
+	FORCEWAIT
+	PRINTFORML 「聞こえますか……」
+	PRINTFORMW 手元にある月夜見の太刀が淡く光り始める
+	PRINTFORML 脳内に直接響くその声は、どこか懐かしい
+	PRINTFORMW 「貴方は私と縁があるはずです。覚えていますか……」
+	PRINTFORMW 声の主が誰だったか。そこまでは思い出せない
+	PRINTFORML 
+	PRINTFORMW しかし……一つだけ分かることがある
+	PRINTFORMW 「この刀を手にしたのに、こんな運命を迎えてしまった」
+	PRINTFORMW 「とても不運なことですね。恐らく一歩間違えただけなのでしょうが……」
+	PRINTFORMW この声の主は、敵ではないということだ
+	PRINTFORML 
+	PRINTFORMW 「さて、話が過ぎましたね」
+	PRINTFORMW 「貴方はこれからも頑張るべきです。それでは……」
+	PRINTFORMW 声は徐々に小さくなっていく
+	PRINTFORML さて、これからわt
+	;演出のつもり
+	PRINTFORML 
+	
+	;2度目はない
+	LOADGLOBAL
+	GLOBAL:951 = 1
+	SAVEGLOBAL
+;2:　結婚した後に輝夜が堕ちる
+ELSEIF ARG == 2
+	DRAWLINE
+	PRINTL ・
+	PRINTL ・
+	PRINTL ・
+	DRAWLINE
+	PRINTFORML ～～婚約の意味とは　現在地：？？？～～
+	FORCEWAIT
+	PRINTFORMW 手元に指輪が転がった
+	PRINTFORML 指輪には名前が刻まれている。輝夜と
+	PRINTFORML 
+	PRINTL /////////////////////////////////////
+	PRINTL /////////////////////////////////////
+	CALL SETCOLOR_ABL
+	PRINTFORML ○穢れについて　追記事項
+	RESETCOLOR
+	PRINTFORMW 穢れとは変化の源であり、生物である以上逃れられない要素である
+	PRINTFORMW 穢れがあるから景色は移り変わるし、富も固定化されない
+	PRINTFORMW なので、穢れは悪い一面ばかりではないのだ
+	PRINTFORML 
+	PRINTFORMW ところで一つ、例え話をしよう
+	PRINTFORMW 今日の天気は雨。あなたは雨にかかりたくないと考えている
+	PRINTFORMW さて、あなたはここで傘を差す
+	PRINTFORMW あなたは濡れない。これで目的は達成された
+	PRINTFORMW それでは本来あなたに降りかかるはずだった雨水はどうなるのか
+	PRINTFORML 当然周
+	;ミスではないです
+	PRINTFORML 
+	
+	;2度目はない
+	LOADGLOBAL
+	GLOBAL:952 = 1
+	SAVEGLOBAL
+;3:　リセットウェーバーを使った
+;一旦没に
+ELSEIF ARG == 3
+	PRINTFORMW ここは鏡面の社
+	PRINTFORML 余命僅かな者達が、人生最後の時を過ごす場所
+	PRINTFORML 穢れを多く受けた者がこの地に来るのだが
+	PRINTFORMW 一人だけ、事情が異なる者がいた
+	PRINTFORML 
+	PRINTFORMW 社の一番奥にある部屋
+	PRINTFORML その部屋のベッドに、少女が眠っている
+	PRINTFORMW 呼吸はしている上に時折目も開けるのだが、彼女は動こうとしないし、何も話そうともしない
+	PRINTFORML 
+	PRINTFORML それもそのはず
+	PRINTFORMW 今の彼女の身体には"魂"が籠っていないからだ
+	PRINTFORML 
+	PRINTFORML 不老不死の薬
+	PRINTFORMW 月の民が求めるその薬は、失敗作が多く生まれた
+	PRINTFORMW その中でも最も酷い作用が、この"魂が死ぬ"作用である
+	PRINTFORML この作用が出ると、身体は健康なまま"魂"のみが溶けて消えてしまう
+	PRINTFORMW 残された身体は生きるため呼吸をするし、反射もするのだが、一切の意識がないのである
+	PRINTFORMW 五感は生きているらしいが、それを解釈する魂がないと言うこともできるだろう
+	PRINTFORML 
+	PRINTFORMW もはや人形と化した少女の横に、%CALLNAME:MASTER%が座る
+	PRINTFORMW かつての日々を思い出しながら、%CALLNAME:MASTER%は余命をここで暮らすのだ
+	PRINTFORMW 永遠に後悔しながら……
+	PRINTFORML 
+	PRINTFORMW -BAD END-
+ENDIF
+
+;=======================================================
+;主人公死亡エンド
+;5年目の12月に純狐に負けた場合、これに分岐
+;=======================================================
+@BADEND_MAIN_DIE
+
+;敗北時のエンディング
+PRINTFORMW 王宮の庭の隅にて、%CALLNAME:TARGET%は豊姫、依姫と共に目を閉じ、両手の掌を合わせた
+PRINTFORMW 三人の目の前には一基の墓が建っており、花が添えられている
+PRINTFORML 彼女達の参拝を出迎えるようかのようにさわやかな風が吹き、%CALLNAME:TARGET%の髪を揺らす
+;王宮から追放されてない場合
+IF !FLAG:王宮追放
+	PRINTFORMW 目から零れた涙を、豊姫の手が拭う
+ELSE
+	PRINTFORMW 目から零れた涙は、地面に落ちる
+ENDIF
+PRINTFORMW %CALLNAME:TARGET%は一年前のこの日に起こった出来事を思い返した
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%は命の危機に瀕した%CALLNAME:TARGET%を庇い、代わりに精霊の手の内に収まり――
+PRINTFORMW 次に精霊が掌を開いた時、そこに%CALLNAME:MASTER%の姿はなかった
+PRINTFORML 
+PRINTFORMW 純狐は高笑いをした後、精霊を引っ込めた
+PRINTFORMW そして、去り際に%CALLNAME:TARGET%に耳打ちをしていった
+PRINTFORMW 「これで、貴方も私と同じね」と
+PRINTFORML 
+PRINTFORMW あれは悪夢だった。一年間この出来事にうなされたし、全く眠れない日もあった
+PRINTFORMW しかし、ようやく回答が用意できたのだ
+PRINTFORMW %CALLNAME:TARGET%は目を開き、呟いた。それは純狐が残した言葉に対しての、1年越しの回答
+;アライメントが+0以上
+IF BASE:アライメント >= 0
+	PRINTFORML 「貴方と同じわけがないじゃない……」
+	PRINTFORML それは、何かを決心するような声だった
+	PRINTFORML 
+	PRINTFORMW 純狐のことを考え、悩む。その時点で彼女の企みに嵌ってしまう
+	PRINTFORMW それなら忘れて、今、そしてこれから先のことを考えるべきではないか
+	PRINTFORMW きっと%CALLNAME:MASTER%だってそれを願っているはずだ
+	PRINTFORML 
+	PRINTFORML %CALLNAME:TARGET%はそう考えていたのだが、さすがに周りがそこまで察せるわけでもなく
+	PRINTFORMW 独り言に反応して、依姫が振り向いた
+	PRINTFORMW 「%CALLNAME:TARGET%さん。何か言いましたか？」
+	PRINTFORML %CALLNAME:TARGET%は頭を横に振り
+	PRINTFORMW 「なんでもないの。気にしないで」と言った
+	PRINTFORMW 首を傾げて悩む依姫。そんな彼女の肩を豊姫の手が撫でる
+	PRINTFORML 「そこまで悩むことじゃないわ。彼女なりに何かしら解決したってことじゃない？」
+	PRINTFORMW 豊姫の言葉を聞き、依姫は顔をあげる。豊姫と輝夜、二人の顔を何度も見た後、口を開いた。
+	PRINTFORML 「……そうですね。私が考えすぎていたみたいです。美味しい料理でも食べに行きましょう！」
+	PRINTFORMW 依姫が立ち直ったのを見て、豊姫は笑顔を浮かべる
+	PRINTFORMW 豊姫は、%CALLNAME:TARGET%が考えていたことを見抜いていた
+	PRINTFORMW それ故に、依姫が深く考え込んでいるのを制したのだ
+	PRINTFORML 
+	PRINTFORMW 「今日は全部依姫のおごりね！」
+	PRINTFORMW 「ちょっとお姉様！？　それはひどすぎませんか！？」
+	PRINTFORMW 「よっちゃんのおごりなのね？　滅多に行けない店に行きたいなー。あの一見さんお断りの――」
+	PRINTFORMW 「%CALLNAME:TARGET%さん、本気に取らないでくださいっ！」
+	PRINTFORML 
+	PRINTFORML 三人が後にした墓は、普段より輝いている気がした
+	PRINTFORMW Died ED -「前を見つめて」-
+;アライメントが-1以下
+ELSE
+	;サグメが失踪している場合
+	;最悪のバッドエンド
+	IF GETBIT(FLAG:サグメイベント管理, 31)
+		PRINTFORML 「覚えてなさい……」
+		PRINTFORML それは、怨嗟の声
+		PRINTFORML 過去に囚われた声
+		PRINTFORMW そして、逃れられない循環に加わった声だった
+		PRINTFORML 
+		PRINTFORML 数ヶ月後……
+		PRINTFORMW %CALLNAME:TARGET%と依姫が謎の失踪を遂げた月の都は、大混乱に陥っていた
+		PRINTFORML 君主は豊姫を捕らえて圧政を敷く
+		PRINTFORMW 容赦ない圧政によって物価は忽ち上昇し、平民ですらも身体を売って日々の生活費を凌ぐ破目に陥った
+		PRINTFORML 
+		PRINTFORMW ここは地下牢
+		PRINTFORML 豊姫は手足に鉄鎖を巻かれて、壁に拘束されている
+		PRINTFORMW 過去の責めにより衣服は既にボロボロになっており、胸や股間が露わになっている
+		PRINTFORMW 素肌には鞭で打たれた跡や擦り傷が多々残っている
+		PRINTFORML 
+		PRINTFORML 「さて、気分はどうだ？」
+		PRINTFORMW 君主は豊姫に近づき、顎を持った
+		PRINTFORML 「……きっと、%CALLNAME:TARGET%が助けに来てくれるから……」
+		PRINTFORML 「いつまでそんな夢見てるんだ」
+		PRINTFORMW 君主は豊姫の頬を叩いた。頬には赤い跡が残る
+		PRINTFORML 「お前は見捨てられたんだよ。妹にまで見捨てられるとは、さぞかし人望が無かったんだろうなあ？」
+		PRINTFORMW 君主の言葉に、豊姫は睨むしかなかった
+		PRINTFORML 
+		PRINTFORML 「まあ、お前にも利用価値はあるからな」
+		PRINTFORMW 君主は豊姫の股間に手を伸ばし、秘部の指先を宛がう
+		PRINTFORML 「ひゃぁ……ま、またなの……」
+		PRINTFORML 「ふん、随分素直になったものだな。お前は俺らの子分の"生産"でもしてればいいんだよ」
+		PRINTFORML 君主に秘部を弄られるにつれ、豊姫は腰を浮かせ、熱っぽい吐息を吐く
+		PRINTFORMW 度々の責めにより身体が開発されてしまい、嫌な相手でも感じるようになったらしい
+		PRINTFORML 「はぁ……いや……依姫……助けに……」
+		PRINTFORML 「ははは、そんだけ感じられるなら、そろそろ行けそうだな」
+		PRINTFORMW 君主は股間の業物を露出し、先端を秘部に当てた
+		PRINTFORMW 「い、やぁ……」
+		PRINTFORML 
+		PRINTFORMW 2年後……
+		PRINTFORML 「君主様！　我々の子が兵役に就ける年齢になりました！」
+		PRINTFORMW 君主の下に報告に来たのは、数十人の役人であった
+		PRINTFORML 「ほう……よくやったな。お主らには褒美を与えよう」
+		PRINTFORMW 兵士達は敬礼をして去っていった。兵士たちの背を見ながら君主は不敵な笑みを浮かべた
+		PRINTFORML 「ふん……あいつ、まだ持つとはな。てっきり1年程度で壊れるかと思っていたが……」
+		PRINTFORMW あれから豊姫は多数の役人と交わり、子供達を"生産"し続けた
+		PRINTFORML 「まあ、とっくに壊れてるかもしれんがな……」
+		PRINTFORML 
+		PRINTFORML 地下牢……
+		PRINTFORML 「はぁ……んん……もっと、奥まで突いてくださぃっ……」
+		PRINTFORMW 豊姫は上下の口で兵士の一物を咥え、悦びの声をあげた
+		PRINTFORML あれから毎日兵士達に使われた豊姫は、既に理性を失い、快楽のみを求めるようになった
+		PRINTFORMW 彼女の身体に残っているのは、花開いた淫乱な感性のみ
+		PRINTFORML 「きゃふ……わたひ、いひますぅ……あぁぁぁああああっ……」
+		PRINTFORMW 薄暗い地下牢に孤独な少女の媚声が響き渡った……
+		PRINTFORML 
+		PRINTFORMW WORST ED -「消えた二人の代償」-
+	;サグメが失踪していない場合
+	ELSE
+		PRINTFORML 「覚えてなさい……」
+		PRINTFORML それは、怨嗟の声
+		PRINTFORML 過去に囚われた声
+		PRINTFORMW そして、逃れられない循環に加わった声だった
+		PRINTFORML 
+		PRINTFORML 数ヶ月後……
+		PRINTFORML 「ねえねえ依姫。ぐやちゃん見なかった？」
+		PRINTFORMW 自分の部屋でくつろいでいた依姫の下に、豊姫が訪ねる
+		PRINTFORML 「知りませんよ……毎日訪ねてこないでください。お姉様」
+		PRINTFORMW 依姫は気だるそうな声で返事した。毎日訊いてくる彼女にうんざりしているようだ
+		PRINTFORML 「そう……今日こそは来るかと思ったんだけどね……」
+		PRINTFORMW 落胆する豊姫。右手には木の枝を持っている。あの日以降、彼女がまた姿を現したら渡そうと準備していたものだった
+		PRINTFORML 「大体、墓参りした日に蒸発したっきり姿を現さないじゃないですか。あの日以降、誰も姿を見ていないらしいですし、もう死んだんじゃないですか……」
+		PRINTFORML 「あのねえ……！」
+		PRINTFORMW 依姫の陰気すぎる返答にさすがに腹が立ったのか、豊姫が声を荒げると、後ろから女性が現れた
+		PRINTFORMW 背中には片翼を生やしている
+		PRINTFORML 「……彼女は生きています」
+		PRINTFORML 「あ、預言者様だ」
+		PRINTFORMW 「ということは、ぐやちゃん、もう死んだのね……」
+		PRINTFORML 口々に口を開く姉妹に対し、片翼の女性は声をあげた
+		PRINTFORMW 「ちっ、違います！　もう私は預言者辞めましたから！」
+		PRINTFORML 「これも嘘ね」
+		PRINTFORML 「さすが依姫、鋭いわね。多分本人は辞めたつもりでも、その性質は永遠について回るでしょうね」
+		PRINTFORMW 姉妹に口撃され、さすがに片翼の女性は俯いてしまった
+		PRINTFORML 「結構気にしているのですから、もう突っ込まないでください……」
+		PRINTFORMW 片翼の女性は小さく咳払いをした後、静かに語り始めた
+		PRINTFORML 
+		PRINTFORMW 「彼女は今、月の都にはいません」
+		PRINTFORMW 「生きているのは確かなのですが、少しずつ記憶が薄れているのです」
+		PRINTFORMW 「最初は私の名前を覚えていてくれたのですが、最近では全く覚えていないみたいで……」
+		PRINTFORMW 「書籍を辿ると「穢れを帯びた者の中には、現世の記憶を失くし、言葉も話せなくなる者がいる」とは書かれているのですが、彼女からは穢れを感じないのです」
+		PRINTFORMW 「今の彼女は異様で、雰囲気としては生き物に見えません」
+		PRINTFORMW 「毎日純狐の名前を呼んでは、殺す……と呟いているんです」
+		PRINTFORMW 「とても嫌な予感がします……月の都が大きく変わりそうな……」
+		PRINTFORML 
+		PRINTFORMW 片翼の女性の頭を、豊姫が撫でた
+		PRINTFORML 「大丈夫よ。だって、貴方がそこまで言うんだもの」
+		PRINTFORMW 豊姫が笑顔を浮かべるのを見て、依姫も口を開く
+		PRINTFORML 「貴方が思ったことと逆のことが起こるんでしょ？」
+		PRINTFORML 「なら安心して、私達で何とかするわ」
+		PRINTFORMW 二人は片翼の女性を励ました後、その場を後にした
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORMW そして数年後……
+		PRINTFORMW 静寂に包まれた部屋で、片翼の女性は写真立てを見つめている。写真には豊姫と依姫が映っている
+		PRINTFORMW しばらくした後、何かを堪える様な声色で、静かに口を開いた
+		PRINTFORMW 「だから言ったじゃないですか……預言者はもう辞めた、と……」
+		PRINTFORML 
+		PRINTFORML 
+		PRINTFORMW Died bad ED - 「怨嗟の連鎖」
+	ENDIF
+ENDIF
+
+
+

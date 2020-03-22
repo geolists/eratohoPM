@@ -1,0 +1,4674 @@
+﻿
+;===================================
+;衣装ごとのステータス補正
+;===================================
+@CLOTHE_ABL, ARGS
+
+LOCAL = 0
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF CFLAG:服装 < 0
+	CALLFORM CLOTHE_CLOTH_{CFLAG:服装*-1}, ARGS
+ELSE
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, ARGS
+ENDIF
+LOCAL = RESULT
+CALL REMODEL_HOSEI, ARGS
+LOCAL += RESULT
+CALL CLOTHE_EFFECT_AFTER, ARGS
+
+RETURN LOCAL
+
+
+;=============================================================
+;首輪
+;=============================================================
+
+@CLOTHE_CLOTH_4, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+
+
+美麗 = -1
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = -2
+体力 = 0
+色気 = 2
+背徳 = 2
+淫妖 = 2
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -2
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;解れかけた布切れ
+;=============================================================
+
+@CLOTHE_CLOTH_3, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+
+
+美麗 = -2
+知力 = -2
+疎通 = -2
+家事 = -2
+信仰 = -2
+体力 = -2
+色気 = 2
+背徳 = 0
+淫妖 = 3
+堕落 = 3
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p7
+属性強度 = 4
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ボロの布切れ
+;=============================================================
+
+@CLOTHE_CLOTH_2, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+
+
+美麗 = -2
+知力 = -2
+疎通 = -2
+家事 = -2
+信仰 = -2
+体力 = -2
+色気 = 1
+背徳 = 0
+淫妖 = 3
+堕落 = 3
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p7
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;布切れ
+;=============================================================
+
+@CLOTHE_CLOTH_1, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+
+
+美麗 = -2
+知力 = -2
+疎通 = -2
+家事 = -2
+信仰 = -2
+体力 = -2
+色気 = 1
+背徳 = 0
+淫妖 = 2
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p7
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;普段着
+;=============================================================
+
+@CLOTHE_ID_0, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+
+
+美麗 = 0
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p1
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;制服
+;=============================================================
+
+@CLOTHE_ID_1, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = -1
+知力 = 1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+	
+;=============================================================
+;月のワンピース
+;=============================================================
+
+@CLOTHE_ID_2, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 2
+家事 = 0
+信仰 = 0
+体力 = 2
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 1
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ミニスカート＆ノースリーブ
+;=============================================================
+
+@CLOTHE_ID_3, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 1
+背徳 = 0
+淫妖 = 1
+堕落 = 1
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;キャミソール
+;=============================================================
+
+@CLOTHE_ID_4, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 2
+背徳 = 0
+淫妖 = 2
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ボーイッシュ
+;=============================================================
+
+@CLOTHE_ID_5, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = -1
+知力 = -1
+疎通 = -1
+家事 = -1
+信仰 = -1
+体力 = -1
+色気 = -1
+背徳 = -1
+淫妖 = -1
+堕落 = -1
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;透明な服
+;=============================================================
+
+@CLOTHE_ID_6, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 1
+色気 = 4
+背徳 = 0
+淫妖 = 4
+堕落 = 4
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;天の羽衣
+;=============================================================
+
+@CLOTHE_ID_7, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 2
+家事 = 0
+信仰 = 0
+体力 = 1
+色気 = 0
+背徳 = 0
+淫妖 = -1
+堕落 = -1
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;姫メイドレス
+;=============================================================
+
+@CLOTHE_ID_8, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 4
+知力 = -1
+疎通 = -1
+家事 = 4
+信仰 = 0
+体力 = -2
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 |= 1p1
+属性 |= 1p2
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;メイド服
+;=============================================================
+
+@CLOTHE_ID_10, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = -1
+疎通 = 0
+家事 = 1
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p2
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;修道服
+;=============================================================
+
+@CLOTHE_ID_11, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 0
+疎通 = 0
+家事 = -1
+信仰 = 1
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = -1
+属性 = 1p3
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;ゴスロリ
+;=============================================================
+
+@CLOTHE_ID_12, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = -1
+体力 = -1
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p4
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ドレス
+;=============================================================
+
+@CLOTHE_ID_13, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = -2
+色気 = 0
+背徳 = 1
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 1
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;呪詛の布切れ
+;=============================================================
+
+@CLOTHE_ID_14, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 1
+背徳 = 0
+淫妖 = 1
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 1
+属性 = 1p6
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;剣道着
+;=============================================================
+
+@CLOTHE_ID_15, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 2
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;武道着
+;=============================================================
+
+@CLOTHE_ID_16, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 2
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;メイド服(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_20, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = -2
+疎通 = 0
+家事 = 2
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = 0
+属性 = 1p2
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;修道服(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_21, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = -2
+信仰 = 2
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 2
+崩壊 = -2
+属性 = 1p3
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;ゴスロリ(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_22, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = -2
+体力 = -1
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -2
+崩壊 = 0
+属性 = 1p4
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ドレス(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_23, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = -2
+色気 = 0
+背徳 = 2
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 2
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;淫魔の布切れ
+;=============================================================
+
+@CLOTHE_ID_24, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 2
+背徳 = 0
+淫妖 = 2
+堕落 = 3
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -2
+崩壊 = 2
+属性 = 1p6
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;剣道着(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_25, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 2
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 2
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;武道着(ミニスカート)
+;=============================================================
+
+@CLOTHE_ID_26, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 3
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;メイド服(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_30, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = -3
+疎通 = 0
+家事 = 3
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 3
+崩壊 = 0
+属性 = 1p2
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;修道服(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_31, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 0
+疎通 = 0
+家事 = -3
+信仰 = 3
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 3
+崩壊 = -3
+属性 = 1p3
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ゴスロリ(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_32, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = -3
+体力 = -1
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -3
+崩壊 = 0
+属性 = 1p4
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ドレス(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_33, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = -2
+色気 = 0
+背徳 = 3
+淫妖 = 4
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 3
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;サキュバスキャミソール
+;=============================================================
+
+@CLOTHE_ID_34, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 3
+背徳 = 0
+淫妖 = 3
+堕落 = 4
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -3
+崩壊 = 3
+属性 = 1p6
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;剣道着(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_35, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 2
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 4
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;弓道着(マイクロミニ)
+;=============================================================
+
+@CLOTHE_ID_36, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 3
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 3
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p8
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ブレザー
+;=============================================================
+
+@CLOTHE_ID_50, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 2
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 1
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ワンピース制服
+;=============================================================
+
+@CLOTHE_ID_51, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 3
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 1
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;学士服
+;=============================================================
+
+@CLOTHE_ID_52, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = -2
+知力 = 4
+疎通 = -2
+家事 = 0
+信仰 = 0
+体力 = -1
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;法衣
+;=============================================================
+
+@CLOTHE_ID_53, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 2
+疎通 = -1
+家事 = 0
+信仰 = 2
+体力 = 0
+色気 = 3
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = -1
+属性 = 1p3
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;巫女服
+;=============================================================
+
+@CLOTHE_ID_54, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 2
+家事 = 0
+信仰 = 2
+体力 = 1
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = -1
+属性 = 1p3
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;マイクロミニ制服
+;=============================================================
+
+@CLOTHE_ID_55, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 2
+疎通 = 1
+家事 = 0
+信仰 = 0
+体力 = 1
+色気 = 2
+背徳 = 0
+淫妖 = 3
+堕落 = 3
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;裸エプロン
+;=============================================================
+
+@CLOTHE_ID_56, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = -1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 4
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 4
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;エプロンメイド
+;=============================================================
+
+@CLOTHE_ID_57, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = -2
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 1
+姉妹への友好度 = 0
+主人への友好度 = 1
+アライメント = 0
+崩壊 = 0
+属性 = 1p2
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;エプロンドレス
+;=============================================================
+
+@CLOTHE_ID_58, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 1
+疎通 = -1
+家事 = 3
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 1
+姉妹への友好度 = 0
+主人への友好度 = 2
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;姫巫女装束
+;=============================================================
+
+@CLOTHE_ID_59, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 1
+疎通 = 2
+家事 = -2
+信仰 = 3
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 4
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 |= 1p1
+属性 |= 1p3
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;ゴスロリメイド服
+;=============================================================
+
+@CLOTHE_ID_60, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 1
+疎通 = -2
+家事 = 2
+信仰 = -1
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 |= 1p2
+属性 |= 1p4
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;女中の服
+;=============================================================
+
+@CLOTHE_ID_61, ARGS
+#DIM L_LOCAL, 1
+
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+LOCAL = 0
+FOR L_LOCAL, 0, 5
+	LOCAL += FLAG:JYOTYUU_ELE(L_LOCAL)
+NEXT
+
+美麗 = LOCAL / 25
+知力 = (FLAG:女中服／メイド * -1 / 2 + FLAG:女中服／ゴスロリ) / 25
+疎通 = (FLAG:女中服／ゴスロリ * -1 / 2 + ((FLAG:女中服／メイド + FLAG:女中服／シスター) / 2)) / 25
+家事 = (FLAG:女中服／メイド + FLAG:女中服／花嫁) / 25
+信仰 = (FLAG:女中服／ゴスロリ * -1 / 2 + FLAG:女中服／シスター) / 25
+体力 = 0
+色気 = 0
+背徳 = (FLAG:女中服／シスター * -1 + FLAG:女中服／花嫁) / 25
+淫妖 = (FLAG:女中服／裸エプロン) / 25
+堕落 = (FLAG:女中服／裸エプロン) / 25
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = (FLAG:女中服／ゴスロリ * -1 + FLAG:女中服／シスター) / 25
+崩壊 = 0
+
+FOR L_LOCAL, 0, 4
+	IF FLAG:JYOTYUU_ELE(L_LOCAL)
+		CALL CONVERT_BIT, L_LOCAL+2
+		属性 |= RESULT
+	ENDIF
+NEXT
+
+属性強度 = 1
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;人身御供の服
+;=============================================================
+
+@CLOTHE_ID_62, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 5
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 6
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 |= 1p3
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;人魚の衣
+;=============================================================
+@CLOTHE_ID_63, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 |= 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;姉妹の正装
+;=============================================================
+
+@CLOTHE_ID_64, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = 0
+疎通 = 2
+家事 = 0
+信仰 = 0
+体力 = -3
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 1
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;姉妹の書生服
+;=============================================================
+
+@CLOTHE_ID_65, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = -2
+知力 = 2
+疎通 = 1
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 1
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;里娘の着物
+;=============================================================
+@CLOTHE_ID_66, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = -1
+知力 = 0
+疎通 = 1
+家事 = 2
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = -1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p9
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;白百合の十二単
+;=============================================================
+@CLOTHE_ID_67, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 6
+知力 = 0
+疎通 = 2
+家事 = -2
+信仰 = 0
+体力 = -4
+色気 = 0
+背徳 = 0
+淫妖 = 1
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p1
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;傾国のロープ
+;=============================================================
+@CLOTHE_ID_68, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 5
+知力 = 0
+疎通 = 3
+家事 = -2
+信仰 = -2
+体力 = -4
+色気 = 6
+背徳 = 0
+淫妖 = 5
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p1
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;浴衣
+;=============================================================
+@CLOTHE_ID_69, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 1
+家事 = -1
+信仰 = 0
+体力 = -2
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;純白の薄衣
+;=============================================================
+@CLOTHE_ID_70, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = 0
+疎通 = 0
+家事 = -1
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;悪魔のメイド服
+;=============================================================
+@CLOTHE_ID_71, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 3
+知力 = -1
+疎通 = 0
+家事 = 3
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 2
+堕落 = 3
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p2
+属性 = 1p6
+属性強度 = 2
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;妖しいキャミソール
+;=============================================================
+@CLOTHE_ID_73, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 1
+知力 = -1
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 4
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;透けるメイド服
+;=============================================================
+
+@CLOTHE_ID_100, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = -3
+疎通 = 0
+家事 = 2
+信仰 = 0
+体力 = 0
+色気 = 1
+背徳 = 0
+淫妖 = 3
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 1p2
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;透ける修道服
+;=============================================================
+
+@CLOTHE_ID_101, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = -3
+家事 = 0
+信仰 = 2
+体力 = 0
+色気 = 1
+背徳 = 1
+淫妖 = 3
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 1
+崩壊 = 0
+属性 = 1p3
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+
+;=============================================================
+;透けるゴスロリ
+;=============================================================
+
+@CLOTHE_ID_102, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = -2
+体力 = -1
+色気 = 0
+背徳 = 0
+淫妖 = 3
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = -1
+崩壊 = 0
+属性 = 1p4
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;=============================================================
+;透けるドレス
+;=============================================================
+
+@CLOTHE_ID_103, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 2
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = -2
+色気 = 2
+背徳 = 2
+淫妖 = 4
+堕落 = 2
+姉妹への友好度 = 0
+主人への友好度 = 2
+アライメント = 0
+崩壊 = 0
+属性 = 1p5
+属性強度 = 3
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+
+;--------------------------------------------------------
+;衣服の改造補正
+;--------------------------------------------------------
+
+@REMODEL_HOSEI, ARGS
+#DIM 美麗, 1
+#DIM 知力, 1
+#DIM 疎通, 1
+#DIM 家事, 1
+#DIM 信仰, 1
+#DIM 体力, 1
+#DIM 色気, 1
+#DIM 背徳, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM 姉妹への友好度, 1
+#DIM 主人への友好度, 1
+#DIM アライメント, 1
+#DIM 崩壊, 1
+#DIM 属性, 1
+#DIM 属性強度, 1
+
+美麗 = 0
+知力 = 0
+疎通 = 0
+家事 = 0
+信仰 = 0
+体力 = 0
+色気 = 0
+背徳 = 0
+淫妖 = 0
+堕落 = 0
+姉妹への友好度 = 0
+主人への友好度 = 0
+アライメント = 0
+崩壊 = 0
+属性 = 0
+属性強度 = 0
+
+;CALL CLOTHE_ABL, "属性"
+
+IF CFLAG:服装 >= 0
+; && !GETBIT(RESULT, 6) && !GETBIT(RESULT, 7)
+	VARSET CFLAG, 0, 310, 325
+	;スカート丈が違い、変更不可でない服装の場合、追加で補正をかける
+	IF DITEMTYPE:(CFLAG:服装):0 && !DITEMTYPE:(CFLAG:服装):10
+		美麗 += 1 * DITEMTYPE:(CFLAG:服装):0
+		淫妖 += 1 * DITEMTYPE:(CFLAG:服装):0
+	ENDIF
+	
+	;絹の布の場合、美麗+2　＆　淫妖+1
+	SELECTCASE DITEMTYPE:(CFLAG:服装):2
+		CASE 1
+			美麗 += 2
+			淫妖 += 1
+	ENDSELECT
+	
+	;適正バストサイズ以内にバストが収まっている場合、美麗補正+1
+	CALL CLOTHE_BUSTSIZE, CFLAG:服装
+	LOCAL = RESULT
+	
+	IF BASE:胸囲 <= LOCAL
+		美麗 += 1
+	ENDIF
+ENDIF
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "知力"
+		RETURN 知力
+	CASE "疎通"
+		RETURN 疎通
+	CASE "家事"
+		RETURN 家事
+	CASE "信仰"
+		RETURN 信仰
+	CASE "体力"
+		RETURN 体力
+	CASE "色気"
+		RETURN 色気
+	CASE "背徳"
+		RETURN 背徳
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "姉妹への友好度"
+		RETURN 姉妹への友好度
+	CASE "主人への友好度"
+		RETURN 主人への友好度
+	CASE "アライメント"
+		RETURN アライメント
+	CASE "崩壊"
+		RETURN 崩壊
+	CASE "属性"
+		RETURN 属性
+	CASE "属性強度"
+		RETURN 属性強度
+ENDSELECT
+

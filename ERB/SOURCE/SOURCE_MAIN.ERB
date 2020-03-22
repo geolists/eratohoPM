@@ -1,0 +1,1184 @@
+﻿@SOURCE_CHECK
+
+CALL SOURCE_CALCURATE, 0
+
+@SOURCE_CALCURATE, ARG
+;ARG　疲労度上昇処理を行うかどうか、0以外:行わない
+#DIM HIROU, 1
+#DIM L_LOCAL, 1
+
+;最も低いを疲労度上昇値を記録し、この値を疲労度上昇値とする
+#DIM SOME, 1
+
+;LOCALS 素質名の一時保存場所
+#DIM EXP_BONUS, 1
+#DIM HOSEI,1
+#DIM GET_ABL, 2
+#DIM INYOU, 1
+;CPの消費
+PRINTFORML CP消費:{LOSEBASE:ＣＰ}
+BASE:ＣＰ -= LOSEBASE:ＣＰ
+
+;主人への友好度は調教モード以外1増加
+IF CFLAG:モード != 2
+	CFLAG:主人への友好度 += 1
+ENDIF
+
+;初期化
+SOME = 0
+
+;バイブ挿入時や住み込み時の処理
+CALL SOURCE_SITUATION
+
+;好感度やアライメントの処理
+CALL SOURCE_FAVORITE
+
+PRINTL 
+
+;属性の初期化
+CFLAG:今回実行するコマンド属性 = 0
+
+;淫売の神が憑りついている場合、1/4の確率で行動をサボる
+IF CFLAG:憑りついた神 == 6 && !SOURCE:淫妖
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:TARGET%は頭の中に淫らなことが浮かんで集中できなさそうだ……
+	;感度が300以上の場合、自慰を始める
+	IF BASE:感度 >= 300
+		PRINTFORML ついに堪え切れなくなったのか、股間に手をやり、自身の禁域を犯し始めた
+		PRINTFORML 声は湿り、秘部からは粘っこい音が鳴りはじめる……
+		;淫妖経験+2
+		TFLAG:淫妖経験 += 2
+	ENDIF
+	
+	VARSET SOURCE, 0
+	SOURCE:淫妖 = BASE:感度/30
+	;該当経験の入手値が1になる
+	FOR L_LOCAL, 201, 211
+		IF TFLAG:L_LOCAL
+			TFLAG:L_LOCAL = 1
+		ENDIF
+	NEXT
+	TFLAG:淫妖経験 += 2
+ENDIF
+
+REPEAT 10
+	CALL PALAM_CONVERT, COUNT
+	
+	;該当する経験が入るコマンドの場合、今回実行するコマンド属性に1p1を加える
+	IF TFLAG:(""+STR+"経験")
+		EXP:(""+STR+"経験") += TFLAG:(""+STR+"経験")
+		PRINTFORML %STR%経験 + {TFLAG:(""+STR+"経験")}　（現在：{EXP:(""+STR+"経験")}）
+		
+		;気付きモードの場合、入手経験+1
+		IF CFLAG:気付き状態
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%は気付きがよくなっている！
+			PRINTFORML %STR%経験 + 1
+			EXP:(""+STR+"経験") += 1
+			RESETCOLOR
+		ENDIF
+		
+		;興味を持っている場合、入手経験+1
+		IF COUNT <= 7 && GETBIT(CFLAG:興味, COUNT)
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%は%STR%に興味を持っている！
+			PRINTFORML %STR%経験 + 1
+			EXP:(""+STR+"経験") += 1
+			RESETCOLOR
+		ENDIF
+		
+		;娼婦・花魁への振り分け
+		IF STR == "娼婦"
+			CALL HANTEI_INYOU, TFLAG:(""+STR+"経験")
+		ENDIF
+		
+		;経験起因による属性称号効果
+		CALL CLASS_EFFECT, "教育", STR
+		
+		
+		CALL PALAM_CONVERT_BIT, COUNT
+		
+		CFLAG:今回実行するコマンド属性 |= RESULT
+		TFLAG:("経験入手フラグ／"+STR+"") = 1
+	ENDIF
+REND
+
+;基礎性教育経験
+IF TFLAG:基礎性教育経験
+	EXP:基礎性教育経験 += TFLAG:基礎性教育経験
+	PRINTFORML 基礎性教育経験 + {TFLAG:基礎性教育経験}　(現在:{EXP:基礎性教育経験})
+ENDIF
+
+;精液経験
+IF TFLAG:精液経験
+	PRINTFORML 精液経験 + {TFLAG:精液経験}
+	EXP:精液経験 += TFLAG:精液経験
+ENDIF
+
+;精飲要素
+IF TFLAG:精飲要素
+	;色々要素を考えてたけど、上手くいかないので必ず射精する仕様に
+	PRINTFORML %CALLNAME:TARGET%の口内に勢いよく精液が射精された……
+	PRINTFORM %CALLNAME:TARGET%は
+	;精飲経験が100以上＆淫妖が900以上
+	IF BASE:淫妖 >= 900 && EXP:精飲経験 >= 100
+		PRINTFORMW 恭しい表情を浮かべ、喉を鳴らして飲み込んだ
+	;淫妖が600以上
+	ELSEIF BASE:淫妖 >= 600
+		PRINTFORMW 瞳を濡らし、くぐもった声を漏らして飲み込んだ
+	;淫妖が300以上
+	ELSEIF BASE:淫妖 >= 300
+		PRINTFORMW 味覚で眉を歪ませるが、文句一つ言わずに飲み込んだ
+	ELSE
+		PRINTFORMW 眉間に皺を寄せて飲み込んだ
+	ENDIF
+	
+	;淫乱の場合、淫妖+1
+	IF CFLAG:性格 == -1
+		SOURCE:淫妖 += 1
+		PRINTFORMW %CALLNAME:TARGET%は艶めかしい視線を送った
+	ENDIF
+	
+	EXP:精飲経験 += TFLAG:精飲要素
+	PRINTFORML 精飲経験 + {TFLAG:精飲要素}(現在:{EXP:精飲経験})
+	;淫魔の場合、精力を得る
+	IF TALENT:淫魔
+		LOCAL = 3 + ABL:淫魔技巧 * 3
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 精力を{LOCAL}得た！
+		MAXBASE:精力 += LOCAL
+		RESETCOLOR
+	;シスター属性の衣服を着ているor[シスター]の場合にのみ信仰力を得る
+	ELSEIF GETBIT(RESULT, 3) || TALENT:シスター
+		CALL CALCULATION_FAITH, TFLAG:精飲要素, 0, 1
+	ENDIF
+ENDIF
+
+;他キャラへの調教処理
+IF TFLAG:調教経験
+	CALL SOURCE_ATHERTRAIN
+ENDIF
+
+REPEAT 10
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	CALL PALAM_CONVERT_BIT, COUNT
+	LOCAL = RESULT
+	
+	;魅力→知力→疎通→…の順に属性を見ていく
+	IF CFLAG:今回実行するコマンド属性 & LOCAL
+		;前回に出したコマンドに今回出すコマンドの経験値要素が含まれている
+		IF (CFLAG:今回実行するコマンド属性 & CFLAG:前回実行したコマンド属性) || (CFLAG:今回実行するコマンド属性 & CFLAG:２回前に実行したコマンド属性)
+			IF LOCAL & CFLAG:前回実行したコマンド属性
+			;	CALL COMBO_BONUS, LOCALS, "通常"
+			;	SOURCE:LOCALS = RESULT
+				;PRINTL 通常
+			ELSEIF LOCAL & CFLAG:２回前に実行したコマンド属性
+			;	CALL COMBO_BONUS, LOCALS, "半減"
+			;	SOURCE:LOCALS = RESULT
+				;PRINTL 半減
+			ENDIF
+		ELSE
+		;	CFLAG:("コンボ回数／"+LOCALS+"") = 0
+		ENDIF
+	ENDIF
+REND
+
+
+;研究者の場合、同じ属性を続けて行うと伸びがよくなる
+;コンボ補正の処理をほぼ使い回し
+IF CHECKSKILL(320) && CFLAG:モード != 1 && CFLAG:モード != 2
+	REPEAT 10
+		CALL PALAM_CONVERT_BIT, COUNT
+		LOCAL = RESULT
+		CALL PALAM_CONVERT, COUNT
+		LOCALS = %STR%
+		
+		;PRINTFORML 研究者LOCAL:{LOCAL}
+		;PRINTFORML 前回のコマンド属性{CFLAG:前回実行したコマンド属性}
+		;PRINTFORML 今回のコマンド属性{CFLAG:今回実行するコマンド属性}
+		
+		;魅力→知力→疎通→…の順に属性を見ていく
+		IF CFLAG:今回実行するコマンド属性 & LOCAL
+			;前回に出したコマンドに今回出すコマンドの経験値要素が含まれている
+			IF CFLAG:前回実行したコマンド属性 & LOCAL
+				SETCOLOR 236,96,0
+				PRINTFORML [研究者]の効力により、伸びがよくなった！
+				RESETCOLOR
+				;PRINTFORML %LOCALS%
+				
+				SOURCE:LOCALS += 2
+				BASE:ストレス += 3
+			ENDIF
+		ENDIF
+	REND
+ENDIF
+
+;PRINTFORML 2回前：{CFLAG:２回前に実行したコマンド属性}
+;PRINTFORML 前回：{CFLAG:前回実行したコマンド属性}
+;PRINTFORMW 今回：{CFLAG:今回実行するコマンド属性}
+
+;IF BASE:淫妖
+;	PRINTL
+;	IF SOURCE:淫妖
+;		INYOU = BASE:淫妖 / -200 + 4 * (BASE:淫妖 / 400)
+;	ELSE
+;		INYOU = BASE:淫妖 / -70
+;	ENDIF
+;	PRINT 淫妖による
+;	IF INYOU <= 0
+;		PRINTFORM 成長妨害
+;	ELSE
+;		PRINTFORM 成長促進
+;	ENDIF
+;	PRINT  (淫妖・堕落以外) :
+;	PRINTFORML {INYOU}
+;	PRINTL
+;ENDIF
+
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;胸部下着を着けていない時に淫妖ソースがある
+;(全裸属性があるor乞食・淫魔属性の衣装は補正無し)
+IF !CFLAG:胸部下着 && !GETBIT(RESULT, 6) && !GETBIT(RESULT, 7) && CFLAG:服装 >= 0 && !DITEMTYPE:(CFLAG:服装):11 && SOURCE:淫妖 && FLAG:モード != 2 && FLAG:モード != 1
+	FOR COUNT, 0, 9
+		SOURCE:COUNT *= 120 / 100
+	NEXT
+ENDIF
+
+;秘所下着を着けていない時に淫妖ソースがある
+;(全裸属性があるor乞食・淫魔属性の衣装は補正無し)
+IF !CFLAG:秘所下着 && !GETBIT(RESULT, 6) && !GETBIT(RESULT, 7) && CFLAG:服装 >= 0 && !DITEMTYPE:(CFLAG:服装):11 && SOURCE:淫妖 && FLAG:モード != 2 && FLAG:モード != 1
+	FOR COUNT, 0, 9
+		;服装がミニスカートの場合
+		IF DITEMTYPE:(CFLAG:服装):0
+			SOURCE:COUNT *= (150 + 20 * DITEMTYPE:(CFLAG:服装):0) / 100
+		ELSE
+			SOURCE:COUNT *= 150 / 100
+		ENDIF
+	NEXT
+ENDIF
+
+;疲労度が50以上ならやる気を1減らす(誘拐中以外)
+IF BASE:ストレス >= 50 && CFLAG:モード != 2 && CFLAG:モード != 1 && !ARG
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 疲労度が50以上ある事が原因で、やる気が1下がった……
+	RESETCOLOR
+	
+	CFLAG:やる気 -= 1
+	
+	;初回プレイ時orエンディング未到達時の場合、疲労度のチュートリアルを出すか聞く
+	;(2015/06/12)　エンディングを一度見たことがなくてもチュートリアルが出る仕様を削除しました
+	;petitpatchと同じ修正です
+	IF !GETBIT(GLOBAL:508, 1)
+		DRAWLINE
+		PRINTFORML 疲労度が50を超えました
+		PRINTFORML 疲労度に関するチュートリアルを見ますか？
+		PRINTFORML (この選択肢表示は今回一度のみです)
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI,2
+		
+		IF !RESULT
+			CALL TUTORIAL_HIROU
+		ENDIF
+		
+		LOADGLOBAL
+		GLOBAL:508 |= 1p1
+		SAVEGLOBAL
+		DRAWLINE
+	ENDIF
+ENDIF
+
+
+;経験値獲得
+IF LOSEBASE:経験値／刀術レベル
+	CALL GET_EXP, TARGET, 1, LOSEBASE:経験値／刀術レベル
+ENDIF
+
+IF LOSEBASE:経験値／弓術レベル
+	CALL GET_EXP, TARGET, 2, LOSEBASE:経験値／弓術レベル
+ENDIF
+
+IF LOSEBASE:経験値／魔術レベル
+	CALL GET_EXP, TARGET, 3, LOSEBASE:経験値／魔術レベル
+ENDIF
+
+IF LOSEBASE:経験値／淫術レベル
+	CALL GET_EXP, TARGET, 4, LOSEBASE:経験値／淫術レベル
+ENDIF
+
+;理性
+IF LOSEBASE:理性
+	CALL CALCULATION_PALAM, LOSEBASE:理性, "理性"
+ENDIF
+
+
+;上で求めた上昇値を実際に足す
+IF SOURCE:美麗
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "美麗", BASE:美麗
+	ENDIF
+	
+	
+	CALL CALCULATION_PALAM, SOURCE:美麗, "美麗"
+	
+	;能力が低いとストレスが上がりやすくなる
+	
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:美麗 / 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:美麗 / 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	
+	;正道の姫様の場合、+&100+レベル×500
+	IF CFLAG:称号属性 == 0 && CFLAG:称号アライメント == 0 && CFLAG:称号レベル
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%が持つ姫君の素養に魅了された人が、お金を渡してきた！
+		LOCAL = 100+500*CFLAG:称号レベル
+		CALL SETCOLOR_MONEY
+		PRINTFORML ${LOCAL}を手に入れた！
+		MONEY += LOCAL
+	;普通の姫様の場合、疲労度-(1+称号レベル)
+	ELSEIF CFLAG:称号属性 == 0 && CFLAG:称号アライメント == 1 && CFLAG:称号レベル
+		LOCAL = CFLAG:称号レベル
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%が持つ姫君の素養が磨かれた事により、疲労度が{LOCAL}回復した！
+		BASE:ストレス = MAX(BASE:ストレス-LOCAL, 0)
+	ENDIF
+	RESETCOLOR
+	
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+	;IF EXP_BONUS
+	;	PRINTFORML 　経験により伸びがよくなった！({EXP_BONUS})
+	;ELSE
+	;	PRINTL 
+	;ENDIF
+ENDIF
+
+;知力
+IF SOURCE:知力
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "知力", BASE:知力
+	ENDIF
+	
+	;普通のゴスロリの場合、家事が上昇しやすくなる
+	IF CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 魔術に心を奪われた%CALLNAME:TARGET%は、知力への深い探究を行った！
+		SOURCE:知力 = SOURCE:知力*(100+CFLAG:称号レベル*50)/100
+		RESETCOLOR
+	ENDIF
+	
+	CALL CALCULATION_PALAM, SOURCE:知力, "知力"
+	
+	;能力が低いとストレスが上がりやすくなる
+	
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:知力 / 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:知力 / 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+ENDIF
+
+
+;疎通
+IF SOURCE:疎通
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "疎通", BASE:疎通
+	ENDIF
+	
+
+	CALL CALCULATION_PALAM, SOURCE:疎通, "疎通"
+	
+	;能力が低いとストレスが上がりやすくなる
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:疎通 / 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:疎通 / 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+ENDIF
+
+;信仰
+IF SOURCE:信仰
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "信仰", BASE:信仰
+	ENDIF
+	
+	;普通のシスターの場合、家事が上昇しやすくなる
+	IF CFLAG:称号属性 == 2 && CFLAG:称号アライメント == 1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML シスターとしての心得を得た%CALLNAME:TARGET%は、信仰が効率よく高まっていく……
+		SOURCE:信仰 = SOURCE:信仰*(100+CFLAG:称号レベル*50)/100
+		RESETCOLOR
+	ENDIF
+	
+	CALL CALCULATION_PALAM, SOURCE:信仰, "信仰"
+	
+	;能力が低いとストレスが上がりやすくなる
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:信仰 / 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:信仰 / 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+	
+	CALL CLOTHE_ABL, "属性"
+	;初期化
+	LOCAL = 0
+	
+	;シスター属性の衣服を着ているor[シスター]の場合にのみ信仰力を得る
+	IF (GETBIT(RESULT, 3) || TALENT:シスター) && !TFLAG:精飲要素
+		IF TFLAG:精飲要素
+			;精飲要素がある場合は、独自の計算式で信仰力を入手する
+			CALL CALCULATION_FAITH, TFLAG:精飲要素, 0, 1
+		ELSE
+			CALL CALCULATION_FAITH, 1, 0, 1
+		ENDIF
+	ENDIF
+ENDIF
+
+;家事
+IF SOURCE:家事
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "家事", BASE:家事
+	ENDIF
+	
+	;普通のメイドの場合、家事が上昇しやすくなる
+	IF CFLAG:称号属性 == 1 && CFLAG:称号アライメント == 1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML メイドとしての心得を得た%CALLNAME:TARGET%は、要領良く家事のコツを習得した！
+		SOURCE:家事 = SOURCE:家事*(100+CFLAG:称号レベル*50)/100
+		RESETCOLOR
+	ENDIF
+	
+	CALL CALCULATION_PALAM, SOURCE:家事, "家事"
+
+	;能力が低いとストレスが上がりやすくなる
+	
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:家事 / 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:家事 / 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+	
+	TFLAG:家事 = 1
+ENDIF
+
+;体力
+IF SOURCE:体力
+	;スキル[革命者]が無い場合、レベル補正がかかる
+	IF !CHECKSKILL(319)
+		CALL IND_PALAMLV, "体力", BASE:体力
+	ENDIF
+	
+	CALL CALCULATION_PALAM, SOURCE:体力, "体力"
+	
+	;能力が低いとストレスが上がりやすくなる
+	
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:体力 / 10 + LOSEBASE:ストレス * 10) / 15 + 3) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:体力 / 10 + LOSEBASE:ストレス * 10) / 15 + 3
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+		
+	;ガーターベルトを着けている場合、疲労度増加が2減少する
+	IF CFLAG:日用品／その他 == 431 || CFLAG:日用品／その他2 == 431
+		BASE:ストレス = LIMIT(BASE:ストレス-2, 0, 100)
+	ENDIF
+ENDIF
+
+;背徳
+IF SOURCE:背徳
+	;経験補正
+	EXP_BONUS = EXP:背徳経験 / 40
+	
+	CALL CLOTHE_ABL, "背徳"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(背徳)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = SOURCE:背徳 * HOSEI / 100
+	ELSE
+		GET_ABL = SOURCE:背徳
+	ENDIF
+	
+	;素養補正
+	;感度とアライメントが関わる
+	GET_ABL = GET_ABL * (BASE:感度 + (BASE:アライメント - 100) * 2) / 200
+	IF GET_ABL <= 0
+		GET_ABL = 0
+	ENDIF
+	PRINTFORM 背徳: {BASE:背徳} + {GET_ABL} → 
+	BASE:背徳 += GET_ABL
+	PRINTFORML {BASE:背徳}
+ENDIF
+
+;淫妖
+IF SOURCE:淫妖
+	;経験補正
+	EXP_BONUS = EXP:淫妖経験 / 40
+	
+	CALL CLOTHE_ABL, "淫妖"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(淫妖)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = SOURCE:淫妖 * HOSEI / 100
+	ELSE
+		GET_ABL = SOURCE:淫妖
+	ENDIF
+	
+	;媚薬状態の場合、媚薬ゲージ/10の数だけ伸びが+される
+	;（最高で+2）
+	IF CFLAG:媚薬状態
+		LOCAL = BASE:媚薬 / 10
+		IF LOCAL > 2
+			LOCAL = 2
+		ENDIF
+		GET_ABL += LOCAL
+	ENDIF
+	
+	;素養補正
+	;感度が関わる
+	GET_ABL = (GET_ABL + LIMIT(BASE:淫妖-900, 0, 1100) / 250) * BASE:感度 * (100 - (BASE:淫妖 / 300 * 30)) / 20000
+	
+	;素質による補正
+	;敏感体質
+	IF TALENT:敏感体質
+		GET_ABL *= 5 / 4
+	;不感体質
+	ELSEIF TALENT:不感体質
+		GET_ABL *= 3 / 4
+	ENDIF
+	
+	;即堕ちの場合
+	IF TALENT:即堕ち
+		GET_ABL *= 3
+	;嫌厭色情
+	ELSEIF TALENT:嫌厭色情
+		GET_ABL /= 2
+	ENDIF
+	
+	;媚薬状態の場合、媚薬ゲージ/5倍だけ強化される
+	;（最高で3倍）
+	IF CFLAG:媚薬状態
+		LOCAL = BASE:媚薬 / 5
+		IF LOCAL > 3
+			LOCAL = 3
+		ENDIF
+		GET_ABL *= LOCAL
+	ENDIF
+	IF GET_ABL <= 0
+		GET_ABL = 1
+	ENDIF
+	PRINTFORM 淫妖: {BASE:淫妖} + {GET_ABL} → 
+	BASE:淫妖 += GET_ABL
+	PRINTFORML {BASE:淫妖}
+	;誘拐中は上昇しない
+	IF CFLAG:モード != 2
+		;乞食属性の衣装ではない場合、-5される
+		IF CFLAG:属性 != 7
+			BASE:淫乱 += 2 + (3 - FLAG:年数 / 2)
+		ELSE
+			BASE:淫乱 += 5 + (25 - FLAG:年数 * 5)
+		ENDIF
+	ENDIF
+	
+	;真面目の場合、ストレスが3増加
+	IF CFLAG:性格 == 1 && CFLAG:モード != 2
+		BASE:ストレス += 3
+	ENDIF
+	
+	;淫乱の場合、ストレスが低下
+	IF CFLAG:性格 == -1
+		BASE:ストレス -= SOURCE:淫妖 * 3
+		IF BASE:ストレス < 0
+			BASE:ストレス = 0
+		ENDIF
+	ENDIF
+	
+	;調教モードでない場合、経験に応じて評価が下がる
+	IF CFLAG:モード != 2
+		LOCAL = TFLAG:淫妖経験
+		PRINTFORML 評価が{LOCAL}下がった
+		CFLAG:評価 -= LOCAL
+	ENDIF
+	
+	CALL CLOTHE_ABL, "淫妖"
+	BASE:快楽動機づけ = LIMIT(BASE:快楽動機づけ+1*RESULT, 0, 400)
+ENDIF
+
+;堕落
+IF SOURCE:堕落
+	;後で面倒なのでABL_FUNCTION側に纏めました
+	CALL CALCULATION_PALAM, SOURCE:堕落, "堕落"
+ENDIF
+
+;職業技能
+FOR L_LOCAL, 40, 47
+	IF SOURCE:L_LOCAL
+		CALL CLOTHE_ABL, "知力"
+		;衣装補正
+		IF RESULT
+			HOSEI = 100 + 25 * RESULT
+			PRINTFORML 服装補正(知力)×{HOSEI/100}.{HOSEI%100}
+			GET_ABL = SOURCE:L_LOCAL * HOSEI / 100 + INYOU
+		ELSE
+			GET_ABL = SOURCE:L_LOCAL + INYOU
+		ENDIF
+		
+		;素養補正
+		;基本倍率は100(％)
+		;それぞれの要素は上乗せする形で補正をかけられる
+		
+		;属性名を引っ張る
+		CALL ELEMENT_CONVERT, L_LOCAL-40
+		
+		;思考力の場合は0～50％
+		;それぞれの属性は直接加算する
+		GET_ABL = GET_ABL * (100 + 2*CFLAG:("属性／"+STR+"") + BASE:思考力 / 12)/100
+		;能力が低いとストレスが上がりやすくなる
+		;信仰で抑えることが可能
+		
+		IF TALENT:習得早い
+			GET_ABL *= 5 / 4
+		ELSEIF TALENT:習得遅い
+			GET_ABL *= 3 / 4
+		ENDIF
+		
+		;真面目の場合、ストレスが0.80倍に
+		IF CFLAG:性格 == 1
+			HIROU += (1 * (100 - BASE:知力 / 5) / 7 + 1) * 80 / 100
+		ELSE
+			HIROU += 1 * (100 - BASE:知力 / 5) / 7 + 1
+		ENDIF
+		
+		;体力による疲労度増加補正
+		CALL REVISION_STRENGTH, HIROU, SOME
+		IF SOME == 0 || SOME > RESULT
+			SOME = RESULT
+		ENDIF
+		
+		IF GET_ABL <= 0
+			GET_ABL = 10
+		ENDIF
+		PRINTFORM %SOURCENAME:L_LOCAL%: {BASE:(100+L_LOCAL-40)} + {GET_ABL} → 
+		BASE:(100+L_LOCAL-40) += GET_ABL
+		IF BASE:(100+L_LOCAL-40) > MAXBASE:(100+L_LOCAL-40)
+			BASE:(100+L_LOCAL-40) = MAXBASE:(100+L_LOCAL-40)
+		ENDIF
+		PRINTFORML {BASE:(100+L_LOCAL-40)}
+	ENDIF
+NEXT
+
+;技能
+IF SOURCE:技能
+	CALL CLOTHE_ABL, "知力"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(知力)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = SOURCE:技能 * HOSEI / 100 + INYOU
+	ELSE
+		GET_ABL = SOURCE:技能 + INYOU
+	ENDIF
+	
+	;知力/20も入手する
+	GET_ABL += BASE:知力 / 20
+	
+	;素養補正
+	;思考力が関わる
+	GET_ABL = GET_ABL * BASE:思考力 / 20
+	;能力が低いとストレスが上がりやすくなる
+	;信仰で抑えることが可能
+	
+	IF TALENT:習得早い
+		GET_ABL *= 5 / 4
+	ELSEIF TALENT:習得遅い
+		GET_ABL *= 3 / 4
+	ENDIF
+	
+	;真面目の場合、ストレスが0.80倍に
+	IF CFLAG:性格 == 1
+		HIROU = (1 * (100 - BASE:知力 / 5) / 7 + 1) * 80 / 100
+	ELSE
+		HIROU = 1 * (100 - BASE:知力 / 5) / 7 + 1
+	ENDIF
+	
+	;体力による疲労度増加補正
+	CALL REVISION_STRENGTH, HIROU, SOME
+	IF SOME == 0 || SOME > RESULT
+		SOME = RESULT
+	ENDIF
+	
+	IF GET_ABL <= 0
+		GET_ABL = 10
+	ENDIF
+	PRINTFORM 技能: {BASE:技能} + {GET_ABL} → 
+	BASE:技能 += GET_ABL
+	IF BASE:技能 > MAXBASE:技能
+		BASE:技能 = MAXBASE:技能
+	ENDIF
+	PRINTFORML {BASE:技能}
+ENDIF
+
+;魔力
+IF SOURCE:魔力
+	;教育系のコマンド以外でも入手予定なので、外部関数に丸投げします
+	CALL CALCULATION_PALAM, SOURCE:魔力, "魔力"
+ENDIF
+
+;最も低い疲労度上昇値の分増加させる
+IF CFLAG:モード != 2 && CFLAG:モード != 1 && !ARG
+	;部屋飼いイナバを持っている場合、疲労度増加-1
+	IF ITEM:部屋飼いイナバ
+		SOME = MAX(SOME-1, 1) 
+	ENDIF
+	
+	BASE:ストレス = LIMIT(BASE:ストレス+SOME, 0, 100)
+	
+	;適正バストを参照し、それより胸囲がオーバーしていたらペナルティを与える
+	CALL CLOTHE_BUSTSIZE, CFLAG:服装
+	LOCAL:2 = RESULT
+	
+	CALL SETCOLOR_PALAMDOWN
+	IF LOCAL:2+1 <= BASE:胸囲
+		IF LOCAL:2+11 <= BASE:胸囲
+			PRINTFORML 衣服の中ではちきれんばかりに膨らむ胸のせいで、%CALLNAME:TARGET%は動きづらそうだ……
+			LOCAL = 4
+		ELSEIF LOCAL:2+6 <= BASE:胸囲
+			PRINTFORML 衣服によって胸を強く締め付けられ、%CALLNAME:TARGET%は動きづらそうだ……
+			LOCAL = 3
+		ELSEIF LOCAL:2+1 <= BASE:胸囲
+			PRINTFORML 衣服によって胸を締め付けられ、%CALLNAME:TARGET%は動きづらそうだ……
+			LOCAL = 2
+		ENDIF
+		BASE:ストレス = LIMIT(BASE:ストレス+LOCAL, 0, 100)
+		PRINTFORML 疲労度 +{LOCAL}
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;王宮内の風紀
+IF LOSEBASE:王宮内の風紀
+	IF LOSEBASE:王宮内の風紀 < 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 王宮内の風紀が{LOSEBASE:王宮内の風紀}下がった……
+	ELSE
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 王宮内の風紀が{LOSEBASE:王宮内の風紀}上がった！
+	ENDIF
+	RESETCOLOR
+	FLAG:王宮内の風紀 += LOSEBASE:王宮内の風紀
+ENDIF
+
+;快楽
+IF SOURCE:快楽
+	GET_ABL =  LIMIT(SOURCE:快楽 * BASE:欲求 / 10 * BASE:感度 / 100, 1, 100)
+	GET_ABL:1 -= GET_ABL
+	CALL REVISION_INYOU, GET_ABL
+	PRINTFORM 快楽: {BASE:快楽} + {GET_ABL} → 
+	BASE:快楽 = LIMIT(BASE:快楽+GET_ABL, 0, 100)
+	PRINTFORML {BASE:快楽}
+	IF BASE:快楽 >= 100
+		IF TFLAG:焦らし
+			PRINTFORML ピクピクと背を震わせ、艶やかに喉を震わせて達しようとしている%CALLNAME:TARGET%を前に
+			PRINTFORMW 責めの手を止めた
+			PRINTFORMW %CALLNAME:TARGET%は恨めしそうな目で%CALLNAME:MASTER%を見つめた
+			
+			TFLAG:焦らし回数 += 1
+			BASE:快楽 = 99
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は背筋を伸ばし、艶やかな声をあげて絶頂に達した
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 主人への友好度が4上がった！
+			CFLAG:主人への友好度 += 4
+			BASE:快楽 = 0
+			TFLAG:絶頂回数 += 1
+			RESETCOLOR
+		ENDIF
+	ENDIF
+ENDIF
+
+;欲求
+IF SOURCE:興奮
+	GET_ABL = LIMIT(SOURCE:興奮 * BASE:依存 / 50 + BASE:淫妖 / 100, 1, 100)
+	GET_ABL:1 -= GET_ABL
+	CALL REVISION_INYOU, GET_ABL
+	PRINTFORM 欲求: {BASE:欲求} + {GET_ABL} → 
+	BASE:欲求 = LIMIT(BASE:欲求+GET_ABL, 0, 100)
+	PRINTFORML {BASE:欲求}
+ENDIF
+
+;不快
+IF SOURCE:不快
+	GET_ABL:1 = LIMIT(SOURCE:不快 * (600 - BASE:依存) / 50 - (BASE:淫妖 / 200), 0, 100) - LIMIT(EXP:基礎性教育経験/10, 0, 5)
+	CALL REVISION_INYOU, GET_ABL
+	PRINTFORM 嫌悪感: {BASE:嫌悪感} + {GET_ABL:1} → 
+	BASE:嫌悪感 = LIMIT(BASE:嫌悪感+GET_ABL:1, 0, 100)
+	PRINTFORML {BASE:嫌悪感}
+	IF BASE:嫌悪感 >= 100
+		PRINTFORML %CALLNAME:TARGET%は厭らしい目をして%CALLNAME:MASTER%を避けた
+		PRINTFORML どうやら心象を悪くしてしまったようだ……
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 主人への友好度が8下がった……
+		CFLAG:主人への友好度 -= 8
+		BASE:ピリオド -= 1
+		BASE:嫌悪感 = 0
+		RESETCOLOR
+		
+		;チュートリアル
+		IF !GETBIT(FLAG:夜伽チュートリアルビット, 2) && !FLAG:夜伽チュートリアル済
+			CALL TUTORIAL_YOTOGI, 2
+			FLAG:夜伽チュートリアルビット |= 1p2
+		ENDIF
+	ENDIF
+ENDIF
+;不快の計算に用いた変数をリセットする
+GET_ABL:1 = 0
+
+TFLAG:焦らし = 0
+
+;-------------------------
+;住み込み労働時に用いるパラメーター
+;-------------------------
+;達成値
+IF SOURCE:達成値
+	;職業によって達成値の補正が異なる
+	SELECTCASE CFLAG:職業
+		CASE 21
+			GET_ABL = BASE:知力/20+BASE:疎通/40
+			CALL CLOTHE_ABL, "知力"
+			;衣装補正
+			IF RESULT >= 1
+				HOSEI = 100 + 25 * RESULT
+				PRINTFORML 服装補正(知力)×{HOSEI/100}.{HOSEI%100}
+				GET_ABL = GET_ABL * HOSEI / 100
+			ENDIF
+			CALL CLOTHE_ABL, "疎通"
+			;衣装補正
+			IF RESULT >= 1
+				HOSEI = 100 + 25 * RESULT
+				PRINTFORML 服装補正(疎通)×{HOSEI/100}.{HOSEI%100}
+				GET_ABL = GET_ABL * HOSEI / 100
+			ENDIF
+		CASE 22
+			GET_ABL = BASE:美麗/10+(BASE:疎通+BASE:淫妖+BASE:信仰)/50
+			
+			;人魚の衣を着ている場合、1.25倍になる
+			IF CFLAG:服装 == 63
+				GET_ABL = GET_ABL*5/4
+			ENDIF
+	ENDSELECT
+	
+	;SOURCE:達成値/10の倍率で乗算を行う
+	GET_ABL = GET_ABL*SOURCE:達成値/10
+	
+	PRINTFORM 達成値:{BASE:達成値}　→　
+	CALL SETCOLOR_PALAMUP
+	BASE:達成値 += GET_ABL
+	PRINTFORM {BASE:達成値}
+	RESETCOLOR
+	IF BASE:ムード
+		CALL SETCOLOR_PALAMUP
+		BASE:達成値 += BASE:ムード
+		PRINTFORML 　→　{BASE:達成値}(ムード補正)
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;ムード
+IF SOURCE:ムード
+	GET_ABL = SOURCE:ムード
+	CALL CLOTHE_ABL, "美麗"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(美麗)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = GET_ABL * HOSEI / 100
+	ENDIF
+	CALL CLOTHE_ABL, "疎通"
+	;衣装補正
+	IF RESULT
+		HOSEI = 100 + 25 * RESULT
+		PRINTFORML 服装補正(疎通)×{HOSEI/100}.{HOSEI%100}
+		GET_ABL = GET_ABL * HOSEI / 100
+	ENDIF
+	
+	PRINTFORM ムード:{BASE:ムード}　→　
+	CALL SETCOLOR_PALAMUP
+	BASE:ムード = LIMIT(BASE:ムード+GET_ABL, 0, 300)
+	PRINTFORML {BASE:ムード}
+	RESETCOLOR
+ENDIF
+
+;客淫行値
+IF CFLAG:モード == 4
+	;悪目立ち度を基礎値とする
+	CALL CONSPI_DARK, TARGET
+	GET_ABL = RESULT
+	
+	;PRINTFORML 基礎値:{RESULT}
+	
+	;慰み者の1/3が入る
+	GET_ABL = GET_ABL+BASE:慰み者/3
+	
+	PRINTFORM 客淫行値:{BASE:客淫行値}　→　
+	CALL SETCOLOR_PALAMUP
+	BASE:客淫行値 = LIMIT(BASE:客淫行値+GET_ABL, 0, 300)
+	PRINTFORM {BASE:客淫行値}
+	IF SOURCE:客淫行値
+		BASE:客淫行値 = LIMIT(BASE:客淫行値+BASE:客淫行値, 0, 300)
+		;PRINTFORML 　→　{BASE:客淫行値}
+	ENDIF
+	RESETCOLOR
+ENDIF
+PRINTL 
+
+;----------------------------
+;以下数行　スキル処理
+;----------------------------
+
+;経営者・支配者をセットしている場合、ストレスと引き換えに疎通が上がる
+IF CHECKSKILL(316)
+	PRINTFORM スキル効果（経営者）　疎通: {BASE:疎通}　→　
+	CALL SETCOLOR_PALAMUP
+	BASE:疎通 += 3
+	BASE:ストレス += 2
+	PRINTFORML {BASE:疎通}
+	RESETCOLOR
+ENDIF
+
+;経営者・支配者をセットしている場合、ストレスと引き換えに疎通が上がる
+IF CHECKSKILL(317)
+	PRINTFORM スキル効果（支配者）　疎通: {BASE:疎通}　→　
+	CALL SETCOLOR_PALAMUP
+	BASE:疎通 += 2
+	BASE:ストレス += 3
+	PRINTFORML {BASE:疎通}
+	RESETCOLOR
+ENDIF
+
+;上昇した能力の処理チェック
+CALL UP_STATUS
+
+;行動回数の減少
+;夜伽の場合、代わりにピリオドを減らす
+IF CFLAG:モード == 1
+	BASE:ピリオド -= 1
+ELSE
+	BASE:行動回数 -= 1
+ENDIF
+
+;疲労・ストレスの蓄積
+;BASE:疲労 += 1 + 1 * LOSEBASE:ＣＰ * BASE:ストレス / 8
+
+;LOSEBASEのリセット
+VARSET LOSEBASE,0
+
+;LOSEBASE:ＣＰ = 0
+;LOSEBASE:アライメント = 0
+
+;ストレスが100より大きい場合、100に
+IF BASE:ストレス > MAXBASE:ストレス
+	BASE:ストレス = MAXBASE:ストレス
+ENDIF
+
+;疲労が100より大きい場合、100に
+IF BASE:疲労 > MAXBASE:疲労
+	BASE:疲労 = MAXBASE:疲労
+ENDIF
+
+;------------------------------------------------
+;コンボ補正の計算
+;ARGS:1　補正をかけるステータス
+;ARGS:2　通常：通常の補正計算を行います　ARGS:2　半減時の補正計算を行います
+;------------------------------------------------
+@COMBO_BONUS, ARGS:1, ARGS:2
+#DIM COMBO, 1
+CFLAG:("コンボ回数／"+ARGS:1+"") += 1
+
+;コンボボーナスの計算
+COMBO = 10 + 5 * CFLAG:("コンボ回数／"+ARGS:1+"")
+
+;30より大きいなら30にする
+IF COMBO > 30
+	COMBO = 30
+ENDIF
+
+LOCAL:2 = COMBO / 10
+PRINTFORM コンボ補正（%ARGS:1%）:×{LOCAL:2}.
+IF (COMBO % 10) == 5
+	PRINTL 5
+ELSE
+	PRINTL 0
+ENDIF
+
+IF ARGS:2 == "半減"
+	COMBO /= 2
+	PRINTL 1回途切れた:×0.5
+	IF COMBO < 10
+		COMBO = 10
+	ENDIF
+ENDIF
+LOCAL = COMBO * SOURCE:(ARGS:1) / 10
+
+
+RETURN LOCAL
+
+;------------------------------------------------------------
+;レベル補正(能力のパラメータによって勝手に振り分け)
+;300を超えると能力の伸びが悪くなる事を示す
+;------------------------------------------------------------
+@IND_PALAMLV, ARGS, ARG
+
+IF BASE:ARGS >= 1000
+	PRINTFORML Lv:MAX
+ELSE
+	SELECTCASE ARG/300+1
+		CASE 2
+			PRINTFORML 能力レベル補正(%ARGS%)　×0.70
+		CASE 3
+			PRINTFORML 能力レベル補正(%ARGS%)　×0.40
+		CASE 4
+			PRINTFORML 能力レベル補正(%ARGS%)　×0.10
+	ENDSELECT
+ENDIF
+
+
+;------------------------------------------------
+;各数値を能力に変換する
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;ARGS　能力
+;------------------------------------------------
+@PALAM_CONVERT, ARG
+IF ARG == 0
+	STR = 美麗
+ELSEIF ARG == 1
+	STR = 知力
+ELSEIF ARG == 2
+	STR = 疎通
+ELSEIF ARG == 3
+	STR = 家事
+ELSEIF ARG == 4
+	STR = 信仰
+ELSEIF ARG == 5
+	STR = 体力
+ELSEIF ARG == 6
+	STR = 色気
+ELSEIF ARG == 7
+	STR = 背徳
+ELSEIF ARG == 8
+	STR = 淫妖
+ELSEIF ARG == 9
+	STR = 堕落
+ELSEIF ARG == 10
+	STR = 愛情
+ENDIF
+
+RETURN 0
+
+;------------------------------------------------
+;各数値をビットに変換する（コマンド属性限定）
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@PALAM_CONVERT_BIT, ARG
+IF ARG == 0
+	ARG = 1p1
+ELSEIF ARG == 1
+	ARG = 1p2
+ELSEIF ARG == 2
+	ARG = 1p3
+ELSEIF ARG == 3
+	ARG = 1p4
+ELSEIF ARG == 4
+	ARG = 1p5
+ELSEIF ARG == 5
+	ARG = 1p6
+ELSEIF ARG == 6
+	ARG = 1p7
+ELSEIF ARG == 7
+	ARG = 1p8
+ELSEIF ARG == 8
+	ARG = 1p9
+ELSEIF ARG == 9
+	ARG = 1p10
+ENDIF
+
+RETURN ARG
+

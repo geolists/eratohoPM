@@ -1,0 +1,341 @@
+﻿;==============================================
+;交渉コマンド
+;==============================================
+@NEGOTIATION
+$BACK_LOOP
+DRAWLINE
+PRINTFORML ～～外交官～～
+PRINTFORML 他人を打倒し、利益を得る交渉の場へようこそ！
+PRINTFORML %CALLNAME:TARGET%様の事は君主からいい話を聞いておりませんが
+PRINTFORML 私は協力いたしますよ
+DRAWLINE
+PRINTFORML 倒した相手:{FLAG:外交撃破数}
+PRINTL [0] - 外交を行う
+PRINTL [99] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	IF FLAG:交渉中の相手
+		CALL NEGOTIATION_BATTLE, FLAG:交渉中の相手
+	ELSE
+		CALL NEGOTIATION_SELECT
+	ENDIF
+ELSEIF RESULT == 99
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+
+;----------------------------------------------
+;交渉コマンド
+;----------------------------------------------
+@NEGOTIATION_SELECT
+#DIM VAL, 6
+$BACK_LOOP
+;VAL 選択肢に対応した相手
+
+;VALの初期化
+FOR COUNT,0,6
+	VAL:COUNT = 0
+NEXT
+
+;LOCALの初期化
+FOR COUNT,0,6
+	LOCAL:(COUNT+1) = 0
+NEXT
+
+;LOCAL:1～6　交渉可能フラグ管理用
+
+DRAWLINE
+
+IF FLAG:交渉中の相手
+	CALL NEGOTIATION_BATTLE, FLAG:交渉中の相手
+	RETURN 0
+ENDIF
+
+PRINTL 誰と交渉しますか？
+
+FOR COUNT,0,6
+	IF FLAG:外交進行度 >= 5 && !LOCAL:6 && !GETBIT(FLAG:撃破した相手, 6)
+		PRINTFORML [{COUNT}] - 君主を越える者
+		LOCAL:6 = 1
+		VAL:COUNT = 6
+	ELSEIF FLAG:外交進行度 >= 3
+		IF !LOCAL:4 && !GETBIT(FLAG:撃破した相手, 4)
+			PRINTFORML [{COUNT}] - 地方の館の主
+			LOCAL:4 = 1
+			VAL:COUNT = 4
+		ELSEIF !LOCAL:5 && !GETBIT(FLAG:撃破した相手, 5)
+			PRINTFORML [{COUNT}] - 個人経営の男
+			LOCAL:5 = 1
+			VAL:COUNT = 5
+		ENDIF
+	ELSEIF FLAG:外交進行度 >= 2 && !LOCAL:3 && !GETBIT(FLAG:撃破した相手, 3)
+		PRINTFORML [{COUNT}] - 好事家
+		VAL:COUNT = 3
+		LOCAL:3 = 1
+	ELSEIF FLAG:外交進行度 >= 1 && !LOCAL:2 && !GETBIT(FLAG:撃破した相手, 2)
+		PRINTFORML [{COUNT}] - 地方の地主
+		VAL:COUNT = 2
+		LOCAL:2 = 1
+	ELSEIF !LOCAL:1 && !GETBIT(FLAG:撃破した相手, 1)
+		PRINTFORML [{COUNT}] - 没落貴族
+		VAL:COUNT = 1
+		LOCAL:1 = 1
+	ENDIF
+NEXT
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT <= 6
+	LOCAL = VAL:RESULT
+ENDIF
+
+IF RESULT != 999 && VAL:RESULT
+	DRAWLINE
+	CALLFORM NEGOTIATION_ENEMY_DETAIL_{VAL:RESULT}
+	PRINTFORML 体力　:{FLAG:相手の体力}
+	PRINTFORML 交渉力:{FLAG:相手の交渉力}
+	PRINTL 
+	PRINTL 交渉しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		FLAG:交渉中の相手 = LOCAL
+		CALL NEGOTIATION_BATTLE, LOCAL
+	ELSEIF RESULT == 1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+;----------------------------------------------
+;交渉バトル
+;ARG　交渉相手
+;----------------------------------------------
+@NEGOTIATION_BATTLE, ARG
+DRAWLINE
+CALL NEGOTIATION_ENEMY_NAME, FLAG:交渉中の相手
+PRINTFORML 交渉中の相手:%STR%
+
+PRINTFORML 体力:{FLAG:相手の体力}
+PRINTFORML 交渉力:{FLAG:相手の交渉力}
+DRAWLINE
+
+PRINTL どうしますか？
+PRINTL [0] - 話し合う
+PRINTL [1] - 高貴に振る舞う
+;[囲い込み戦略]を持っている場合
+IF TALENT:囲い込み戦略
+	PRINTL [2] - 囲い込み戦略
+ENDIF
+;[譲歩戦略]を持っている場合
+IF TALENT:譲歩戦略
+	PRINTL [3] - 譲歩戦略
+ENDIF
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	CALL NEGOTIATION_DAMAGE, 0
+ELSEIF RESULT == 1
+	CALL NEGOTIATION_DAMAGE, 1
+ELSEIF RESULT == 2 && TALENT:囲い込み戦略
+	CALL NEGOTIATION_DAMAGE, 2
+ELSEIF RESULT == 3 && TALENT:譲歩戦略
+	CALL NEGOTIATION_DAMAGE, 3
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;----------------------------------------------
+;交渉バトル　ダメージ計算編
+;ARG　行動
+;----------------------------------------------
+@NEGOTIATION_DAMAGE, ARG
+;FIRE 威力
+#DIM FIRE, 1
+#DIM damage, 1
+;LOCAL　攻撃回数
+
+;通常攻撃
+IF ARG == 0
+	FIRE = 30
+;高貴に振る舞う
+ELSEIF ARG == 1
+	IF BASE:美麗 == 0
+		FIRE = 1
+	ELSE
+		FIRE = BASE:美麗 / 3
+	ENDIF
+;囲い込み戦略
+ELSEIF ARG == 2
+	FIRE = 20
+	LOCAL = BASE:疎通 / 100
+;譲歩戦略
+ELSEIF ARG == 3
+	FIRE = 150 + (BASE:疎通 / 100) * 5
+ENDIF
+
+$ATTACK_LOOP
+damage = FIRE * BASE:疎通 / FLAG:相手の交渉力 * (80 + RAND:21) / 100
+
+;社交的だと威力1.5倍
+IF CFLAG:性格 == 3
+	damage *= 3 / 2
+ENDIF
+
+PRINTFORML 交渉を{damage}進めた！
+PRINTFORM %STR%:{FLAG:相手の体力}　→　
+FLAG:相手の体力 -= damage
+PRINTFORML {FLAG:相手の体力}
+
+IF ARG == 2 && LOCAL
+	LOCAL -= 1
+	SETCOLOR 255,186,32
+	PRINTL 連続攻撃！
+	RESETCOLOR
+	GOTO ATTACK_LOOP
+ENDIF
+
+PRINTL 
+IF FLAG:相手の体力 > 0
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL 相手は交渉を承諾しなかった……
+	RESETCOLOR
+	PRINTL 次回に持ち越します
+ELSE
+	CALL SETCOLOR_PALAMUP
+	PRINTL 交渉が成立した！
+	RESETCOLOR
+	CALL CONVERT_BIT, FLAG:交渉中の相手
+	FLAG:撃破した相手 |= RESULT
+	FLAG:外交撃破数 += 1
+	FLAG:外交進行度 += 1
+	CALL NEGOTIATION_GET, FLAG:交渉中の相手
+	FLAG:交渉中の相手 = 0
+ENDIF
+BEGIN TURNEND
+
+;----------------------------------------------
+;ご褒美
+;ARG　倒した相手
+;----------------------------------------------
+@NEGOTIATION_GET, ARG
+;LOCAL　疎通の上昇量
+
+CALL SETCOLOR_PALAMUP
+;没落貴族
+IF ARG == 1
+	LOCAL = 5
+	PRINTL 悪魔の書を手に入れた！
+	ITEM:515 += 1
+;地方の地主
+ELSEIF ARG == 2
+	LOCAL = 10
+	PRINTL 浄化の書を手に入れた！
+	ITEM:516 += 1
+;好事家
+ELSEIF ARG == 3
+	LOCAL = 15
+	PRINTL 透明な服を手に入れた！
+	ITEM:6 = 1
+;地方の館の主
+ELSEIF ARG == 4
+	LOCAL = 20
+	PRINTL 妖しい装置を手に入れた！
+	ITEM:502 = 1
+;個人経営の男
+ELSEIF ARG == 5
+	LOCAL = 25
+	PRINTL マーチングバトンを手に入れた！
+	ITEM:430 = 1
+;君主を越える者
+ELSEIF ARG == 6
+	LOCAL = 20
+	PRINTL 天の羽衣を手に入れた！
+	ITEM:7 = 1
+ENDIF
+PRINTFORML 疎通が{LOCAL}上がった！
+BASE:疎通 += LOCAL
+RESETCOLOR
+
+;----------------------------------------------
+;交渉相手解説
+;----------------------------------------------
+@NEGOTIATION_ENEMY_DETAIL_1
+PRINTL ～～没落貴族～～
+PRINTL どこにでも居る元貴族
+PRINTL 単体では弱いが集まると大変
+FLAG:相手の体力 = 100
+FLAG:相手の交渉力 = 30
+
+@NEGOTIATION_ENEMY_DETAIL_2
+PRINTL ～～地方の地主～～
+PRINTL 小さな地方を支配する者
+PRINTL 交渉力の高さは侮れない
+FLAG:相手の体力 = 200
+FLAG:相手の交渉力 = 100
+
+@NEGOTIATION_ENEMY_DETAIL_3
+PRINTL ～～好事家～～
+PRINTL 奇妙な事が好きな者
+PRINTL その収集物は他人に理解されないらしい
+FLAG:相手の体力 = 1600
+FLAG:相手の交渉力 = 20
+
+@NEGOTIATION_ENEMY_DETAIL_4
+PRINTL ～～地方の館の主～～
+PRINTL 地方に住む有力な貴族
+PRINTL 近くに住む地主の命令は無視している
+FLAG:相手の体力 = 2500
+FLAG:相手の交渉力 = 150
+
+@NEGOTIATION_ENEMY_DETAIL_5
+PRINTL ～～個人経営の男～～
+PRINTL 個人で商売を営む者
+PRINTL 様々な職業を転々としているらしい
+FLAG:相手の体力 = 3000
+FLAG:相手の交渉力 = 20
+
+@NEGOTIATION_ENEMY_DETAIL_6
+PRINTL ～～君主を越える者～～
+PRINTL 都の君主以上の力を持つ者
+PRINTL 彼の協力は運命を変えることになる……
+FLAG:相手の体力 = 4500
+FLAG:相手の交渉力 = 120
+
+;----------------------------------------------
+;交渉相手表示
+;----------------------------------------------
+@NEGOTIATION_ENEMY_NAME, ARG
+
+IF ARG == 1
+	STR = 没落貴族
+ELSEIF ARG == 2
+	STR = 地方の地主
+ELSEIF ARG == 3
+	STR = 好事家
+ELSEIF ARG == 4
+	STR = 地方の館の主
+ELSEIF ARG == 5
+	STR = 個人経営の男
+ELSEIF ARG == 6
+	STR = 君主を越える者
+ENDIF
+

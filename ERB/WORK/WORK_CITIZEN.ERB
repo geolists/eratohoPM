@@ -1,0 +1,393 @@
+﻿;-------------------------------------------------------------
+;里娘固有行動
+;
+;優先順位の都合上、イベントの種類は１種類で統一し、上昇値は該当する能力の0.9～1.1倍とする
+
+;2013/08/27　現状としては下記二つの理由で没とします
+;1.攫ってきた立場なのに日常行動で人と触れ合うのがおかしい
+;2.イベントの方向性が思い付かない
+;-------------------------------------------------------------
+
+;@MOVE_CITIZEN
+
+;イベントを選出する
+;CALL ELECTION_WORK, "家事"
+
+;イベントの呼び出し
+;IF RESULT == 0
+	;CALL MOVE_CITIZEN_0
+;ELSEIF RESULT == 5
+	;CALL MOVE_CITIZEN_6
+;ELSE
+	;CALL MOVE_CITIZEN_COMMON, RESULT
+;ENDIF
+
+;===========================================================================
+;能力毎のイベント
+;===========================================================================
+
+
+;-----------------------------------------------------------------
+;美麗イベント
+;-----------------------------------------------------------------
+@MOVE_CITIZEN_0
+
+;美麗の数値よって分岐
+;(300毎に)
+LOCAL = BASE:美麗 / 300
+
+;900～は該当する属性が60%以上無いと出ない
+IF LOCAL == 3 && CFLAG:属性／ゴスロリ >= 60
+	;全裸
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+		PRINTFORM 透き通った素肌を曝す
+	ELSE
+		PRINTFORM 煌びやかな衣服を纏った
+	ENDIF
+	PRINTFORMW %CALLNAME:TARGET%が女中の目の前を通るたびに、女中は跪き敬いの言葉をかけた
+	PRINTFORML どうやら王宮内とは違う雰囲気を持つ衣服を纏っている上に
+	PRINTFORMW 本人もその雰囲気に合っていることによって更に美しく見えているらしい
+ENDIF
+
+;上昇処理
+CALL DAILY_PALAM_0, LOCAL+1, "美麗", "美麗"
+
+;---------------------------------------------------
+;家事、知力、疎通イベント
+;中心能力：知力
+;---------------------------------------------------
+@MOVE_CITIZEN_COMMON, ARG
+
+;対象の数値よって分岐
+;(300毎に)
+LOCAL = BASE:(ARG+5) / 300
+
+IF LOCAL == 3
+	PRINTFORMW %CALLNAME:TARGET%が都を歩いている時に、通りすがりの人に助けを乞われた
+	;知力
+	IF ARG == 1
+		PRINTFORML どうやら他人に呪いをかけられたとのことらしく、毎日よくない事ばかりが起こるらしい
+		PRINTFORMW 今日も出かけている最中によくない事が起きたと言って折れた筆を取りだした
+		PRINTFORMW %CALLNAME:TARGET%は差し出された筆を手に取り、魔術をかけて修復した
+		PRINTFORMW それからいくつか建設的なアドバイスをしてその人に魔術をかけるふりをすると、感謝の言葉を口にして去った
+	;信仰
+	ELSEIF ARG == 2
+		PRINTFORMW どうやら信仰の捉え方で両親と対立してしまっているらしい
+		PRINTFORMW %CALLNAME:TARGET%はその人から両親の考えを聞くと、目の前で枝を取り出して魔術をかけ、相手に渡した
+		PRINTFORMW 助けを乞うていた人はお礼の言葉を言い、笑顔を浮かべてその場を去った
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORMW どうやら今晩の料理が思い付かなくて困っているらしい
+		PRINTFORMW %CALLNAME:TARGET%は困り顔になりながらも、適当に魔術書を取り出して"マシな"メニューを探した
+		PRINTFORMW そうして見つけたメニューを相手に教えると、少し戸惑いながらも感謝の言葉を述べて去った
+	ENDIF
+ELSEIF LOCAL == 2
+	PRINTFORMW %CALLNAME:TARGET%は女中に魔術を見せてほしいとせがまれた……
+	;知力
+	IF ARG == 1
+		PRINTFORMW %CALLNAME:TARGET%が実際に魔術を実演すると、女中は目を輝かせて喜んだ
+		PRINTFORMW 女中は魔術について興味津津で、目の前で起こった事について次々に質問をしてきた
+		PRINTFORMW %CALLNAME:TARGET%は質問に答えるごとに自らの知識も研ぎ澄まされていくことを実感した
+	;信仰
+	ELSEIF ARG == 2
+		PRINTFORMW %CALLNAME:TARGET%は銅像を用意し、魔術をかけると銅像が仄かに光りはじめた
+		PRINTFORMW 女中が驚きの目で見ていると、%CALLNAME:TARGET%は魔術を解き銅像を持ち上げ、底部に掘られている印を見せた
+		PRINTFORMW それから、信仰心を煽るために銅像に魔術がかけられていたことを説明し、魔術と宗教が合わさることがあるという事を教えた
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORMW %CALLNAME:TARGET%は円を描き、米と水で満たされた鍋をその中心に置いた
+		PRINTFORMW そして魔術をかけはじめると、鍋が熱くなっていき、やがて中から汁が噴き出すようになった
+		PRINTFORMW 女中は感動してこの方法を仕事に取り入れようと言ってきたが、%CALLNAME:TARGET%が手間がかかると言うと、頭を下げて落ち込んだ
+	ENDIF
+ELSEIF LOCAL == 1
+	PRINTFORMW %CALLNAME:TARGET%は王宮にいる古参の女中に話を聞いた……
+	;知力
+	IF ARG == 1
+		PRINTFORMW その女中は昔魔術を趣味にしていたらしく、ギルドに所属していたことがあったらしい
+		PRINTFORMW その事に驚き、目を輝かせた%CALLNAME:TARGET%は、当時の雰囲気やノウハウについて質問を行った
+		PRINTFORMW 互いに会話が弾み、両者共に笑顔が零れた
+	;信仰
+	ELSEIF ARG == 2
+		PRINTFORMW その女中は魔術が弾圧される様子を見たことがあるらしく、当時の世相について話してくれた
+		PRINTFORMW %CALLNAME:TARGET%は魔術と信仰の関連性を学ぼうと真剣に聞いている
+		PRINTFORMW やがて日が暮れ話が終わった時、%CALLNAME:TARGET%は丁寧にお辞儀をして、その場を去った
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORMW その女中は昔メイドと魔術ギルドの二足の草鞋を履いていたらしい
+		PRINTFORMW 両立するためにどちらの意匠も取り込んだ衣服を自作し、職務を終えると着替えずにそのまま次の職場へ向かっていたらしい
+		PRINTFORM %CALLNAME:TARGET%は
+		;ゴスロリメイド服
+		IF CFLAG:服装 == 60
+			PRINTFORMW 身に着けている服の裾を持ち上げて眼に入れ、相手が着ていた服を想像した
+		ELSE
+			PRINTFORMW どんな意匠になるのか頭に浮かべながら、当時の様子を想像した
+		ENDIF
+	ENDIF
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は物置きを漁っている……
+	;知力
+	IF ARG == 1
+		PRINTFORML 色あせた書物を見つけ、早速ページをめくった
+		PRINTFORMW どうやら数百年前の代物らしく、現在では廃れてしまった技術や価値観が大量に載っている
+		PRINTFORMW %CALLNAME:TARGET%は時代による差異に驚き、内容に一喜一憂しながら読み進めた
+	;信仰
+	ELSEIF ARG == 2
+		PRINTFORML 年代物の魔術用具を見つけ、手に取った
+		PRINTFORMW なぜこの屋敷にこんな代物が存在するのかは不明だが、当時の主が好き者だったのだろう
+		PRINTFORMW %CALLNAME:TARGET%は用具に記されたメモ書きを読んでは、当時の持ち主の心境を頭に浮かべた
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORMW 変わり種の家具を見つけ、埃を取り除いた
+		PRINTFORML 家具の中に張り付けられてあった説明書によると、どうやら現在普及している家具の元祖に当たるものらしく
+		PRINTFORMW 発明当初は魔術を用いた家具という立ち位置だったらしい
+		PRINTFORMW %CALLNAME:TARGET%は技術と魔術が紙一重であることを噛み締めた
+	ENDIF
+ENDIF
+
+;ARGを対応する能力の文字に変換
+IF ARG == 1
+	STR = 知力
+ELSEIF ARG == 2
+	STR = 信仰
+ELSEIF ARG == 3
+	STR = 家事
+ENDIF
+
+CALL DAILY_PALAM_0, LOCAL+1, "信仰", STR
+
+
+;---------------------------------------------------
+;淫妖イベント
+;---------------------------------------------------
+@MOVE_CITIZEN_6
+
+;淫妖の数値よって分岐
+;(300毎に)
+LOCAL = BASE:淫妖 / 300
+
+IF LOCAL == 3
+	PRINTFORML %CALLNAME:TARGET%は背後から役人に襲われ、手足を拘束されて個室に監禁された！
+	PRINTFORMW 役人の後ろに立つ魔術師が目を光らせている……
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%は魔術師に睨みつけられ、瞳からすうっと光が消えていく……
+		PRINTFORM どうやら催眠をかけられたらしく、%CALLNAME:TARGET%は拘束を解かれると共に
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORMW 綺麗な裸身に手を添え、濡れた瞳をして遠くを見つめた
+		ELSE
+			PRINTFORMW 自ら衣服に手をかけ、スカートを床に落とすと共に胸元を露出させた
+		ENDIF
+		PRINTFORML そして、目が虚ろな少女はつたない足取りで魔術師の元まで歩いていき
+		PRINTFORMW 一物を露出させると共に秘所に一物を受け入れ、相手の腰使いに身を任せた
+		PRINTFORMW 深く突かれる度に媚声をあげ、すらっと伸びた太腿の根元から愛液を滴らせた
+		CALL INSERT, 2, 1
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORM 怯えて腰を退いた%CALLNAME:TARGET%に魔術師が近づき、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM フリルが目立つ衣服を肌蹴させて
+		ENDIF
+		PRINTFORMW 素肌に液体を塗りたくった
+		PRINTFORM 最初は嗚咽を漏らしていた少女は素肌を徐々に赤く染めていき、終いには
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM スカートを肌蹴させ
+		ENDIF
+		PRINTFORMW 自ら股を開いた
+		PRINTFORMW 魔術師に弄られ身体を昂ぶらされた少女は、脇の下や首を撫でられる度に可愛らしい声をあげて腰をピクンと跳ねさせた
+		CALL INSERT, 2, 1
+	;それ以外
+	ELSE
+		PRINTFORM 魔術師が%CALLNAME:TARGET%に近づき、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 美しい素肌
+		ELSE
+			PRINTFORM 煌びやかな衣服
+		ENDIF
+		PRINTFORMW の上から胸を撫でると、%CALLNAME:TARGET%が首を横に振り身をよじった
+		PRINTFORMW 何度も責めを繰り返す度に乳首は尖っていき、無意識の内に太腿を擦り合わせていた
+		PRINTFORM 最後に
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 綺麗な太腿
+		ELSE
+			PRINTFORM レースで飾られたスカート
+		ENDIF
+		PRINTFORML に手を這わし、ピタリと閉じ合わされた股に手を差し込むと
+		PRINTFORMW %CALLNAME:TARGET%は媚声が混じる悲鳴をあげた。意思に反して瞳はすっかり濡れてしまっている
+	ENDIF
+ELSEIF LOCAL == 2
+	PRINTFORML %CALLNAME:TARGET%は性的な感情を鎮めるために分身を作り出した
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORML 蕩けた表情を浮かべ、太腿を擦り合わせている少女は
+		PRINTFORMW 自身を慰めるために生み出した分身を、時折甘い声をあげて誘っている
+		PRINTFORM やがて分身に押し倒されると
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 素肌を優しく愛撫されながらも
+		ELSE
+			PRINTFORM 着衣を肌蹴られながらも
+		ENDIF
+		PRINTFORMW 相手の腰に手を回して抱きつき、可愛らしい声をあげた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 着衣を肌蹴ながら
+		ENDIF
+		PRINTFORMW 分身に近づき、押し倒した
+		PRINTFORMW 露出した箇所を互いに責めあって声をあげ、やがて声の区別がつかなくなっていった
+		PRINTFORM やがて両者が同時に背筋を逸らして達すると分身が消え、後には
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 汗や愛液でじっとりと裸身を濡らした
+		ELSE
+			PRINTFORM 衣服が肌蹴、レースがついたスカートがめくれ太腿が露出した
+		ENDIF
+		PRINTFORMW %CALLNAME:TARGET%だけが残されていた……
+	;それ以外
+	ELSE
+		PRINTFORM 理性では後ろめたさを感じている%CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM スカートの裾を押さえながら
+		ENDIF
+		PRINTFORMW 腰を退き、分身と距離を取ろうとした
+		PRINTFORM しかし、分身は本体である少女の様子に構わず襲いかかり
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 装飾性を強調した煌びやかな衣服に手を付けると勢いよく引っ剥がし
+		ENDIF
+		IF BASE:胸囲 >= 85
+			PRINTFORM たわわに実った
+		ELSEIF BASE:胸囲 >= 85
+			PRINTFORM 少し膨らんだ
+		ELSE
+			PRINTFORM 控え目に主張する
+		ENDIF
+		PRINTFORMW 胸に手をつけた
+		PRINTFORML %CALLNAME:TARGET%は悲鳴をあげ腰を浮かせて抵抗するが、分身の責めによって身体が昂ぶるにつれて声が小さくなっていき
+		PRINTFORMW 終いには苦しそうに呼吸をしながら腰を跳ねさせ、快楽に身を任せてしまうのを必死に堪えた
+	ENDIF
+ELSEIF LOCAL == 1
+	PRINTFORML %CALLNAME:TARGET%は疼きが収まらない身体を抑えるため、自身に欲情化の魔法をかけた
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORMW %CALLNAME:TARGET%はしきりに太腿を擦り合わせ、微かに甘い声を漏らし続けた
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 露出した裸身を艶めかしくくねらせ
+		ELSE
+			PRINTFORM 堪え切れなくなった本能が勝手に衣服を脱がさせ
+		ENDIF
+		PRINTFORMW 尖りきった胸先や濡れそぼった秘所に手を添え、脇目もふらず弄り始めた
+		PRINTFORMW %CALLNAME:TARGET%は蕩け切った媚声をあげ、湧き出る快楽に従って腰を振り続けた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORMW %CALLNAME:TARGET%は上気させた頬に指を添え口元に持っていき、指先を咥えた
+		PRINTFORML 咥えた指先を舐め、ぬらりと光った指先を口から出し
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 露出した太腿を撫でながら
+		ELSE
+			PRINTFORM スカートをたくし上げて
+		ENDIF
+		PRINTFORML 濡れそぼった秘所に挿入した
+		PRINTFORMW %CALLNAME:TARGET%は腰を揺らし、粘っこい水音を立てて太腿を擦り合わせ蕩けた声を漏らし続けた
+	;それ以外
+	ELSE
+		PRINTFORM 後ろめたさを感じている%CALLNAME:TARGET%は、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 太腿に手を添え必死に腰を退いて
+		ELSE
+			;マイクロミニ
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):0 == 2
+				PRINTFORM 太腿が露出している
+			;ミニスカート
+			ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):0 == 1
+				PRINTFORM 膝上を覗かせる
+			ENDIF
+			PRINTFORM スカートの裾を掴んで
+		ENDIF
+		PRINTFORMW 自らの身体に沸き上がった感情を押し殺している
+		PRINTFORM しかし魔法は身体を蝕み続け、やがて堪え切れなくなった%CALLNAME:TARGET%は
+		;全裸or胸部解放
+		IF CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):11 == 2 || DITEMTYPE:(CFLAG:服装):1 == 2)
+			PRINTFORM 絹のような肌
+		ELSE
+			PRINTFORM 汗で濡れて肌に張り付いた衣服
+		ENDIF
+		PRINTFORMW に手を添え、胸や秘所を弄り始めた
+		PRINTFORMW しばらくの間、少女は腰を跳ねさせ媚声をあげ続けた
+	ENDIF
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は魔法陣の組み方を間違えてスライムを呼びだしてしまった！
+	;貞操が50以下
+	IF BASE:貞操 <= 50
+		PRINTFORM %CALLNAME:TARGET%は熱が籠った瞳を浮かべ、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 煌びやかなスカートから覗かせる
+		ENDIF
+		PRINTFORMW 太腿を擦り合わせた
+		PRINTFORMW 抵抗を全くせず、むしろ悦びの表情を浮かべている少女の身体を、スライムは少しずつ侵していく
+		PRINTFORML 身体の一部分が粘着質に包まれる毎に媚声があがり
+		PRINTFORMW 全身を包まれた頃には、腰を跳ねさせ粘っこい水音を立てる少女ができあがっていた
+	;アライメントが-50以下
+	ELSEIF BASE:アライメント <= 50
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 腰をくねらせ
+		ELSE
+			PRINTFORM スカートをたくしあげ
+		ENDIF
+		PRINTFORMW て想定外の訪問者を誘惑した
+		PRINTFORMW そんな淫らな素振りを見せる少女に対して昂ぶったのか、スライムは勢いよく襲いかかった！
+		PRINTFORMW 色欲を覚えて間も無い少女は蕩けた声をあげて腰を揺すり、満足して帰還するまでの間快楽を貪り続けた……
+	;それ以外
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は近くに置いてあった棒を振り回せて追い払おうとするが
+		PRINTFORMW 抵抗の甲斐虚しくスライムに絡み取られてしまった
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 素肌の上に粘り気のある物体が這い回って
+		ELSE
+			PRINTFORM 衣服の隙間に粘性体が入りこんで
+		ENDIF
+		PRINTFORMW 局部を弄られ、堪らず声をあげた
+		PRINTFORML やがて何度も犠牲者を達しさせ満足したスライムは魔法陣を経由して去ると
+		PRINTFORM 後には
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 液体が絡みついた素肌を拭わないまま
+		ELSE
+			PRINTFORM 着衣が肌蹴た状態で
+		ENDIF
+		PRINTFORMW 倒れ込み、胸を上下させて荒く呼吸を繰り返す%CALLNAME:TARGET%が残された
+	ENDIF
+	CALL INSERT, 3, 1
+ENDIF
+
+CALL DAILY_PALAM_6, LOCAL+1, "淫妖", "淫妖"
+
+
+

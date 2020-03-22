@@ -1,0 +1,606 @@
+﻿;===================================================
+;夜の店
+;内容が長くなりそうなので分ける
+
+;職業の特徴
+;お金をたくさん稼げるが、評価と淫妖と貞操とアライメントと慰み者を犠牲にする
+
+;===================================================
+@WORK_NIGHTSHOP
+#DIM GET_MONEY, 1
+#DIM GET_ASS, 1
+#DIM GET_VAL, 1
+#DIM GET_HON, 1
+#DIM GET_ALI, 1
+#DIM GET_PLAY, 1
+
+
+DRAWLINE
+
+PRINTFORML %CALLNAME:TARGET%は夜の店へ働きに出た……
+;適正によって分岐
+IF NIGHT_SHOP(RESULT) == 3
+	;慰み者によって分ける
+	IF BASE:慰み者 >= 100
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 豊満な裸身
+		ELSE
+			PRINTFORM 太腿や胸元が根元から見えてしまいそうな格好
+		ENDIF
+		IF BASE:アライメント <= 50 || TALENT:淫魔 || CFLAG:性格 == -1
+			PRINTFORM を見せびらかすように歩き、淫靡な表情を浮かべ
+		ELSE
+			PRINTFORM に羞恥を感じ、顔を伏せ
+		ENDIF
+		PRINTFORMW ながら舞台に上がると
+		PRINTFORM 周囲の客が一斉に襲いかかり、
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を肌蹴させられて
+		ENDIF
+		PRINTFORMW 局部を弄られ、前戯が済んだところで穴という穴に一物を挿入された
+		
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORMW %CALLNAME:TARGET%は細めた目で客達を見つめ、塞がれた口からは蕩けた声を漏らした
+			PRINTFORML 快楽に飢えていた身体は自己主張を行う胸先と、結合部から鳴る激しくなる水音で悦びを表現している
+			PRINTFORMW やがて客達が一斉に腰を突き出し痙攣させると、%CALLNAME:TARGET%は濡れた瞳で見つめながら手で一物を扱いた……
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は目に涙を浮かべながらも塞がれた口から媚声を漏らした
+			PRINTFORMW 意思とは反対に胸の先端を尖らせ、濡れた秘所は水音を周囲に響かせる
+			PRINTFORMW やがて客達が腰を痙攣させると、%CALLNAME:TARGET%は蕩けて使い物にならない腰をよじり、必死に抵抗した……
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は首を振り、くぐもった苦しそうな叫び声をあげた
+			PRINTFORML 欲望に任せて客達が腰を振り、一斉に腰を痙攣させると
+			PRINTFORMW %CALLNAME:TARGET%は目を見開き、身体を跳ねさせ無駄な抵抗を行った……
+		ENDIF
+		CALL INSERT, 2, 1
+		GET_MONEY = 60000
+		GET_ASS = 35
+		GET_VAL = -11
+		GET_ALI = -4
+		GET_HON = 4
+	ELSEIF BASE:慰み者 >= 50
+		PRINTFORM %CALLNAME:TARGET%は
+		IF BASE:アライメント <= 50 || TALENT:淫魔 || CFLAG:性格 == -1
+			PRINTFORM 周囲に淫靡に蕩けた表情を向けて
+		ELSE
+			PRINTFORM 顔を真っ赤にし、周囲に悟られないよう伏せて
+		ENDIF
+		PRINTFORMW 舞台に上がった
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 際どい衣装から覗かせる
+		ENDIF
+		PRINTFORMW くっきりと丸みを帯びた艶やかな胸や腰が衆目の欲情をそそる
+		PRINTFORMW 少ししてから、一糸纏わぬ姿となった客が舞台に上がり、%CALLNAME:TARGET%に覆い被さった
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は蕩けた声で相手を誘い、相手の首に手を回して抱きついた
+			PRINTFORMW 前戯を受ける前から秘裂はしとしとに濡れ、頬を真っ赤に染めている
+			PRINTFORML 濡れた唇を小さく開き、相手の顔に熱い吐息をかけると、股を開かれ一物を挿入された
+			PRINTFORMW 性に花開いた少女は腰を跳ねさせ、艶を帯びた表情を浮かべて媚声をあげた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は視線を意識し、相手の責めによって声をあげまいと堪えるが
+			PRINTFORMW 淫らに開発された身体は更に快楽を求め、甘美な刺激を脳に伝えると共に胸や陰核を尖らせた
+			PRINTFORML 媚声を漏らしつつもうつ伏せになって腕をつき、必死に逃れようとする%CALLNAME:TARGET%を相手は後ろから捕え
+			PRINTFORMW 濡れた秘唇に後ろから挿入すると、%CALLNAME:TARGET%は前後不覚で頭を振り、矛盾した言葉を叫んだ
+			PRINTFORMW 理性が消し飛んだ身体は、豊満な胸を床に押し付けて尻を突き出し、相手に身体を預けるかのように腰を振った
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は必死に脚を暴れさせ、相手を退けようとした
+			PRINTFORMW しかし相手には当たらず、むしろ激しく揺れる胸や腰が周囲の欲情に油を注ぐ結果となった
+			PRINTFORML 終いには抵抗を諦め、%CALLNAME:TARGET%の前戯によって秘裂を滴らされ素肌を真っ赤に染めた%CALLNAME:TARGET%は
+			PRINTFORMW 立派な一物によって秘裂を貫かれ、苦しそうな声をあげながら性交を行う破目となった……
+		ENDIF
+		CALL INSERT, 2, 1
+		GET_MONEY = 50000
+		GET_ASS = 30
+		GET_VAL = -9
+		GET_ALI = -4
+		GET_HON = 4
+	ELSEIF BASE:慰み者 >= 30
+		PRINTFORML %CALLNAME:TARGET%は衆目の目が光る中、舞台に上がり
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 着衣を解き、その場に脱ぎ捨ててから
+		ENDIF
+		IF BASE:アライメント <= 50 || TALENT:淫魔 || CFLAG:性格 == -1
+			PRINTFORM わざと腰をくねらせて
+		ELSE
+			PRINTFORM 顔を真っ赤に染め、胸や秘部を手で抑えて隠して
+		ENDIF
+		PRINTFORML 歩き、寝台に上がって仰向けに寝た
+		PRINTFORMW その後、%CALLNAME:TARGET%の周りを大勢の客が囲った……
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は胸を揉まれ、太腿を優しく撫でられる度に甘い声をあげ
+			PRINTFORMW まな板の上で跳ねる魚のように裸身を跳ねさせた
+			PRINTFORML そして肌を紅く染め、指が挿された秘部から水音が鳴るようになったころ
+			PRINTFORML %CALLNAME:TARGET%は媚声を止め、噛み殺したような声をあげて背筋を反らし
+			PRINTFORMW そのまま痙攣すると、ぐったりとして股間から液体を滲ませた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は怯えた表情をして腰をよじり、客達の責めを避けようと抵抗した
+			PRINTFORMW しかし容易く抑えられてしまい、胸の先端や秘部へと手が伸びていく……
+			PRINTFORML 太腿を撫でられたり、突起を抓まれたりする度に頭を振って悲痛な声を漏らしていたが
+			PRINTFORMW 突起が硬くしこり、身体が汗を掻き始めると、声が少しずつ甘く変わっていった
+		;それ以外
+		ELSE
+			PRINTFORMW 局部を優しく弄られる度に%CALLNAME:TARGET%は身をよじり、悲鳴をあげた
+			PRINTFORML しかし大男が腰に跨り、%CALLNAME:TARGET%の顔に息を吹きかけると
+			PRINTFORMW %CALLNAME:TARGET%は顔を逸らし、長い髪を寝台の上に散らした
+			PRINTFORML 次第に媚声が大きくなり、しきりに腰をくねらせるようになった頃
+			PRINTFORMW %CALLNAME:TARGET%は突然身体を痙攣させ、秘所から粘り気を帯びた液体を滲ませた
+		ENDIF
+		GET_MONEY = 40000
+		GET_ASS = 25
+		GET_VAL = -7
+		GET_ALI = -3
+		GET_HON = 3
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は、胸や秘所に責め具を付けられた状態で接客をしている
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 服の下では
+		ENDIF
+		PRINTFORMW 責め具が淫靡な音を立てて身体を刺激し、%CALLNAME:TARGET%を追い詰める……
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML 堪え切れなくなった%CALLNAME:TARGET%は客の前で背筋を震わせ、膝をついた
+			PRINTFORMW そして一際大きな媚声をあげると、そのまま身体をガクガク震わせて達した
+			PRINTFORMW 唖然とする客の前を%CALLNAME:TARGET%は妖しい目をして上目遣いで見つめた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%はくぐもった声をあげながら時折手足を痙攣させ
+			PRINTFORMW やがて背筋を震わせたかと思うと、堪え切れなくなった声をあげ、そのまま達して客に倒れ込んでしまった
+			PRINTFORMW 客に抱きつかれたまま濡れた秘裂に挿し込まれた責め具を弄られると、%CALLNAME:TARGET%は客の肩越しに熱い吐息を吐いて身体を震わせた
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は人前で局部を弄られていることに対し、羞恥で顔を赤くしている
+			PRINTFORML 客からの注文や問いかけに対しても、上の空だったり、上掠った声で反応してしまう事ばかりだ
+			PRINTFORMW やがて刺激に身体が慣れ始めたのか、乳首は尖り始め、太腿に愛液が伝り、床を濡らし始めていた
+		ENDIF
+		GET_MONEY = 30000
+		GET_ASS = 20
+		GET_VAL = -5
+		GET_ALI = -3
+		GET_HON = 3
+	ENDIF
+ELSEIF NIGHT_SHOP(RESULT) == 2
+	;慰み者によって分ける
+	IF BASE:慰み者 >= 100
+		PRINTFORML %CALLNAME:TARGET%は客に呼び止められ席まで行くと
+		PRINTFORMW 突然、背後から他の客に身体を抑えられ席に座らされた
+		IF BASE:アライメント <= 50 || TALENT:淫魔 || CFLAG:性格 == -1
+			PRINTFORM 淫靡に蕩けた表情を浮かべ、太腿に愛液を伝らせた
+		ELSE
+			PRINTFORM 顔を真っ赤にし、周囲に悟られないよう伏せた
+		ENDIF
+		PRINTFORM 、情事に浸った長髪の少女を尻目に、客たちは
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 衣服を肌蹴させて
+		ENDIF
+		PRINTFORMW 身体を弄った……
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は艶を帯びた声をあげて豊満な胸を揺らした
+			PRINTFORMW 頬を紅く染め、だらしなく開かれた股からは液体が染みだしている
+			PRINTFORML 吐息に熱が籠り、軽く胸を揉まれただけで媚声を漏らす%CALLNAME:TARGET%は
+			PRINTFORMW 元から開かれていた股を押し広げて、秘裂に一物を挿入された
+			PRINTFORML 発情した娘は髪を振り乱して快楽に喘ぎ、粘っこい水音と共に周囲に響かせた
+			PRINTFORMW 既に瞳に熱が籠っており、視界に桃色の靄がかかりきっている
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は胸を軽く揉まれると身体を震わせ可愛らしい声をあげた
+			PRINTFORMW じわっと胸先から甘い刺激が広まる感覚に戸惑いを隠せないようだ
+			PRINTFORMW 胸の先端を弄られるとあまりのこそばゆさに思わず手足が跳ねてしまう
+			PRINTFORML やがて全身に刺激が伝わり、手足に力が入らなくなったのを客達が見ると
+			PRINTFORMW 口の端から垂れた涎を指ですくってから股を開き、秘所に一物を挿入した
+			PRINTFORMW 媚声があがり続けるだらしたく開いた口に指を差し入れられると、本能が舌で指を舐めはじめた
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は必死に暴れて抵抗するが
+			PRINTFORMW 数が多い客達には敵わず、そのまま抑えられてしまった
+			PRINTFORML 胸の先端や蜜蕾を弄られ身体が昂ぶるのを否が応にも感じさせられる%CALLNAME:TARGET%は
+			PRINTFORMW 目を閉じて涙を流し、紅く火照る頬に伝った
+			PRINTFORML そして、そのまま客の一人が一物を秘裂に挿入し、腰を揺らし始めると
+			PRINTFORMW 秘所から漏れる水音に反応して首を振り、快楽を受け入れる自身の身体を受け入れなかった
+		ENDIF
+		CALL INSERT, 2, 1
+		GET_MONEY = 55000
+		GET_ASS = 30
+		GET_VAL = -9
+		GET_ALI = -3
+		GET_HON = 3
+	ELSEIF BASE:慰み者 >= 50
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 服の下に
+		ENDIF
+		PRINTFORMW 淫具を取り付け、頬を真っ赤に染めて小さく声を漏らしながら客席を徘徊した
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は自分の胸を揉みしだきながら歩き、熱が籠った吐息を出した
+			PRINTFORM 客に呼びとめられると、客の前で屈んで
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 剥き出しの
+			ELSE
+				PRINTFORM 
+			ENDIF
+			PRINTFORMW 胸を差しだした
+			PRINTFORML 胸を揉みしだかれると、客に後ろ手を回して艶やかな声をあげた
+			PRINTFORMW 周囲に響き渡る媚声によって、客が色気溢れる少女に視線を浴びせている
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は口を半開きにして、小さく喘ぎながら歩いた
+			PRINTFORMW 唇が濡れていることにより赤味が増して見える
+			PRINTFORML 敏感になった身体が伝える刺激は想像を超えていたもので、%CALLNAME:TARGET%は時折その場に立ち止まって呼吸を整えたが
+			PRINTFORMW ある時、ついに堪え切れなくなった%CALLNAME:TARGET%は背筋を反らして喉を震わせ、達してその場に座り込んだ
+			PRINTFORML その様子を見ていた近くの客が%CALLNAME:TARGET%に近づき、俯いている所を背後から手を回して胸を揉むと
+			PRINTFORMW 身体を震わせ、膝元から水溜りが広がった
+		;それ以外
+		ELSE
+			PRINTFORML 近くにいた客が%CALLNAME:TARGET%を呼び止めると、客の近くで屈み
+			PRINTFORM 顔を紅くしながら
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 
+			ELSE
+				PRINTFORM 服の隙間から
+			ENDIF
+			PRINTFORMW たわわに実った胸を晒した
+			PRINTFORML 徘徊してる間でも時折立ち止まっては擦り合わせる太腿からは水音が鳴り響かせ
+			PRINTFORMW ついに堪え切れなくなったのか、背筋を震わせると、両膝をついてくぐもった声を漏らしてその場で達した
+		ENDIF
+		GET_MONEY = 45000
+		GET_ASS = 25
+		GET_VAL = -7
+		GET_ALI = -3
+		GET_HON = 3
+	ELSEIF BASE:慰み者 >= 30
+		PRINTFORML %CALLNAME:TARGET%はカウンターに入り接客を行うことになった
+		PRINTFORM 店主に
+		;淫魔or乞食属性の服装or半裸の服orマイクロミニ
+		IF GETBIT(RESULT, 6) || GETBIT(RESULT, 7) || (CFLAG:服装 >= 0 && (DITEMTYPE:(CFLAG:服装):11 == 1 || DITEMTYPE:(CFLAG:服装):0 == 2))
+			PRINTFORM 剥き出しの太腿を
+		;ミニスカート
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):0 == 1
+			PRINTFORM 短いスカートを捲られ、
+		ENDIF
+		PRINTFORM 優しく愛撫された後に、
+		;胸部が解放されているか全裸
+		IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 剥き出しになっている
+		ELSE
+			PRINTFORM 衣服越しに
+		ENDIF
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORM 尖りきった
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORM 勃った
+		;それ以外
+		ELSE
+			PRINTFORM 
+		ENDIF
+		PRINTFORMW 胸の先端を優しく揉まれてから挿入された
+		
+		PRINTFORM 性に溺れ、身体も淫らに育った少女は
+		;胸部が解放されているか全裸
+		IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 剥き出しの
+		ELSE
+			PRINTFORM 
+		ENDIF
+		PRINTFORMW 胸を机に押し付け、客の前で醜態を晒している
+		
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORMW %CALLNAME:TARGET%は瞳を濁らせ、腰を店主に預けている
+			PRINTFORML 甘い刺激で頭の中が桃色で満たされ、本能が剥き出しとなる
+			PRINTFORMW 上気した身体は赤く染まり、甘ったるい声と打ちつける水音が周囲に響いた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は首を振って長い髪を散らかせ、口で否定の言葉を吐いた
+			PRINTFORMW しかし快楽に馴染んだ身体は甘美な刺激として全身に染み渡らせ、力を抜けさせた
+			PRINTFORML すっかり抵抗する気力を失った%CALLNAME:TARGET%は机に涎を垂らしながら、訳も分からず喘いだ
+			PRINTFORMW 身体を震わせるたびに長髪を散らかせ、整っていた髪先が背中に広がる
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は目を瞑って客から目を背け、必死に口で抵抗をした
+			PRINTFORMW しかし後ろで行われる責めは、少しずつ少女から思考する余裕を無くさせていく……
+			PRINTFORML 次第に口数が少なくなり、終いには結合部から粘っこい水音を立てられ
+			PRINTFORMW 熱を帯びた吐息を吐きだしながら、押し殺した声を漏らすことしかできなくなった
+		ENDIF
+		CALL INSERT, 2, 1
+		GET_MONEY = 35000
+		GET_ASS = 20
+		GET_VAL = -5
+		GET_ALI = -2
+		GET_HON = 2
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は、客に指名されて席に座ると
+		PRINTFORMW 客は厭らしい目つきをして抱きつき、たわわに実った胸や股を弄ってきた
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は熱が籠った瞳を客に向け、あられもない声で喘いだ
+			PRINTFORMW 耳を舐める音と股間から鳴る水音が欲情をそそり、乳首が尖りを帯びる
+			PRINTFORML やがて全身を紅く染めた少女は客の方を向いて首に手を回し、可愛らしい声をあげて達した
+			PRINTFORMW 達してぐったりとした後も責められ続け、微かな喘ぎを漏らして身体を震わせた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML 局部から滲む甘い刺激に%CALLNAME:TARGET%はくぐもった声を漏らして身体を揺らした
+			PRINTFORMW 客が現状を責めるような言葉をかけても、首を振って言葉にならない声で答えることしかできない
+			PRINTFORML 責めが続き、紅く欲情した身体は太腿を愛液で濡らし、客の衣服を汚した
+			PRINTFORMW 身体の熱さと太腿の気味悪い滑りを感じつつ、%CALLNAME:TARGET%は艶やかな媚声をあげて背筋を反らし、達した
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は客を引きはがそうと手を伸ばすが
+			PRINTFORMW 客は手を払いのけ、根気よく弄り続けた
+			PRINTFORML やがて頭の中に靄がかかりはじめて身体が火照り、局部の突起がしこり始めると
+			PRINTFORMW %CALLNAME:TARGET%は抵抗するのを止め、堪えようとして荒い息をついて身体を痙攣させた
+		ENDIF
+		GET_MONEY = 25000
+		GET_ASS = 15
+		GET_VAL = -3
+		GET_ALI = -2
+		GET_HON = 2
+	ENDIF
+ELSE
+	;慰み者によって分ける
+	IF BASE:慰み者 >= 100
+		PRINTFORML %CALLNAME:TARGET%は、客席の周囲を徘徊していると突然背後から客に口を塞がれ
+		PRINTFORMW 頭を項垂れると、そのままトイレの個室へ引きずり込まれた
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 透き通った裸身は
+		ELSE
+			PRINTFORM 乱れた着衣から
+		ENDIF
+		
+		;身体付きによって分岐
+		IF BODY_RIPEN(TARGET) >= 15
+			PRINTFORM 実り始めた股体を
+		ELSE
+			PRINTFORM まだ実りが未熟な股体を
+		ENDIF
+		PRINTFORMW 相手に曝け出している
+		
+		;アライメントが-50以下＆感度が300以上
+		IF BASE:アライメント <= 50 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は意識を取り戻すと、艶を帯びた瞳を相手に向け、秘裂を指で開いた
+			PRINTFORMW 昂ぶった相手は%CALLNAME:TARGET%の両足を持ち、そそり勃った一物を秘裂にゆっくりと挿し込んだ
+			PRINTFORMW %CALLNAME:TARGET%は腰を揺すり、あられもない媚声をあげた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は意識を取り戻すと、手足を暴れさせて客を退けようとした
+			PRINTFORMW やはり力が及ばなかったか、客に力ずくで手首を抑えられると手錠をかけられてしまった
+			PRINTFORML 秘裂に一物を挿入され、客が腰を振ると、%CALLNAME:TARGET%は首を振り否定の言葉を叫んだ
+			PRINTFORMW しかし、皮肉にも性の花開いた身体は悦びを感じ、結合部からは水音を鳴らし始めた
+			PRINTFORMW 意思に反して腰を振ってしまう%CALLNAME:TARGET%を、客は腰を振りながら罵った
+		;それ以外
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は意識を取り戻すと、暴れて客を拒絶した
+			PRINTFORML この事態を想定していたのか、客は手錠で%CALLNAME:TARGET%の両手を拘束し
+			PRINTFORMW 両脚を持って一物を挿入し始めた
+			PRINTFORML 前準備を行われていない秘裂からは激痛を感じ、腰をよじらせた
+			PRINTFORMW しかし、時間が経つにつれ秘所は濡れ、くぐもった声を出し始めた
+		ENDIF
+		CALL INSERT, 2, 1
+		GET_MONEY = 50000
+		GET_ASS = 25
+		GET_VAL = -8
+		GET_ALI = -2
+		GET_HON = 2
+	ELSEIF BASE:慰み者 >= 50
+		PRINTFORM %CALLNAME:TARGET%は
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 
+		ELSE
+			PRINTFORM 着衣を解き、その場に衣服を脱ぎ落とすと
+		ENDIF
+		PRINTFORM 舞台に上がって壁に腰を降ろし、
+		;身体付きによって分岐
+		IF BODY_RIPEN(TARGET) >= 15
+			PRINTFORM 胸と尻が実り始めている股体を
+		ELSE
+			PRINTFORM まだ膨らみが足りない未熟な股体を
+		ENDIF
+		IF BASE:アライメント <= 90
+			PRINTFORM 艶やかな目線を周囲に向けながら開き、
+		ELSE
+			PRINTFORM おずおずと開き、
+		ENDIF
+		PRINTFORMW 自慰をし始めた
+		
+		;アライメントが-10以下＆感度が300以上
+		IF BASE:アライメント <= 90 && BASE:感度 >= 300
+			PRINTFORML 刺激を与えられた身体は徐々に火照っていき、腰をくねらせながら淫靡な音を立て始める
+			PRINTFORMW %CALLNAME:TARGET%は蕩けた表情を浮かべ、艶を帯びた声をあげた
+			PRINTFORML 床に愛液が水溜りを作るまで身体ができあがると、秘裂に指を挿し入れ
+			PRINTFORMW 背中から身体をずり落として身体を跳ねさせた
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML 怯えた表情を浮かべて胸や陰核を弄る%CALLNAME:TARGET%は
+			PRINTFORMW 快楽を与えられて悦ぶ身体が乳首を堅くし、水音を股から鳴らすことに困惑して
+			PRINTFORMW 否定と肯定の言葉が入り乱れた声を発し、背筋を震わせると力無くその場にくずおれた
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は羞恥で顔を真っ赤にし、胸や股間を隠しながら弄った
+			PRINTFORMW 異常な状態下で身体が昂ぶったのか、胸の先端は徐々に堅くなっていき
+			PRINTFORMW 時折くぐもった声をあげて腰を揺すった
+		ENDIF
+		GET_MONEY = 40000
+		GET_ASS = 20
+		GET_VAL = -5
+		GET_ALI = -2
+		GET_HON = 2
+	ELSEIF BASE:慰み者 >= 30
+		PRINTFORM %CALLNAME:TARGET%は注文を受け、客の横に座ると抱きつかれ
+		;全裸
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+			PRINTFORM 剥き出しの裸身に
+		ELSE
+			PRINTFORM 露出が際どく、局部がくっきりと強調された衣服越しに
+		ENDIF
+		PRINTFORMW 責め具を付けられた
+		
+		;アライメントが-10以下＆感度が300以上
+		IF BASE:アライメント <= 90 && BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は熱に浮いた蕩けた表情を浮かべ、気持ちいい事を客に伝えた
+			PRINTFORM 客が
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 裸身に手を伸ばし
+			ELSE
+				PRINTFORM 衣服に手を入れ
+			ENDIF
+			PRINTFORMW 局部を弄ると、顔を上に向けて熱を帯びた吐息を出した
+			PRINTFORMW やがて感極まると、張り詰まった声をあげて背筋を震わせ、吹き出た愛液によって股間にある客の手を濡らした
+		;感度が300以上
+		ELSEIF BASE:感度 >= 300
+			PRINTFORML %CALLNAME:TARGET%は押し殺した短い声を出すと、腰を震わせ熱い吐息を出した
+			PRINTFORMW 平常を保とうと会話を試みるが、火照り始める身体は強い快楽を脳に伝え、目は虚ろになって言葉にならなくなった
+			PRINTFORML やがて前後不覚で一際大きな媚声をあげると、客の粘っこい息を顔に受けながら首を振り
+			PRINTFORMW そのまま背筋を震わせて達した
+		;それ以外
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は客から逃げようと腰をよじるが、客の力には到底及ばず
+			PRINTFORM そのまま
+			;全裸
+			IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 裸身に手を伸ばし
+			ELSE
+				PRINTFORM 衣服に手を入れ
+			ENDIF
+			PRINTFORMW 局部を弄られてしまった
+			PRINTFORMW 乳首や陰核が堅くしこり、少しずつ素直になっていく%CALLNAME:TARGET%を見て、客は満足げな表情を浮かべた
+		ENDIF
+		GET_MONEY = 30000
+		GET_ASS = 15
+		GET_VAL = -3
+		GET_ALI = -1
+		GET_HON = 1
+	ELSE
+		;身体付きによって分岐
+		IF BODY_RIPEN(TARGET) >= 15
+			PRINTFORM 女性らしい股体を
+		ELSE
+			PRINTFORM まだ性の花が開き切っていない未熟な股体を
+		ENDIF
+		PRINTFORMW 曝け出した格好に客はそそられ
+		IF !RAND:2
+			PRINTFORML テーブルを拭いている%CALLNAME:TARGET%に後ろから抱きつき
+			PRINTFORMW 剥き出しの胸や陰核を弄った
+			
+			;アライメントが-10以下＆感度が300以上
+			IF BASE:アライメント <= 90 && BASE:感度 >= 300
+				PRINTFORML %CALLNAME:TARGET%はビクンと身体を震わせると、両手を机につき
+				;貞操が50以下
+				IF BASE:貞操 >= 50
+					PRINTFORMW 乳首が堅くしこり火照っていく身体を相手に預け、涎を垂らしながら蕩けた声をあげた
+				ELSE
+					PRINTFORMW 乳首が堅くしこり火照っていく身体をくねらせ、蕩けた声をあげた
+				ENDIF
+				PRINTFORMW やがて背筋を伸ばして達すると、机に上半身を預けて熱い吐息を吐いた
+			;感度が300以上
+			ELSEIF BASE:感度 >= 300
+				PRINTFORML %CALLNAME:TARGET%は首を振り、暴れて否定の意を露わにするが
+				PRINTFORMW 身体は快楽を求めて胸の突起を堅く尖らせ、股にある弄ぶ手を愛液で濡らさせる
+				PRINTFORMW その内否定の言葉に媚声が混じり始め、机に倒れ込んで制御が利かなくなった身体を涎を垂らしながら跳ねさせた
+			;それ以外
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は首を振り、嫌悪感を込めた声を出して客を威嚇した
+				PRINTFORMW それでも弄ぶ手は止まらず、次第に吐息は熱くなり、乳首や陰核は尖り始める……
+			ENDIF
+		ELSE
+			PRINTFORML 注文を取りに回っている%CALLNAME:TARGET%の口を抑え、店の外にある路地裏に連れだしてから
+			PRINTFORMW 剥き出しの胸や陰核を弄った
+			
+			;アライメントが-10以下＆感度が300以上
+			IF BASE:アライメント <= 90 && BASE:感度 >= 300
+				PRINTFORML %CALLNAME:TARGET%は濡れた瞳で陵辱の主を見つめ、くぐもった甘い声をあげた
+				PRINTFORMW 乳首が堅くしこり、太腿に愛液が伝うようになると声は大きくなり
+				PRINTFORMW 水音を立てながら太腿を擦り合わせ、物欲しげな表情を浮かべた
+			;感度が300以上
+			ELSEIF BASE:感度 >= 300
+				PRINTFORML %CALLNAME:TARGET%は股体を暴れさせ、抑えられた口からは悲鳴を漏らした
+				PRINTFORMW 身体は意思に反して疼き、尖り始めた乳首を抓られると一際大きな声をあげ身体をよじった
+				PRINTFORMW 身体が疼き身悶える現実から逃げ出すかのように、%CALLNAME:TARGET%は目を閉じて目尻から涙を流している
+			;それ以外
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は首を振り、必死に手足を暴れさせた
+				PRINTFORMW 抵抗虚しく客の責めは止まらず、歓声が行き交う路地裏の傍で裸身を弄られるという羞恥により
+				PRINTFORMW 身体は火照り、胸の先は尖り始める……
+			ENDIF
+		ENDIF
+		GET_MONEY = 20000
+		GET_ASS = 10
+		GET_VAL = -1
+		GET_ALI = -1
+		GET_HON = 1
+	ENDIF
+ENDIF
+
+CALL SETCOLOR_MONEY
+PRINTFORML ${GET_MONEY}入手した！
+MONEY += GET_MONEY
+
+CALL SETCOLOR_VALUE
+PRINTFORML 評価が{GET_VAL*-1}下がった……
+CFLAG:評価 += GET_VAL
+RESETCOLOR
+
+PRINTFORML 淫妖経験 + {GET_ASS}
+EXP:淫妖経験 += GET_ASS
+PRINTFORML 堕落経験 + {GET_ASS/2}
+EXP:堕落経験 += GET_ASS / 2
+
+PRINTFORM 淫妖：{BASE:淫妖}　→　
+CALL CALCULATION_INYOU, GET_ASS/2, 90
+BASE:淫妖 += RESULT
+CALL SETCOLOR_PALAMUP
+PRINTFORML {BASE:淫妖}
+RESETCOLOR
+
+CALL CALCULATION_PALAM, GET_ASS/4, "堕落"
+
+;穢れ加算処理
+CALL CALC_IMP, 3
+
+;貞操の計算
+CALL CAL_CHASTE, GET_HON, "下降"
+
+RESETCOLOR
+CALL PLAYTHING
+
+CALL CLOTHE_ABL, "属性"
+
+;淫魔or娼婦属性の衣服のみ+2される
+IF CFLAG:服装 >= 0 || GETBIT(RESULT, 6)
+	CALL CHANGE_ELEMENT, 2
+ENDIF
+

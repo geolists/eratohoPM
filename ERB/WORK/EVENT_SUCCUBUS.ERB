@@ -1,0 +1,94 @@
+﻿;-------------------------------------------------------------
+;シスター固有行動
+;
+;-------------------------------------------------------------
+
+@MOVE_SUCCUBUS
+
+;イベントを選出する
+CALL ELECTION_WORK, "信仰"
+
+;イベントの呼び出し
+IF RESULT == 0
+	CALL MOVE_SUCCUBUS_0
+ELSEIF RESULT == 5
+	CALL MOVE_SUCCUBUS_6
+ELSE
+	CALL MOVE_SUCCUBUS_COMMON, RESULT
+ENDIF
+
+;===========================================================================
+;能力毎のイベント
+;===========================================================================
+
+
+;-----------------------------------------------------------------
+;美麗イベント
+;-----------------------------------------------------------------
+@MOVE_SUCCUBUS_0
+
+;美麗の数値よって分岐
+;(300毎に)
+LOCAL = BASE:美麗 / 300
+
+;900～は該当する属性が60%以上無いと出ない
+IF LOCAL == 3 && CFLAG:属性／シスター >= 60
+	PRINTFORML 
+ELSEIF LOCAL == 2
+	PRINTFORML 
+ELSEIF LOCAL == 1
+	PRINTFORML 
+ELSE
+	PRINTFORML 
+ENDIF
+
+
+;---------------------------------------------------
+;信仰、知力、疎通イベント
+;中心能力：信仰
+;---------------------------------------------------
+@MOVE_SUCCUBUS_COMMON, ARG
+
+;対象の数値よって分岐
+;(300毎に)
+LOCAL = BASE:(ARG+5) / 300
+
+IF LOCAL == 3
+	
+ELSEIF LOCAL == 2
+	
+ELSEIF LOCAL == 1
+	
+ELSE
+	;知力
+	IF ARG == 1
+		PRINTFORMW 
+	;疎通
+	ELSEIF ARG == 2
+		PRINTFORML 
+	;家事
+	ELSEIF ARG == 3
+		PRINTFORML 
+	ENDIF
+ENDIF
+
+
+;---------------------------------------------------
+;淫妖イベント
+;---------------------------------------------------
+@MOVE_SUCCUBUS_6
+
+;淫妖の数値よって分岐
+;(300毎に)
+LOCAL = BASE:淫妖 / 300
+
+IF LOCAL == 3
+	PRINTFORML 
+ELSEIF LOCAL == 2
+	PRINTFORML 
+ELSEIF LOCAL == 1
+	PRINTFORML 
+ELSE
+	PRINTFORML 
+ENDIF
+

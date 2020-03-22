@@ -1,0 +1,42 @@
+﻿;=================================================================
+;名前出力
+;ランダムで名前を出します
+;ARG　キャラタイプ
+;=================================================================
+@RAND_NAME, ARG
+
+;日本の伝統色から適当に参照してます
+SELECTCASE RAND:15
+	CASE 0
+		RESULTS = あずき
+	CASE 1
+		RESULTS = さくら
+	CASE 2
+		RESULTS = もえぎ
+	CASE 3
+		RESULTS = ききょう
+	CASE 4
+		RESULTS = くわこ
+	CASE 5
+		RESULTS = あさぎ
+	CASE 6
+		RESULTS = あい
+	CASE 7
+		RESULTS = うめ
+	CASE 8
+		RESULTS = 月白
+	CASE 9
+		RESULTS = かれの
+	CASE 10
+		RESULTS = ひわこ
+	CASE 11
+		RESULTS = えびの
+	CASE 12
+		RESULTS = ちゃか
+	CASE 13
+		RESULTS = ひわこ
+	CASE 14
+		RESULTS = えんたん
+ENDSELECT
+
+RETURN 0

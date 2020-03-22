@@ -1,0 +1,163 @@
+﻿;------------------------------
+;隠しゲーム
+;------------------------------
+@HIDDENGAME
+#DIM kotae, 2
+#DIM L_LOCAL, 1
+
+VARSET LOCAL, 0
+
+;ライフは3に設定
+LOCAL:1 = 3
+DRAWLINE
+PRINTFORML ～～姫隠しゲーム！～～
+CALL SETCOLOR_ABL
+PRINTFORML ※このゲームは本編とは一切関係ありません
+RESETCOLOR
+PRINTFORML ☆ルール説明
+PRINTFORML 扉が3つ出るので、どこに姫を隠すかを選んでください
+PRINTFORML 選んだ扉を月の使者が開けなければ勝ちです
+PRINTFORML 選んだ扉を3回開けられたらゲーム終了です
+PRINTFORML ターンを重ねると使者の行動が読めなくなります
+DRAWLINE
+
+$INPUT_LOOP
+DRAWLINE
+LOCAL += 1
+kotae = RAND:3
+PRINTFORM {LOCAL}ターン目　残りライフ:
+FOR L_LOCAL, 0, LOCAL:1
+	SETCOLOR 196,128,164
+	PRINTFORM %UNICODE(0x2661)% 
+NEXT
+RESETCOLOR
+PRINTL 
+PRINTFORM 月の使者は
+;ターン数が進むと嘘が混じるようになる
+IF RAND:99+1 <= (100-LOCAL*3)
+	SELECTCASE kotae
+		CASE 0
+			PRINTFORML 障子を見ている
+		CASE 1
+			PRINTFORML 襖を見ている
+		CASE 2
+			PRINTFORML 扉を見ている
+	ENDSELECT
+;嘘、でたらめの選択肢を提示する
+ELSE
+	SELECTCASE RAND:3
+		CASE 0
+			PRINTFORML 障子を見ている
+		CASE 1
+			PRINTFORML 襖を見ている
+		CASE 2
+			PRINTFORML 扉を見ている
+	ENDSELECT
+ENDIF
+PRINTFORML 姫をどこに隠す？
+PRINTC [0] - 障子
+PRINTC [1] - 襖
+PRINTC [2] - 扉
+
+CALL SENTAKUSHI, 3
+
+;(0+ターン数×2)％の確率で覗き見をしてくる
+IF RAND:99+1 <= LIMIT(LOCAL*2, 0, 40)
+	LOCAL:2 = RESULT
+	;ランダムに数を発生させ、プレイヤーが選択した物と被っていない物を覗き見する
+	$RAND_LOOP
+	kotae:1 = RAND:3
+	PRINTFORML 月の使者は
+	SELECTCASE kotae:1
+		CASE 0
+			PRINTFORM 障子を
+		CASE 1
+			PRINTFORM 襖を
+		CASE 2
+			PRINTFORM 扉を
+	ENDSELECT
+	PRINTFORML 覗き見している……
+	PRINTL 
+	PRINTFORML 隠し場所を変えますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORM 隠し場所を
+		FOR L_LOCAL, 0, 3
+			IF L_LOCAL != kotae && L_LOCAL != kotae:1
+				RESULT = L_LOCAL
+				BREAK
+			ENDIF
+		NEXT
+		SELECTCASE RESULT
+			CASE 0
+				PRINTFORM 障子に
+			CASE 1
+				PRINTFORM 襖に
+			CASE 2
+				PRINTFORM 扉に
+		ENDSELECT
+		PRINTFORML 変えた！
+	ELSE
+		RESULT = LOCAL:2
+	ENDIF
+	
+	;100-ターン数×2％の確率でそのまま扉を開ける
+	IF RAND:99+1 <= (100-LOCAL*2)
+		kotae = kotae:1
+	ENDIF
+ENDIF
+
+DRAWLINE
+PRINTFORM 月の使者は
+SELECTCASE kotae
+	CASE 0
+		PRINTFORM 障子を
+	CASE 1
+		PRINTFORM 襖を
+	CASE 2
+		PRINTFORM 扉を
+ENDSELECT
+PRINTFORML 開けた！
+
+IF RESULT != kotae
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 成功！　月の使者を回避した！
+	RESETCOLOR
+	GOTO INPUT_LOOP
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML 月の使者に見つかってしまった……
+	PRINTFORML ライフ　-1
+	LOCAL:1 -= 1
+	IF LOCAL:1 <= 0
+		PRINTFORML もうライフが残っていない……
+		PRINTFORML 姫は月の使者に連れ去られました
+		RESETCOLOR
+		
+		PRINTFORML 今回の記録　{LOCAL}ターン
+		
+		PRINTFORML もう一度遊びますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			RESTART
+		ELSE
+			PRINTFORMW では、また本編で会いましょう！
+			RETURN 0
+		ENDIF
+	ELSE
+		RESETCOLOR
+		PRINTFORML 命からがら逃げ切った
+	ENDIF
+	RESETCOLOR
+	GOTO INPUT_LOOP
+ENDIF
+
+

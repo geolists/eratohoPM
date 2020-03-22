@@ -1,0 +1,40 @@
+﻿;-------------------------------------------------
+;精神移行訓練
+;服装固有コマンド
+;ゴスロリ属性の服限定
+;知力が4～10増加し(固定値)、アライメントが-1される。
+;-------------------------------------------------
+@COM434
+
+;消費CP
+LOSEBASE:0 = 10
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+PRINTL 精神移行訓練
+STR:0 = 精神移行訓練
+
+CALL KOJO_MESSAGE_COM
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+LOSEBASE:アライメント = -1
+
+CALL SETCOLOR_PALAMUP
+LOCAL = RAND:7+4
+PRINTFORML 知力が{LOCAL}上昇した！
+RESETCOLOR
+
+PRINTFORM 知力:{BASE:知力}　→　
+BASE:知力 = LIMIT(BASE:知力+LOCAL, 0, 1000)
+CALL SETCOLOR_PALAMUP
+PRINTFORMW {BASE:知力}
+RESETCOLOR
+
+RETURN 1
+

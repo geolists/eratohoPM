@@ -1,0 +1,139 @@
+﻿;==============================================
+;刀術リスト
+;==============================================
+
+;------------------------------
+;80:　二刃斬り
+;刀術攻撃の基礎
+;------------------------------
+@KATANA_SKILL_80, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 80
+
+@ATTACK_MOVE_80, ARG
+PRINTFORML %STR:ARG%は二刃斬りを%STR:(TFLAG:(530+ARG))%に向けて放った！
+CALL DAMAGE_CALCULATION, 0, 100, 100, ARG, TFLAG:(530+ARG), 0, 0, 4
+
+;------------------------------
+;81:　凶殺陣
+;連続攻撃
+;1発あたり命中90なので少し気力を減らそう
+;------------------------------
+@KATANA_SKILL_81, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 81
+
+@ATTACK_MOVE_81, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%の凶殺陣！
+CALL DAMAGE_CALCULATION, 0, 40, 90, ARG, TFLAG:(530+ARG), 0, 0, 6
+IF RESULT && TFLAG:(556+TFLAG:(530+ARG)*10)
+	FOR L_LOCAL, 0, 3
+		CALL DAMAGE_CALCULATION, 0, 40, 90, ARG, TFLAG:(530+ARG), 0, 0, 0
+		IF !RESULT || !TFLAG:(556+TFLAG:(530+ARG)*10)
+			BREAK
+		ENDIF
+	NEXT
+ENDIF
+
+;------------------------------
+;82:　諸刃の剣術
+;与えたダメージの10％が自分に跳ね返ってくる
+;正道の武士レベル1で習得
+;------------------------------
+@KATANA_SKILL_82, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 82
+
+@ATTACK_MOVE_82, ARG
+PRINTFORML %STR:ARG%は危険を顧みず%STR:(TFLAG:(530+ARG))%に斬りかかった！
+CALL DAMAGE_CALCULATION, 0, 220, 95, ARG, TFLAG:(530+ARG), 0, 1001, TFLAG:(551+ARG*10)/20
+
+;------------------------------
+;83:　精神統一
+;自分の気力を10％回復させる
+;------------------------------
+@KATANA_SKILL_83, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 83
+
+@ATTACK_MOVE_83, ARG
+PRINTFORML %STR:ARG%は目を閉じて精神を研ぎ澄ませた……！
+CALL DAMAGE_CALCULATION, 3, TFLAG:(551+ARG*10)/10, -1, ARG, ARG, 0, 1006, 0
+
+;------------------------------
+;84:　雪辱の太刀
+;威力60の通常攻撃
+;相手にダメージを与えられなかった場合、相手のＨＰを最大ＨＰから2割削る
+;武士の称号レベルが2以上の場合のみ使用可能
+;消費気力は35
+;------------------------------
+@KATANA_SKILL_84, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 84
+
+@ATTACK_MOVE_84, ARG
+PRINTFORML %STR:ARG%は雪辱の太刀を放った！
+CALL DAMAGE_CALCULATION, 0, 60, 100, ARG, TFLAG:(530+ARG), 0, 1007, 35
+
+;------------------------------
+;85:　剣の舞
+;自分の攻撃を2段階アップさせる
+;正道の武士Lv3で習得
+;------------------------------
+@KATANA_SKILL_85, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 85
+
+@ATTACK_MOVE_85, ARG
+PRINTFORML %STR:ARG%は剣の舞を使った！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, ARG, 0, 46, 20, 100
+
+;------------------------------
+;86:　騙し討ち
+;相手の能力上昇ランクが+方向にかかっていると威力が上がる
+;威力は、相手の能力ランクが+3より大きい数×30上昇
+;基礎威力は40
+;------------------------------
+@KATANA_SKILL_86, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 86
+
+@ATTACK_MOVE_86, ARG
+;FOR文用
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は騙し討ちを試みた！
+PRINTFORML 相手の能力が上昇している状態である程、威力が上昇する！
+;威力計算
+;LOCALに値を保存する
+LOCAL = 40
+
+FOR L_LOCAL, 0, 6
+	LOCAL += 30*MAX(TFLAG:(651+TFLAG:(530+ARG)+6*L_LOCAL)-3, 0)
+NEXT
+
+CALL DAMAGE_CALCULATION, 0, LOCAL, 100, ARG, TFLAG:(530+ARG), 0, 0, 10, 100
+
+
+

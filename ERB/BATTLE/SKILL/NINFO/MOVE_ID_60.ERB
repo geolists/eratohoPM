@@ -1,0 +1,166 @@
+﻿;==================================================
+;娼婦が持つ淫術
+;==================================================
+
+;------------------------------
+;60:　胸愛撫
+;------------------------------
+@NINFO_SKILL_60, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 60
+
+@ATTACK_MOVE_60, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の胸を愛撫した
+;基礎威力50
+LOCAL = 50
+
+;相手の欲情が1/2以下の場合、威力が2倍に
+IF TFLAG:(506+TFLAG:(530+ARG)) * 2 <= TFLAG:(524+TFLAG:(530+ARG))
+	LOCAL *= 2
+ENDIF
+CALL DAMAGE_CALCULATION, 2, LOCAL, 100, ARG, TFLAG:(530+ARG), 2, 0
+
+;------------------------------
+;71:　誘い受け
+;------------------------------
+@NINFO_SKILL_61, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 61
+;優先度+2
+TFLAG:(542+ARG) = 2
+
+@ATTACK_MOVE_61, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に股体が見えるように座り
+PRINTFORMW 太腿を擦り合わせて愛撫を誘った……
+
+;愛撫しか誘因しないのはゲームの都合上仕方ない
+CALL DAMAGE_CALCULATION, 3, 0, 90, ARG, TFLAG:(530+ARG), 0, 3
+
+;------------------------------
+;72:　押し倒す
+;------------------------------
+@NINFO_SKILL_62, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 62
+
+@ATTACK_MOVE_62, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を押し倒そうとした……
+
+;愛撫しか誘因しないのはゲームの都合上仕方ない
+CALL DAMAGE_CALCULATION, 3, 0, 70, ARG, TFLAG:(530+ARG), 0, 4
+
+;------------------------------
+;73:　乱交
+;性交系全体攻撃　敵には威力110で　自分には威力90で攻撃する
+;------------------------------
+@NINFO_SKILL_63, ARG
+
+PRINTFORML 全体攻撃ですが、よろしいですか？
+PRINTFORML [0] - はい
+PRINTFORML [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 1
+	RETURN -1
+ENDIF
+
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 63
+
+@ATTACK_MOVE_63, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%達と身体を交わらせ
+PRINTFORML 相手の意思を無視して淫蕩な時間を過ごした……
+
+FOR L_LOCAL, 0, 6
+	;現HPがある場合、ダメージ判定を行う
+	IF TFLAG:(556+L_LOCAL*10)
+		IF L_LOCAL == ARG
+			CALL DAMAGE_CALCULATION, 2, 40, -1, ARG, L_LOCAL, 2, 0
+		ELSE
+			CALL DAMAGE_CALCULATION, 2, 120, 95, ARG, L_LOCAL, 2, 2
+		ENDIF
+	ENDIF
+NEXT
+
+;------------------------------
+;74:　服脱がし
+;押し倒したか欲情or気力が1/2を越える(小さくなる)相手にしか効かない
+;------------------------------
+@NINFO_SKILL_64, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 64
+
+@ATTACK_MOVE_64, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の衣服を脱がそうとした！
+
+;相手の気力と欲情が共に規定値に達していない、あるいは押し倒している必要がある
+IF TFLAG:(557+TFLAG:(530+ARG)*10)*2 > TFLAG:(551+TFLAG:(530+ARG)*10) && TFLAG:(506+TFLAG:(530+ARG))*2 < TFLAG:(524+TFLAG:(530+ARG)) && !IJYOU_BATTLE(TFLAG:(530+ARG))
+	PRINTFORML しかし、相手の抵抗が激しく、脱がす事ができなかった！
+	PRINTFORML 気力か欲情を半分以下(以上)にする、あるいは押し倒しておく必要がありそうだ
+	
+	CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 1000
+ELSE
+	;相手の服を1段階脱がせる
+	CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 6
+ENDIF
+
+
+;------------------------------
+;75:　自己満足
+;敵を欲情+15　自分は気力+20％
+;------------------------------
+@NINFO_SKILL_65, ARG
+
+PRINTFORML 全体攻撃ですが、よろしいですか？
+PRINTFORML [0] - はい
+PRINTFORML [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 1
+	RETURN -1
+ENDIF
+
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 65
+
+@ATTACK_MOVE_65, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は秘裂を開き、適当に刺激をして淫靡な香りを放ち、周囲の欲情を誘った
+
+FOR L_LOCAL, 0, 6
+	;現HPがある場合、ダメージ判定を行う
+	IF TFLAG:(556+L_LOCAL*10)
+		IF L_LOCAL == ARG
+			CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, L_LOCAL, 2, 23
+		ELSE
+			CALL DAMAGE_CALCULATION, 2, 15, 80, ARG, L_LOCAL, 3, 0
+			CALL DAMAGE_CALCULATION, 3, 0, 30, ARG, L_LOCAL, 0, 1
+		ENDIF
+	ENDIF
+NEXT
+

@@ -1,0 +1,398 @@
+﻿;===================================================
+;純狐イベント管理
+;時期によって発生させる純狐イベントを選択する関数
+;===================================================
+@JUNKO_EVENT
+
+;1回目のイベント：2年目　7月
+IF FLAG:年数 == 2 && DAY == 7 && TIME == 0
+	CALL JUNKO_EMARGENCY, 1
+;2回目のイベント：3年目　5月
+ELSEIF FLAG:年数 == 3 && DAY == 5 && TIME == 0
+	CALL JUNKO_EMARGENCY, 2
+;3回目のイベント：4年目　6月
+ELSEIF FLAG:年数 == 4 && DAY == 6 && TIME == 0
+	CALL JUNKO_EMARGENCY, 3
+;4回目のイベント：6年目　1月(呼び出すタイミングが他のイベントとは異なる) + 榊の森をクリアしている
+ELSEIF FLAG:年数 == 6 && DAY == 1 && TIME == 0
+	CALL JUNKO_EMARGENCY, 4
+ENDIF
+
+
+
+;===================================================
+;純狐襲撃イベント
+;ひとまず用意しておく
+;
+;ARG　呼び出すイベント
+;===================================================
+@JUNKO_EMARGENCY, ARG
+
+#DIM L_LOCAL, 1
+
+;誘拐されている場合、イベント発生に失敗する
+IF CFLAG:モード == 2
+	;5年目以降かどうかで分岐
+	IF FLAG:年数 < 5
+		DRAWLINE
+		PRINTFORML 謎の女性「%CALLNAME:TARGET%は……なんだ、誘拐されているのね
+		PRINTFORML 　　　　　それじゃ私には手が出せないわ」
+		PRINTL 
+		PRINTFORMW 謎の女性は姿を消した
+	ELSE
+		DRAWLINE
+		PRINTFORML 純狐「%CALLNAME:TARGET%は……なんで盗賊なんかに捕まっているの
+		PRINTFORML 　　　あーあ、興醒めだわ。こんなのに敗れるなんて、嫦娥は一体どうしたのかしらね……」
+		PRINTL 
+		PRINTFORMW 純狐は姿を消した
+	ENDIF
+;2年目　7月頃あたり
+ELSEIF ARG == 1
+	PRINTFORML ～～月の都　%CALLNAME:TARGET%の部屋～～
+	PRINTFORMW とある日の朝、%CALLNAME:TARGET%が目を覚ますと、目の前に青紫色をした光塊が浮かんでいた
+	PRINTFORMW 純粋な穢れでできたそれは、%CALLNAME:TARGET%が起き上がったのを見て襲い掛かってきた！
+
+	;妨害の力(Lv10)と戦闘
+
+	;状態初期化
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	;戦闘処理
+	CALL BATTLE, 131, 0, 0, 0, 10, 1
+
+	;負けると怪我させられる(2ヶ月間、休憩しかできなくなる)
+	;勝ち
+	IF RESULT == 1
+		PRINTFORML %CALLNAME:TARGET%は穢れの光塊を撃退した！
+		PRINTFORMW 肩で息を整えていたところに、%CALLNAME:MASTER%が慌てて部屋に入ってきた
+		PRINTFORMW 光塊の光が窓から漏れていたのを見て、慌てて駆けてきたのだ
+		PRINTFORMW %CALLNAME:TARGET%は早速%CALLNAME:MASTER%に飛びつき、今起こった出来事を報告した……
+	;負け
+	ELSE
+		PRINTFORML 穢れの光塊は、押され気味だった%CALLNAME:TARGET%に飛びかかった！
+		PRINTFORMW %CALLNAME:TARGET%「きゃっ……！」
+		PRINTFORML 体勢を崩した%CALLNAME:TARGET%はなし崩しに倒れ、壁に身体を強く打ちつけた！
+		PRINTFORMW そんな%CALLNAME:TARGET%の様子を見て、光塊は嘲笑うかのように宙を舞った後、姿を消した……
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は全治1ヵ月の怪我をしてしまった……
+		;1ヶ月の怪我を設定する
+		CFLAG:体調 |= 1p0
+		CFLAG:怪我の期間 = 2
+		RESETCOLOR
+	ENDIF
+;3年目　5月頃あたり
+ELSEIF ARG == 2
+	PRINTFORML ～～月の都　？？？？？～～
+	PRINTFORML 謎の女性「私が純化させた精霊を退けるなんて……
+	PRINTFORML 　　　　　あそこまで強いとは思わなかったわ。次はどうしてやろうかしら
+	PRINTFORMW 　　　　　あ、そうだ。あの盗賊達を利用して……」
+	PRINTFORML 
+	PRINTFORMW 謎の女性は、近くを通りかかった盗賊達に術をかけた！
+	PRINTFORML 
+	PRINTFORML 謎の女性「ふふふ……これでよし
+	PRINTFORML 　　　　　彼らだって、邪な気を取り除けば充分強くなるのよね」
+	;殺意の盗賊×3と戦闘
+	;負けると服が全壊　＆　1ヶ月間だけ性格が淫乱になる
+
+	;殺意の盗賊(Lv18)×3と戦闘
+
+	;状態初期化
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	;戦闘処理
+	CALL BATTLE, 136, 136, 136, 0, 18, 1
+
+	;戦闘結果によって分岐
+	;勝ち
+	IF RESULT == 1
+		PRINTFORML 謎の女性「げ、あの盗賊達でも駄目だったか……
+		PRINTFORMW 　　　　　他に策も思い浮かばないし、今回はこれぐらいにしてあげましょう」
+		PRINTFORML 　　　　　　　　　　
+		PRINTFORMW 謎の女性は独り言をつぶやき、姿を消した
+	;負け
+	ELSE
+		FORCEWAIT
+		PRINTFORML 満身創痍となった%CALLNAME:TARGET%の下に、盗賊がにじりよる
+		PRINTFORMW 鋭利な刃で%CALLNAME:TARGET%の服を剥ぎ取った後、粘っこい桃色の液体を身体に塗りたくった
+		PRINTFORML 桃色の液体には媚薬成分が含まれていたらしく、%CALLNAME:TARGET%は四肢を震わせては上掠った声をあげ続ける
+		PRINTFORMW 盗賊達がその場を去った後、%CALLNAME:TARGET%は太腿を擦り合わせては熱い吐息を吐き、身体の敏感な箇所に手を宛がった……
+		
+		;今着ている服を全壊状態にする
+		;(布切れ以外)
+		IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 != 2
+			PRINTFORML %CALLNAME:TARGET%が着ていた服は破壊された！
+			DITEMTYPE:(CFLAG:服装):11 = 2
+			DITEMTYPE:(CFLAG:服装):14 = 2
+		ENDIF
+		
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は性格が[淫乱]になった……
+		CFLAG:性格 = -1
+		RESETCOLOR
+	ENDIF
+;4年目　6月頃あたり
+ELSEIF ARG == 3
+	DRAWLINE
+	PRINTFORML ～～月の都　%CALLNAME:TARGET%の部屋～～
+	PRINTFORML 謎の女性「うふふ、初めまして
+	PRINTFORMW 　　　　　私の名前は純狐。月の都で隠居しているの」
+	PRINTFORML 
+	PRINTFORML 純狐「さて、貴方は今、君主に悩まされているのよね
+	PRINTFORML 　　　君主は相当腕が立つ護衛を雇っているらしいわ
+	PRINTFORML 　　　さて、私と決闘してちょうだいな
+	PRINTFORMW 　　　私ぐらい退けられないと、到底じゃないけど君主には敵わないでしょ？」
+	PRINTFORML 
+	PRINTFORMW そう言ったかと思うと、突然、純狐は襲いかかってきた！
+
+	;純狐(Lv27)と戦闘
+	;負けると「君主に負けるとこういうことされる」という建前の下、身体を弄られる
+
+	;状態初期化
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	;戦闘処理
+	CALL BATTLE, 132, 0, 0, 0, 27, 1
+
+	DRAWLINE
+	;勝った場合
+	IF RESULT == 1
+		PRINTFORMW 純狐「へえ、やるじゃないの……
+		PRINTFORMW 　　　今回のところはこれで勘弁してあげるわ」
+		PRINTFORML 
+		PRINTFORMW 純狐は、捨て台詞を残して姿を消した
+	;負けた場合
+	ELSE
+		FORCEWAIT
+		PRINTFORMW 純狐「あらら……倒れちゃった……」
+		PRINTFORMW 
+		PRINTFORMW 満身創痍になって倒れた%CALLNAME:TARGET%の上に、純狐は跨った
+		PRINTFORML 
+		PRINTFORMW 純狐「知っているとは思うけど、君主は邪魔者を排除するには手段を選ばないのよ」
+		PRINTFORML 
+		PRINTFORML そして、%CALLNAME:TARGET%が纏っている衣服を除けた後、太腿を開いた
+		PRINTFORMW %CALLNAME:TARGET%は抵抗しようとするが、身体に力が入らない
+		PRINTFORML 
+		PRINTFORML 純狐「それはつまり、貴方が女性である以上、こうした卑しめも受けるの
+		PRINTFORMW 　　　私が前以って思い知らせてあげるわ。感謝しなさい」
+		PRINTFORML 
+		PRINTFORMW 純狐の指が%CALLNAME:TARGET%の股間に宛がわれる……
+		;指挿し入れ×3の後、特殊コマンド1回
+		;その後[純狐の虜]を得る
+		
+		DRAWLINE
+		FOR L_LOCAL, 0, 4
+			
+			;1～3回目
+			IF L_LOCAL <= 2
+				;指挿し入れ
+				LOCAL = 210
+			;4回目
+			ELSE
+				;性の暗示
+				LOCAL = 234
+			ENDIF
+			
+			;コマンド実行処理
+			VARSET SOURCE, 0
+			SELECTCOM = LOCAL
+			CALLFORM COM{LOCAL}_T
+			CALL SOURCE_CALCURATE
+			CALL EVENTCOMEND_T
+		
+		NEXT
+		
+		PRINTFORML 純狐「さて、これで勘弁してあげましょう
+		PRINTFORMW 　　　……あら、まだ足りないのかしら」
+		PRINTFORML 
+		PRINTFORMW 純狐が%CALLNAME:TARGET%から離れた後も、%CALLNAME:TARGET%は恍けた顔をして純狐を見つめている
+		PRINTFORMW 瞳は虚ろで、時折熱い吐息を吐き出す
+		PRINTFORML 
+		PRINTFORML 純狐「まったく……まあ、貴方が気に入ったのなら別にいいのですけど
+		PRINTFORMW 　　　また弄ってあげるから、待ってなさい」
+		PRINTFORML 
+		PRINTFORMW 純狐は%CALLNAME:TARGET%の顎を持ち、ゆっくりと唇を合わせた
+		PRINTFORMW %CALLNAME:TARGET%は目を閉じ、自分からも顔を近づけて柔らかな唇の感触を味わう
+		PRINTFORML 
+		PRINTFORMW こうして、%CALLNAME:TARGET%の心には、純狐に対して忘れられない感情の楔を打ち付けられた
+		PRINTFORML 
+		CALL SETCOLOR_PALAMDOWN
+		;[純狐の虜]を得る
+		PRINTFORMW %CALLNAME:TARGET%は[純狐の虜]を得た……
+		TALENT:純狐の虜 = 1
+		RESETCOLOR
+	ENDIF
+;5年目　12月後半
+;穢れ塗れの嫦娥を撃破している場合
+ELSEIF ARG == 4
+	PRINTFORML ～～月の都　月夜見の間～～
+	PRINTFORMW 純狐「おおっと、そのまま月夜見様の日を迎えさせるわけにはいかないよ！」
+	PRINTFORML 
+	PRINTFORMW %CALLNAME:TARGET%と%CALLNAME:MASTER%が月夜見様の再臨日に向けて準備をしていたとき、背後から純狐に声をかけられた
+	PRINTFORML 
+	PRINTFORMW 純狐「貴方ね。嫦娥を穢れから救ったのは
+	PRINTFORMW 　　　てっきり地獄にでも幽閉されているのかと思っていたのだけど、まさかあんな所にいるとは思わなかったわ
+	PRINTFORMW 　　　私ね、嫦娥を殺したくて仕方がないの。彼女は殺されるに値する罪を背負っているのよ
+	PRINTFORMW 　　　……どんな罪か、って？　そうねえ、それは貴方が身を以って思い知ることよ
+	PRINTFORMW 　　　こいつは私が丹精込めて純化させた精霊よ。倒せるかしら？」
+
+	;生命の始原体(Lv30)と戦闘
+	;負けると主人公(輝夜等のことではない)が死ぬ
+
+	;状態初期化
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	;戦闘処理
+	CALL BATTLE, 133, 0, 0, 0, 30, 1
+
+	;勝利時
+	IF RESULT == 1
+		PRINTFORML 純狐「……この精霊を撃破するとは……
+		PRINTFORML 　　　これが通用しないのでは、私は半分負けたようなものね
+		PRINTFORML 　　　今回のところはこれで勘弁してあげるわ
+		PRINTFORML 　　　また、遠い遠い未来に会いましょう」
+	;敗北時
+	ELSE
+		PRINTFORML 純狐が放った精霊はあまりに強く、%CALLNAME:TARGET%では太刀打ちできなかった……
+		PRINTFORMW 満身創痍となって地に伏した%CALLNAME:TARGET%に、精霊の巨大な手が伸びる
+		PRINTFORML 
+		PRINTFORML 純狐「さあ。これで貴方もおしまいね！
+		PRINTFORMW 　　　嫦娥の代わりに葬ってあげるわ！」
+		PRINTFORML 
+		PRINTFORMW 精霊の手の影がいよいよ%CALLNAME:TARGET%の姿を覆った時、%CALLNAME:MASTER%は――
+		
+		;主人公死亡フラグを立てる
+		FLAG:主人公死亡 |= 1p0
+	ENDIF
+	;主人公(あなた)が死ぬため、従来のエンディングは見られなくなる
+	;回避するには
+	;1.嫦娥を倒さない
+	;2.純狐に触らない
+	;
+	;上記2種のうち、いずれかの手段を取らなければならない
+ENDIF
+
+;=====================================================
+;純化イベント
+;純化の光を浴びせて、現在着ている服の属性％を上昇させる
+;=====================================================
+@JUNKO_ELEMENT_EVENT
+;属性に対応したビットを格納するための変数
+#DIM bit_element, 1
+
+DRAWLINE
+PRINTFORML %CALLNAME:TARGET%は偶然にも純狐と遭遇した
+PRINTFORML 「貴方の心……まだ迷いがあるみたいね」
+PRINTFORML 「迷いを無くす"お手伝い"をしてあげるわ」
+PRINTFORMW 純狐の掌から眩い光が放射され、%CALLNAME:TARGET%に浴びせられる……
+
+;予め、服装の属性を取得しておく
+CALL CLOTHE_ABL, "属性"
+
+;今着ている服が属性を持たない場合
+IF !RESULT
+	PRINTFORML 
+	PRINTFORML しかし、%CALLNAME:TARGET%は平気な顔をしている
+	PRINTFORML 「あれ……どうして効かないの……？」
+	PRINTFORML 「仕方ないわね。また次会う時を楽しみにしていなさい」
+	PRINTFORMW 純狐は悔しそうな表情を浮かべ、この場を後にした
+;[純化寸前]の素質を持っている場合、純化処理を行う
+ELSEIF TALENT:純化寸前
+	PRINTFORML 
+	PRINTFORML 光が収まった時、%CALLNAME:TARGET%の様子は一変していた
+	PRINTFORML 言葉遣いが全く異なり、感じられる雰囲気が今までとは全く違う
+	PRINTFORML 「ふふ、これで完全に迷いがなくなったようね」
+	PRINTFORML 「心の迷いは穢れの前触れなのよ。じゃあね」
+	PRINTFORMW 純狐は戸惑う%CALLNAME:TARGET%を放置して、この場を後にした
+	
+	;最も％が高い属性への純化処理を行う
+	LOCAL = MAXARRAY(CFLAG, 220, 228)
+	LOCAL = FINDELEMENT(CFLAG, LOCAL, 220, 228)
+	LOCAL -= 220
+	
+	;属性に応じた素質を取得
+	CALL ELEMENT_CONVERT, LOCAL
+	TALENT:STR = 1
+	
+	;習慣職業・レベルも該当する属性のものに統一する
+	;属性に対応したビットをELEMENT_CONVERT_BITで取得する
+	CALL ELEMENT_CONVERT_BIT, LOCAL
+	bit_element = RESULT
+	
+	FOR COUNT, 0, 5
+		CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") = LOCAL
+		CFLAG:("習慣職業／"+LIFESTYLE_NAME(COUNT)+"") = bit_element
+	NEXT
+	
+	FOR COUNT, 0, 8
+		CALL ELEMENT_CONVERT, COUNT
+		CFLAG:("属性／"+STR+"") = 0
+	NEXT
+	CALL ELEMENT_CONVERT, LOCAL
+	CFLAG:("属性／"+STR+"") = 100
+	
+	;名称変更処理
+	CALL JUNKA_NAME, LOCAL
+	
+	PRINTFORML 
+	PRINTFORMW %CALLNAME:TARGET%は純化され、%STR%へと存在を変えた！
+	FORCEWAIT
+	CALLNAME:TARGET = %STR%
+	TALENT:純化 = 1
+	TALENT:輝夜 = 0	
+ELSE
+	PRINTFORML %CALLNAME:TARGET%の心境が少し変化した！
+	CALL CLOTHE_ABL, "属性"
+	CALL ELEMENT_CONVERT_BIT_REV, RESULT
+	LOCAL = RESULT-1
+	;属性IDを属性名に変換
+	CALL ELEMENT_CONVERT, LOCAL
+	
+	CALL CHANGE_ELEMENT_OTHER, STR, 10
+	
+	;(呼び出した関数内でSTRが弄られている可能性が高いため)再度STRに属性名を代入させる
+	CALL ELEMENT_CONVERT, LOCAL
+	
+	;属性％が100
+	IF CFLAG:("属性／"+STR+"") >= 100
+		PRINTFORML 「あら、大分迷いが無くなってきたみたいね」
+		PRINTFORML 「その調子なら、次に会った時にはもう吹っ切れるのかしら」
+		PRINTFORMW 純狐は期待を目に浮かばせながら、この場を後にした……
+		PRINTFORML 
+		PRINTFORMW %CALLNAME:TARGET%は[純化寸前]を得た
+		TALENT:純化寸前 = 1
+	;100になっていない場合
+	ELSE
+		PRINTFORML 「ふふ、少しは変わったのかしら」
+		PRINTFORML 「じゃあね。これで少しでも迷いが無くなったら幸いだわ」
+		PRINTFORMW 純狐はこの場を後にした……
+	ENDIF
+ENDIF
+
+;=====================================================
+;純化時に新たに付ける名前
+;ARG　属性ID
+;=====================================================
+@JUNKA_NAME, ARG
+
+;(念のために)STRを初期化
+STR = 
+SELECTCASE ARG
+	CASE 0
+		STR = 深窓の姫君
+	CASE 1
+		STR = 屋敷のメイド
+	CASE 2
+		STR = 謙虚なシスター
+	CASE 3
+		STR = 魔術使いの少女
+	CASE 4
+		STR = 貴族の花嫁
+	CASE 5
+		STR = 色欲の淫魔
+	CASE 6
+		STR = 春売りの少女
+	CASE 7
+		STR = 武士を志す少女
+ENDSELECT
+
+RETURN 0

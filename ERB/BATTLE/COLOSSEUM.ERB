@@ -1,0 +1,397 @@
+﻿;========================================================
+;闘技場処理
+;闘技大会(竜宮祭の時に選択して出場する)と裏の世界にある闘技場の2通りが存在する
+;
+
+;1:闘技大会
+;　武者修行と異なり淫術系統を打つことができない
+;　4回戦い全て勝つと優勝となる
+;　
+
+;2:闘技場
+;　敵は節操がない(スライムやローパーも存在する)
+;　金稼ぎの手段なので1回の戦闘で終わる(賞金はLv×$500or1000or1500)
+;　負けると……
+
+;ARG　表or裏　1:裏
+;========================================================
+@COLOSSEUM, ARG
+#DIM L_LOCAL, 1
+#DIM BATTLE_COUNT, 1
+#DIM TAG, 1
+#DIM TAG_BEFORE, 1
+#DIM rank, 1
+#DIM IMP, 1
+
+;種族判別変数　1:触手娘　2:アルラウネ　3:スライム娘
+#DIM syu, 1
+
+;種族判別変数を初期化
+syu = 0
+
+
+DRAWLINE
+IF ARG
+	$BACK_LOOP
+	PRINTFORML ～～闘技場～～
+	PRINTFORML 親父「やるかやられるかの闘技場だ。
+	PRINTFORML 　　　本来なら賭け金を取るのだが……女ならタダにしてやる
+	PRINTFORML 　　　参加したいランクを選びな」
+	PRINTL 
+	FOR L_LOCAL, 0, 3
+		PRINTFORM [{L_LOCAL}] - %COLOSSEUM_RANK(L_LOCAL)%ランク　賞金(
+		CALL SETCOLOR_MONEY
+		PRINTFORM ${BASE:レベル*500*(L_LOCAL+1)}
+		RESETCOLOR
+		PRINTL )
+	NEXT
+	PRINTFORML [4] - 戻る　　　　　　なんだ？　怖気づいたのか？
+	
+	CALL SENTAKUSHI, 5
+	
+	IF RESULT <= 3 && RESULT >= 0
+		DRAWLINE
+		rank = RESULT
+		PRINTFORML %COLOSSEUM_RANK(RESULT)%に挑戦するんだな？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			;対戦者一覧
+			;初級：ローパー、魔製スライム、親玉、赤の魔術師
+			;中級：ゴーゴン、桃スライム、調教師、緑の魔術師
+			;上級：アルラウネ、ゼラチマター、悪夢の具現者、青の魔術師
+			IF rank == 0
+				SELECTCASE RAND:4
+					CASE 0
+						;ローパー
+						LOCAL = 55
+						syu = 1
+					CASE 1
+						;魔製スライム
+						LOCAL = 9
+						syu = 3
+					CASE 2
+						;親玉
+						LOCAL = 102
+					CASE 3
+						;赤の魔術師
+						LOCAL = 104
+				ENDSELECT
+			ELSEIF rank == 1
+				SELECTCASE RAND:4
+					CASE 0
+						;ゴーゴン
+						LOCAL = 56
+					CASE 1
+						;桃スライム
+						LOCAL = 50
+						syu = 3
+					CASE 2
+						;調教役
+						LOCAL = 107
+					CASE 3
+						;赤の魔術師
+						LOCAL = 104
+				ENDSELECT
+			ELSEIF rank == 2
+				SELECTCASE RAND:4
+					CASE 0
+						;アルラウネ
+						LOCAL = 57
+						syu = 2
+					CASE 1
+						;桃スライム
+						LOCAL = 50
+						syu = 3
+					CASE 2
+						;調教役
+						LOCAL = 107
+					CASE 3
+						;赤の魔術師
+						LOCAL = 104
+				ENDSELECT
+			ENDIF
+			CALL SET_STATUS, 1
+			CALL HEALING, 1
+			CALL BATTLE, LOCAL, 0, 0, 0, BASE:レベル+rank*2+RAND:4, 1
+			
+			DRAWLINE
+			IF RESULT == 1
+				PRINTFORML 親父「ちっ、勝ちやがったか……これが報酬金だ」
+				CALL SETCOLOR_MONEY
+				PRINTFORMW ${BASE:レベル*500*(L_LOCAL+1)}手に入れた！
+				MONEY += BASE:レベル*500*(L_LOCAL+1)
+				RESETCOLOR
+			ELSE
+				DRAWLINE
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 敗北した%CALLNAME:TARGET%は、対戦相手に延々と嬲られ続けた……
+				RESETCOLOR
+				
+				;不具合回避のため、一旦調教モードに入る
+				LOCAL = FLAG:モード
+				CFLAG:モード = 2
+				
+				FOR L_LOCAL, 1, 5+rank*2
+					;上級コマンド判定
+					IF BASE:堕落 >= 500 || (BASE:堕落 >= 150 && CFLAG:性格 == 2)
+						SELECTCASE RAND:2
+							;性交
+							CASE 0
+								LOCAL = 220
+							;野外性交
+							CASE 1
+								LOCAL = 221
+								IMP = 1
+						ENDSELECT
+					;中級コマンド判定
+					ELSEIF BASE:堕落 >= 150 || L_LOCAL >= 3 || CFLAG:性格 == 2
+						SELECTCASE RAND:2
+							;指挿し入れ
+							CASE 0
+								LOCAL = 210
+							;フェラチオ
+							CASE 1
+								LOCAL = 211
+						ENDSELECT
+					;上記の判定を満たさなかった場合、基礎コマンドへ
+					ELSE
+						SELECTCASE RAND:2
+							;愛撫
+							CASE 0
+								LOCAL = 200
+							;キス
+							CASE 1
+								LOCAL = 201
+						ENDSELECT
+					ENDIF
+					
+					DRAWLINE
+					VARSET SOURCE, 0
+					SELECTCOM = LOCAL
+					;挿入系は種族変数を引数にする
+					IF INRANGE(LOCAL, 220, 221) || INRANGE(LOCAL, 230, 231)
+						CALLFORM COM{LOCAL}_T, syu
+					ELSE
+						CALLFORM COM{LOCAL}_T
+					ENDIF
+					CALL SOURCE_CALCURATE
+					CALL EVENTCOMEND_T
+					
+					CALL CALC_IMP, IMP
+					VARSET IMP, 0
+					
+					;変異因子対応の種族の場合、因子を増加させる
+					IF syu && !(TALENT:人魚 || TALENT:触手娘 || TALENT:アルラウネ || TALENT:スライム娘)
+						PRINTFORML 異性物の粘液が%CALLNAME:TARGET%の皮膚に刷り込まれていく……
+						PRINTFORML %CALLNAME:TARGET%は身をよじり抵抗するが、その程度では身体を蝕む瘴気に抗うことはできない
+						CALL FACTOR_MUTATION, syu, 50
+					ENDIF
+				NEXT
+				
+				DRAWLINE
+				PRINTFORML ～～闘技場～～
+				PRINTFORML 親父「あーあ、いっちまって
+				PRINTFORMW 　　　馬鹿な奴だ」
+				
+				;通常モードに戻る
+				CFLAG:モード = LOCAL
+			ENDIF
+			BEGIN TURNEND
+		ELSE
+			GOTO BACK_LOOP
+		ENDIF
+	ELSEIF RESULT == 4
+		RETURN 0
+	ENDIF
+	
+ELSE
+	PRINTFORML ～～闘技大会～～
+	PRINTFORML 対戦相手が決定しました
+	BATTLE_COUNT = 1
+	
+	PRINTFORML 
+	;-----------------------------------------------------------------------------------------------------------------
+	;対戦者
+	;豊姫　　　攻撃を2/3の確率でカウンターされる。肩書き変更技で消せる
+	;依姫　　　神を降ろして攻撃を無力化してくる。状態異常にするか気力削りで対処しよう
+	;サクラ　　あまり戦闘能力が高くない。強いて言えば魔力が高い
+	;
+	;鈴仙の名前が戦闘機から取られているので、汎用参加者の名前も戦闘機由来で
+	;
+	;仙空　　　攻撃力が高く諸刃の剣術を好む。よく自滅する
+	;市伝　　　弓術と魔術が得意。アブレーショットを連発してからスネークポイズンをかけるといった思考パターンを持つ。
+	;桜花　　　弓術の達人。
+	;地官　　　強くない。100年早ければ……
+	;このキャラだけ元ネタが戦闘機ではない
+	
+	;1戦目　 　地官、サクラのどちらかと当たる
+	;2～3戦目　仙空、市伝、桜花
+	;4戦目　　 綿月姉妹のどちらかと当たる
+	;(面倒なので現段階では豊姫だけ)
+	;-----------------------------------------------------------------------------------------------------------------
+	$BATTLE_LOOP
+	PRINTFORM {BATTLE_COUNT}戦目の相手は
+	IF BATTLE_COUNT == 1
+		TAG = 2+RAND:2*4
+	ELSEIF BATTLE_COUNT == 4
+		;TAG = RAND:2
+		TAG = 0
+	ELSEIF BATTLE_COUNT == 3
+		$SELECT_LOOP
+		TAG_BEFORE = TAG
+		TAG = 3+RAND:3
+		IF TAG == TAG_BEFORE
+			GOTO SELECT_LOOP
+		ENDIF
+	ELSE
+		TAG = 3+RAND:3
+	ENDIF
+	IF TAG == 0
+		PRINTFORML 豊姫です
+		PRINTFORML 豊姫は山と海を繋ぐ能力で相手を翻弄してきます
+		PRINTFORML この翻弄っぷりから、しばしば彼女はトリックスター呼ばわりされています
+		PRINTFORML 余裕を持って戦略を組み立ててください！
+		PRINTL 
+		PRINTFORMW 豊姫「強くなったんだー。悔いが残らないよう全力で戦いましょうね」
+	ELSEIF TAG == 1
+		PRINTFORML 依姫です
+		PRINTFORML 依姫は自身を依り代として神を降ろしてきます
+		PRINTFORML 注意してください！
+		PRINTL 
+		PRINTFORMW 依姫「姉にいい報告を聞かせるためにも負けられません。良い勝負をしましょう！」
+	ELSEIF TAG == 2
+		PRINTFORML サクラです
+		PRINTFORML まだまだ若い彼女は戦闘に対して未熟です
+		PRINTFORML 強いて言えば魔力が高いです
+		PRINTL 
+		PRINTFORMW サクラ「母から教えてもらった魔術がどこまで通用するか……」
+	ELSEIF TAG == 3
+		PRINTFORML 桜花です
+		PRINTFORML 兵士の中で優秀な素質を持つ彼女は弓術の扱いにとても慣れています
+		PRINTFORML しかし少し無鉄砲なところがあり、防御面に不安が見えます
+		PRINTL 
+		PRINTFORMW 桜花「勝負は先手必勝が命です！」
+	ELSEIF TAG == 4
+		PRINTFORML 仙空です
+		PRINTFORML 挑戦的な気質を持つ彼女は、果敢にも諸刃の剣術を好みます
+		PRINTFORML 火力の高さに気をつけましょう
+		PRINTL 
+		PRINTFORMW 仙空「さあ！　よそ見してたら怪我するよ！」
+	ELSEIF TAG == 5
+		PRINTFORML 市伝です
+		PRINTFORML 彼女は兵士達の中でも風代わりだという評価を受けており、弓術と魔術の双方に長けています
+		PRINTFORML その戦略も珍しいという噂があります
+		PRINTL 
+		PRINTFORMW 市伝「よろしくお願いしますッ！」
+	ELSEIF TAG == 6
+		PRINTFORML 地官です
+		PRINTFORML 彼は傭兵を辞めてから久しく、身体能力に衰えが見えます
+		PRINTFORML 恐れる相手ではないでしょう
+		PRINTL 
+		PRINTFORMW 地宮「若いもんに負けてられないからの……」
+	ENDIF
+	
+	;戦闘開始処理
+	DRAWLINE
+	CALL SETCOLOR_ABL
+	PRINTL 戦闘準備……始め！
+	RESETCOLOR
+	;戦闘の回数*6が相手のレベルとなる
+	;(1戦目:6　2戦目:12　3戦目:18　4戦目:24)
+	
+	SELECTCASE TAG
+		CASE 0
+			LOCAL = 101
+		CASE 1
+			LOCAL = 100
+		CASE 2
+			LOCAL = 200
+		CASE 3
+			LOCAL = 203
+		CASE 4
+			LOCAL = 201
+		CASE 5
+			LOCAL = 202
+		CASE 6
+			LOCAL = 204
+	ENDSELECT
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	FLAG:闘技大会 = 1
+	CALL BATTLE, LOCAL, 0, 0, 0, BATTLE_COUNT*6, 1
+	FLAG:闘技大会 = 0
+	
+	DRAWLINE
+	IF RESULT == 1
+		IF TAG == 0
+			PRINTFORML 豊姫「よく頑張ったわねー。よしよし♪」
+		ELSEIF TAG == 1
+			PRINTFORML 依姫「残念……次こそは勝ってみせます」
+		ELSEIF TAG == 2
+			PRINTFORML サクラ「うーん……八意様にも手ほどきしてもらおうかな」
+		ELSEIF TAG == 3
+			PRINTFORML 桜花「うっ……詰めが甘かったのでしょうか。もっと鍛えてきます！」
+		ELSEIF TAG == 4
+			PRINTFORML 仙空「いたた……帰ったら包帯巻こ……」
+		ELSEIF TAG == 5
+			PRINTFORML 市伝「あなた、中々やるわね……」
+		ELSEIF TAG == 6
+			PRINTFORML 地宮「300年早ければ勝っていた……」
+		ENDIF
+		IF BATTLE_COUNT == 4
+			BATTLE_COUNT += 1
+		ELSE
+			PRINTFORMW 次の対戦に進みます
+			DRAWLINE
+			BATTLE_COUNT += 1
+			GOTO BATTLE_LOOP
+		ENDIF
+	ELSE
+		DRAWLINE
+		PRINTFORML ～～闘技大会の帰り道～～
+		PRINTFORML 銀髪の女性「あら、負けたのね
+		PRINTFORML 　　　　　　戦闘は身体能力だけでは勝てないから経験も積んでおかないといけないの
+		PRINTFORML 　　　　　　経験と身体能力の双方をバランスよく得るのが勝利への近道ね」
+		PRINTFORML 
+	ENDIF
+	
+	;優勝
+	IF BATTLE_COUNT == 5
+		PRINTFORML %CALLNAME:TARGET%は大会で優勝した！
+		CALL SETCOLOR_MONEY
+		IF !ITEM:月夜見の太刀
+			PRINTFORMW 商品として「月夜見の太刀」と$90,000が贈呈されます！
+			MONEY += 90000
+			ITEM:月夜見の太刀 += 1
+		ELSE
+			PRINTFORMW 商品として$90,000が贈呈されます！
+			MONEY += 90000
+		ENDIF
+		RESETCOLOR
+	;準優勝
+	ELSEIF BATTLE_COUNT == 4
+		PRINTFORML %CALLNAME:TARGET%は大会で準優勝した！
+		CALL SETCOLOR_MONEY
+		PRINTFORMW 商品として$40,000を獲得した！
+		MONEY += 90000
+		RESETCOLOR
+	;その他　商品無し
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は結果を残せなかったようだ……
+	ENDIF
+ENDIF
+
+;-------------------------------------------------
+;コロシアムのランク出力
+;-------------------------------------------------
+@COLOSSEUM_RANK, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+SIF LOCALS == ""
+	SPLIT "初級_中級_上級", "_", LOCALS
+RETURNF LOCALS:ARG
+

@@ -1,0 +1,1482 @@
+﻿;=========================================================
+;敵専用コマンド
+;=========================================================
+
+;-------------------------------------------
+;200:　追い剥ぎ攻撃
+;-------------------------------------------
+@ENEMY_SKILL_200, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 200
+
+@ATTACK_MOVE_200, ARG
+PRINTFORML %STR:ARG%は大きく振りかぶり、%STR:(TFLAG:(530+ARG))%目掛けて勢いよく振り下ろした！
+CALL DAMAGE_CALCULATION, 0, 80, 80, ARG, TFLAG:(530+ARG), 0, 6
+
+;-------------------------------------------
+;201:　ヘルファイア
+;-------------------------------------------
+@ENEMY_SKILL_201, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 201
+
+@ATTACK_MOVE_201, ARG
+PRINTFORML %STR:ARG%は呪文を唱え、%STR:(TFLAG:(530+ARG))%を炎で包みこんだ！
+CALL DAMAGE_CALCULATION, 1, 150, 90, ARG, TFLAG:(530+ARG), 0, 6
+
+;-------------------------------------------
+;202:　甘い息
+;-------------------------------------------
+@ENEMY_SKILL_202, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 202
+
+@ATTACK_MOVE_202, ARG
+PRINTFORML %STR:ARG%は甘い息を%STR:(TFLAG:(530+ARG))%に浴びせた！
+CALL DAMAGE_CALCULATION, 2, 15, 90, ARG, TFLAG:(530+ARG), 1, 0
+
+;-------------------------------------------
+;203:　かぶりつく
+;-------------------------------------------
+@ENEMY_SKILL_203, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 203
+
+@ATTACK_MOVE_203, ARG
+PRINTFORML %STR:ARG%は鋭い牙を光らせ、%STR:(TFLAG:(530+ARG))%目掛けて勢いよく飛びついた！
+CALL DAMAGE_CALCULATION, 0, 250, 50, ARG, TFLAG:(530+ARG), 0, 0
+
+;-------------------------------------------
+;204:　溶解液
+;-------------------------------------------
+@ENEMY_SKILL_204, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 204
+
+@ATTACK_MOVE_204, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に溶解液を飛ばした！
+CALL DAMAGE_CALCULATION, 1, 50, 50, ARG, TFLAG:(530+ARG), 0, 6
+
+;-------------------------------------------
+;205:　スライム愛撫
+;-------------------------------------------
+@ENEMY_SKILL_205, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 205
+
+@ATTACK_MOVE_205, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を包み込み、全身を愛撫した！
+CALL DAMAGE_CALCULATION, 2, 60, 60, ARG, TFLAG:(530+ARG), 2, 0
+IF RESULT
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 0
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 0
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 0
+ENDIF
+
+;-------------------------------------------
+;206:　臭い液体
+;気力を10％下げる
+;-------------------------------------------
+@ENEMY_SKILL_206, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 206
+
+@ATTACK_MOVE_206, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に液体を飛ばした！
+;PRINTFORML あまりの臭さに気力を削がれた！
+CALL DAMAGE_CALCULATION, 1, 10, 80, ARG, TFLAG:(530+ARG), 1, 0
+
+;-------------------------------------------
+;207:　追い剥ぎ攻撃(強)
+;-------------------------------------------
+@ENEMY_SKILL_207, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 207
+
+@ATTACK_MOVE_207, ARG
+PRINTFORML %STR:ARG%は大きく振りかぶり、%STR:(TFLAG:(530+ARG))%の衣服を裂くように攻撃した！
+CALL DAMAGE_CALCULATION, 0, 80, 80, ARG, TFLAG:(530+ARG), 0, 9
+
+;-------------------------------------------
+;208:　流星群
+;-------------------------------------------
+@ENEMY_SKILL_208, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 208
+
+@ATTACK_MOVE_208, ARG
+PRINTFORML %STR:ARG%は流星群を呼び寄せ、%STR:(TFLAG:(530+ARG))%目掛けて降らせた！
+CALL DAMAGE_CALCULATION, 1, TFLAG:(550+TFLAG:(530+ARG)*10)*19/20-(TFLAG:(550+TFLAG:(530+ARG)*10)-TFLAG:(556+TFLAG:(530+ARG)*10)), 20, ARG, TFLAG:(530+ARG), 0, 1002, 30
+
+;-------------------------------------------
+;209:　スターブレス
+;(自分の気力％-相手の気力％)*2+40の威力で攻撃する
+;-------------------------------------------
+@ENEMY_SKILL_209, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 209
+
+@ATTACK_MOVE_209, ARG
+PRINTFORML %STR:ARG%はスターブレスを吐いた！
+CALL DAMAGE_CALCULATION, 1, (TFLAG:(557+ARG*10)*100/TFLAG:(551+ARG*10)-TFLAG:(557+TFLAG:(530+ARG)*10)*100/TFLAG:(551+TFLAG:(530+ARG)*10))*2+40, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+
+;-------------------------------------------
+;210:　凶暴化
+;攻撃と素早さを2倍にする
+;-------------------------------------------
+@ENEMY_SKILL_210, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 210
+
+@ATTACK_MOVE_210, ARG
+PRINTFORML %STR:ARG%は凶暴化した！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 13, 4
+
+;-------------------------------------------
+;211:　弱者狙い
+;相手のＨＰが半分以下だと威力1.5倍に
+;-------------------------------------------
+@ENEMY_SKILL_211, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 211
+
+@ATTACK_MOVE_211, ARG
+PRINTFORML %STR:ARG%は弱者狙いをした！
+PRINTFORML %STR:(TFLAG:(530+ARG))%の体力が半分以下だとダメージが増加する！
+IF TFLAG:(550+TFLAG:(530+ARG)*10) >= TFLAG:(556+TFLAG:(530+ARG)*10)*2
+	CALL DAMAGE_CALCULATION, 0, 150, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+ELSE
+	CALL DAMAGE_CALCULATION, 0, 100, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+ENDIF
+
+;-------------------------------------------
+;212:　ローパー責め
+;欲情5％アップor威力90の快楽攻撃のどちらかを4回行う
+;-------------------------------------------
+@ENEMY_SKILL_212, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 212
+
+@ATTACK_MOVE_212, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を捕え、触手で全身を責め立てようとした！
+CALL DAMAGE_CALCULATION, 2, 90, 50, ARG, TFLAG:(530+ARG), 2, 0
+IF RESULT
+	FOR L_LOCAL, 0, 4
+		IF !RAND:2
+			CALL DAMAGE_CALCULATION, 2, 90, 100, ARG, TFLAG:(530+ARG), 2, 0
+		ELSE
+			CALL DAMAGE_CALCULATION, 2, 5, 100, ARG, TFLAG:(530+ARG), 3, 0
+		ENDIF
+	NEXT
+ENDIF
+
+;-------------------------------------------
+;213:　媚薬入りスライム愛撫
+;追加効果として欲情を5％アップさせる
+;-------------------------------------------
+@ENEMY_SKILL_213, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 213
+
+@ATTACK_MOVE_213, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を包み込み、媚薬を染み込ませながら全身を愛撫した！
+CALL DAMAGE_CALCULATION, 2, 60, 60, ARG, TFLAG:(530+ARG), 2, 14
+IF RESULT
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 14
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 14
+	CALL DAMAGE_CALCULATION, 2, 70, 100, ARG, TFLAG:(530+ARG), 2, 14
+ENDIF
+
+;-------------------------------------------
+;214:　石化睨み
+;物理or淫術攻撃を行おうとしている相手を石化させる
+;-------------------------------------------
+@ENEMY_SKILL_214, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 214
+
+@ATTACK_MOVE_214, ARG
+PRINTFORML %STR:ARG%は深い藍色の瞳で%STR:(TFLAG:(530+ARG))%を睨みつけた！
+;相手が魔法攻撃の場合、効かない(ID40台)
+IF INRANGE(TFLAG:(536+TFLAG:(530+ARG)), 40, 50)
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %STR:(TFLAG:(530+ARG))%は詠唱に集中していて睨みが効かない！
+	RESETCOLOR
+ELSE
+	CALL DAMAGE_CALCULATION, 4, 0, 50, ARG, TFLAG:(530+ARG), 0, 15, 4
+ENDIF
+
+;-------------------------------------------
+;215:　触手挿しこみ
+;相手に責め具を装着させる
+;-------------------------------------------
+@ENEMY_SKILL_215, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 215
+
+@ATTACK_MOVE_215, ARG
+PRINTFORML %STR:ARG%は触手を%STR:(TFLAG:(530+ARG))%に向けて飛ばした！
+IF TFLAG:(530+ARG) == 0 && (OTHER_ACC(500) || TFLAG:633 == 1)
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %STR:(TFLAG:(530+ARG))%の股間には、既に責め具が挿入されている！
+	RESETCOLOR
+ELSE
+	CALL DAMAGE_CALCULATION, 2, 0, 45, ARG, TFLAG:(530+ARG), 0, 16, 8
+ENDIF
+
+;-------------------------------------------
+;216:　娼婦化呪文
+;相手の肩書きを"娼婦"に変える
+;-------------------------------------------
+@ENEMY_SKILL_216, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 216
+
+@ATTACK_MOVE_216, ARG
+PRINTFORML %STR:ARG%は妖しい呪文を%STR:(TFLAG:(530+ARG))%にかけた！
+CALL DAMAGE_CALCULATION, 4, 0, 50, ARG, TFLAG:(530+ARG), 0, 17, 12
+
+;-------------------------------------------
+;217:　精神ヘドロ
+;相手を欲情させ、服を1段階溶かす
+;-------------------------------------------
+@ENEMY_SKILL_217, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 217
+
+@ATTACK_MOVE_217, ARG
+PRINTFORML %STR:ARG%は呪文によって妖しいヘドロを生成し、%STR:(TFLAG:(530+ARG))%に飛ばした！
+CALL DAMAGE_CALCULATION, 3, 85, 60, ARG, TFLAG:(530+ARG), 0, 18, 10
+
+;-------------------------------------------
+;218:　媚薬剣
+;相手を欲情させる
+;-------------------------------------------
+@ENEMY_SKILL_218, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 218
+
+@ATTACK_MOVE_218, ARG
+PRINTFORML %STR:ARG%は媚薬を塗った刃で%STR:(TFLAG:(530+ARG))%を攻撃した！
+CALL DAMAGE_CALCULATION, 0, 90, 85, ARG, TFLAG:(530+ARG), 0, 1, 0
+
+;-------------------------------------------
+;219:　外道剣
+;相手を損傷状態にする
+;-------------------------------------------
+@ENEMY_SKILL_219, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 219
+
+@ATTACK_MOVE_219, ARG
+PRINTFORML %STR:ARG%は毒を塗った刃で%STR:(TFLAG:(530+ARG))%を攻撃した！
+CALL DAMAGE_CALCULATION, 0, 90, 85, ARG, TFLAG:(530+ARG), 0, 10, 0
+
+;-------------------------------------------
+;220:　目潰し
+;相手を暗闇状態にする
+;-------------------------------------------
+@ENEMY_SKILL_220, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 220
+
+@ATTACK_MOVE_220, ARG
+PRINTFORML %STR:ARG%は目潰しを%STR:(TFLAG:(530+ARG))%に向けて行った！
+CALL DAMAGE_CALCULATION, 0, 90, 85, ARG, TFLAG:(530+ARG), 0, 19, 8
+
+;-------------------------------------------
+;221:　溶ける
+;粘性体になる
+;-------------------------------------------
+@ENEMY_SKILL_221, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 221
+
+@ATTACK_MOVE_221, ARG
+PRINTFORML %STR:ARG%は身体を溶かし、液状になった！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 20, 0
+
+;-------------------------------------------
+;222:　力溜め溶ける
+;粘性体になる（ボス用のエフェクト）
+;-------------------------------------------
+@ENEMY_SKILL_222, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 222
+
+@ATTACK_MOVE_222, ARG
+PRINTFORML %STR:ARG%は身体を溶かし、力を蓄え始めた……
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 20, 0
+
+;-------------------------------------------
+;223:　凍える風
+;気力を10％削る特殊攻撃
+;-------------------------------------------
+@ENEMY_SKILL_223, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 223
+
+@ATTACK_MOVE_223, ARG
+PRINTFORML %STR:ARG%は凍える風を放った！
+CALL DAMAGE_CALCULATION, 1, 95, 95, ARG, TFLAG:(530+ARG), 0, 0, 7
+CALL DAMAGE_CALCULATION, 1, 10, -1, ARG, TFLAG:(530+ARG), 1, 0, 0
+
+;-------------------------------------------
+;224:　チェンジリング
+;お互いの肩書きと行動元、攻撃対象を入れ替える
+;-------------------------------------------
+@ENEMY_SKILL_224, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 224
+;優先度+2
+TFLAG:(542+ARG) = 2
+
+@ATTACK_MOVE_224, ARG
+PRINTFORML %STR:ARG%はチェンジリングを行使した！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 21, 0
+
+;-------------------------------------------
+;225:　秘弓「ミサゴ」
+;オスプレイのこと。高威力の技
+;-------------------------------------------
+@ENEMY_SKILL_225, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 225
+
+@ATTACK_MOVE_225, ARG
+PRINTFORML %STR:ARG%は秘弓「ミサゴ」を放った！
+CALL DAMAGE_CALCULATION, 0, 190, 80, ARG, TFLAG:(530+ARG), 0, 0, 0
+
+;-------------------------------------------
+;226:　秘弓「カタナ」
+;状態異常、損傷を与える技
+;-------------------------------------------
+@ENEMY_SKILL_226, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 226
+
+@ATTACK_MOVE_226, ARG
+PRINTFORML %STR:ARG%は秘弓「カタナ」を放った！
+CALL DAMAGE_CALCULATION, 0, 120, 90, ARG, TFLAG:(530+ARG), 0, 10, 0
+
+
+;-------------------------------------------
+;227:　服脱がし
+;-------------------------------------------
+@ENEMY_SKILL_227, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 227
+
+@ATTACK_MOVE_227, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の服を乱暴に引きちぎろうとした！
+CALL DAMAGE_CALCULATION, 3, -1, 85, ARG, TFLAG:(530+ARG), 0, 6
+
+;-------------------------------------------
+;228:　燃素を浮かべる
+;周囲に燃素を浮かべ、物理攻撃をしてきた相手のＨＰを1/8削る
+;-------------------------------------------
+@ENEMY_SKILL_228, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 228
+;優先度+2
+TFLAG:(542+ARG) = 2
+
+@ATTACK_MOVE_228, ARG
+PRINTFORML %STR:ARG%は周囲に燃素を浮かべた！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 24, 0
+
+;-------------------------------------------
+;229:　力貯め
+;次のターンに撃つ攻撃の威力が2倍　＆　命中が100％になる
+;-------------------------------------------
+@ENEMY_SKILL_229, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 229
+
+@ATTACK_MOVE_229, ARG
+PRINTFORML %STR:ARG%は力を溜めはじめた！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 25, 0
+
+;-------------------------------------------
+;230:　炎上突進
+;最大HPの1/8を反動ダメージとして受ける
+;-------------------------------------------
+@ENEMY_SKILL_230, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 230
+
+@ATTACK_MOVE_230, ARG
+PRINTFORML %STR:ARG%は自らの身体を燃やしながら突進してきた！
+CALL DAMAGE_CALCULATION, 0, 160, 90, ARG, TFLAG:(530+ARG), 0, 26, 0
+
+;-------------------------------------------
+;231:　ハイポキシア
+;相手に最大HPの1/10ダメージ　＆　ひるみ(怯み率は対象者が持つ穢れの少なさに比例する)
+;-------------------------------------------
+@ENEMY_SKILL_231, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 231
+
+@ATTACK_MOVE_231, ARG
+PRINTFORML %STR:ARG%はハイポキシアを唱えた！
+PRINTFORML %STR:(TFLAG:(530+ARG))%の周囲から酸素が奪われていく……
+CALL DAMAGE_CALCULATION, 0, 0, 100, ARG, TFLAG:(530+ARG), 0, 27, 0
+
+
+;-------------------------------------------
+;232:　アウトバースト
+;威力180の3回攻撃
+;使った後は獣に戻る(敵専用の行動)
+;-------------------------------------------
+@ENEMY_SKILL_232, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 232
+
+@ATTACK_MOVE_232, ARG
+PRINTFORML %STR:ARG%はアウトバーストを放った！
+PRINTFORML %STR:ARG%の身体から液体が溢れ、洪水となって%STR:(TFLAG:(530+ARG))%に襲いかかる！
+;3回攻撃なので単純に3回処理する
+CALL DAMAGE_CALCULATION, 1, 180, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+CALL DAMAGE_CALCULATION, 1, 180, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+;最後の1撃にのみ追加効果として獣に戻る効果を与える
+;(これを回避すれば粘性体のままでいるかも)
+CALL DAMAGE_CALCULATION, 1, 180, 100, ARG, TFLAG:(530+ARG), 0, 28, 0
+
+
+;-------------------------------------------
+;233:　不純物の輝き
+;HPを3/4にする＆相手を10％の確率で怯ませる
+;-------------------------------------------
+@ENEMY_SKILL_233, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 233
+
+@ATTACK_MOVE_233, ARG
+PRINTFORML %STR:ARG%は小さな石を手に取り、天にかざした
+PRINTFORML 石の中に僅かに含まれる不純物が反応し、強い光となって%STR:(TFLAG:(530+ARG))%を襲う！
+CALL DAMAGE_CALCULATION, 1, TFLAG:(556+TFLAG:(530+ARG)*10)/4, 95, ARG, TFLAG:(530+ARG), 0, 1002, 10
+;怯みの追加効果
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 29, 0, 10
+
+
+;-------------------------------------------
+;234:　ポンピング
+;自分の攻撃と素早さを1段階上げる
+;-------------------------------------------
+@ENEMY_SKILL_234, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 234
+
+@ATTACK_MOVE_234, ARG
+PRINTFORML %STR:ARG%はポンピングを放った！
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 30, 10, 100
+
+;-------------------------------------------
+;235:　正体を現す(植物)
+;魔術に取り込まれし者専用
+;植物になる
+;-------------------------------------------
+@ENEMY_SKILL_235, ARG
+
+;対象は自分
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 235
+
+@ATTACK_MOVE_235, ARG
+PRINTFORML %STR:ARG%はローブを脱いだ
+PRINTFORML 曝け出した裸身を下半身から沸いた蔦が覆っていく……
+;植物になる
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 20, 0
+
+;-------------------------------------------
+;236:　ローパー自慰
+;ローパー責めから地の文と対象を変更しただけ
+;欲情5％アップor威力90の快楽攻撃のどちらかを4回行う
+;-------------------------------------------
+@ENEMY_SKILL_236, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 236
+
+@ATTACK_MOVE_236, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%が召喚した触手は召喚主を捕え、触手で全身を責め立てようとする！
+CALL DAMAGE_CALCULATION, 2, 90, 50, ARG, ARG, 2, 0
+IF RESULT
+	FOR L_LOCAL, 0, 4
+		IF !RAND:2
+			CALL DAMAGE_CALCULATION, 2, 90, 100, ARG, TFLAG:(530+ARG), 2, 0
+		ELSE
+			CALL DAMAGE_CALCULATION, 2, 5, 100, ARG, TFLAG:(530+ARG), 3, 0
+		ENDIF
+	NEXT
+ENDIF
+
+;-------------------------------------------
+;237:　淫魔のキス
+;味方1人をランダムで対象とする
+;防御と素早さが1段階上がり、対象を淫魔にする
+;欲情も5％上昇する
+;-------------------------------------------
+@ENEMY_SKILL_237, ARG
+#DIM kazu, 1
+#DIM L_LOCAL, 1
+
+kazu = 0
+;対象に取れる数をカウントし、kazuに入れる
+FOR L_LOCAL, 3, 3+TFLAG:敵の数
+	IF TFLAG:(558+L_LOCAL*10) && L_LOCAL != ARG && !GETBIT(TFLAG:(500+L_LOCAL), 7)
+		kazu += 1
+	ENDIF
+NEXT
+
+;対象がいない場合、適当に自分を指定して終了する
+IF !kazu
+	TFLAG:(530+ARG) = ARG
+	RETURN 0
+ENDIF
+
+$BACK_LOOP
+TFLAG:(530+ARG) = 3+RAND:3
+;対象がいないor自分の場合、再度選択を行う
+IF !TFLAG:(558+TFLAG:(530+ARG)*10) || GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	GOTO BACK_LOOP
+ENDIF
+TFLAG:(536+ARG) = 237
+
+@ATTACK_MOVE_237, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に淫魔の口づけを行った！
+;対象が戦闘不能の場合、失敗する
+IF GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	PRINTFORML しかし、行動は不発に終わった！
+ELSE
+	CALL DAMAGE_CALCULATION, 2, 5, 100, ARG, TFLAG:(530+ARG), 3, 0
+	CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 33, 0, 100
+	IF STR:(6+TFLAG:(530+ARG)) != "淫魔"
+		CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 32, 10, 100
+	ENDIF
+ENDIF
+
+;-------------------------------------------
+;238:　八つ首の襲撃
+;威力120の物理攻撃+威力100の特殊攻撃
+;-------------------------------------------
+@ENEMY_SKILL_238, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 238
+
+@ATTACK_MOVE_238, ARG
+PRINTFORML %STR:ARG%は八つの首で攻撃をしかけた！
+;特殊→物理の順
+CALL DAMAGE_CALCULATION, 1, 100, 100, ARG, TFLAG:(530+ARG), 0, 10, 0
+CALL DAMAGE_CALCULATION, 0, 120, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+
+;-------------------------------------------
+;239:　神憑き
+;味方1人(ランダム)の攻撃、特攻、素早さを2段階上げる
+;-------------------------------------------
+@ENEMY_SKILL_239, ARG
+#DIM kazu, 1
+#DIM L_LOCAL, 1
+
+kazu = 0
+;対象に取れる数をカウントし、kazuに入れる
+FOR L_LOCAL, 3, 3+TFLAG:敵の数
+	IF TFLAG:(556+L_LOCAL*10) && L_LOCAL != ARG && !GETBIT(TFLAG:(500+L_LOCAL), 7)
+		kazu += 1
+	ENDIF
+NEXT
+
+;対象がいない場合、適当に自分を指定して終了する
+IF !kazu
+	TFLAG:(530+ARG) = ARG
+	RETURN 0
+ENDIF
+
+$BACK_LOOP
+TFLAG:(530+ARG) = 3+RAND:3
+;対象がいないor自分の場合、再度選択を行う
+IF !TFLAG:(558+TFLAG:(530+ARG)*10) || GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	GOTO BACK_LOOP
+ENDIF
+TFLAG:(536+ARG) = 239
+
+@ATTACK_MOVE_239, ARG
+PRINTFORML %STR:ARG%は神を憑かせるための儀式を行った！
+;対象が戦闘不能の場合、失敗する
+IF GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	PRINTFORML しかし、行動は不発に終わった！
+ELSE
+	CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 34, 20, 100
+ENDIF
+
+
+;-------------------------------------------
+;240:　夜の訪れ
+;20％の確率で相手を暗闇状態にする物理攻撃を2回行う
+;-------------------------------------------
+@ENEMY_SKILL_240, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 240
+
+@ATTACK_MOVE_240, ARG
+PRINTFORML %STR:ARG%は夜の訪れを知らせるかのように%STR:(TFLAG:(530+ARG))%を突いた！
+CALL DAMAGE_CALCULATION, 0, 90, 90, ARG, TFLAG:(530+ARG), 0, 19, 8, 20
+CALL DAMAGE_CALCULATION, 0, 90, 90, ARG, TFLAG:(530+ARG), 0, 19, 8, 20
+
+;-------------------------------------------
+;241:　症状の悪化
+;基本は威力80の特殊攻撃だが、相手が損傷状態の場合威力が2倍になる
+;-------------------------------------------
+@ENEMY_SKILL_241, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 241
+
+@ATTACK_MOVE_241, ARG
+PRINTFORML %STR:ARG%は症状の悪化を使った！
+PRINTFORML 損傷状態の相手に威力が強まる！
+IF GETBIT(TFLAG:(530+ARG), 1)
+	CALL DAMAGE_CALCULATION, 1, 160, 100, ARG, TFLAG:(530+ARG), 0, 0, 8
+ELSE
+	CALL DAMAGE_CALCULATION, 1, 80, 100, ARG, TFLAG:(530+ARG), 0, 0, 8
+ENDIF
+
+;-------------------------------------------
+;242:　なめまわし
+;相手の防御2段階ダウン＆3割の確率で損傷になる
+;-------------------------------------------
+@ENEMY_SKILL_242, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 242
+
+@ATTACK_MOVE_242, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を舐め回した！
+CALL DAMAGE_CALCULATION, 3, 0, 90, ARG, TFLAG:(530+ARG), 0, 35, 5, 100
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 10, 0, 30
+
+;-------------------------------------------
+;243:　M.O.F
+;損傷+暗闇+気力5％減少
+;-------------------------------------------
+@ENEMY_SKILL_243, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 243
+
+@ATTACK_MOVE_243, ARG
+PRINTFORML %STR:ARG%はM.O.Fを放った
+PRINTFORML 瘴気が全身から溢れ、%STR:(TFLAG:(530+ARG))%の体調を著しく乱そうとする……
+CALL DAMAGE_CALCULATION, 1, 10, 100, ARG, TFLAG:(530+ARG), 1, 0, 0
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 36, 0, 100
+
+;-------------------------------------------
+;244:　贖罪「薬の独り占め」
+;自分の魔力を2段階上げるが、損傷状態になる
+;-------------------------------------------
+@ENEMY_SKILL_244, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 244
+
+@ATTACK_MOVE_244, ARG
+PRINTFORML %STR:ARG%は贖罪「薬の独り占め」を起動した！
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, ARG, 0, 37, 40, 100
+
+;-------------------------------------------
+;245:　在りし日の回帰
+;威力150の特殊攻撃
+;-------------------------------------------
+@ENEMY_SKILL_245, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 245
+
+@ATTACK_MOVE_245, ARG
+PRINTFORML %STR:ARG%は在りし日の回帰を放った！
+CALL DAMAGE_CALCULATION, 1, 150, 100, ARG, TFLAG:(530+ARG), 0, 0, 10, 100
+
+;-------------------------------------------
+;246:　呪術
+;威力80の特殊攻撃
+;-------------------------------------------
+@ENEMY_SKILL_246, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 246
+
+@ATTACK_MOVE_246, ARG
+PRINTFORML %STR:ARG%は地に捧げる祈りをしたかと思うと、突然地面が揺れた！
+CALL DAMAGE_CALCULATION, 1, 80, 100, ARG, TFLAG:(530+ARG), 0, 0, 15, 100
+
+;-------------------------------------------
+;247:　瘴気
+;威力70の特殊攻撃
+;1割の確率で相手の気力を15％下げる
+;-------------------------------------------
+@ENEMY_SKILL_247, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 247
+
+@ATTACK_MOVE_247, ARG
+PRINTFORML %STR:ARG%は瘴気を放った！
+CALL DAMAGE_CALCULATION, 1, 70, 100, ARG, TFLAG:(530+ARG), 0, 22, 12, 10
+
+;-------------------------------------------
+;248:　エーテルの風
+;威力90の特殊攻撃
+;2割の確率で自分の魔力1段階アップ
+;-------------------------------------------
+@ENEMY_SKILL_248, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 248
+
+@ATTACK_MOVE_248, ARG
+PRINTFORML %STR:ARG%はエーテルの風を吹かせた！
+CALL DAMAGE_CALCULATION, 1, 70, 100, ARG, TFLAG:(530+ARG), 0, 38, 13, 20
+
+;-------------------------------------------
+;249:　羽ばたき
+;味方1人(ランダム)の素早さを1段階上げる
+;-------------------------------------------
+@ENEMY_SKILL_249, ARG
+#DIM kazu, 1
+#DIM L_LOCAL, 1
+
+kazu = 0
+;対象に取れる数をカウントし、kazuに入れる
+FOR L_LOCAL, 3, 3+TFLAG:敵の数
+	IF TFLAG:(558+L_LOCAL*10) && L_LOCAL != ARG && !GETBIT(TFLAG:(500+L_LOCAL), 7)
+		kazu += 1
+	ENDIF
+NEXT
+
+;対象がいない場合、適当に自分を指定して終了する
+IF !kazu
+	TFLAG:(530+ARG) = ARG
+	RETURN 0
+ENDIF
+
+$BACK_LOOP
+TFLAG:(530+ARG) = 3+RAND:3
+;対象がいないor自分の場合、再度選択を行う
+IF !TFLAG:(558+TFLAG:(530+ARG)*10) || GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	GOTO BACK_LOOP
+ENDIF
+TFLAG:(536+ARG) = 249
+
+@ATTACK_MOVE_249, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に向かって羽ばたいた！
+;対象が戦闘不能の場合、失敗する
+IF GETBIT(TFLAG:(500+TFLAG:(530+ARG)), 7) || TFLAG:(530+ARG) == ARG
+	PRINTFORML しかし、行動は不発に終わった！
+ELSE
+	CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 39, 18, 100
+ENDIF
+
+;-------------------------------------------
+;250:　錯乱した言動
+;相手の魔力を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_250, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 250
+
+@ATTACK_MOVE_250, ARG
+PRINTFORML %STR:ARG%は錯乱した言動を発した！
+CALL DAMAGE_CALCULATION, 3, 0, 95, ARG, TFLAG:(530+ARG), 0, 41, 6, 100
+
+;-------------------------------------------
+;251:　赤きカグツチの炎
+;威力100の特殊攻撃
+;5割の確率で自分の攻撃が1段階上がる
+;-------------------------------------------
+@ENEMY_SKILL_251, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 251
+
+@ATTACK_MOVE_251, ARG
+PRINTFORML %STR:ARG%はカグツチを降ろし、周囲に炎をばら撒いた！
+CALL DAMAGE_CALCULATION, 1, 100, 90, ARG, TFLAG:(530+ARG), 0, 41, 6, 100
+
+;-------------------------------------------
+;252:　八雷神の襲来
+;威力70の特殊攻撃×8回攻撃
+;輝夜がレベル35以上の場合のみ使ってくる
+;-------------------------------------------
+@ENEMY_SKILL_252, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 252
+
+@ATTACK_MOVE_252, ARG
+PRINTFORML %STR:ARG%は八雷神を降ろした！
+PRINTFORML %STR:ARG%が刀を降ろすと同時に八雷神達は攻撃を始める！
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 50, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+CALL DAMAGE_CALCULATION, 1, 70, 90, ARG, TFLAG:(530+ARG), 0, 0, 0, 100
+
+;-------------------------------------------
+;253:　須佐乃男の太刀筋
+;威力100の物理攻撃+5割の確率で自分の防御1段階アップ
+;-------------------------------------------
+@ENEMY_SKILL_253, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 253
+
+@ATTACK_MOVE_253, ARG
+PRINTFORML %STR:ARG%は須佐乃男から学んだ太刀筋で攻撃をしかけた！
+CALL DAMAGE_CALCULATION, 0, 100, 100, ARG, TFLAG:(530+ARG), 0, 45, 18, 100
+
+;-------------------------------------------
+;254:　伊豆能売の水
+;自分の気力20％回復+状態異常回復
+;-------------------------------------------
+@ENEMY_SKILL_254, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 254
+
+@ATTACK_MOVE_254, ARG
+PRINTFORML %STR:ARG%は伊豆能売の水を使った！
+CALL DAMAGE_CALCULATION, 3, TFLAG:(551+ARG:3*10)/5, -1, ARG, ARG, 10, 1006, 0
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 44, 0, 100
+
+
+;-------------------------------------------
+;255:　紅き勾玉
+;威力60の特殊攻撃+威力40の物理攻撃
+;それぞれ3割の確率で魔力or攻撃が上がる
+;-------------------------------------------
+@ENEMY_SKILL_255, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 255
+
+@ATTACK_MOVE_255, ARG
+PRINTFORML %STR:ARG%は紅い勾玉を掲げた！
+PRINTFORML 勾玉から二色の光線がほとばしる！
+CALL DAMAGE_CALCULATION, 1, 60, 100, ARG, TFLAG:(530+ARG), 0, 38, 6, 30
+CALL DAMAGE_CALCULATION, 0, 40, 100, ARG, TFLAG:(530+ARG), 0, 43, 6, 30
+
+;-------------------------------------------
+;256:　驚かす
+;恐ろしい姿を仄めかせて威圧する
+;相手の攻撃を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_256, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 256
+
+@ATTACK_MOVE_256, ARG
+PRINTFORML %STR:ARG%は恐ろしい姿を仄めかし、%STR:(TFLAG:(530+ARG))%を驚かした！
+PRINTFORML それがハッタリかどうかは彼女にしか分からない……
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 42, 15, 100
+
+
+;-------------------------------------------
+;257:　振り下ろし
+;威力90の物理攻撃
+;2割の確率で相手の防御を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_257, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 257
+
+@ATTACK_MOVE_257, ARG
+PRINTFORML %STR:ARG%は持っている武器を%STR:(TFLAG:(530+ARG))%めがけて振り下ろした！
+CALL DAMAGE_CALCULATION, 0, 90, 100, ARG, TFLAG:(530+ARG), 0, 40, 6, 20
+
+;-------------------------------------------
+;258:　旋風
+;威力60の物理攻撃を3回繰り返す
+;1割の確率で相手の防御を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_258, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 258
+
+@ATTACK_MOVE_258, ARG
+PRINTFORML %STR:ARG%は止め処ない旋風を生み出した！
+CALL DAMAGE_CALCULATION, 0, 60, 100, ARG, TFLAG:(530+ARG), 0, 40, 60, 10
+CALL DAMAGE_CALCULATION, 0, 60, 100, ARG, TFLAG:(530+ARG), 0, 40, 0, 10
+CALL DAMAGE_CALCULATION, 0, 60, 100, ARG, TFLAG:(530+ARG), 0, 40, 0, 10
+
+;-------------------------------------------
+;259:　根絶やしの炎
+;威力100の特殊攻撃
+;3割の確率で相手の防御と魔力を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_259, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 259
+
+@ATTACK_MOVE_259, ARG
+PRINTFORML %STR:ARG%は根絶やしの炎を吐き出した！
+CALL DAMAGE_CALCULATION, 1, 100, 100, ARG, TFLAG:(530+ARG), 0, 49, 70, 30
+
+;-------------------------------------------
+;260:　ダブルサイドワインダー
+;威力100の物理攻撃を2回行う
+;蛙に特攻(意味ない)
+;-------------------------------------------
+@ENEMY_SKILL_260, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 260
+
+@ATTACK_MOVE_260, ARG
+PRINTFORML %STR:ARG%はダブルサイドワインダーを放った！
+CALL DAMAGE_CALCULATION, 0, 100, 85, ARG, TFLAG:(530+ARG), 0, 1009, 60, 100
+CALL DAMAGE_CALCULATION, 0, 100, 85, ARG, TFLAG:(530+ARG), 0, 1009, 0, 0
+
+;-------------------------------------------
+;261:　殺意の百合
+;純狐専用の技
+;急所に当たりやすい(通常の2倍)
+;-------------------------------------------
+@ENEMY_SKILL_261, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 261
+
+@ATTACK_MOVE_261, ARG
+PRINTFORML %STR:ARG%の殺意の百合！
+CALL DAMAGE_CALCULATION, 1, 120, 90, ARG, TFLAG:(530+ARG), 0, 1008, 25
+
+;-------------------------------------------
+;262:　純粋なる狂気
+;純狐専用の技
+;相手が持つ穢れの量×3(最大威力220)の威力を持つ技
+;-------------------------------------------
+@ENEMY_SKILL_262, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 262
+
+@ATTACK_MOVE_262, ARG
+PRINTFORML %STR:ARG%は純粋なる狂気を放った！
+PRINTFORML %STR:(CFLAG:(530+ARG))%が溜め込んだ穢れが暴走する！
+CALL DAMAGE_CALCULATION, 1, MIN(BASE:(CFLAG:(530+ARG)):穢れ*3, 220), 90, ARG, TFLAG:(530+ARG), 0, 0, 18
+
+;-------------------------------------------
+;263:　掌の純光
+;純狐専用の技
+;2割の確率で相手の防御を2段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_263, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 263
+
+@ATTACK_MOVE_263, ARG
+PRINTFORML %STR:ARG%の掌の純光！
+CALL DAMAGE_CALCULATION, 0, 90, 90, ARG, TFLAG:(530+ARG), 0, 35, 30, 20
+
+;-------------------------------------------
+;264:　2回攻撃
+;純狐専用の技
+;命中率100で威力90の攻撃を2回繰り出す
+;-------------------------------------------
+@ENEMY_SKILL_264, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 264
+
+@ATTACK_MOVE_264, ARG
+PRINTFORML %STR:ARG%の2回攻撃！
+CALL DAMAGE_CALCULATION, 0, 90, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+CALL DAMAGE_CALCULATION, 0, 90, 100, ARG, TFLAG:(530+ARG), 0, 0, 0
+
+;-------------------------------------------
+;265:　月人掃討の構え
+;侍魂専用の技
+;自分の攻撃と素早さ2段階上昇＆月人を怯ませる
+;-------------------------------------------
+@ENEMY_SKILL_265, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 265
+
+@ATTACK_MOVE_265, ARG
+PRINTFORML %STR:ARG%の月人掃討の構え！
+;攻撃と素早さが2段階上昇する
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 51, 30
+;怯み効果
+CALL DAMAGE_CALCULATION, 3, 0, 100, ARG, TFLAG:(530+ARG), 0, 29, 0
+
+;-------------------------------------------
+;266:　純狐式風雷斬
+;侍魂専用の技
+;2回攻撃する。特徴は以下の通り
+;
+;1段目：相手の能力上昇をリセットする追加効果(100％)
+;2段目：相手のHPを1割削る攻撃技
+;-------------------------------------------
+@ENEMY_SKILL_266, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 266
+
+@ATTACK_MOVE_266, ARG
+PRINTFORML %STR:ARG%の純狐式風雷斬！
+;威力100。追加効果で相手の能力上昇をリセットする
+CALL DAMAGE_CALCULATION, 0, 100, 100, ARG, TFLAG:(530+ARG), 0, 51, 30
+;相手に現HPの1割ダメージ
+CALL DAMAGE_CALCULATION, 0, TFLAG:(556+TFLAG:(530+ARG)*10)/10, 100, ARG, TFLAG:(530+ARG), 0, 1002, 0
+
+;-------------------------------------------
+;267:　霧纏いの一太刀
+;殺意の匪賊専用の技
+;威力150、命中80の物理攻撃
+;輝夜の服が[半裸]以上の場合、気力を現在値から3割削る
+;-------------------------------------------
+@ENEMY_SKILL_267, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 267
+
+@ATTACK_MOVE_267, ARG
+PRINTFORML %STR:ARG%は霧纏いの一太刀を放った！
+PRINTFORML 粘っこい雰囲気は、肌を多く曝け出している者の気力を奪う！
+CALL DAMAGE_CALCULATION, 0, 150, 80, ARG, TFLAG:(530+ARG), 0, 54, 15
+
+;-------------------------------------------
+;268:　万物の風
+;威力90の特殊攻撃
+;気力消費が大きい
+;-------------------------------------------
+@ENEMY_SKILL_268, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 268
+
+@ATTACK_MOVE_268, ARG
+PRINTFORML %STR:ARG%は万物の風を吹かせた！
+CALL DAMAGE_CALCULATION, 1, 90, 100, ARG, TFLAG:(530+ARG), 0, 0, 50, 0
+
+;-------------------------------------------
+;269:　げい殺しの計
+;純狐専用の技
+;対象が弓を装備している場合、即死させる
+;-------------------------------------------
+@ENEMY_SKILL_269, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 269
+
+@ATTACK_MOVE_269, ARG
+PRINTFORML %STR:ARG%のげい殺しの計！
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, TFLAG:(530+ARG), 0, 50, 10, 100
+
+;-------------------------------------------
+;270:　下剋上の石
+;2割の確率で相手の防御を1段階下げる
+;-------------------------------------------
+@ENEMY_SKILL_270, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 270
+
+@ATTACK_MOVE_270, ARG
+PRINTFORML %STR:ARG%は下剋上の石を掲げた！
+PRINTFORML 眩い光が%STR:(CFLAG:(530+ARG))%を襲う！
+CALL DAMAGE_CALCULATION, 0, 110, 90, ARG, TFLAG:(530+ARG), 0, 40, 22
+
+;-------------------------------------------
+;271:　殺意の波動
+;相手の素早さを4段階ダウンさせる+相手を損傷状態にする
+;-------------------------------------------
+@ENEMY_SKILL_271, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 271
+
+@ATTACK_MOVE_271, ARG
+PRINTFORML %STR:ARG%は殺意の波動を放った！
+PRINTFORML 黒い衝撃波が%STR:(CFLAG:(530+ARG))%を襲う！
+CALL DAMAGE_CALCULATION, 3, -1, 90, ARG, TFLAG:(530+ARG), 0, 56, 20
+
+;-------------------------------------------
+;272:　エアスラッシュ
+;6割の確率で相手が怯む
+;-------------------------------------------
+@ENEMY_SKILL_272, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 272
+
+@ATTACK_MOVE_272, ARG
+PRINTFORML %STR:ARG%はエアスラッシュを放った！
+PRINTFORML 真空波が%STR:(CFLAG:(530+ARG))%を襲う！
+CALL DAMAGE_CALCULATION, 1, 100, 100, ARG, TFLAG:(530+ARG), 0, 29, 10, 60
+
+;-------------------------------------------
+;273:　グロウショット
+;3回攻撃
+;追加効果で必ず攻撃力が1段階上がる
+;-------------------------------------------
+@ENEMY_SKILL_273, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 273
+
+@ATTACK_MOVE_273, ARG
+PRINTFORML %STR:ARG%はグロウショットを放った！
+CALL DAMAGE_CALCULATION, 0, 40, 90, ARG, TFLAG:(530+ARG), 0, 43, 20, 100
+CALL DAMAGE_CALCULATION, 0, 40, 90, ARG, TFLAG:(530+ARG), 0, 43, 0, 100
+CALL DAMAGE_CALCULATION, 0, 40, 90, ARG, TFLAG:(530+ARG), 0, 43, 0, 100
+
+;-------------------------------------------
+;274:　暗闇落とし
+;7割の確率で相手を怯ませる
+;-------------------------------------------
+@ENEMY_SKILL_274, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 274
+
+@ATTACK_MOVE_274, ARG
+PRINTFORML %STR:ARG%は暗闇落としを放った！
+CALL DAMAGE_CALCULATION, 1, 80, 80, ARG, TFLAG:(530+ARG), 0, 29, 25, 70
+
+;-------------------------------------------
+;275:　神速
+;優先度+2の物理技
+;-------------------------------------------
+@ENEMY_SKILL_275, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 275
+;優先度+2
+TFLAG:(542+ARG) = 2
+
+@ATTACK_MOVE_275, ARG
+PRINTFORML %STR:ARG%は神速の速さで移動し、%CALLNAME:(TFLAG:(530+ARG))%の背後から攻撃した！
+CALL DAMAGE_CALCULATION, 0, 100, 100, ARG, TFLAG:(530+ARG), 0, 0, 20, 0
+

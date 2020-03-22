@@ -1,0 +1,362 @@
+﻿;===============================================================
+;閲覧室
+;様々な記憶をカウントする
+;===============================================================
+@DATAROOM
+DRAWLINE
+PRINTFORML ～～閲覧室～～
+IF !FLAG:永琳との親密度
+	PRINTFORML 銀髪の女性「あら、いらっしゃい。お久しぶりね
+	PRINTFORML 　　　　　　私の名前は八意　■琳と言うの
+	PRINTFORML 　　　　　　惑星依存文字が入ってるから、もしかすると地球では表示できないかもね
+	PRINTFORML 　　　　　　……こほん、何でもないわ。何か見たいものはあるのかしら？」
+	FLAG:永琳との親密度 = 1
+ELSE
+	SELECTCASE RAND:9
+		CASE 0
+			PRINTFORML 銀髪の女性「あの娘は兎が大好きでね。幼い頃から広場で兎を追いかけ回していたの
+			PRINTFORML 　　　　　　もし二人で暮らす事になったら、兎をたくさん住まわせてあげたいわね」
+		CASE 1
+			PRINTFORML 銀髪の女性「王宮で行っている最新の研究の一つを見せてあげるわ
+			PRINTFORML 　　　　　　これは量子通信といってね、封を開けると中身を見られた回数を表示できるの
+			PRINTFORML 　　　　　　……表示できるだけじゃ駄目だろという意見も多いけどね」
+		CASE 2
+			PRINTFORML 銀髪の女性「月の都では情報通信に関する研究が盛んでね
+			PRINTFORML 　　　　　　これもその一つなの。何だと思う？
+			PRINTFORML 　　　　　　これね、石に固有番号を割り振ってあるの。……実際に石に振るつもりはないけどね
+			PRINTFORML 　　　　　　こうして消耗品に番号を振れば流通を管理できるというわけね」
+		CASE 3
+			PRINTFORML 銀髪の女性「弓の軌跡の色について気になった事はないかしら？
+			PRINTFORML 　　　　　　ややこしい話になるから省略するけど、色で強さを伺い知ることができるの
+			PRINTFORML 　　　　　　青に近づく程強くて、赤に近づく程弱いという理論ね
+			PRINTFORML 　　　　　　現在王宮では青を越えた強さを持つ「紫の軌跡の弓」の開発に着手しているわ」
+		CASE 4
+			PRINTFORML 銀髪の女性「～～秘伝！　eratohoPM七十七技～～
+			PRINTFORML 　　　　　　其の七十七　eratohoPM流とは
+			PRINTFORML 　　　　　　eratohoPMでは従来の～～
+			PRINTFORML 　　　　　　
+			PRINTFORML 　　　　　　ああ、これね……月の都通信に載せる記事よ。王政の誤解を解きたいんですって」
+			;13年も前のネタでした。というより、もう13年も経つのか……
+		CASE 5
+			PRINTFORML 銀髪の女性「月で使われている弓は地球で使われているのとは少し仕組みが違うの
+			PRINTFORML 　　　　　　矢先に幻想水晶と呼ばれる不思議な物体がついていてね
+			PRINTFORML 　　　　　　本来は透明な物質じゃないんだけど、魔力を込める事で透明になるの
+			PRINTFORML 　　　　　　これがあると内部でエネルギーが発生して矢の強さが高まるのよ」
+		CASE 6
+			PRINTFORML 銀髪の女性「……何よ？　これ(兎のぬいぐるみ製作)は私の副業よ
+			PRINTFORML 　　　　　　このぬいぐるみは都の少女達に人気があるから
+			PRINTFORML 　　　　　　こうしてこまめに作っていかないと間に合わないの
+			PRINTFORML 　　　　　　……私が発案したんじゃないか、ですって？　さあね……」
+		CASE 7
+			;起動回数55回以上
+			IF GLOBAL:500 >= 55
+				PRINTFORML 銀髪の女性「どうかしたの？　……え、どうして私がここにいるのか、ですって？
+				PRINTFORML 　　　　　　……あなたは気にしなくていいのよ。これは私の問題なんだから」
+			ELSE
+				PRINTFORML 銀髪の女性「ふふ、あの娘は元気にしているのかしら
+				PRINTFORML 　　　　　　少し頼りないところがあるかもしれないけど、そこはよろしく頼むわね」
+			ENDIF
+		CASE 8
+			PRINTFORML 銀髪の女性「月に兎ってたくさんいるじゃない？　王宮の庭でも結構見るよね？
+			PRINTFORML 　　　　　　ところがね。実は最初から月に兎がいたわけではないのよ
+			PRINTFORML 　　　　　　最初は穢れの地に住んでいた動物だったの
+			PRINTFORML 　　　　　　ある日、誰かが月からお忍びで穢れの地に遊びに行ったのよ
+			PRINTFORML 　　　　　　で、その際に兎の献身的な姿に惹かれてその兎を月に転生させ、今に至るらしいわ」
+		CASE 9
+			PRINTFORML 銀髪の女性「どうして月の都で刀を使う慣習があるのかって？
+			PRINTFORML 　　　　　　依姫は神を降ろすじゃない？　その時に刀を使うのよ
+			PRINTFORML 　　　　　　神降ろしをする際には高い集中力が必要なの。そんな彼女の集中力を得たい人達が鍛錬に励んでいるのでしょうね」
+	ENDSELECT
+ENDIF
+DRAWLINE
+PRINTFORML [0] - カウント集　　　　私に記録できない物はほとんどないわ
+PRINTFORML [1] - 須臾のカケラ　　　条件を達成すると解放されていくらしいわね
+PRINTFORML [2] - 今までに見た結末　人生も色々ね
+PRINTFORML [3] - 泉に行く　　　　　何もないと思うけど……。姫様と一緒に遊びに行くのには最適かもね
+PRINTFORML [4] - 資料集　　　　　　月の都に関する様々なことを知りたいならこちら、ね
+PRINTFORML [5] - 戻る　　　　　　　姫様の事はよろしくね
+
+CALL SENTAKUSHI, 6
+
+IF RESULT == 0
+	CALL SHOW_RECORD
+ELSEIF RESULT == 1
+	PRINTL まだ作ってないの。ごめんね
+ELSEIF RESULT == 2
+	CALL ENDING_LIST
+ELSEIF RESULT == 3
+	IF CFLAG:モード == 2
+		PRINTL 姫様はどうしたの？
+		RESTART
+	ENDIF
+	CALL MYSTERY_SPRING
+ELSEIF RESULT == 4
+	CALL LIBRARY
+ELSEIF RESULT == 5
+	RETURN 0
+ENDIF
+RESTART
+
+
+;--------------------------------------------------
+;カウント集
+;--------------------------------------------------
+@SHOW_RECORD
+
+DRAWLINE
+PRINTFORML 銀髪の女性「セーブデータ問わずに記録しているわ
+PRINTFORML 　　　　　　何かの参考になれば幸いね」
+DRAWLINE
+PRINTFORML ゲームを起動した回数　　　：{GLOBAL:500,7,RIGHT}
+;PRINTFORML 最初に起動した日　　　　　：
+PRINTFORML セーブ回数(オート除く)　　：{GLOBAL:501,7,RIGHT}
+PRINTFORML ロード回数　　　　　　　　：{GLOBAL:502,7,RIGHT}
+DRAWLINE
+PRINTFORML エンディングを見た回数　　：{GLOBAL:503,7,RIGHT}
+PRINTFORML 匪賊に攫われた回数　　　　：{GLOBAL:504,7,RIGHT}
+;PRINTFORML 最も多い労働　　　　　　　：
+DRAWLINE
+PRINTFORML 兎のぬいぐるみをあげた回数：{GLOBAL:505,7,RIGHT}
+PRINTFORML %CALLNAME:TARGET,10,RIGHT%に中出しした回数：{GLOBAL:506,7,RIGHT}
+PRINTFORML 後宮で働いた回数　　　　　：{GLOBAL:507,7,RIGHT}
+DRAWLINE
+PRINTW 
+
+
+;--------------------------------------------------
+;エンディングリスト
+;--------------------------------------------------
+@ENDING_LIST
+#DIM L_LOCAL, 1
+#DIM page, 1
+
+$BACK_LOOP1
+page = 0
+DRAWLINE
+PRINTFORML ～～量子世界の所蔵庫～～
+PRINTFORML 銀髪の女性「ここは姫様が辿るかもしれない……あるいは辿った結末を保管する場所よ
+PRINTFORML 　　　　　　全て集めてみるのもいいと思うわ」
+DRAWLINE
+PRINTFORML [0] - 姫様
+PRINTFORML [1] - メイド
+PRINTFORML [2] - シスター
+PRINTFORML [3] - ゴスロリ
+PRINTFORML [4] - 花嫁
+PRINTFORML [5] - ？？？
+PRINTFORML [6] - 淫魔
+PRINTFORML [7] - 武士
+PRINTFORML [8] - その他
+PRINTFORML [9] - 戻る
+
+CALL SENTAKUSHI, 10
+
+LOCAL = RESULT
+IF RESULT == 9
+	RETURN 0
+;5は娼婦エンドでしょうか。能力による分岐ではないので外します
+ELSEIF !GROUPMATCH(RESULT,5,6,8)
+	$BACK_LOOP
+	CALL ELEMENT_CONVERT, LOCAL
+
+	;武士対応の小細工。
+	SIF LOCAL == 7
+		LOCAL = 5
+
+	PRINTFORML %STR%系エンディング集　page {page+1}/2
+	DRAWLINE
+	FOR L_LOCAL, 0, 10
+;		CALL ELEMENT_CONVERT, LOCAL
+		IF GLOBAL:(700+LOCAL*20+L_LOCAL+page*10)
+			PRINTFORM {page*10+L_LOCAL},%STR%　
+			;面倒臭いので手抜き
+			SELECTCASE page*10+L_LOCAL
+				CASE 0
+					PRINTFORM (堕落Lv2エンド)
+				CASE 1
+					PRINTFORM (堕落Lv1エンド)
+				CASE 2
+					PRINTFORM (美麗Lv3エンド)
+				CASE 17
+					PRINTFORM (全能力Lv3エンド)
+				CASE 18
+					PRINTFORM (全能力Lv2エンド)
+				CASE 19
+					PRINTFORM (全能力Lv1エンド)
+				CASEELSE
+					PRINTFORM (%GETNAME_PALAM((L_LOCAL+page*10-2)/3)%Lv{3-(L_LOCAL+page*10-2)%3}エンド)
+			ENDSELECT
+			PRINTFORML 　視聴回数:{GLOBAL:(700+LOCAL*20+L_LOCAL+page*10)}回
+		ELSE
+			SETCOLOR 96,96,96
+			PRINTFORML ？？？
+		ENDIF
+		RESETCOLOR
+	NEXT
+
+	;小細工のつじつま合わせ。
+	SIF LOCAL == 5
+		LOCAL = 7
+
+	DRAWLINE
+	IF !page
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [0] - 前のページ
+	RESETCOLOR
+	IF page
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [1] - 次のページ
+	RESETCOLOR
+	PRINTC [2] - 戻る
+	
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT == 0
+		IF page <= 0
+			PRINTL 前のページには戻れません
+			GOTO BACK_LOOP
+		ENDIF
+		page -= 1
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 1
+		IF page >= 1
+			PRINTL 次のページには進めません
+			GOTO BACK_LOOP
+		ENDIF
+		page += 1
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 2
+		GOTO BACK_LOOP1
+	ENDIF
+;暫定処置ということで、GLOBALも振られてないようなのでこういう形に
+ELSEIF RESULT == 5
+	PRINTFORML ？？？系エンディング集
+	PRINTFORMW リスト未実装
+	GOTO BACK_LOOP1
+;淫魔
+ELSEIF RESULT == 6
+	$BACK_LOOP3
+	PRINTFORML 淫魔エンディング　page 1/1
+	DRAWLINE
+	FOR L_LOCAL, 880, 882
+		IF GLOBAL:L_LOCAL
+			SELECTCASE L_LOCAL
+				CASE 880
+					PRINTFORM {L_LOCAL-699}, 王宮陥落エンド
+				CASE 881
+					PRINTFORM {L_LOCAL-699}, 5年経過エンド
+			ENDSELECT
+			PRINTFORML 　視聴回数:{GLOBAL:L_LOCAL}回
+		ELSE
+			SETCOLOR 96, 96, 96
+			PRINTFORML ？？？
+		ENDIF
+		RESETCOLOR
+	NEXT
+	DRAWLINE
+	IF !page
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [0] - 前のページ
+	RESETCOLOR
+	IF page+1 == 1
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [1] - 次のページ
+	RESETCOLOR
+	PRINTC [2] - 戻る
+	
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT == 0
+		IF page <= 0
+			PRINTL 前のページには戻れません
+			GOTO BACK_LOOP3
+		ENDIF
+		page -= 1
+		GOTO BACK_LOOP3
+	ELSEIF RESULT == 1
+		IF page+1 == 1
+			PRINTL 次のページには進めません
+			GOTO BACK_LOOP3
+		ENDIF
+		page += 1
+		GOTO BACK_LOOP3
+	ELSEIF RESULT == 2
+		GOTO BACK_LOOP1
+	ENDIF
+;その他
+ELSEIF RESULT == 8
+	$BACK_LOOP2
+	PRINTFORML その他エンディング　page {page+1}/2
+	DRAWLINE
+	FOR L_LOCAL, 879+page*10, 889+page*10
+		;淫魔エンディングの番号は欠番とする
+		IF INRANGE(L_LOCAL, 880, 882)
+			SETCOLOR 96,96,96
+			PRINTFORML ？？？
+			RESETCOLOR
+			CONTINUE
+		ENDIF
+		
+		IF GLOBAL:L_LOCAL
+			SELECTCASE L_LOCAL
+				CASE 879
+					PRINTFORM {L_LOCAL-699}, 駆け落ちエンド
+				CASE 881
+					PRINTFORM {L_LOCAL-699}, 淫魔エンド(その1)
+				CASE 882
+					PRINTFORM {L_LOCAL-699}, 淫魔エンド(その2)
+				CASE 883
+					PRINTFORM {L_LOCAL-699}, 「真に尊き姫君」(淫妖経験、堕落経験0で且つ全能力900以上エンド)
+				CASE 884
+					PRINTFORM {L_LOCAL-699}, 新天地エンド(バッドエンド)
+				CASE 885
+					PRINTFORM {L_LOCAL-699}, 新天地エンド(グッドエンド)
+				CASE 887
+					PRINTFORM {L_LOCAL-699}, 姉妹エンド(バッドエンド)
+				CASE 888
+					PRINTFORM {L_LOCAL-699}, 姉妹エンド(グッドエンド)
+			ENDSELECT
+			PRINTFORML 　視聴回数:{GLOBAL:L_LOCAL}回
+		ELSE
+			SETCOLOR 96,96,96
+			PRINTFORML ？？？
+		ENDIF
+		RESETCOLOR
+	NEXT
+	DRAWLINE
+	IF !page
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [0] - 前のページ
+	RESETCOLOR
+	IF page == 1
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [1] - 次のページ
+	RESETCOLOR
+	PRINTC [2] - 戻る
+	
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT == 0
+		IF page <= 0
+			PRINTL 前のページには戻れません
+			GOTO BACK_LOOP2
+		ENDIF
+		page -= 1
+		GOTO BACK_LOOP2
+	ELSEIF RESULT == 1
+		IF page >= 1
+			PRINTL 次のページには進めません
+			GOTO BACK_LOOP2
+		ENDIF
+		page += 1
+		GOTO BACK_LOOP2
+	ELSEIF RESULT == 2
+		GOTO BACK_LOOP1
+	ENDIF
+ENDIF
+

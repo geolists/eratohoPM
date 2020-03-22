@@ -1,0 +1,147 @@
+﻿;==============================================
+;武器データ
+;ARG　装備アイテムのID
+;==============================================
+@WEAPON_DATA, ARG
+
+;銅の太刀
+IF ARG == 560
+	LOCAL = 10
+;鉄製の太刀
+ELSEIF ARG == 561
+	LOCAL = 18
+;鋼の太刀
+ELSEIF ARG == 562
+	LOCAL = 25
+;銀色の太刀
+ELSEIF ARG == 563
+	LOCAL = 32
+;合金の太刀
+ELSEIF ARG == 564
+	LOCAL = 40
+;月夜命の太刀
+ELSEIF ARG == 565
+	LOCAL = 36
+;赤の軌跡の弓
+ELSEIF ARG == 575
+	LOCAL = 6
+;黄の軌跡の弓
+ELSEIF ARG == 576
+	LOCAL = 12
+;白の軌跡の弓
+ELSEIF ARG == 577
+	LOCAL = 18
+;緑の軌跡の弓
+ELSEIF ARG == 578
+	LOCAL = 25
+;青の軌跡の弓
+ELSEIF ARG == 579
+	LOCAL = 32
+;エクシーの弓
+ELSEIF ARG == 580
+	LOCAL = 29
+;ヤグの弓
+ELSEIF ARG == 581
+	LOCAL = 26
+;ワイボの弓
+ELSEIF ARG == 582
+	LOCAL = 30
+;ヘカドの弓
+ELSEIF ARG == 583
+	LOCAL = 28
+;ヘカドの弓
+ELSEIF ARG == 583
+	LOCAL = 28
+;魔槍キャンサー
+ELSEIF ARG == 592
+	LOCAL = 1
+;モップ
+ELSEIF ARG == 596
+	LOCAL = 1
+;木の錫杖
+ELSEIF ARG == 597
+	LOCAL = 2
+;不思議なモップ
+ELSEIF ARG == 598
+	LOCAL = 2
+;竹の錫杖
+ELSEIF ARG == 599
+	LOCAL = 5
+;素手
+ELSE
+	LOCAL = 3
+ENDIF
+
+RETURN LOCAL
+
+;------------------------------------------
+;武器変更
+;ARG　対象
+;------------------------------------------
+@CHANGE_WEAPON, ARG
+#DIM L_LOCAL, 1
+
+$BACK_LOOP
+DRAWLINE
+PRINTL 何を装備しますか？
+PRINTFORM 現在の装備品:
+IF !CFLAG:装備
+	PRINTFORML 素手
+ELSE
+	PRINTFORML %ITEMNAME:(CFLAG:装備)%
+ENDIF
+DRAWLINE
+PRINTL [0] - 装備を外す
+FOR L_LOCAL, 560, 601
+	IF ITEM:L_LOCAL
+		CALL WEAPON_DATA, L_LOCAL
+		PRINTFORML [{L_LOCAL}] - %ITEMNAME:L_LOCAL%　攻撃力:{RESULT}
+	ENDIF
+NEXT
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	PRINTFORML 装備を外しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORML %CALLNAME:TARGET%は装備を外しました
+		CFLAG:装備 = 0
+	ENDIF
+	GOTO BACK_LOOP
+ELSEIF RESULT >= 560 && RESULT <= 600 && ITEM:RESULT
+	IF RESULT == CFLAG:装備
+		PRINTL 既に装備しています
+		GOTO BACK_LOOP
+	ENDIF
+	LOCAL = RESULT
+	DRAWLINE
+	PRINTFORML ○%ITEMNAME:LOCAL%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{LOCAL}
+	DRAWLINE
+	PRINTFORML %ITEMNAME:LOCAL%を装備しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:LOCAL%を装備した！
+		CFLAG:装備 = LOCAL
+	ENDIF
+	GOTO BACK_LOOP
+ELSEIF RESULT == 999
+	
+ELSE
+	PRINTL 入力が不正です
+	GOTO BACK_LOOP
+ENDIF
+
+

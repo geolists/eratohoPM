@@ -1,0 +1,414 @@
+﻿;=====================================================
+;服装変更
+;=====================================================
+@CHANGE_CLOTHES
+#DIM CLOTHE, 2
+#DIM retu, 1
+#DIM L_LOCAL, 1
+#DIM CLO_ELE, 1
+#DIM bust, 1
+#DIMS CLO_PALAM, 30
+#DIMS CLO_ATTRIBUTE, 10
+#DIMS CAT_PALAM, 30
+#DIM NUM_PALAM
+
+;パラメータ表示用SPLIT
+SPLIT "美麗,知力,疎通,家事,信仰,体力,色気,背徳,淫妖,堕落,姉妹への友好度,主人への友好度,アライメント,崩壊,,,,,,属性,属性強度", ",", CAT_PALAM
+SPLIT "美,知,疎,家,信,体,色,背,淫,堕,綿,主,AL,崩,,,胸,脚,B限,属性,属強", ",", CLO_PALAM
+SPLIT "姫,メ,シ,ゴ,嫁,淫,乞,武,里", ",", CLO_ATTRIBUTE
+
+$BACK_LOOP
+DRAWLINE
+IF FLAG:王宮追放
+	PRINTFORML ～～衣装かけ～～
+ELSE
+	PRINTFORML ～～衣装室～～
+	SELECTCASE RAND:2
+		CASE 0
+			PRINTFORML 女中「衣装はその人の立場を表すとても大切な物なんです
+			PRINTFORML 　　　姫様のことを想って大切に選んでくださいね」
+		CASE 1
+			PRINTFORML 女中「"まずは形から入る"という言葉があるのです
+			PRINTFORML 　　　たかが衣装と侮るなかれ、着た人の心にも影響を与えるのですね」
+	ENDSELECT
+	DRAWLINE
+ENDIF
+PRINTFORML どの衣装に着替えさせますか？
+
+$INPUT_LOOP_1
+PRINTFORM %"",36%
+;パラメータの種類を記述 マスクデータは表示しない
+FOR NUM_PALAM, 0, 20
+	SIF GROUPMATCH(NUM_PALAM, 6, 7, 13, 14, 15)
+		CONTINUE
+	PRINTFORM %CLO_PALAM:NUM_PALAM%
+	SETCOLOR 0x222222
+	PRINTFORM  
+	RESETCOLOR
+NEXT
+PRINTL
+CLOTHE = 0
+CLOTHE:1 = 0
+FOR L_LOCAL, 0, 104
+	IF L_LOCAL == 0 && !ITEM:0
+		IF FLAG:布の痛み == 2
+			PRINTFORM [{CLOTHE:1}] - 解れかけた布切れ　　　　
+			LOCAL = -3
+		ELSEIF FLAG:布の痛み == 1
+			PRINTFORM [{CLOTHE:1}] - ボロの布切れ　　　　　　
+			LOCAL = -2
+		ELSE
+			PRINTFORM [{CLOTHE:1}] - 布切れ　　　　　　　　　
+			LOCAL = -1
+		ENDIF
+		
+		IF LOCAL == CFLAG:服装
+			SETCOLOR 0xFFC070
+			PRINTFORM %"着",4,LEFT%
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",4,LEFT%
+		ENDIF
+		PRINTL 
+	ELSEIF ITEM:L_LOCAL
+		;対象の衣服の美麗補正を取り出す
+		CALLFORM CLOTHE_ID_{L_LOCAL}, "美麗"
+		
+		;人魚やその他亜人の場合、半裸以上の衣服しか着ることができない
+		IF SUBHUMAN(TARGET) && !DITEMTYPE:L_LOCAL:11
+			SETCOLOR 96,96,96
+		;BMI制限がある服の場合、それを超えると着る事ができない
+		ELSEIF L_LOCAL >= 1 && DITEMTYPE:L_LOCAL:31 >= 1 && CULC_BMI(0) > DITEMTYPE:L_LOCAL:31
+			SETCOLOR 96,96,96
+		;美麗補正が+2以上の服は太りすぎると着られなくなる(半裸属性以上があれば別)
+		ELSEIF L_LOCAL >= 1 && HANTEI_BMI() >= 2 && RESULT >= 2 && !DITEMTYPE:L_LOCAL:11
+			SETCOLOR 96,96,96
+		ENDIF
+		PRINTFORM [{L_LOCAL,3}] - %ITEMNAME:(L_LOCAL),24,LEFT%
+		IF L_LOCAL == CFLAG:服装
+			SETCOLOR 0xFFC070
+			PRINTFORM %"着",4,LEFT%
+			RESETCOLOR
+		ELSE
+			PRINTFORM %"",4,LEFT%
+		ENDIF
+		;各服装のパラメータを記述 マスクデータは表示しない
+		FOR NUM_PALAM ,0, 20
+			CALLFORM CLOTHE_ID_{L_LOCAL}(CAT_PALAM:NUM_PALAM)
+			IF GROUPMATCH(NUM_PALAM,6, 7, 13, 14, 15)
+				CONTINUE
+			;裁縫 胸元開き具合
+			ELSEIF NUM_PALAM == 16
+				SETCOLOR 0x88CCFF
+				IF DITEMTYPE:(L_LOCAL):1 == 1
+					PRINTFORM 広
+				ELSEIF DITEMTYPE:(L_LOCAL):1 == 2
+					PRINTFORM 露
+				ELSEIF DITEMTYPE:(L_LOCAL):1 == 0
+					PRINTFORM 　
+				ENDIF
+				RESETCOLOR
+				PRINT  
+			;裁縫 スカート丈
+			ELSEIF NUM_PALAM == 17
+				SETCOLOR 0x88CCFF
+				IF DITEMTYPE:(L_LOCAL):0 == 1
+					PRINTFORM ｍ
+				ELSEIF DITEMTYPE:(L_LOCAL):0 == 2
+					PRINTFORM mm
+				ELSEIF DITEMTYPE:(L_LOCAL):0 == 0
+					PRINTFORM 　
+				ENDIF
+				RESETCOLOR
+				PRINT  
+			;許容バスト
+			ELSEIF NUM_PALAM == 18
+				CALL CLOTHE_BUSTSIZE, L_LOCAL
+				SETCOLOR 0x88CCFF
+				IF RESULT >= 900
+					PRINTFORM 　  
+				ELSE
+					PRINTFORM {RESULT,3,RIGHT} 
+				ENDIF
+				RESETCOLOR
+			;属性
+			ELSEIF NUM_PALAM == 19
+				LOCAL:99 = RESULT
+				;属性強度毎に色変え
+				CALLFORM CLOTHE_ID_{L_LOCAL}(CAT_PALAM:(NUM_PALAM + 1))
+				IF RESULT <= 1
+					SETCOLOR 0x88CCFF
+				ELSEIF RESULT == 2
+					SETCOLOR 0xDDFF44
+				ELSEIF RESULT >= 3
+					SETCOLOR 0xCC0000
+				ENDIF
+				FOR LOCAL:98, 1, 9
+					IF GETBIT(LOCAL:99,LOCAL:98)
+						PRINTFORM %CLO_ATTRIBUTE:(LOCAL:98 - 1)%
+					ENDIF
+				NEXT
+				RESETCOLOR
+				PRINT  
+			ELSEIF RESULT == 0
+				PRINTFORM %"",2%
+				SETCOLOR 0x222222
+				PRINT  
+				RESETCOLOR
+			ELSEIF RESULT > 0
+				SETCOLOR 0x88CCFF
+				PRINTFORM {RESULT,2}
+				SETCOLOR 0x222222
+				PRINT  
+				RESETCOLOR
+			ELSE
+				SETCOLOR 0x777777
+				PRINTFORM {RESULT,2}
+				SETCOLOR 0x222222
+				PRINT  
+				RESETCOLOR
+			ENDIF
+		NEXT
+		
+		PRINTL
+		RESETCOLOR
+	ENDIF
+	
+	;PRINTFORML {L_LOCAL}
+	IF L_LOCAL != CLOTHE_LIST(L_LOCAL)
+		L_LOCAL = CLOTHE_LIST(L_LOCAL) - 1
+	ELSE
+		L_LOCAL = CLOTHE_LIST(L_LOCAL)
+	ENDIF
+	;PRINTFORML 次:{L_LOCAL}
+NEXT
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ENDIF
+
+;でたらめな数値入力を弾き、エラーを防ぐ
+IF !INRANGE(RESULT, 0, 199)
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+;持ってないアイテムも弾く
+;(アイテムの範囲外配列を突かれるとエラー落ちするので、条件分岐を前項から分ける)
+IF !ITEM:RESULT && RESULT != 0
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+;面倒なのでLOCAL:1に美麗補正のデータを送り、RESULTの機能を損失させない
+IF RESULT != 999
+	LOCAL = RESULT
+	TRYCALLFORM CLOTHE_ID_{RESULT}, "美麗"
+	LOCAL:1 = RESULT
+	RESULT = LOCAL
+ENDIF
+
+IF ITEM:RESULT && (CFLAG:服装 == RESULT) || (RESULT == 0 && CFLAG:服装 <= -1)
+	PRINTFORML 既に着ています
+	GOTO INPUT_LOOP
+;BMI制限がある服の場合、それを超えると着る事ができない
+ELSEIF RESULT >= 0 && RESULT != 999 && DITEMTYPE:RESULT:31 >= 1 && CULC_BMI(0) > DITEMTYPE:RESULT:31
+	PRINTFORML 太りすぎた%CALLNAME:TARGET%の身体では、この服は合わない
+	GOTO INPUT_LOOP
+;太りすぎると美麗補正+2以上で布きれ以外の服は着られなくなる
+ELSEIF RESULT >= 0 && LOCAL:1 >= 2 && HANTEI_BMI() >= 2 && RESULT != 999 && !DITEMTYPE:RESULT:11
+	PRINTFORML 太りすぎた%CALLNAME:TARGET%の身体では、この服は合わない
+	GOTO INPUT_LOOP
+;亜人は半裸が全裸の衣服しか着る事ができない
+ELSEIF SUBHUMAN(TARGET) && ((RESULT != 0 && !DITEMTYPE:RESULT:11) || (ITEM:0 && RESULT == 0))
+	IF TALENT:人魚
+		PRINTFORML 脚が尾びれと化したこの身体ではサイズが合わない
+	ELSEIF TALENT:触手娘
+		PRINTFORML 粘膜が衣服の繊維を解いてしまうため、衣服を着ることができない
+	ELSEIF TALENT:アルラウネ
+		PRINTFORML 下半身が蔦に覆われており、衣服が入らない
+	ELSEIF TALENT:スライム娘
+		PRINTFORML ぬるぬるした身体では、衣服がすぐに濡れて駄目になってしまう
+	ENDIF
+	
+	PRINTFORML もっと露出が多い衣服でないと着る事はできないだろう……
+	GOTO INPUT_LOOP
+ELSEIF !ITEM:0 && RESULT == 0
+	IF FLAG:布の痛み == 2
+		PRINTFORML %CALLNAME:TARGET%は解れかけた布切れに着替えた
+		CALL DATA_CHANGE_CLOTHE, -3, "変更"
+	ELSEIF FLAG:布の痛み == 1
+		PRINTFORML %CALLNAME:TARGET%はボロの布切れに着替えた
+		CALL DATA_CHANGE_CLOTHE, -2, "変更"
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は布切れに着替えた
+		CALL DATA_CHANGE_CLOTHE, -1, "変更"
+	ENDIF
+	
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML この服では下着を強制的に外させます
+	PRINTFORML (設定は変更されない)
+	RESETCOLOR
+	GOTO INPUT_LOOP_1
+ELSEIF ITEM:RESULT
+	LOCAL = RESULT
+	DRAWLINE
+	PRINTFORML ○%ITEMNAME:LOCAL%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{RESULT}
+	LOCAL:1 = CFLAG:服装
+	
+	;布の表示
+	PRINTFORM 　材質:
+	SELECTCASE DITEMTYPE:LOCAL:2
+		CASE 0
+			PRINTFORML 普通の布
+		CASEELSE
+			PRINTFORML %CLOTH_NAME(DITEMTYPE:LOCAL:2-1)%
+	ENDSELECT
+	
+	CALL DATA_CHANGE_CLOTHE, LOCAL, "表示変更"
+	retu = 0
+	CALL SETCOLOR_ABL
+	
+	;全壊の場合
+	IF DITEMTYPE:LOCAL:14 == 2
+		PRINTFORML 　【原型を留めておらず、局部を隠す事ができない】
+	;半壊の場合
+	ELSEIF DITEMTYPE:LOCAL:14 == 1
+		PRINTFORML 　【大部分が破れており、素肌の露出がかなり多い】
+	ENDIF
+	
+	PRINT 　
+	IF DITEMTYPE:LOCAL:0 == 1
+		PRINT [ミニスカート]　
+		retu += 1
+	ELSEIF DITEMTYPE:LOCAL:0 == 2
+		PRINT [マイクロミニ]　
+		retu += 1
+	ENDIF
+	
+	IF DITEMTYPE:LOCAL:1 == 1
+		PRINT [胸元広い]　
+		retu += 1
+	ELSEIF DITEMTYPE:LOCAL:1 == 2
+		PRINT [胸露出]　
+		retu += 1
+	ENDIF
+	RESETCOLOR
+	PRINTL 
+	CALL CLOTHE_BUSTSIZE, LOCAL
+	PRINTFORM 許容胸囲:　
+	IF RESULT >= 900
+		PRINTFORML 無制限
+	ELSE
+		PRINTFORML ～{RESULT}
+	ENDIF
+	
+	DRAWLINE
+	PRINTFORML 本当に着替えますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 1
+		CALL DATA_CHANGE_CLOTHE, LOCAL:1, "変更"
+		GOTO BACK_LOOP
+	ENDIF
+	
+	CALL CLOTHE_BUSTSIZE, CFLAG:服装
+	LOCAL:1 = RESULT
+	
+	IF BASE:胸囲 > LOCAL:1
+		bust = MAX((BASE:胸囲-LOCAL:1)/3, 11)
+		LOCAL:2 = 5000*bust
+		PRINTFORML この服のバストサイズは%CALLNAME:TARGET%の胸より小さい……
+		CALL SETCOLOR_MONEY
+		PRINTFORM ${LOCAL:2}
+		RESETCOLOR
+		PRINTFORML を使って衣服のバストサイズを補修しますか？
+		PRINTFORML (適切なバストサイズだと%CALLNAME:TARGET%の魅力を十二分に引き出すことができます)
+		PRINTL 
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF !RESULT
+			IF MONEY < LOCAL:2
+				PRINTFORML 所持金が足りません
+			ELSE
+				PRINTFORML %ITEMNAME:(CFLAG:服装)%のバストサイズを補修した！
+				
+				MONEY -= LOCAL:2
+				DITEMTYPE:(CFLAG:服装):32 = bust
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	
+	PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:LOCAL%に着替えた
+	CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+	CALL CLOTHE_ABL, "属性"
+	LOCAL = RESULT
+	
+	IF DITEMTYPE:(CFLAG:服装):11 || GETBIT(RESULT, 6) || GETBIT(RESULT, 7)
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML この服では下着を強制的に外させます
+		PRINTFORML (設定は変更されない)
+		RESETCOLOR
+	ENDIF
+	
+	CALL CLOTHE_ABL, "属性"
+	CLO_ELE = RESULT
+	
+	;属性違いの装飾品を装備している場合、警告を出す
+	LOCAL = FINDELEMENT(CFLAG, CLO_ELE, 290, 296)
+	IF LOCAL == -1
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			;退魔の祈祷棒はここで条件を確認する
+			IF CFLAG:服装 < 0 && OTHER_ACC(432) && DITEMTYPE:(CFLAG:服装):12 && (STR == "その他" || STR == "その他2")
+				LOCAL:1 = 1
+			ELSEIF !CFLAG:("属性／"+STR+"") || (CFLAG:("属性／"+STR+"") & CLO_ELE)
+				LOCAL:1 = 1
+			ELSE
+				LOCAL:1 = 0
+			ENDIF
+			
+			IF !LOCAL:1 && CFLAG:("日用品／"+STR+"")
+				CALL SETCOLOR_PALAMDOWN
+				PRINTFORML 着た服の属性と合わないので、身に着けていた%ITEMNAME:(CFLAG:("日用品／"+STR+""))%を外した！
+				CALL ACC_CHECK, COUNT+260, "脱着"
+				CFLAG:("日用品／"+STR+"") = 0
+				RESETCOLOR
+			ENDIF
+		NEXT
+	ENDIF
+	
+	GOTO INPUT_LOOP_1
+ELSE
+	PRINTFORML 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;-------------------------------------------------------------
+;衣服のリスト関数
+;管理を楽にする
+;-------------------------------------------------------------
+@CLOTHE_LIST, ARG
+#DIM L_LOCAL, 1
+#FUNCTION
+FOR L_LOCAL, ARG, 104
+	IF ITEMNAME:L_LOCAL != ""
+		BREAK
+	ENDIF
+NEXT
+
+RETURNF L_LOCAL-1

@@ -1,0 +1,1088 @@
+﻿;==================================================
+;衣服改造
+;持っている衣服を改造できる
+;==================================================
+@CLOTHE_REMODEL
+$BACK_LOOP
+DRAWLINE
+PRINTL [0] - 衣服作成
+PRINTL [1] - 衣服改造
+PRINTL [2] - 女中服の改造
+PRINTL [3] - 衣服の修復
+PRINTL [4] - 戻る
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 0
+	CALL CLOTHE_REMODEL_MAKE
+ELSEIF RESULT == 1
+	CALL CLOTHE_REMODEL_1
+ELSEIF RESULT == 2
+	CALL CLOTHE_REMODEL_2
+ELSEIF RESULT == 3
+	CALL CLOTHE_REMODEL_3
+ELSE
+	RETURN 0
+ENDIF
+
+IF RESULT == 2
+	BEGIN TURNEND
+ENDIF
+
+RESTART
+
+;----------------------------------------------
+;衣服作成
+;----------------------------------------------
+@CLOTHE_REMODEL_MAKE
+#DIM CHECK, 10
+$BACK_LOOP
+DRAWLINE
+PRINTL どの衣服を作りますか？
+
+VARSET LOCAL,0
+
+FOR COUNT, 0, 10
+	;姫メイドレス
+	IF !ITEM:8 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 8, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:0 || !ITEM:10
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 8
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 8
+			CHECK:COUNT = 8
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　メイド服　+　普段着
+		RESETCOLOR
+	ENDIF
+	
+	;マイクロミニ制服
+	IF !ITEM:55 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 55, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:1 || MONEY < 45000
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 55
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 55
+			CHECK:COUNT = 55
+		ENDIF
+		PRINTFORM [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　制服 + 
+		CALL SETCOLOR_MONEY
+		PRINTL $45000
+		RESETCOLOR
+	ENDIF
+	
+	;法衣
+	IF !ITEM:53 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 53, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:11 || MONEY < 70000
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 53
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 53
+			CHECK:COUNT = 53
+		ENDIF
+		PRINTFORM [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　修道服 + 
+		CALL SETCOLOR_MONEY
+		PRINTL $70000
+		RESETCOLOR
+	ENDIF
+	
+	;巫女服
+	IF !ITEM:54 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 54, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:11 || MONEY < 70000
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 54
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 54
+			CHECK:COUNT = 54
+		ENDIF
+		PRINTFORM [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　修道服 + 
+		CALL SETCOLOR_MONEY
+		PRINTL $70000
+		RESETCOLOR
+	ENDIF
+	
+	;エプロンメイド
+	IF !ITEM:57 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 57, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:56 || !ITEM:10
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 57
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 57
+			CHECK:COUNT = 57
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　メイド服 + 裸エプロン
+		RESETCOLOR
+	ENDIF
+	
+	;エプロンドレス
+	IF !ITEM:58 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 58, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:10 || !ITEM:13
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 58
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 58
+			CHECK:COUNT = 58
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　メイド服 + ドレス
+		RESETCOLOR
+	ENDIF
+	
+	;姫巫女装束
+	IF !ITEM:59 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 59, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:0 || !ITEM:54
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 59
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 59
+			CHECK:COUNT = 59
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　普段着 + 巫女服
+		RESETCOLOR
+	ENDIF
+	
+	;ゴスロリメイド服
+	IF !ITEM:60 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 60, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:10 || !ITEM:12
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 60
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 60
+			CHECK:COUNT = 60
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:(LOCAL:COUNT),20,LEFT%　メイド服 + ゴスロリ
+		RESETCOLOR
+	ENDIF
+	
+	;普段着
+	IF !ITEM:0 && !LOCAL:COUNT && FINDELEMENT(LOCAL, 1000, 0, 9) == -1
+		;条件を満たしていない場合、色を変える
+		IF !ITEM:木花の布
+			SETCOLOR 128, 128, 128
+			LOCAL:COUNT = 1000
+			CHECK:COUNT = 0
+		ELSE
+			LOCAL:COUNT = 1000
+			CHECK:COUNT = 1000
+		ENDIF
+		PRINTFORML [{COUNT}] - %ITEMNAME:0,20,LEFT%　木花の布×1
+		RESETCOLOR
+	ENDIF
+NEXT
+PRINTL 
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT < 9 && LOCAL:RESULT && CHECK:RESULT
+	IF CHECK:RESULT == 1000
+		LOCAL = 0
+	ELSE
+		LOCAL = LOCAL:RESULT
+	ENDIF
+	DRAWLINE
+	PRINTFORML ○%ITEMNAME:LOCAL%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{LOCAL}
+	LOCAL:1 = CFLAG:服装
+	CALL DATA_CHANGE_CLOTHE, LOCAL, "表示変更"
+	DRAWLINE
+	CALL DATA_CHANGE_CLOTHE, LOCAL:1, "変更"
+	PRINTL 作りますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		CALLFORM REMODEL_COST_{LOCAL}
+		PRINTFORML %ITEMNAME:LOCAL%を作りました
+		IF CFLAG:服装 >= 0 && !ITEM:(CFLAG:服装)
+			CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+		ENDIF
+		CALL NEEDLE_UP, 200
+		GOTO BACK_LOOP
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT < 8 && LOCAL:RESULT
+	PRINTL 素材が足りません
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;----------------------------------------------
+;衣服改造
+;----------------------------------------------
+@CLOTHE_REMODEL_1
+#DIM CLOTHE, 2
+#DIM nuno, 1
+#DIM retu, 1
+#DIM L_LOCAL
+
+$BACK_LOOP
+DRAWLINE
+PRINTL どの衣服を改造しますか？
+CLOTHE = 0
+CLOTHE:1 = 0
+FOR L_LOCAL, 0, 104
+	IF L_LOCAL == 0 && !ITEM:0
+		IF FLAG:布の痛み == 2
+			PRINTFORM [{L_LOCAL}] - 解れかけた布切れ　　　　
+			LOCAL = -3
+		ELSEIF FLAG:布の痛み == 1
+			PRINTFORM [{L_LOCAL}] - ボロの布切れ　　　　　　
+			LOCAL = -2
+		ELSE
+			PRINTFORM [{L_LOCAL}] - 布切れ　　　　　　　　　
+			LOCAL = -1
+		ENDIF
+		
+		IF LOCAL == CFLAG:服装
+			SETCOLOR 0xFFC070
+			PRINTL 　着用中
+			RESETCOLOR
+		ELSE
+			PRINTL 
+		ENDIF
+	ELSEIF ITEM:L_LOCAL
+		PRINTFORM [{L_LOCAL}] - %ITEMNAME:(L_LOCAL),24,LEFT%
+		IF L_LOCAL == CFLAG:服装
+			SETCOLOR 0xFFC070
+			PRINTL 　着用中
+			RESETCOLOR
+		ELSE
+			PRINTL 
+		ENDIF
+	ENDIF
+	
+	;PRINTFORML {L_LOCAL}
+	IF L_LOCAL != CLOTHE_LIST(L_LOCAL)
+		L_LOCAL = CLOTHE_LIST(L_LOCAL) - 1
+	ELSE
+		L_LOCAL = CLOTHE_LIST(L_LOCAL)
+	ENDIF
+	;PRINTFORML 次:{L_LOCAL}
+NEXT
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+;布切れ系は改造できない
+IF !ITEM:0 && RESULT == 0
+	IF FLAG:布の痛み == 2
+		PRINTFORM 解れかけた布切れ
+	ELSEIF FLAG:布の痛み == 1
+		PRINTFORM ボロの布切れ
+	ELSE
+		PRINTFORM 布切れ
+	ENDIF
+	PRINTFORML は改造できない
+	GOTO BACK_LOOP
+ELSEIF ITEM:RESULT && RESULT <= 200
+	LOCAL:1 = CFLAG:服装
+	LOCAL = RESULT
+	$BACK_LOOP_1
+	CALL DATA_CHANGE_CLOTHE, LOCAL, "変更"
+	DRAWLINE
+	PRINTFORML ○%ITEMNAME:LOCAL%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{LOCAL}
+	CALL DATA_CHANGE_CLOTHE, LOCAL, "表示"
+	retu = 0
+	CALL SETCOLOR_ABL
+	PRINT 　
+	IF DITEMTYPE:LOCAL:0 == 1
+		PRINT [ミニスカート]　
+		retu += 1
+	ELSEIF DITEMTYPE:LOCAL:0 == 2
+		PRINT [マイクロミニ]　
+		retu += 1
+	ENDIF
+	
+	IF DITEMTYPE:LOCAL:1 == 1
+		PRINT [胸元広い]　
+		retu += 1
+	ELSEIF DITEMTYPE:LOCAL:1 == 2
+		PRINT [胸露出]　
+		retu += 1
+	ENDIF
+	RESETCOLOR
+	PRINTL 
+	DRAWLINE
+	
+	;乞食か淫魔属性の衣服は改造できない
+	;全裸持ちの服も改造できない
+	IF GETBIT(CFLAG:属性, 6) || GETBIT(CFLAG:属性, 7) || DITEMTYPE:(CFLAG:服装):11
+		PRINTL この衣服は改造できない
+		CALL DATA_CHANGE_CLOTHE, LOCAL:1, "変更"
+		GOTO BACK_LOOP
+	ENDIF
+	PRINTL どの改造を施しますか？
+	
+	IF DITEMTYPE:(CFLAG:服装):0 != 2 && !DITEMTYPE:(CFLAG:服装):10
+		PRINTL [0] - スカートの丈を短くする
+	ENDIF
+	
+	IF DITEMTYPE:(CFLAG:服装):1 != 2
+		PRINTL [1] - 胸元を広げるor解放する
+	ENDIF
+	IF !ITEM:絹の布 && !DITEMTYPE:(CFLAG:服装):2
+		SETCOLOR 96,96,96
+		nuno = 0
+	ELSE
+		nuno = 1
+	ENDIF
+	PRINTL [2] - 仕立て直す
+	RESETCOLOR
+	PRINTL [9] - 戻る
+	
+	$INPUT_LOOP_1
+	INPUT
+	
+	IF RESULT == 0 && DITEMTYPE:(CFLAG:服装):0 != 2 && !DITEMTYPE:(CFLAG:服装):10
+		PRINTL スカートの丈を短くします
+		PRINTL よろしいですか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			DITEMTYPE:(CFLAG:服装):0 += 1
+			PRINTFORM %ITEMNAME:(CFLAG:服装)%は
+			IF DITEMTYPE:(CFLAG:服装):0 == 1
+				PRINT [ミニスカート]
+			ELSEIF DITEMTYPE:(CFLAG:服装):0 == 2
+				PRINT [マイクロミニ]
+			ENDIF
+			PRINTL になった！
+			CALL NEEDLE_UP, 200
+		ENDIF
+		GOTO BACK_LOOP_1
+	ELSEIF RESULT == 1 && DITEMTYPE:(CFLAG:服装):1 != 2
+		PRINTL どの様に改造しますか？
+		IF DITEMTYPE:(CFLAG:服装):1 != 1
+			PRINTL [0] - 胸元を広げる
+		ENDIF
+		PRINTL [1] - 胸元を解放する
+		PRINTL [2] - 戻る
+		
+		$INPUT_LOOP_2
+		CALL SENTAKUSHI, 3
+		
+		IF RESULT == 0 && DITEMTYPE:(CFLAG:服装):1 != 1
+			PRINTL 胸元を広げます
+			PRINTL よろしいですか？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				DITEMTYPE:(CFLAG:服装):1 = 1
+				PRINTFORML %ITEMNAME:(CFLAG:服装)%の胸元を広げた！
+				CALL NEEDLE_UP, 300
+			ENDIF
+			GOTO BACK_LOOP_1
+		ELSEIF RESULT == 1
+			PRINTL 胸元を解放します
+			PRINTL よろしいですか？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				DITEMTYPE:(CFLAG:服装):1 = 2
+				PRINTFORML %ITEMNAME:(CFLAG:服装)%の胸元の布地を切除し、胸が露出するようになった！
+				CALL NEEDLE_UP, 200
+			ENDIF
+			GOTO BACK_LOOP_1
+		ELSEIF RESULT == 2
+			GOTO BACK_LOOP_1
+		ELSE
+			PRINTL 入力が不正です
+			GOTO INPUT_LOOP_2
+		ENDIF
+	ELSEIF RESULT == 2
+		IF !nuno
+			PRINTL 仕立て直しに使える布を持っていません
+			GOTO BACK_LOOP
+		ENDIF
+		$BACK_LOOP_5
+		DRAWLINE
+		PRINTFORML どの布で仕立て直しますか？
+		PRINTL [0] - 普通の布
+		PRINTL [1] - 絹の布
+		PRINTL [9] - やめる
+		
+		$INPUT_CLOTH_LOOP
+		INPUT
+		
+		
+		IF INRANGE(RESULT, 0, 1)
+			IF DITEMTYPE:(CFLAG:服装):2 == RESULT
+				PRINTL 同じ布で仕立て直すことはできません
+				GOTO BACK_LOOP_5
+			ENDIF
+			DRAWLINE
+			LOCAL = RESULT
+			IF LOCAL
+				CALLFORM CLOTH_DETAIL_{RESULT}
+			ENDIF
+			PRINTL 
+			PRINTFORML 本当にこの布で仕立て直しますか？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				
+			ELSE
+				GOTO BACK_LOOP_5
+			ENDIF
+
+			PRINTFORML %ITEMNAME:(CFLAG:服装)%を%CLOTH_NAME(LOCAL)%で仕立て直した！
+			DITEMTYPE:(CFLAG:服装):2 = LOCAL
+			;普通の布以外で仕立て直した場合、該当する布が1つ減る
+			;裁縫技術点も手に入る
+			IF LOCAL
+				CALL NEEDLE_UP, 400
+				ITEM:@"%CLOTH_NAME(LOCAL)%" -= 1
+			ENDIF
+		ELSEIF RESULT == 9
+			GOTO BACK_LOOP_1
+		ELSE
+			PRINTL 入力が不正です
+			GOTO INPUT_CLOTH_LOOP
+		ENDIF
+	ELSEIF RESULT == 9
+		CALL DATA_CHANGE_CLOTHE, LOCAL:1, "変更"
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 入力が不正です
+		GOTO INPUT_LOOP_1
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO BACK_LOOP
+ENDIF
+
+;----------------------------------------------
+;女中服改造
+;----------------------------------------------
+@CLOTHE_REMODEL_2
+#DIM L_LOCAL, 1
+#DIM TAG, 1
+#DIM TAG_ELE, 5
+#DIM total, 1
+#DIM total_ok, 2
+
+DRAWLINE
+$BACK_LOOP
+PRINT 王宮内の風紀:
+IF FLAG:王宮内の風紀 < 10
+	PRINTL 酒池肉林
+ELSEIF FLAG:王宮内の風紀 < 30
+	PRINTL 役人主催による性交パーティが行われている
+ELSEIF FLAG:王宮内の風紀 < 50
+	PRINTL 常に1組は性交を行っている
+ELSEIF FLAG:王宮内の風紀 < 75
+	PRINTL 女中達は役人達の熱い視線に悩まされている
+ELSEIF FLAG:王宮内の風紀 < 100
+	PRINTL 少し乱れている
+ELSE
+	PRINTL 正常
+ENDIF
+DRAWLINE
+PRINTL ○女中服の状態
+PRINT 意匠率:
+LOCAL = 0
+FOR L_LOCAL, 0, 5
+	IF FLAG:(660+L_LOCAL)
+		PRINTFORM %GETNAME_JYOTYUU(L_LOCAL)%:{FLAG:(660+L_LOCAL)}％　
+		LOCAL += 1
+	ENDIF
+NEXT
+IF LOCAL == 0
+	PRINT 着物
+ENDIF
+PRINTL 
+CALL SETCOLOR_ABL
+IF FLAG:女中服の胸元 == 1
+	PRINT [胸元開けている]　
+ELSEIF FLAG:女中服の胸元 == 2
+	PRINT [胸元解放]　
+ENDIF
+IF FLAG:女中服のスカート == 1
+	PRINT [ミドルスカート]　
+ELSEIF FLAG:女中服のスカート == 2
+	PRINT [ミニスカート]　
+ELSEIF FLAG:女中服のスカート == 3
+	PRINT [マイクロミニ]　
+ENDIF
+RESETCOLOR
+PRINTL 
+DRAWLINE
+PRINTL 何を行いますか？
+CALL SETCOLOR_ABL
+PRINTL (女中服の改造には半月を費やします！)
+RESETCOLOR
+DRAWLINE
+
+PRINTL [0] - 意匠を変える
+PRINTL [1] - スカートの丈の長さを変える
+PRINTL [2] - 胸元の広さを変える
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	DRAWLINE
+	FOR L_LOCAL, 0, 5
+		TAG_ELE:L_LOCAL = FLAG:(JYOTYUU_ELE(L_LOCAL))
+	NEXT
+	
+	$BACK_LOOP_0
+	
+	;総合値と元の意匠からの変化値を計算
+	total = 0
+	total_ok = 0
+	FOR L_LOCAL, 0, 5
+		total += TAG_ELE:L_LOCAL
+		total_ok += ABS(TAG_ELE:L_LOCAL - FLAG:(JYOTYUU_ELE(L_LOCAL)))
+	NEXT
+	
+	PRINTL どのような意匠に変更しますか？
+	PRINTL 　　要素　　　　　　　　割合
+	
+	FOR L_LOCAL, 0, 4
+		PRINTFORM [{L_LOCAL}] - %GETNAME_JYOTYUU(L_LOCAL),10,LEFT%　　{FLAG:(JYOTYUU_ELE(L_LOCAL)),3}％
+		IF FLAG:(JYOTYUU_ELE(L_LOCAL)) != TAG_ELE:L_LOCAL
+			PRINT 　→　
+			IF FLAG:(JYOTYUU_ELE(L_LOCAL)) < TAG_ELE:L_LOCAL
+				CALL SETCOLOR_PALAMUP
+			ELSE
+				CALL SETCOLOR_PALAMDOWN
+			ENDIF
+			PRINTFORML {TAG_ELE:L_LOCAL}％
+			RESETCOLOR
+		ELSE
+			PRINTL 
+		ENDIF
+	NEXT
+	
+	;IF ITEM:裸エプロン || TALENT:衣服知識
+		PRINTFORM [4] - 裸エプロン　　{FLAG:女中服／裸エプロン,3}％
+		L_LOCAL = 4
+		IF FLAG:(JYOTYUU_ELE(L_LOCAL)) != TAG_ELE:L_LOCAL
+			PRINT 　→　
+			IF FLAG:(JYOTYUU_ELE(L_LOCAL)) < TAG_ELE:L_LOCAL
+				CALL SETCOLOR_PALAMUP
+			ELSE
+				CALL SETCOLOR_PALAMDOWN
+			ENDIF
+			PRINTFORML {TAG_ELE:L_LOCAL}％
+			RESETCOLOR
+		ELSE
+			PRINTL 
+		ENDIF
+	;ENDIF
+	DRAWLINE
+	IF !total_ok
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTL [100] - 決定
+	RESETCOLOR
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_0
+	INPUT
+	
+	IF RESULT <= 4
+	; || (RESULT == 4 && (ITEM:裸エプロン || TALENT:衣服知識))
+		TAG = RESULT
+		DRAWLINE
+		PRINTL どの割合の意匠に変更しますか？
+		PRINTFORML 残り:{100-total}％
+		PRINTL [0] -   0％
+		PRINTL [1] -  25％
+		PRINTL [2] -  50％
+		PRINTL [3] -  75％
+		PRINTL [4] - 100％
+		PRINTL [999] - 戻る
+		
+		$INPUT_LOOP_0_1
+		INPUT
+		
+		IF RESULT <= 4 && RESULT * 25 - TAG_ELE:TAG > 100 - total
+			PRINTL 割合が足りません
+			GOTO INPUT_LOOP_0_1
+		ELSEIF RESULT <= 4
+			LOCAL = RESULT
+			TAG_ELE:TAG = LOCAL * 25
+			GOTO BACK_LOOP_0
+		ELSEIF RESULT == 999
+			GOTO BACK_LOOP_0
+		ELSEIF RESULT == FLAG:(TAG + 660) / 25
+			PRINTL 既にこの長さになっています
+			GOTO INPUT_LOOP_0_1
+		ENDIF
+	ELSEIF RESULT == 100
+		IF !total_ok
+			PRINTL 意匠の変更点が存在しません
+			GOTO INPUT_LOOP_0
+		ENDIF
+		PRINTL この設定で確定しますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			total_ok:1 = 0
+			FOR L_LOCAL, 0, 5
+				total_ok:1 += LIMIT(TAG_ELE:L_LOCAL - FLAG:(JYOTYUU_ELE(L_LOCAL)), 0, 100)
+			NEXT
+			
+			;75％以上の上昇があった場合、反発される
+			IF total_ok:1 >= 75
+				PRINTL 急な変更に女中達から反発の声が上がった！
+				CALL SETCOLOR_VALUE
+				
+				LOCAL = CFLAG:評価 / 10 + L_LOCAL + RAND:20 + 20
+				PRINTFORML 評価が{LOCAL}下がった……
+				RESETCOLOR
+				CFLAG:評価 -= LOCAL
+			ENDIF
+			FOR L_LOCAL, 0, 5
+				FLAG:(JYOTYUU_ELE(L_LOCAL)) = TAG_ELE:L_LOCAL
+			NEXT
+			PRINTL 意匠を変更した！
+			CALL NEEDLE_UP, 300
+		ELSEIF RESULT == 1
+			GOTO INPUT_LOOP_0
+		ENDIF
+	ELSEIF RESULT == 999
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP_0
+	ENDIF
+	CALL GET_JYOTYUU_CLOTHE
+	RETURN 2
+ELSEIF RESULT == 1
+	DRAWLINE
+	$BACK_LOOP_1
+	PRINTL どの程度の長さにしますか？
+	PRINTL [0] - 足まですっぽりと覆う
+	PRINTL [1] - 膝の下
+	PRINTL [2] - 膝の上
+	PRINTL [3] - 太腿を解放する
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_1
+	INPUT
+	
+	IF RESULT == FLAG:女中服のスカート
+		PRINTL 既にこの長さになっています
+		GOTO INPUT_LOOP_1
+	ELSEIF RESULT <= 3
+		LOCAL = RESULT
+		DRAWLINE
+		PRINTL この長さに変更しますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			DRAWLINE
+			FLAG:女中服のスカート = LOCAL
+			DITEMTYPE:61:0 = LOCAL - 1
+			;2段階以上短くした場合、反発を喰らう
+			IF (LOCAL - FLAG:女中服のスカート) <= -2
+				PRINTL 急な変更に女中達から反発の声が上がった！
+				CALL SETCOLOR_VALUE
+				
+				LOCAL = CFLAG:評価 / 10 + 25 * LOCAL
+				PRINTFORML 評価が{LOCAL}下がった……
+				CFLAG:評価 -= LOCAL
+				RESETCOLOR
+			ENDIF
+			PRINTW 女中服のスカートの丈の長さを変更した！
+			CALL NEEDLE_UP, 100
+		ELSEIF RESULT == 1
+			GOTO BACK_LOOP_1
+		ENDIF
+	ELSEIF RESULT == 999
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 入力が不正です
+		GOTO INPUT_LOOP_1
+	ENDIF
+	RESETCOLOR
+	CALL GET_JYOTYUU_CLOTHE
+	DRAWLINE
+	RETURN 2
+ELSEIF RESULT == 2
+	DRAWLINE
+	$BACK_LOOP_2
+	PRINTL どの程度の広さにしますか？
+	PRINTL [0] - 胸元を隠す
+	PRINTL [1] - 常に胸元が見える
+	PRINTL [2] - 胸全体が露出する
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_2
+	INPUT
+	
+	IF RESULT == FLAG:女中服の胸元
+		PRINTL 既にこの広さになっています
+		GOTO INPUT_LOOP_2
+	ELSEIF RESULT <= 2
+		DRAWLINE
+		LOCAL = RESULT
+		PRINTL この広さに変更しますか？
+		PRINTL [0] - はい
+		PRINTL [1] - いいえ
+		
+		CALL SENTAKUSHI, 2
+		
+		IF RESULT == 0
+			DRAWLINE
+			FLAG:女中服の胸元 = LOCAL
+			DITEMTYPE:61:1 = LIMIT(LOCAL, 0, 2)
+			;2段階以上短くした場合、反発を喰らう
+			IF (LOCAL - FLAG:女中服の胸元) <= -2
+				PRINTL 急な変更に女中達から反発の声が上がった！
+				CALL SETCOLOR_VALUE
+				
+				LOCAL = CFLAG:評価 / 10 + 25 * LOCAL
+				PRINTFORML 評価が{LOCAL}下がった……
+				CFLAG:評価 -= LOCAL
+				RESETCOLOR
+			ENDIF
+			PRINTW 女中服の胸元の広さを変更した！
+			CALL NEEDLE_UP, 200
+		ELSEIF RESULT == 1
+			GOTO BACK_LOOP_2
+		ENDIF
+	ELSEIF RESULT == 999
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 入力が不正です
+		GOTO INPUT_LOOP_2
+	ENDIF
+	RESETCOLOR
+	CALL GET_JYOTYUU_CLOTHE
+	DRAWLINE
+	RETURN 2
+ELSEIF RESULT == 999
+	
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+
+;----------------------------------------------
+;女中服入手処理
+;----------------------------------------------
+@GET_JYOTYUU_CLOTHE
+
+;女中服を持っていない場合、入手する
+IF !ITEM:61
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%はこっそりと自分の分の衣装を入手した……
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %ITEMNAME:61%を手に入れた！
+	ITEM:61 = 1
+	RESETCOLOR
+;今着ている場合、新しいデザインの物に着替える
+ELSEIF CFLAG:服装 == 61
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%は新しいデザインになった女中服に着替えた
+	CALL DATA_CHANGE_CLOTHE, 61, "変更"
+ENDIF
+
+;----------------------------------------------
+;雰囲気属性名表示
+;----------------------------------------------
+@GETNAME_JYOTYUU, ARG
+#FUNCTIONS
+#LOCALSSIZE 5
+SIF LOCALS == ""
+	SPLIT "メイド服_修道服_ゴスロリ_ドレス_裸エプロン", "_", LOCALS
+RETURNF LOCALS:ARG
+
+
+;----------------------------------------------
+;女中服の淫妖計算
+;----------------------------------------------
+@HANTEI_JYOTYUU
+#FUNCTION
+
+LOCAL = 0
+
+LOCAL += 1 * FLAG:女中服のスカート
+
+IF FLAG:女中服のスカート == 3
+	LOCAL += 2
+ENDIF
+
+
+LOCAL += 1 * FLAG:女中服の胸元
+
+IF FLAG:女中服の胸元 == 2
+	LOCAL += 3
+ENDIF
+
+LOCAL += 8 * FLAG:女中服／裸エプロン / 100
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;衣服修復
+;----------------------------------------------
+@CLOTHE_REMODEL_3
+#DIM CLOTHE, 2
+#DIM retu, 1
+#DIM L_LOCAL
+
+$BACK_LOOP
+DRAWLINE
+PRINTL どの衣服を修復しますか？
+CLOTHE = 0
+CLOTHE:1 = 0
+FOR L_LOCAL, 0, 104
+	IF L_LOCAL == 0 && !ITEM:0
+		IF FLAG:布の痛み == 2
+			PRINTFORM [{CLOTHE:1}] - 解れかけた布切れ　　　　
+			LOCAL = -3
+		ELSEIF FLAG:布の痛み == 1
+			PRINTFORM [{CLOTHE:1}] - ボロの布切れ　　　　　　
+			LOCAL = -2
+		ELSE
+			PRINTFORM [{CLOTHE:1}] - 布切れ　　　　　　　　　
+			LOCAL = -1
+		ENDIF
+		
+		IF LOCAL == CFLAG:服装
+			SETCOLOR 0xFFC070
+			PRINTL 　着用中
+			RESETCOLOR
+		ELSE
+			PRINTL 
+		ENDIF
+	ELSEIF ITEM:L_LOCAL
+		;破損した服だけ表示
+		IF DITEMTYPE:L_LOCAL:14
+			PRINTFORM [{L_LOCAL}] - %ITEMNAME:(L_LOCAL),24,LEFT%
+			IF L_LOCAL == CFLAG:服装
+				SETCOLOR 0xFFC070
+				PRINTL 　着用中
+				RESETCOLOR
+			ELSE
+				PRINTL 
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	;PRINTFORML {L_LOCAL}
+	IF L_LOCAL != CLOTHE_LIST(L_LOCAL)
+		L_LOCAL = CLOTHE_LIST(L_LOCAL) - 1
+	ELSE
+		L_LOCAL = CLOTHE_LIST(L_LOCAL)
+	ENDIF
+	;PRINTFORML 次:{L_LOCAL}
+NEXT
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF ITEM:RESULT && RESULT <= 200
+	IF !DITEMTYPE:RESULT:14
+		PRINTL その服は修復する必要がありません
+		GOTO INPUT_LOOP
+	ENDIF
+	DRAWLINE
+	LOCAL = RESULT
+	PRINTFORML %ITEMNAME:LOCAL%を修復します
+	CALL SETCOLOR_ABL
+	PRINTFORML 衣服が初期状態に戻ります！
+	RESETCOLOR
+	PRINTFORML よろしいですか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		CALL RESET_REMODEL, LOCAL
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %ITEMNAME:LOCAL%を修復した！
+		CALL NEEDLE_UP, 100
+		RESETCOLOR
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+;----------------------------------------------
+;女中服の意匠を管理するフラグ数を返す
+;----------------------------------------------
+@JYOTYUU_ELE, ARG
+#FUNCTION
+LOCAL = 660 + ARG
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;女中の態度を管理するフラグ数を返す
+;----------------------------------------------
+@JYOTYUU_ATTI, ARG
+#FUNCTION
+LOCAL = 680 + ARG
+
+RETURNF LOCAL
+
+;------------------------------------------------
+;布の名前表示関数
+;------------------------------------------------
+@CLOTH_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+
+SIF LOCALS == ""
+	SPLIT "普通の布_絹の布_麻の布", "_", LOCALS
+RETURNF LOCALS:ARG
+
+
+;================================================
+;コスト処理
+;================================================
+;--------------------------------
+;普段着
+;--------------------------------
+@REMODEL_COST_0
+ITEM:木花の布 -= 1
+
+ITEM:0 += 1
+
+;--------------------------------
+;姫メイドレス
+;--------------------------------
+@REMODEL_COST_8
+ITEM:0 -= 1
+ITEM:10 -= 1
+
+ITEM:8 += 1
+
+;--------------------------------
+;法衣
+;--------------------------------
+@REMODEL_COST_53
+ITEM:11 -= 1
+MONEY -= 70000
+
+ITEM:53 += 1
+
+;--------------------------------
+;巫女服
+;--------------------------------
+@REMODEL_COST_54
+ITEM:11 -= 1
+MONEY -= 70000
+
+ITEM:54 += 1
+
+;--------------------------------
+;マイクロミニ制服
+;--------------------------------
+@REMODEL_COST_55
+ITEM:1 -= 1
+MONEY -= 45000
+
+ITEM:55 += 1
+
+;--------------------------------
+;エプロンメイド
+;--------------------------------
+@REMODEL_COST_57
+ITEM:10 -= 1
+ITEM:56 -= 1
+
+ITEM:57 += 1
+
+;--------------------------------
+;エプロンドレス
+;--------------------------------
+@REMODEL_COST_58
+ITEM:10 -= 1
+ITEM:13 -= 1
+
+ITEM:58 += 1
+
+;--------------------------------
+;姫巫女装束
+;--------------------------------
+@REMODEL_COST_59
+ITEM:0 -= 1
+ITEM:54 -= 1
+
+ITEM:59 += 1
+
+;--------------------------------
+;ゴスロリメイド服
+;--------------------------------
+@REMODEL_COST_60
+ITEM:10 -= 1
+ITEM:12 -= 1
+
+ITEM:60 += 1
+
+;***********************************
+;布の詳細
+;***********************************
+;---------------------------------
+;1:　絹の布
+;---------------------------------
+@CLOTH_DETAIL_1
+PRINTL ○絹の布
+PRINTL 　肌触りが非常によい布。滑らかな艶は多くの人を惹きつける
+PRINTL 　美麗+2　淫妖+1
+

@@ -1,0 +1,1076 @@
+﻿;==========================================================================
+;労働
+;==========================================================================
+@WORK
+#DIM L_LOCAL, 1
+#DIM IYAKU, 1
+
+$BACK_LOOP
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTL ～～案内所～～
+	PRINTL 店主「いらっしゃい！
+	PRINTL 　　　従事させたい仕事を選んで頂戴」
+	CALL WORK_NAME, CFLAG:職業
+	PRINTFORML 現在のバイト先:%STR%
+	DRAWLINE
+	CALL SETCOLOR_ABL
+	PRINTFORML ～～基本職～～
+	RESETCOLOR
+	PRINTL 
+	
+	PRINTL [0] - なし
+	IF TALENT:人魚
+		PRINTFORML [11] - 海女
+	ELSE
+		FOR L_LOCAL, 1, 10
+			IF L_LOCAL != 8
+				;人魚以外の亜人の場合、夜の店以外就労不可
+				IF !TALENT:人魚 && SUBHUMAN(TARGET)
+					SETCOLOR 96,96,96
+				ENDIF
+				PRINTFORML [{L_LOCAL}] - %IN_WORK_NAME(L_LOCAL)%
+				RESETCOLOR
+			ELSE
+				CALL CLOTHE_ABL, "属性"
+				LOCAL = RESULT
+				;夜の店適正がある場合
+				IF NIGHT_SHOP(LOCAL)
+					PRINTL [8] - 夜の店
+				ENDIF
+			ENDIF
+		NEXT
+	ENDIF
+
+	;就ける上級職がある場合、表示する
+	DRAWLINE
+	CALL SETCOLOR_ABL
+	PRINTFORML ～～上級職～～
+	PRINTFORML 6ヶ月間住み込みで働きます
+	RESETCOLOR
+	FOR L_LOCAL, 21, 26
+		;人魚以外の亜人の場合、夜の店以外就労不可
+		IF !TALENT:人魚 && SUBHUMAN(TARGET)
+			SETCOLOR 96, 96, 96
+		;各職業の条件を満たしているかをFOR文を用いて判別する
+		ELSEIF !CAN_METAWORK(TARGET,L_LOCAL)
+			SETCOLOR 96, 96, 96
+		ENDIF
+		PRINTFORML [{L_LOCAL}] - %NAME_METAWORK(L_LOCAL-21)%
+		RESETCOLOR
+	NEXT
+	PRINTL [100] - 戻る
+	
+	$INPUT_LOOP
+	INPUT
+	
+	IF (RESULT != 8 && RESULT <= 9) || (RESULT == 8 && NIGHT_SHOP(LOCAL)) || INRANGE(RESULT, 21, 22) || (TALENT:人魚 && RESULT == 11)
+		LOCAL = RESULT
+		
+		;人魚以外の亜人になっている状態で夜の店以外が指定された
+		IF !TALENT:人魚 && SUBHUMAN(TARGET) && RESULT != 8
+			PRINTFORMW 禍々しい姿をしているわね……夜の店以外受け入れてくれないと思うわ
+			GOTO BACK_LOOP
+		ELSEIF INRANGE(RESULT,21,22) && !CAN_METAWORK(TARGET,RESULT)
+			DRAWLINE
+			TRYCALLFORM DETAIL_WORK, RESULT
+			
+			PRINTFORMW 条件を満たしてないわね……
+			GOTO BACK_LOOP
+		ENDIF
+		
+		IF CFLAG:職業 >= 21
+			LOCAL = RESULT
+			;無職になる場合、職業説明を出さない
+			IF LOCAL
+				TRYCALLFORM DETAIL_WORK, LOCAL
+			ENDIF
+			DRAWLINE
+			DRAWLINE
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML 住み込みで働くって言ったじゃない……
+			PRINTFORML 違約金として$60000取るけど、いいの？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			RESETCOLOR
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				PRINTFORML 分かったわ。先方には伝えておくから
+				CALL SETCOLOR_MONEY
+				PRINTFORMW $60000支払った
+				RESETCOLOR
+				MONEY -= 60000
+				CFLAG:住み込み = 0
+				CFLAG:住み込み期間 = 0
+				CFLAG:モード = 0
+				CFLAG:職業 = LOCAL
+				IF LOCAL != 0
+					CALL WORK_NAME, CFLAG:職業
+					PRINTFORMW %STR%に転職しました
+					MAXBASE:行動回数 -= 1
+				ENDIF
+				GOTO BACK_LOOP
+			ELSE
+				GOTO BACK_LOOP
+			ENDIF
+			
+		ENDIF
+		IF CFLAG:職業 == RESULT || RESULT == 0
+			
+			IF !CFLAG:職業 && RESULT == 0
+				PRINTFORMW 何をさせたいのかよく分からないわね……
+				GOTO BACK_LOOP
+			ENDIF
+			CALL WORK_NAME, CFLAG:職業
+			PRINTFORML %STR%をやめるの？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				PRINTFORML それじゃ伝えておくわね
+				CFLAG:職業 = 0
+				MAXBASE:行動回数 += 1
+				GOTO BACK_LOOP
+			ELSE
+				GOTO BACK_LOOP
+			ENDIF
+		ELSE
+			LOCAL = RESULT
+			
+			;職業紹介関数を呼びだす
+			DRAWLINE
+			TRYCALLFORM DETAIL_WORK, RESULT
+			
+			RESULT = LOCAL
+			IF RESULT >= 21
+				STR = %NAME_METAWORK(RESULT-21)%
+			ELSE
+				CALL WORK_NAME, RESULT
+			ENDIF
+			PRINTFORML %STR%にするのね？
+			PRINTL [0] - はい
+			PRINTL [1] - いいえ
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				IF LOCAL >= 21
+					;他の職業から転職した場合、行動回数+1
+					IF CFLAG:職業
+						MAXBASE:行動回数 += 1
+					ENDIF
+					
+					CFLAG:職業 = LOCAL
+					PRINTFORML それじゃ手続きを行うわ
+					PRINTFORMW まずこの書類に必要事項を記載して、それから……
+					PRINTFORML 
+					;人魚の社の場合、まだ持ってないなら人魚の衣を渡される
+					IF NAME_METAWORK(CFLAG:職業-21) == "天女の社" && !ITEM:人魚の衣
+						CALL SETCOLOR_PALAMUP
+						PRINTFORML ＜人魚の衣を手に入れた！＞
+						ITEM:人魚の衣 += 1
+						RESETCOLOR
+					ENDIF
+					PRINTFORMW ＜これから6ヶ月の間、住み込みで働きます＞
+					CFLAG:住み込み = LOCAL-21
+					CFLAG:住み込み期間 = 12
+					CFLAG:モード = 4
+					
+					BASE:達成値 = 0
+					BASE:ムード = 0
+					BASE:客淫行値 = 0
+				ELSE
+					PRINTFORML それじゃ伝えておくわね
+					IF CFLAG:職業 == 0
+						MAXBASE:行動回数 -= 1
+					ENDIF
+					CFLAG:職業 = LOCAL
+				ENDIF
+				GOTO BACK_LOOP
+			ELSE
+				GOTO BACK_LOOP
+			ENDIF
+		ENDIF
+	ELSEIF RESULT == 100
+		RETURN 0
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP
+	ENDIF
+ELSE
+	PRINTL ～～闇の酒場～～
+	PRINTL 店主「ほう……
+	PRINTL 　　　私のところで働きたいのか？」
+	PRINTL 
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTL では、こちらに来てもらおうか……
+		PRINTW
+		DRAWLINE
+		PRINTFORML %CALLNAME:TARGET%は淫らな行為を受けつつ仕事を全うした……
+		PRINTL
+		PRINTL 淫妖経験 + 45
+		PRINTL 堕落経験 + 45
+		PRINTL $100000を入手した
+		EXP:淫妖経験 += 45
+		EXP:堕落経験 += 45
+		BASE:媚薬 += 10 + BASE:媚薬 / 2
+		IF CFLAG:媚薬状態 != 2
+			CFLAG:媚薬状態 = 1
+		ENDIF
+		IF BASE:媚薬 > MAXBASE:媚薬 && CFLAG:媚薬状態 != 2
+			BASE:媚薬 = MAXBASE:媚薬
+			PRINTFORML 
+			CALL OVERDOSE_BIYAKU
+		ENDIF
+		MONEY += 100000
+		;穢れ加算処理
+		CALL CALC_IMP, 5
+		CALL CHANGE_ELEMENT, CFLAG:属性強度
+		BEGIN TURNEND
+	ELSE
+		PRINTL 店主「お前の来る場所じゃねえよ、帰りな」
+		RETURN 0
+	ENDIF
+ENDIF
+
+;==========================================================================
+;労働結果
+;==========================================================================
+@WORK_RESULT
+#DIM ACCE, 1
+#DIM CLO_ELE, 1
+#DIM NEEDLE, 1
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+DRAWLINE
+;LOCAL 　入手経験
+;LOCAL:1 入手金額
+;LOCAL:2　入手評価
+
+IF CFLAG:職業 == 99
+	CALL HAREM_DAILY
+ELSEIF CFLAG:職業 == 4
+	PRINTFORMW %CALLNAME:TARGET%は貴族の館にメイドとして働きに出た……
+	;自慰判定をして、達成した場合自慰を行う
+	IF SELF_COM(TARGET) && BASE:慰み者 < 30
+		PRINTFORML %CALLNAME:TARGET%は、火照った身体を鎮めるために
+		PRINTFORM 物影に隠れて
+		;全裸以外
+		IF !NUDE(TARGET)
+			PRINTFORM 着衣を肌蹴、
+		ENDIF
+		PRINTFORMW 胸の突起や陰核に手を伸ばした
+		PRINTFORMW メイド達のせわしない足音を背にして、吐息が熱を帯びていく……
+		
+		SETCOLOR 128, 255, 128
+		PRINTL 淫妖経験 + 4
+		EXP:淫妖経験 += 4
+		CALL PLAYTHING
+		
+		LOCAL = 1
+		LOCAL:1 = 400
+		LOCAL:2 = -2
+	;メイド属性の服を着ているor[メイド]を持っている＆労働がメイド
+	ELSEIF GETBIT(CLO_ELE,2) || TALENT:メイド
+		;慰み者ゲージが100
+		IF BASE:慰み者 >= 100
+			PRINTFORMW %CALLNAME:TARGET%は、主人の部屋に通され、毎日性の奉仕を強要された
+			PRINTFORML 無理矢理一物を口に挿入され、頭を撫でられながら腰を振られたり
+			PRINTFORML 仰向けになった主人の一物を自らの意思で秘裂に飲み込んだりしていく度に
+			;全裸以外
+			IF !NUDE(TARGET)
+				PRINTFORM 衣服の下で
+			ENDIF
+			PRINTFORMW 胸の先端は痛々しく尖り、太腿に愛液が伝っていく
+			
+			SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 10
+			EXP:淫妖経験 += 10
+			CALL PLAYTHING
+			RESETCOLOR
+			
+			CALL INSERT, 2, 1
+			
+			LOCAL = 2
+			LOCAL:1 = 9000
+			LOCAL:2 = -5
+		;慰み者ゲージが50以上
+		ELSEIF BASE:慰み者 >= 50
+			PRINTFORML %CALLNAME:TARGET%は、主人の策略により高価な壷を割ってしまい
+			PRINTFORMW 罰として集いの席の際に、参加者達の前で主人に身体を弄り回された
+			;全裸以外
+			IF !NUDE(TARGET)
+				PRINTFORM 衣服を肌蹴けさせられ、
+			ENDIF
+			PRINTFORMW 手を拘束されたことによって動かす事のできない身体は衆目の前にも関わらず昂ぶった
+			PRINTFORMW 熱を帯びた吐息と共に秘裂は濡れ、胸の突起は尖りきっている……
+			
+			SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 8
+			EXP:淫妖経験 += 8
+			CALL PLAYTHING
+			
+			LOCAL = 3
+			LOCAL:1 = 7000
+			LOCAL:2 = -3
+		;慰み者ゲージが30以上
+		ELSEIF BASE:慰み者 >= 30
+			PRINTFORM %CALLNAME:TARGET%は、
+			;全裸
+			IF DITEMTYPE:(CFLAG:服装):11 == 1
+				PRINTFORM 美しい股体を剥き出しにして胸を揺らし、
+			;半裸
+			ELSEIF DITEMTYPE:(CFLAG:服装):11 == 1
+				PRINTFORM 素肌の大部分を露出させた格好で
+			;マイクロミニ
+			ELSEIF DITEMTYPE:(CFLAG:服装):0 == 2
+				PRINTFORM 極端に短い丈から太腿を露出させ、
+			;ミニスカート
+			ELSEIF DITEMTYPE:(CFLAG:服装):0 == 1
+				PRINTFORM 太腿が見えるぐらい短い丈の衣服で、
+			ENDIF
+			PRINTFORML つま先を伸ばして棚の掃除をしている所を、背後から主人に抱きつかれた
+			PRINTFORML 慌てて振りほどこうとしたが、口外されてほしくない事を耳打ちされ
+			PRINTFORMW 大人しく家事を行いながら主人の責めを受け続けた
+			PRINTFORMW やがて限界に達した%CALLNAME:TARGET%はビクンと身体を震わせ、力無く膝をついた……
+			
+			SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 6
+			EXP:淫妖経験 += 6
+			CALL PLAYTHING
+			
+			LOCAL = 4
+			LOCAL:1 = 5000
+			LOCAL:2 = -1
+		;メイド属性が50％以上
+		ELSEIF CFLAG:属性／メイド >= 50
+			PRINTFORMW 見るからにメイドな%CALLNAME:TARGET%は充分な働きぶりを見せたようだ
+			PRINTFORMW 雇い主から再び来てほしいと言われたらしい
+			LOCAL = 8
+			LOCAL:1 = 3500
+			LOCAL:2 = 12
+		;メイド属性が30％以上
+		ELSEIF CFLAG:属性／メイド >= 30
+			PRINTFORMW メイドとしての素振りが見える%CALLNAME:TARGET%はそこそこの働きをしたようだ
+			PRINTFORMW 周りのメイドからも褒められている
+			LOCAL = 6
+			LOCAL:1 = 2500
+			LOCAL:2 = 10
+		;メイド属性が15％以上
+		ELSEIF CFLAG:属性／メイド >= 15
+			PRINTFORMW 少しメイドとして見える%CALLNAME:TARGET%は他のメイドから教えられながら働いたようだ
+			LOCAL = 5
+			LOCAL:1 = 1500
+			LOCAL:2 = 8
+		;その他
+		ELSE
+			PRINTFORMW メイド服を着ているものの、まだ%CALLNAME:TARGET%の素振りはメイドには見えないらしく
+			PRINTFORMW 周囲と比べると浮いて見える
+			LOCAL = 4
+			LOCAL:1 = 800
+			LOCAL:2 = 5
+		ENDIF
+	ELSE
+		PRINTFORMW そこそこ頑張ったらしい
+		LOCAL = 3
+		LOCAL:1 = 500
+		LOCAL:2 = 3
+	ENDIF
+	PRINTL 
+	
+	;評価補正
+	;装飾品がメイドセットの場合、属性値の1/4だけ評価が上昇する
+	IF ACCE_SET() == 1
+		LOCAL:2 += CFLAG:属性／メイド / 4
+	;メイド属性の装飾品を付けている場合、5%+1つにつき属性値の5％だけ補正がかかる
+	ELSE
+		ACCE = 0
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			IF GETBIT(CFLAG:("属性／"+STR+""), 2)
+				ACCE += 1
+			ENDIF
+		NEXT
+		LOCAL:2 += CFLAG:属性／メイド * (ACCE+1) / 20
+	ENDIF
+	
+	SETCOLOR 128,255,128
+	PRINTFORML 家事経験 + {LOCAL}
+	RESETCOLOR
+	
+	;民衆の評価×$60が入手できる
+	
+	LOCAL:1 += BASE:民衆の評価*60
+	SETCOLOR 255,196,64
+	PRINTFORML ${LOCAL:1}手に入れた！
+	RESETCOLOR
+	
+	CALL SETCOLOR_VALUE
+	IF LOCAL:2 < 0
+		PRINTFORML 評価が{LOCAL:2*-1}下がった……
+	ELSE
+		PRINTFORML 評価が{LOCAL:2}上がった！
+	ENDIF
+	RESETCOLOR
+	
+	LOCAL:1 += BASE:家事 * 5
+	EXP:家事経験 += LOCAL
+	MONEY += LOCAL:1
+	CFLAG:評価 += LOCAL:2
+	CALL CHANGE_ELEMENT, 1
+;シスター属性の服を着ていて、労働がシスター
+ELSEIF CFLAG:職業 == 5
+	PRINTFORMW %CALLNAME:TARGET%は教会にシスターとして働きに出た……
+	;自慰判定をして、達成した場合自慰を行う
+	IF SELF_COM(TARGET) && BASE:慰み者 < 30
+		PRINTFORML %CALLNAME:TARGET%は、銅像にもたれかかって
+		PRINTFORMW 衣服を肌蹴、胸や陰核に手を伸ばした
+		PRINTFORM 礼拝者達の賛歌を背に、吐息は熱を帯び、
+		;胸部が解放されているか半裸以上
+		IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+			
+		ELSE
+			PRINTFORM 衣服越しに
+		ENDIF
+		PRINTFORMW 胸の先端を尖らせた……
+		
+		;SETCOLOR 128, 255, 128
+		PRINTL 淫妖経験 + 4
+		EXP:淫妖経験 += 4
+		CALL PLAYTHING
+		
+		LOCAL = 1
+		LOCAL:1 = 400
+		LOCAL:2 = -2
+	ELSEIF GETBIT(CLO_ELE,3) || TALENT:シスター
+		;慰み者ゲージが100
+		IF BASE:慰み者 >= 100
+			PRINTFORMW %CALLNAME:TARGET%は、鎖で手首を拘束され、教会のシンボルである銅像の前に放置された
+			PRINTFORMW 大勢集まった信者の前で
+			IF BASE:貞操 <= 50 && BASE:アライメント < 100
+				PRINTFORM 淫靡に満ちた表情を浮かべて
+			ELSE
+				;胸部が解放されているか半裸以上
+				IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11
+					PRINTFORM 熱い視線を感じて身体をよじり、怯えた表情を浮かべて
+				;全裸
+				ELSEIF DITEMTYPE:(CFLAG:服装):11 == 2
+					PRINTFORM 綺麗な股体を上から下まで見つめられ、顔を真っ赤にして
+				ELSE
+					PRINTFORM 怯えた表情を浮かべて
+				ENDIF
+			ENDIF
+			PRINTFORML いたが
+			IF !(BASE:貞操 <= 50 && BASE:アライメント < 100)
+				PRINTFORM 構わず
+			ENDIF
+			PRINTFORM 信者たちは近づき、
+			;全裸
+			IF DITEMTYPE:(CFLAG:服装):11 == 1
+				PRINTFORM 視線が集まる股体をよじり、仄かに赤く染めている
+			;半裸
+			ELSEIF DITEMTYPE:(CFLAG:服装):11 == 1
+				PRINTFORM 綺麗な股体を申し訳程度にしか隠していない衣服を着た
+			;マイクロミニ
+			ELSEIF DITEMTYPE:(CFLAG:服装):0 == 2
+				PRINTFORM あまりにも丈が短すぎるが故に太腿が露出した
+			;ミニスカート
+			ELSEIF DITEMTYPE:(CFLAG:服装):0 == 1
+				PRINTFORM 太腿を覗かせる程度に短い丈の衣服を着た
+			ENDIF
+			PRINTFORMW %CALLNAME:TARGET%の太腿を持ち上げ、胸を集団で弄られ秘裂に挿入された！
+			IF !CFLAG:胸部下着 && !CFLAG:秘所下着
+				PRINTFORM 普段から下着を着けていなかったが、
+			ENDIF
+			PRINTFORM 奉仕という名目上、下着は着けておらず
+			;全裸以外
+			IF !NUDE(TARGET)
+				PRINTFORM 衣服越しに
+			ENDIF
+			PRINTFORML 強い刺激を与えられる
+			PRINTFORM %CALLNAME:TARGET%は
+			IF BASE:貞操 <= 50 && BASE:アライメント < 100
+				PRINTFORM 艶やかな視線を送って
+			ELSE
+				PRINTFORM 首を振るものの
+			ENDIF
+			PRINTFORM 腰を振りながら声が艶を帯びていき、
+			;胸部が解放されているか半裸以上
+			IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 衣服越しに
+			ENDIF
+			PRINTFORMW 乳首を尖らせた
+			
+			;SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 10
+			EXP:淫妖経験 += 10
+			CALL PLAYTHING
+			
+			CALL INSERT, 2, 1
+			
+			LOCAL = 2
+			LOCAL:1 = 9000
+			LOCAL:2 = -3
+		;慰み者ゲージが50以上
+		ELSEIF BASE:慰み者 >= 50
+			PRINTFORM %CALLNAME:TARGET%は、
+			IF BASE:貞操 <= 50 && BASE:アライメント < 100
+				PRINTFORM 腰を振りながら教主に擦り寄って
+			ELSE
+				PRINTFORM 脅しをかけられ仕方なく
+			ENDIF
+			PRINTFORMW 教主の部屋に行った
+			PRINTFORM 衣服に手を入れられ
+			IF !CFLAG:胸部下着 || DITEMTYPE:(CFLAG:服装):11
+				PRINTFORM 剥き出しの胸を
+			ELSE
+				PRINTFORM 下着越しに胸を
+			ENDIF
+			PRINTFORML 弄ばれ身体を馴染まされた後に
+			
+			IF CFLAG:秘所下着
+				PRINTFORM 下着をずらされ、
+			ENDIF
+			PRINTFORMW 後ろから胸を弄られながら秘裂に挿入された
+			PRINTFORM 太腿は汗を掻き、
+			;胸部を解放しているか全裸の場合
+			IF (!CFLAG:胸部下着 && DITEMTYPE:(CFLAG:服装):1 == 2) || DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 剥き出しにされた
+			ELSE
+				PRINTFORM 衣服の下で
+			ENDIF
+			
+			PRINTFORMW 胸の先端は痛々しく尖り始める……
+			
+			;SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 8
+			EXP:淫妖経験 += 8
+			CALL PLAYTHING
+			
+			CALL INSERT, 2, 1
+			
+			LOCAL = 3
+			LOCAL:1 = 7000
+			LOCAL:2 = -2
+		;慰み者ゲージが30以上
+		ELSEIF BASE:慰み者 >= 30
+			PRINTFORML %CALLNAME:TARGET%は、一人で賛歌を歌っている最中に教主に背後から抱きつかれ
+			;全裸
+			IF DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINTFORM 清らかな股体の素肌に直に触れられ、そのまま
+			ELSE
+				PRINTFORM 衣服の上から
+			ENDIF
+			PRINTFORMW 胸や陰核を弄られた
+			PRINTFORML %CALLNAME:TARGET%は手を払いのけようとするが、
+			PRINTFORMW 教主が耳元に顔を近づけ、弱みを囁くと抵抗できなくなり
+			PRINTFORMW やがて歌い続けながらビクビクと背筋を震わせ、その場に膝をついて達した
+			;SETCOLOR 128, 255, 128
+			PRINTL 淫妖経験 + 6
+			EXP:淫妖経験 += 6
+			CALL PLAYTHING
+			
+			LOCAL = 4
+			LOCAL:1 = 5000
+			LOCAL:2 = -1
+		;属性が50％以上
+		ELSEIF CFLAG:属性／シスター >= 50
+			PRINTFORMW 見るからにシスターな%CALLNAME:TARGET%は清楚と美しさを兼ねた聖女だ……
+			PRINTFORMW 礼拝者から何度も声をかけられた
+			LOCAL = 8
+			LOCAL:1 = 3500
+			LOCAL:2 = 12
+		;属性が30％以上
+		ELSEIF CFLAG:属性／シスター >= 30
+			PRINTFORMW シスターとしての素振りが見える%CALLNAME:TARGET%はそこそこの働きをしたようだ
+			PRINTFORMW 教主に何度も見つめられた
+			LOCAL = 6
+			LOCAL:1 = 2500
+			LOCAL:2 = 10
+		;属性が15％以上
+		ELSEIF CFLAG:属性／シスター >= 15
+			PRINTFORMW 少しシスターとして見える%CALLNAME:TARGET%は礼拝者からそこそこの人気があるようだ
+			LOCAL = 5
+			LOCAL:1 = 1500
+			LOCAL:2 = 8
+		;その他
+		ELSE
+			PRINTFORMW 修道服を着ているものの、まだ%CALLNAME:TARGET%の素振りはシスターには見えないらしく
+			PRINTFORMW 他のシスターの中に埋もれている
+			LOCAL = 4
+			LOCAL:1 = 800
+			LOCAL:2 = 5
+		ENDIF
+	ELSE
+		PRINTFORMW そこそこ頑張ったらしい
+		LOCAL = 3
+		LOCAL:1 = 500
+		LOCAL:2 = 3
+	ENDIF
+	PRINTL 
+	
+	
+	;評価補正
+	;装飾品がシスターセットの場合、属性値の1/4だけ評価が上昇する
+	IF ACCE_SET() == 2
+		LOCAL:2 += CFLAG:属性／シスター / 4
+	;シスター属性の装飾品を付けている場合、1つにつき属性値の5％だけ補正がかかる
+	ELSE
+		ACCE = 0
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			IF GETBIT(CFLAG:("属性／"+STR+""), 3)
+				ACCE += 1
+			ENDIF
+		NEXT
+		LOCAL:2 += CFLAG:属性／シスター * (ACCE+1) / 20
+	ENDIF
+	
+	
+	LOCAL:1 += BASE:信仰 * 5
+	SETCOLOR 128,255,128
+	PRINTFORML 信仰経験 + {LOCAL}
+	
+	SETCOLOR 255,196,64
+	PRINTFORML ${LOCAL:1}手に入れた！
+	RESETCOLOR
+	
+	CALL SETCOLOR_VALUE
+	IF LOCAL:2 < 0
+		PRINTFORML 評価が{LOCAL:2*-1}下がった……
+	ELSE
+		PRINTFORML 評価が{LOCAL:2}上がった！
+	ENDIF
+	RESETCOLOR
+	
+	EXP:信仰経験 += LOCAL
+	MONEY += LOCAL:1
+	CFLAG:評価 += LOCAL:2
+	CALL CALCULATION_FAITH, 1, 0, 0
+	CALL SETCOLOR_FAITH
+	RESULT /= 2
+	IF RESULT
+		PRINTFORML 信仰力が{RESULT}上がった！
+		BASE:信仰力 = LIMIT(BASE:信仰力+RESULT, 0, MAXBASE:信仰力)
+	ENDIF
+	RESETCOLOR
+	CALL CHANGE_ELEMENT, 1
+;魔術ギルド
+ELSEIF CFLAG:職業 == 6
+	PRINTFORMW %CALLNAME:TARGET%は魔術ギルドに働きに出た……
+	LOCAL = 0
+	IF GETBIT(CFLAG:属性,4) || TALENT:ゴスロリ
+		;ゴスロリ属性が50％以上
+		IF CFLAG:属性／ゴスロリ >= 50
+			;1/3の確率で失敗する
+			IF !RAND:3
+				PRINTFORML 魔法陣が光ったかと思うと、触手の山が突然現れ%CALLNAME:TARGET%の身体に絡みついた！
+				PRINTFORMW 抵抗むなしく全身を愛撫され、粘液により昂ぶった身体は挿入にも悦びを感じた
+				LOCAL = 1
+				LOCAL:1 = 3200
+				LOCAL:2 = -6
+				LOCAL:3 = 17
+				CALL INSERT, 3, 1
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は習得した魔法陣を応用させ
+				PRINTFORMW 新たな魔術を開拓しようとした
+				LOCAL = 7
+				LOCAL:1 = 5900
+				LOCAL:2 = 5
+			ENDIF
+		;ゴスロリ属性が30％以上
+		ELSEIF CFLAG:属性／ゴスロリ >= 30
+			;1/3の確率で失敗する
+			IF !RAND:3
+				PRINTFORML 魔法陣を書き間違えたのか悪魔が召喚されてしまった
+				PRINTFORMW 慌てて追い返そうとするも腕を掴まれ、後ろから犯されてしまった
+				LOCAL = 1
+				LOCAL:1 = 2100
+				LOCAL:2 = -3
+				LOCAL:3 = 14
+				CALL INSERT, 3, 1
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は魔法陣を作成して手頃な魔法を使い
+				PRINTFORMW 魔術の使い方を熟練させた
+				LOCAL = 6
+				LOCAL:1 = 3450
+				LOCAL:2 = 4
+			ENDIF
+		;ゴスロリ属性が15％以上
+		ELSEIF CFLAG:属性／ゴスロリ >= 15
+			;1/3の確率で失敗する
+			IF !RAND:3
+				PRINTFORMW 作成した液体がスライムとなり、媚薬を噴き出しながら%CALLNAME:TARGET%に纏わりついた！
+				PRINTFORMW %CALLNAME:TARGET%は股体を震わせ、声をこらえつつ時折背を反らした
+				LOCAL = 3
+				LOCAL:1 = 1100
+				LOCAL:2 = 1
+				LOCAL:3 = 10
+				BASE:媚薬 += 10
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は不慣れながらも少し踏み込んだ薬品調合に手を出し
+				PRINTFORMW 魔術の考え方を深めた
+				LOCAL = 5
+				LOCAL:1 = 2450
+				LOCAL:2 = 3
+			ENDIF
+		;その他
+		ELSE
+			;1/3の確率で失敗する
+			;この割合の場合、媚薬が発生し嗅いでしまう
+			IF !RAND:3
+				PRINTFORML 合成させた薬品から媚薬が発生した！
+				PRINTFORMW %CALLNAME:TARGET%は、鼻で直接嗅いでしまった
+				LOCAL = 2
+				LOCAL:1 = 600
+				LOCAL:2 = 1
+				LOCAL:3 = 2
+				BASE:媚薬 += 5
+			ELSE
+				PRINTFORML %CALLNAME:TARGET%は不慣れながらも手軽な薬品精製などを行い
+				PRINTFORMW 魔術の知識を深めた
+				LOCAL = 4
+				LOCAL:1 = 1750
+				LOCAL:2 = 2
+			ENDIF
+		ENDIF
+		CALL CHANGE_ELEMENT, 1
+	ELSE
+		PRINTFORMW そこそこ頑張ったらしい
+		LOCAL = 3
+		LOCAL:1 = 500
+		LOCAL:2 = 1
+	ENDIF
+	PRINTL 
+	
+	;評価補正
+	;装飾品がゴスロリセットの場合、属性値の1/4だけ評価が上昇する
+	IF ACCE_SET() == 3
+		LOCAL:2 += CFLAG:属性／ゴスロリ / 4
+	;ゴスロリ属性の装飾品を付けている場合、1つにつき属性値の5％だけ補正がかかる
+	ELSE
+		ACCE = 0
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			IF GETBIT(CFLAG:("属性／"+STR+""), 4)
+				ACCE += 1
+			ENDIF
+		NEXT
+		
+		IF LOCAL:2 > 0
+			LOCAL:2 += CFLAG:属性／ゴスロリ * (ACCE+1) / 20
+		ENDIF
+	ENDIF
+	
+	IF LOCAL
+		SETCOLOR 128,255,128
+		PRINTFORML 知力経験 + {LOCAL}
+		RESETCOLOR
+	ENDIF
+	
+	IF LOCAL:3
+		SETCOLOR 128,255,128
+		PRINTFORML 淫妖経験 + {LOCAL:3}
+		RESETCOLOR
+	ENDIF
+	
+	SETCOLOR 255,196,64
+	PRINTFORML ${LOCAL:1}手に入れた！
+	RESETCOLOR
+	
+	IF LOCAL:2 < 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 評価が{LOCAL:2}下がった！
+	ELSE
+		CALL SETCOLOR_VALUE
+		PRINTFORML 評価が{LOCAL:2}上がった！
+	ENDIF
+	RESETCOLOR
+	
+	LOCAL:1 += BASE:美麗 * 2 + BASE:知力 * 3
+	EXP:知力経験 += LOCAL
+	EXP:淫妖経験 += LOCAL:3
+	MONEY += LOCAL:1
+	CFLAG:評価 += LOCAL:2
+;花嫁修業
+ELSEIF CFLAG:職業 == 7
+	PRINTFORMW %CALLNAME:TARGET%は花嫁修業を行った……
+	LOCAL = 0
+	IF GETBIT(CFLAG:属性,5) || TALENT:花嫁
+		;花嫁属性が50％以上
+		IF CFLAG:属性／花嫁 >= 50
+			PRINTFORML %CALLNAME:TARGET%は熟練の動きで修業を行っている
+			PRINTFORMW その働きっぷりは何時嫁にしても恥ずかしくない雰囲気を纏わせている
+			LOCAL = 12
+			LOCAL:2 = 12
+			NEEDLE = 20
+		;花嫁属性が30％以上
+		ELSEIF CFLAG:属性／花嫁 >= 30
+			PRINTFORML %CALLNAME:TARGET%は慣れた手つきで修業に勤しんでいる
+			PRINTFORMW 刺繍を見せては意図や工夫した点について熱く語り、得意げにしている
+			LOCAL = 8
+			LOCAL:2 = 10
+			NEEDLE = 15
+		;花嫁属性が15％以上
+		ELSEIF CFLAG:属性／花嫁 >= 15
+			PRINTFORML %CALLNAME:TARGET%は少し修行に慣れた様子で修業に勤しんでいる
+			PRINTFORMW 失敗が減っており、自信を少しずつ持ち始めているようだ
+			LOCAL = 5
+			LOCAL:2 = 7
+			NEEDLE = 10
+		;その他
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は慣れない手つきで修行に勤しんでいる
+			PRINTFORMW 手つきがつたなく、たまに皿を割ってしまっている
+			LOCAL = 3
+			LOCAL:2 = 4
+			NEEDLE = 5
+		ENDIF
+		CALL CHANGE_ELEMENT, 1
+	ELSE
+		PRINTFORMW そこそこ頑張ったらしい
+		LOCAL = 2
+		LOCAL:2 = 2
+		NEEDLE = 2
+	ENDIF
+	PRINTL 
+	
+	;評価補正
+	;装飾品が花嫁セットの場合、各種経験入手量が5増加する
+	IF ACCE_SET() == 3
+		LOCAL:2 += CFLAG:属性／花嫁 * ACCE / 14
+	;花嫁属性の装飾品を付けている場合、1つにつき属性値の2％だけ補正がかかる
+	ELSE
+		ACCE = 0
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			IF GETBIT(CFLAG:("属性／"+STR+""), 5)
+				ACCE += 1
+			ENDIF
+		NEXT
+		
+		IF LOCAL:2 > 0
+			LOCAL += CFLAG:属性／花嫁 * (ACCE+1) / 50
+		ENDIF
+	ENDIF
+	
+	IF LOCAL
+		SETCOLOR 128,255,128
+		PRINTFORML 美麗経験 + {LOCAL}
+		PRINTFORML 知力経験 + {LOCAL}
+		PRINTFORML 家事経験 + {LOCAL}
+		RESETCOLOR
+	ENDIF
+	
+	IF LOCAL:2 < 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 評価が{LOCAL:2}下がった！
+	ELSE
+		CALL SETCOLOR_VALUE
+		PRINTFORML 評価が{LOCAL:2}上がった！
+	ENDIF
+	RESETCOLOR
+	
+	
+	EXP:美麗経験 += LOCAL
+	EXP:知力経験 += LOCAL
+	EXP:家事経験 += LOCAL
+	CFLAG:評価 += LOCAL:2
+	
+	CALL NEEDLE_UP, NEEDLE
+;夜の店
+ELSEIF CFLAG:職業 == 8
+	CALL WORK_NIGHTSHOP
+;海女
+ELSEIF CFLAG:職業 == 11
+	PRINTFORMW %CALLNAME:TARGET%は労働の為に海中に潜った……
+	
+	VARSET LOCAL
+	;慰み者が100以上
+	IF BASE:慰み者 >= 100 && !RAND:2
+		PRINTFORML %CALLNAME:TARGET%は砂浜で複数の男達に囲まれ、身体の提供を求められた
+		PRINTFORML 陸上では自由に動けない身である%CALLNAME:TARGET%は渋々身体を奉げた……
+		PRINTFORML 
+		PRINTFORML 複数人の男に上下の口を塞がれ、尾びれと化した脚が勝手に跳ねる
+		CALL INSERT, 2, 1
+		PRINTFORMW 男達は去っていき、浜辺には白い液体をかけられた哀れな人魚だけが残された
+		CALL PLAYTHING
+		LOCAL = 3
+		LOCAL:1 = 3000+BASE:淫妖*85
+		LOCAL:2 = 9
+	;50以上
+	ELSEIF BASE:慰み者 >= 50 && !RAND:2
+		PRINTFORML 海に潜ろうとした時に通りかかった男たちに体を押さえられた！
+		PRINTFORMW 逃げようと抵抗をするが尾となってしまった脚ではうまく抵抗することができない……
+		PRINTFORML 
+		PRINTFORML %CALLNAME:TARGET%は結局男たちに体を撫でられ
+		PRINTFORMW 陸に揚がった魚のように体を震わせ続けた……
+		LOCAL = 2
+		LOCAL:1 = 2000+BASE:淫妖*55
+		LOCAL:2 = 6
+	ELSE
+		;体力経験/2％の確率で成功する
+		IF RAND:99+1 <= EXP:体力経験/2
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 成功！　%CALLNAME:TARGET%は無事海から帰ってきた
+			PRINTFORML 腕には様々な魚介類を抱いている
+			RESETCOLOR
+			LOCAL = 6
+			LOCAL:1 = 3000+BASE:体力*20
+		ELSE
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML 大潮に襲われ、浜辺まで流されてしまった……
+			RESETCOLOR
+			LOCAL = 3
+			LOCAL:1 = 800
+		ENDIF
+		
+		;美麗が600以上ある場合、2/3の確率でボーナスを貰える
+		IF BASE:美麗 >= 600 && RAND:99+1 <= BASE:美麗/15+30
+			PRINTFORML 通りかかった人々は%CALLNAME:TARGET%の美しさに見惚れ
+			PRINTFORML 金銭を寄付した……
+			LOCAL:1 += 5000+BASE:美麗*5
+		ENDIF
+	ENDIF
+	IF LOCAL
+		PRINTFORML 体力経験 +{LOCAL}
+		EXP:体力経験 += LOCAL
+	ENDIF
+	IF LOCAL:2
+		PRINTFORML 淫妖経験 +{LOCAL}
+		EXP:淫妖経験 += LOCAL:2
+	ENDIF
+	IF LOCAL:1
+		CALL SETCOLOR_MONEY
+		PRINTFORML ${LOCAL:1}を手に入れた！
+		MONEY += LOCAL:1
+	ENDIF
+	RESETCOLOR
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は働きに出た……
+	PRINTFORMW そこそこ頑張ったらしい
+	PRINTL 
+	
+	LOCAL:1 = 500
+	SETCOLOR 255,196,64
+	IF CFLAG:職業 == 1
+		PRINTL 美麗経験 + 3
+		EXP:美麗経験 += 3
+		LOCAL:1 += BASE:美麗 * 20
+		LOCAL:2 = BASE:美麗 / 40
+	ELSEIF CFLAG:職業 == 2
+		PRINTL 知力経験 + 3
+		EXP:知力経験 += 3
+		LOCAL:1 += BASE:知力 * 20
+		LOCAL:2 = BASE:知力 / 40
+	ELSEIF CFLAG:職業 == 3
+		PRINTL 疎通経験 + 3
+		EXP:疎通経験 += 3
+		LOCAL:1 += BASE:疎通 * 20
+		LOCAL:2 = BASE:疎通 / 40
+	ELSEIF CFLAG:職業 == 9
+		PRINTL 体力経験 + 3
+		EXP:体力経験 += 3
+		LOCAL:1 += BASE:体力 * 20
+		LOCAL:2 = BASE:体力 / 40
+	ENDIF
+	
+	SETCOLOR 255,196,64
+	PRINTFORML ${LOCAL:1}手に入れた！
+	MONEY += LOCAL:1
+	RESETCOLOR
+	
+	CALL SETCOLOR_VALUE
+	PRINTFORML 評価が{LOCAL:2}上がった！
+	RESETCOLOR
+	
+	CALL CHANGE_ELEMENT, 1
+ENDIF
+PRINTW 
+;==========================================================================
+;職業名
+;==========================================================================
+@WORK_NAME, ARG
+
+IF ARG == 0
+	STR = なし
+ELSEIF ARG == 1
+	STR = 服屋
+ELSEIF ARG == 2
+	STR = 図書館
+ELSEIF ARG == 3
+	STR = 商人
+ELSEIF ARG == 4
+	STR = メイド
+ELSEIF ARG == 5
+	STR = シスター
+ELSEIF ARG == 6
+	STR = 魔術ギルド
+ELSEIF ARG == 7
+	STR = 花嫁修業
+ELSEIF ARG == 8
+	STR = 夜の店
+ELSEIF ARG == 9
+	STR = 力仕事
+ELSEIF ARG == 11
+	STR = 海女
+ELSEIF ARG == 21
+	STR = 寺小屋
+ELSEIF ARG == 22
+	STR = 天女の社
+ELSEIF ARG == 99
+	STR = 後宮
+ENDIF
+
+;==========================================================================
+;職業名(式中関数版)
+;==========================================================================
+@IN_WORK_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 11
+
+ARG -= 1
+SIF LOCALS == ""
+	SPLIT "服屋_図書館_商人_メイド_シスター_魔術ギルド_花嫁修業_夜の店_力仕事_欠番_海女", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;==========================================================================
+;夜の店条件
+;3　職に馴染んでいる
+;2　かなり適職
+;1　一応できる
+;0　できない
+
+;ARG　服の属性
+;==========================================================================
+@NIGHT_SHOP, ARG
+#FUNCTION
+
+LOCAL = 0
+;(胸+ヒップ)/2-ウエストが20以上
+IF BODY_RIPEN(TARGET) >= 20
+	LOCAL += 2
+ENDIF
+
+;淫魔or乞食属性の服装or半裸以上の服
+IF GETBIT(ARG, 6) || GETBIT(ARG, 7) || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11)
+	LOCAL += 1
+ENDIF
+
+RETURNF LOCAL
+

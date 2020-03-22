@@ -1,0 +1,1759 @@
+﻿;｢CALL EVENT_NEXTDAY_T｣｢CALL EVENTCHECK_M｣を追加
+
+@EVENTLOAD
+#DIM L_LOCAL, 1
+
+;GLOBAL:991が0の場合、4321を代入する
+IF !GLOBAL:991
+	LOADGLOBAL
+	GLOBAL:991 = 4321
+	SAVEGLOBAL
+ENDIF
+
+;GLOBAL:990が0の場合、4を代入する
+IF !GLOBAL:990
+	LOADGLOBAL
+	GLOBAL:990 = 4
+	SAVEGLOBAL
+ENDIF
+
+
+IF LASTLOAD_VERSION < 2200
+	ITEM:渾沌の力 = 1
+	ITEM:夜遊びの球 = 1
+	
+	;妖しいキャミソールにミニスカートと丈改造不可を付加
+	DITEMTYPE:73:0 |= 1
+	DITEMTYPE:73:10 |= 1
+	
+	;画像表示設定の変数割り当てを変えたため、GLOBAL変数に反映させる
+	SELECTCASE GLOBAL:4
+		CASE 0
+			GLOBAL:4 = 1
+		CASE 1
+			GLOBAL:4 = 0
+	ENDSELECT
+
+ELSEIF LASTLOAD_VERSION < 0995
+	FLAG:君主の権力値 = 8000
+	
+	;傾国のロープに全裸追加
+	DITEMTYPE:68:11 = 2
+	
+	;浴衣と純白の薄衣に行楽服属性を付加
+	;浴衣:夏　特攻:8月
+	;BMI制限　22以下
+	DITEMTYPE:69:30 |= 1p2
+	DITEMTYPE:69:30 |= 1p12
+	DITEMTYPE:69:30 |= 1p13
+	DITEMTYPE:69:31 = 22
+	
+	;純白の薄衣:春
+	;BMI制限　18以下
+	DITEMTYPE:70:30 |= 1p1
+	DITEMTYPE:70:31 = 18
+	
+	LOADGLOBAL
+	;GLOBAL:41～499　と　508～699を0に戻す
+	FOR L_LOCAL, 41, 500
+		GLOBAL:L_LOCAL = 0
+	NEXT
+	FOR L_LOCAL, 508, 700
+		GLOBAL:L_LOCAL = 0
+	NEXT
+	SAVEGLOBAL
+ELSEIF LASTLOAD_VERSION < 0990
+	;スターの身長と体重を設定する
+	IF FLAG:特殊ゲーム == 1
+		BASE:1:身長 = 137
+		BASE:1:体重 = 310
+	ENDIF
+ELSEIF LASTLOAD_VERSION < 0987
+	;誕生日のつじつま合わせ
+	FOR LOCAL:1, 1, FLAG:攫った姉妹の数+2
+		CFLAG:(LOCAL:1):誕生日を迎えた回数 = FLAG:年数-1
+		;身長と体重の値を設定
+		BASE:(LOCAL:1):身長 = 141+FLAG:年数*4
+		BASE:(LOCAL:1):体重 = 141+FLAG:年数*3
+	NEXT
+	
+	;人魚の衣の能力設定
+	;(ゲームスタート時に能力を付加していなかったため)
+	DITEMTYPE:63:11 = 2
+	DITEMTYPE:63:16 = 2
+ELSEIF LASTLOAD_VERSION < 0986
+	;人魚の衣の能力設定
+	DITEMTYPE:63:11 = 1
+	DITEMTYPE:63:16 = 1
+	
+	;輝夜にもユニーク素質を付ける
+	TALENT:TARGET:輝夜 = 1
+ELSEIF LASTLOAD_VERSION < 0985
+	;理性の設定
+	MAXBASE:理性 = 100
+	BASE:理性 = 100
+	
+	TALENT:1:輝夜 = 1
+	
+	;保有してる娘の数に攫った姉妹の数を代入する
+	FLAG:保有してる娘 = FLAG:攫った姉妹の数
+	
+	;対象選択可能フラグを立てる
+	FOR LOCAL:1, 2, FLAG:攫った姉妹の数+2
+		;ユニーク素質を付ける
+		IF CALLNAME:(LOCAL:1) == "依姫"
+			TALENT:(LOCAL:1):依姫 = 1
+		ELSEIF CALLNAME:(LOCAL:1) == "豊姫"
+			TALENT:(LOCAL:1):豊姫 = 1
+		ENDIF
+		
+		IF (CALLNAME:(LOCAL:2) == "依姫" || CALLNAME:(LOCAL:2) == "豊姫") && !TALENT:娼婦
+			
+		ELSE
+			CFLAG:(LOCAL:1):対象選択可能 = 1
+		ENDIF
+	NEXT
+ELSEIF LASTLOAD_VERSION < 0980
+	;やる気へのコンバート処理
+	CFLAG:やる気 += 5
+ELSEIF LASTLOAD_VERSION < 0976
+	;技能ポイントの上限設定
+	FOR LOCAL:1, 1, FLAG:攫った姉妹の数+2
+		FOR LOCAL:2, 100, 108
+			BASE:(LOCAL:1):(LOCAL:2) = 0
+			MAXBASE:(LOCAL:1):(LOCAL:2) = 100000
+	
+			;称号属性の初期化
+			CFLAG:(LOCAL:1):称号属性 = 99
+			
+			;各種評価の初期化
+			BASE:(LOCAL:1):君主の評価 = 20
+			BASE:(LOCAL:1):役人の評価 = 20
+			BASE:(LOCAL:1):民衆の評価 = 20
+			BASE:(LOCAL:1):裏社会評価 = 0
+			MAXBASE:(LOCAL:1):君主の評価 = 500
+			MAXBASE:(LOCAL:1):役人の評価 = 500
+			MAXBASE:(LOCAL:1):民衆の評価 = 500
+			MAXBASE:(LOCAL:1):裏社会評価 = 500
+		NEXT
+	NEXT
+ELSEIF LASTLOAD_VERSION < 0970
+	DRAWLINE
+	PRINTFORML ～～星座設定～～
+	PRINTFORML 新Verでは星座を設定することができます
+	PRINTFORML お好きな星座をどうぞ
+	DRAWLINE
+	;星座の設定
+	FOR L_LOCAL, 0, 12
+		PRINTFORML [{L_LOCAL}] - %CONSTELLATIO_NAME(L_LOCAL)%
+	NEXT
+	PRINTFORML [12] - 戻る
+	
+	CALL SENTAKUSHI, 13
+	
+	IF RESULT == 12
+		
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の星座を%CONSTELLATIO_NAME(RESULT)%に変更しました
+		CFLAG:星座 = RESULT
+	ENDIF
+ENDIF
+
+IF LASTLOAD_VERSION < 0961
+	;レベルの設定
+	FOR LOCAL:1, 1, FLAG:攫った姉妹の数+2
+		FOR LOCAL:2, 81, 85
+			BASE:(LOCAL:1):(LOCAL:2) = 0
+			MAXBASE:(LOCAL:1):(LOCAL:2) = 20
+		NEXT
+		BASE:(LOCAL:1):80 = 1
+		MAXBASE:(LOCAL:1):80 = 30
+	NEXT
+ELSEIF LASTLOAD_VERSION < 0950
+	;人身御供の服の属性を設定する
+	DITEMTYPE:62:11 = 2
+	DITEMTYPE:62:12 = 1
+	
+	FOR COUNT, 25,27
+		DITEMTYPE:COUNT:0 = 1
+		DITEMTYPE:COUNT:10 = 1
+	NEXT
+	
+	FOR COUNT, 35,37
+		DITEMTYPE:COUNT:0 = 2
+		DITEMTYPE:COUNT:10 = 1
+	NEXT
+	
+	;剣道着は剣道属性を付与
+	FOR COUNT, 1, 4
+		DITEMTYPE:(COUNT*10+5):15 |= 1p0
+	NEXT
+
+	;弓道着は弓道属性を付与
+	FOR COUNT, 1, 4
+		DITEMTYPE:(COUNT*10+6):15 |= 1p1
+	NEXT
+	
+	;胸元の広さを最大2にする
+	IF FLAG:女中服の胸元 == 3
+		FLAG:女中服の胸元 = 2
+	ENDIF
+	
+	;スタミナの設定
+	FOR LOCAL:1, 1, FLAG:攫った姉妹の数+2
+		MAXBASE:(LOCAL:1):スタミナ = 600
+	NEXT
+ENDIF
+
+IF LASTLOAD_VERSION < 0948
+	FLAG:王宮内の風紀 = 100
+	DITEMTYPE:61:13 = 1
+	
+	LOCAL:1 = 0
+	;ピリオドの設定
+	FOR LOCAL:1, 1, FLAG:攫った姉妹の数+2
+		MAXBASE:ピリオド = 4
+		MAXBASE:魔力 = 16777216
+		MAXBASE:信仰心 = 16777216
+	NEXT
+	
+	;主人の前職設定
+	;この項目はグローバル変数15に記憶させる
+	DRAWLINE
+	PRINTFORML ～～%CALLNAME:MASTER%の前職設定～～
+	PRINTFORML %CALLNAME:MASTER%の前職を設定します
+	PRINTFORML 前職は%CALLNAME:TARGET%の育ちやすい能力に影響を与える要素です
+	PRINTFORML 迷った場合、育成をスムーズに進められる教育係がオススメです
+	DRAWLINE
+	
+	PRINTL [0] - 教育係　　　　　稼ぎの平均: $400　主人への好感度が上がりやすくなります
+	PRINTL [1] - 執事　　　　　　稼ぎの平均: $800　家事が伸びやすい
+	PRINTL [2] - 修道士　　　　　稼ぎの平均: $800　信仰が伸びやすい
+	PRINTL [3] - 賭博師　　　　　毎ターン稼ぐ　　　賭け事をして金を稼ぎます。負けが嵩むと……
+	PRINTL [4] - 魔術師　　　　　稼ぎの平均: $950　時折アイテムを入手します
+	
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_MASTER_JOB
+	INPUT
+	
+	IF RESULT < 5 && RESULT >= 0
+		FLAG:主人の前職 = RESULT
+	ELSEIF RESULT == 999
+		
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP_MASTER_JOB
+	ENDIF
+	
+ENDIF
+
+
+@EVENTFIRST
+#DIM L_LOCAL, 1
+#DIM TUTORIAL, 1
+#DIM chara, 1
+
+;夢見る妖精モードの場合、スターを加える
+IF FLAG:特殊ゲーム == 1
+	ADDCHARA 4
+	ASSI = -1
+	TARGET = 1
+	
+	;輝夜を加える
+	ADDCHARA 1
+	FLAG:保有してる娘 += 1
+	FLAG:攫った姉妹の数 += 1
+	TARGET = 2
+	
+	;輝夜を拘束状態にする
+	CFLAG:矯正アイテム |= 1p0
+	;服は布きれにする
+	CALL DATA_CHANGE_CLOTHE, -1, "変更"
+	
+	TARGET = 1
+ELSE
+	;(2015/08/11追加)主人公のキャラを追加してみました
+	;あくまでテスト用なので、イベントでは色々な齟齬が発生します
+	DRAWLINE
+	PRINTFORML ～～主人公選択～～
+	PRINTFORML どのキャラを育てますか？
+	PRINTFORML [0] - 輝夜　　　　君主の圧政を避けながら月夜見失踪の謎を解け！　最も標準的な主人公です
+	PRINTL 
+	PRINTFORML 以下テスト版。イベントの齟齬は取ってません(エラー落ちした場合、報告をお願いします)
+	PRINTFORML [1] - 依姫　　　　月の都では有力な血筋である綿月姉妹の次女です。様々な神が彼女に憑りつきます
+	PRINTFORML [2] - 豊姫　　　　月の都では有力な血筋である綿月姉妹の長女です。お転婆な彼女は予測不能な行動を行う！？
+	
+	CALL SENTAKUSHI, 3
+	
+	ADDCHARA RESULT+1
+	ASSI = -1
+ENDIF
+
+FLAG:王宮内の役人 = 400
+FLAG:王宮内の女中 = 300
+FLAG:士気 = 100
+
+;渾沌の力と夜遊びの球を持たせる
+ITEM:渾沌の力 = 1
+ITEM:夜遊びの球 = 1
+
+REPEAT 99
+	ITEMSALES:COUNT = 1
+REND
+
+CALL CHARA_PRICE
+
+chara = 1
+;夢見る妖精モードの場合、輝夜を対象にする
+IF FLAG:特殊ゲーム == 1
+	chara += 1
+ENDIF
+
+FOR L_LOCAL, 1, chara+1
+	;輝夜のキャラパラメーター設定
+	FOR COUNT, 5, 15
+		BASE:COUNT = 0
+	NEXT
+	BASE:疲労 = 0
+	BASE:ストレス = 0
+	BASE:15 = 0
+	BASE:16 = 100
+	BASE:技能 = 0
+	BASE:媚薬 = 0
+	BASE:隷属 = 0
+	BASE:習慣化 = 0
+	BASE:快楽動機づけ = 0
+	BASE:貞操 = 100
+	BASE:慰み者 = 0
+	BASE:魔力 = 0
+	BASE:信仰力 = 0
+	BASE:君主の評価 = 20
+	BASE:役人の評価 = 20
+	BASE:民衆の評価 = 20
+	BASE:裏社会評価 = 0
+
+	BASE:80 = 1
+	MAXBASE:80 = 30
+	;レベルの設定
+	FOR LOCAL:2, 81, 85
+		BASE:(LOCAL:2) = 1
+		MAXBASE:(LOCAL:2) = 10
+	NEXT
+
+	;技能ポイントも空にしておく
+	FOR LOCAL:2, 100, 108
+		BASE:(LOCAL:2) = 0
+	NEXT
+
+	;デバッグ用
+	;ITEM:巫女服 = 1
+	;MAXBASE:ＣＰ = 99
+	;PRINTL デバッグ
+
+
+	;衣服提供
+	FOR COUNT, 10, 17
+		ITEM:COUNT = 1
+		ITEM:14 = 0
+	NEXT
+
+	;習慣レベル決定
+	FOR COUNT, 0, 5
+		CFLAG:(COUNT+500) = 1
+		CFLAG:(COUNT+510) |= 1p1
+	NEXT
+
+	FLAG:君主の権力値 = 8000
+	FLAG:王宮内の風紀 = 100
+
+	;素養も設定
+	REPEAT 10
+		LOCAL = 40 + COUNT
+		IF LOCAL == 41
+			BASE:LOCAL = 100
+		ELSE
+			BASE:LOCAL = 100
+		ENDIF
+	REND
+	
+	;スターの場合
+	IF NO:TARGET == 4
+		;初期衣装は里娘の小袖
+		ITEM:里娘の小袖 = 1
+		CALL DATA_CHANGE_CLOTHE, 66, "変更"
+		
+		;属性は里娘100％
+		CFLAG:属性／里娘 = 100
+		CFLAG:属性／姫様 = 0
+		
+		TALENT:妖精 = 1
+		
+		;習慣レベル決定
+		FOR COUNT, 0, 5
+			CFLAG:(COUNT+500) = 1
+			CFLAG:(COUNT+510) = 1p9
+		NEXT
+	;依姫の場合
+	ELSEIF NO:TARGET == 2
+		;素質[依代]を追加
+		TALENT:依代 = 1
+		
+		;気品とプライドが高め
+		BASE:気品 += 30
+		BASE:プライド += 30
+		
+		;献身と依存が低い
+		BASE:献身 -= 30
+		BASE:依存 -= 20
+		
+		;こっそり貞操を+15しておく
+		BASE:貞操 += 15
+		
+		;刃術レベル1でスタート
+		BASE:刀術レベル = 1
+	;豊姫の場合
+	ELSEIF NO:TARGET == 3
+		;素質[お転婆]を追加
+		TALENT:お転婆 = 1
+		
+		;感度と思考力が高い
+		BASE:感度 += 20
+		BASE:思考力 += 30
+		
+		;こっそり貞操だけ-15しておく
+		BASE:貞操 -= 15
+	ELSE
+		;Legend of Another worldの場合、初期服装は布きれであり、属性は里娘と姫様になる
+		IF FLAG:特殊ゲーム == 2
+			CFLAG:属性／乞食 = 40
+			CFLAG:属性／里娘 = 60
+			CALL DATA_CHANGE_CLOTHE, -1, "変更"
+			
+			;淫妖経験+30　＆　淫妖+45　＆　感度+70
+			EXP:淫妖経験 += 30
+			;BASE:淫妖 = 45
+			BASE:感度 += 70
+			BASE:貞操 = 80
+			
+			;FLAG:布の痛み = 2
+			
+			;習慣レベル決定
+			FOR COUNT, 0, 5
+				IF COUNT <= 1
+					CFLAG:(COUNT+500) = 1
+					CFLAG:(COUNT+510) = 1p7
+				ELSE
+					CFLAG:(COUNT+500) = 1
+					CFLAG:(COUNT+510) = 1p9
+				ENDIF
+			NEXT
+		ELSEIF FLAG:特殊ゲーム != 1
+			;服装は[普段着]に設定
+			ITEM:0 += 1
+			CALL DATA_CHANGE_CLOTHE, 0, "変更"
+		ENDIF
+		SIF FLAG:特殊ゲーム != 2
+			CFLAG:属性／姫様 = 100
+	ENDIF
+	
+	CFLAG:胸部下着 = 1
+	CFLAG:秘所下着 = 1
+	;称号属性は無しの状態にしておく
+	CFLAG:称号属性 = 99
+	CFLAG:やる気 = 5
+	
+	TARGET += 1
+NEXT
+
+TARGET = 1
+
+FLAG:年数 = 1
+
+;ミニスカート系の衣服は先にスカート属性を付与
+DITEMTYPE:3:0 = 1
+DITEMTYPE:3:10 = 1
+
+FOR COUNT, 20,27
+	DITEMTYPE:COUNT:0 = 1
+	DITEMTYPE:COUNT:10 = 1
+NEXT
+
+;剣道着は剣道属性を付与
+FOR COUNT, 1, 4
+	DITEMTYPE:(COUNT*10+5):15 |= 1p0
+NEXT
+
+;弓道着は弓道属性を付与
+FOR COUNT, 1, 4
+	DITEMTYPE:(COUNT*10+6):15 |= 1p1
+NEXT
+
+;サキュバスキャミソールはマイクロミニ設定
+FOR COUNT, 30,37
+	DITEMTYPE:COUNT:0 = 2
+	DITEMTYPE:COUNT:10 = 1
+NEXT
+
+;透ける衣服は半裸属性
+FOR COUNT, 100,104
+	DITEMTYPE:COUNT:11 = 1
+NEXT
+
+;ボーイッシュはスカートでないので丈の長さを変更できない
+DITEMTYPE:5:10 = 1
+
+;透明な服は全裸
+;人身御供の服、人魚の衣も同じ
+DITEMTYPE:6:11 = 2
+DITEMTYPE:62:11 = 2
+DITEMTYPE:63:11 = 2
+
+;巫女服は巫女服属性持ち
+DITEMTYPE:54:12 = 1
+DITEMTYPE:59:12 = 1
+DITEMTYPE:62:12 = 1
+
+;マイクロミニ制服も付与
+DITEMTYPE:55:0 = 2
+DITEMTYPE:55:10 = 1
+
+;裸エプロン、エプロンメイドは半裸
+DITEMTYPE:56:11 = 1
+DITEMTYPE:57:11 = 1
+
+;女中の服は女中服属性持ち
+DITEMTYPE:61:13 = 1
+
+;傾国のロープに全裸追加
+DITEMTYPE:68:11 = 2
+
+;浴衣と純白の薄衣に行楽服属性を付加
+;浴衣:夏　特攻:8月
+;BMI制限　22以下
+DITEMTYPE:69:30 |= 1p2
+DITEMTYPE:69:30 |= 1p12
+DITEMTYPE:69:30 |= 1p13
+DITEMTYPE:69:31 = 22
+
+;純白の薄衣:春
+;BMI制限　18以下
+DITEMTYPE:70:30 |= 1p1
+DITEMTYPE:70:31 = 18
+
+;妖しいキャミソールにミニスカートと丈改造不可を付加
+DITEMTYPE:73:0 |= 1
+DITEMTYPE:73:10 |= 1
+
+;人魚の衣は人魚への変異特性持ち
+;(のつもりでこのDITEMTYPEを設定するが、多分活かされていない)
+DITEMTYPE:63:16 = 1
+
+
+PBAND = 12
+
+FLAG:6 = 1
+FLAG:99 = 8
+
+;モード選択
+;PRINTL ★★モードを選択してください★★
+;PRINTL [0]START （50日期限 目標金額$1,000,000）
+;PRINTL [9]EXTRA （期限なし エンドレス）
+
+;$INPUT_LOOP
+;INPUT
+;IF RESULT == 0
+;	FLAG:5 = 0
+;ELSEIF RESULT == 9
+;	FLAG:5 = 9
+;	CALL START_CHARA_SELECT
+;ELSE
+;	GOTO INPUT_LOOP
+;ENDIF
+
+TUTORIAL = 1
+$INPUT_LOOP_2
+
+DRAWLINE
+PRINTL ～～ゲーム開始前に～～
+PRINTL 初期設定を行います
+PRINTL 設定は本体に保存することもでき、再びニューゲームを行う際に読みこむことができます
+PRINTL 初めてプレイされる方は、設定を変更せずに遊ぶことをお勧めします
+
+;初めてプレイする人のために初期公開量を制限
+;詳細設定のON/OFFはグローバル変数に保存
+;IF GLOBAL:3
+;	
+;ELSE
+;
+
+
+DRAWLINE
+PRINT [0] - イベントをカットする　　　　　
+IF FLAG:イベントカット
+	CALL SETCOLOR_PALAMUP
+	PRINTL ON
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL OFF
+ENDIF
+RESETCOLOR
+PRINT [1] - 口上の表示　　　　　　　　　　
+IF !FLAG:口上スキップ
+	CALL SETCOLOR_PALAMUP
+	PRINTL 表示する
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL 表示しない
+ENDIF
+RESETCOLOR
+PRINT [2] - 気質表示時　　　　　　　　　　
+IF FLAG:気質ウェイト
+	CALL SETCOLOR_PALAMUP
+	PRINTL 必ず止める
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL スキップできる
+ENDIF
+RESETCOLOR
+PRINT [3] - ゲーム中チュートリアル　　　　
+IF TUTORIAL
+	CALL SETCOLOR_PALAMUP
+	PRINTL 表示する
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL 表示しない
+ENDIF
+RESETCOLOR
+PRINT [4] - 画像表示　　　　　　　　　　　
+SELECTCASE GLOBAL:4
+	CASE 0
+		CALL SETCOLOR_PALAMDOWN
+		PRINTL 表示しない
+	CASE 1
+		CALL SETCOLOR_PALAMUP
+		PRINTL 表示(大)
+	CASE 2
+		CALL SETCOLOR_PALAMUP
+		PRINTL 表示(小)
+ENDSELECT
+RESETCOLOR
+DRAWLINE
+PRINT [10] - 警備方針(2年目から有効)　　　
+IF FLAG:警備 == -1
+	PRINTL 警備していない
+ELSEIF FLAG:警備 == 0
+	PRINTL 通常の警備
+ELSEIF FLAG:警備 == 1
+	PRINTL 万全の警備
+ENDIF
+DRAWLINE
+PRINTL 下着の有無
+PRINT [11] - 胸：
+IF CFLAG:胸部下着 == 1
+	PRINT 有
+ELSE
+	SETCOLOR 128,128,128
+	PRINT 無
+	RESETCOLOR
+ENDIF
+PRINTL 
+PRINT [12] - 秘所:
+IF CFLAG:秘所下着 == 1
+	PRINTL 有
+ELSE
+	SETCOLOR 128,128,128
+	PRINTL 無
+	RESETCOLOR
+ENDIF
+
+PRINT [13] - 失敗or悪い事をした際の対応　　
+IF CFLAG:躾方針 == 0
+	PRINTL 叱る
+ELSEIF CFLAG:躾方針 == 1
+	PRINTL 折檻
+ELSEIF CFLAG:躾方針 == 2
+	PRINTL 快楽を与える
+ELSEIF CFLAG:躾方針 == 3
+	PRINTL 改善案を教える
+ELSEIF CFLAG:躾方針 == 4
+	PRINTL 優しく諭す
+ENDIF
+DRAWLINE
+CALL WORK_NAME, CFLAG:職業
+PRINTFORML [14] - 働き先　　　　　　　　　　　　%STR%
+CALL WORK_NAME_MASTER, FLAG:主人の前職
+PRINTFORML [15] - 主人の働き先　　　　　　　　　%STR%
+DRAWLINE
+PRINTL ○星座
+;星座で設定できる
+;素質の傾向は某ゲームのテーマを元ネタとする
+PRINTFORML [16] - %CALLNAME:TARGET,12,LEFT%　　　　　　　　　%CONSTELLATIO_NAME(CFLAG:星座)%
+DRAWLINE
+PRINT [40] - 食事方針　　　　　　　　　　　
+IF CFLAG:食事方針 == 2
+	PRINTL 思いっきり豪華に
+ELSEIF CFLAG:食事方針 == 1
+	PRINTL 多め
+ELSEIF CFLAG:食事方針 == 0
+	PRINTL 普通
+ELSEIF CFLAG:食事方針 == -1
+	PRINTL 少し減らす
+ELSEIF CFLAG:食事方針 == -2
+	PRINTL 体重減量政策
+ENDIF
+DRAWLINE
+PRINTL [101] - 設定をセーブする
+PRINTL [102] - 設定をロードする
+DRAWLINE
+PRINTL [1000] - 設定を終える
+
+INPUT
+
+IF RESULT == 0
+	IF FLAG:イベントカット
+		PRINTL イベントを表示します
+		FLAG:イベントカット = 0
+	ELSE
+		PRINTL イベントをカットします
+		FLAG:イベントカット = 1
+	ENDIF
+ELSEIF RESULT == 1
+	IF FLAG:口上スキップ
+		PRINTL 口上を表示します
+		FLAG:口上スキップ = 0
+	ELSE
+		PRINTL 口上を表示しません
+		FLAG:口上スキップ = 1
+	ENDIF
+ELSEIF RESULT == 2
+	IF FLAG:気質ウェイト
+		PRINTL 気質表示画面を右クリック等でスキップできます
+		FLAG:気質ウェイト = 0
+	ELSE
+		PRINTL 気質表示画面を右クリック等でスキップできなくなります
+		FLAG:気質ウェイト = 1
+	ENDIF
+ELSEIF RESULT == 3
+	IF !TUTORIAL
+		PRINTL ゲーム中にチュートリアルを表示します
+		TUTORIAL = 1
+	ELSE
+		PRINTL ゲーム中にチュートリアルを表示しません
+		TUTORIAL = 0
+	ENDIF
+ELSEIF RESULT == 4
+	IF GLOBAL:4 == 2
+		GLOBAL:4 = 0
+	ELSE
+		GLOBAL:4 += 1
+	ENDIF
+
+	SELECTCASE GLOBAL:4
+		CASE 0
+			PRINTL ゲーム中に画像を表示しません
+		CASE 1
+			PRINTL ゲーム中に画像を表示(大)で表示します
+		CASE 2
+			PRINTL ゲーム中に画像を表示(小)で表示します
+	ENDSELECT
+ELSEIF RESULT == 10
+	IF FLAG:警備 == 1
+		PRINTL [0] - 万全の体制で警備　現在の設定　　　警備費として半期終了時に$4000取られます
+	ELSE
+		PRINTL [0] - 万全の体制で警備　　　　　　　　　警備費として半期終了時に$4000取られます
+	ENDIF
+	IF FLAG:警備 == 0
+		PRINTL [1] - 通常の警備　　　　現在の設定　　　普通の警備です
+	ELSE
+		PRINTL [1] - 通常の警備　　　　　　　　　　　　普通の警備です
+	ENDIF
+	IF FLAG:警備 == -1
+		PRINTL [2] - 警備を解く　　　　現在の設定　　　半期終了期に収入が$4000増えます
+	ELSE
+		PRINTL [2] - 警備を解く　　　　　　　　　　　　半期終了期に収入が$4000増えます
+	ENDIF
+	
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT <= 2
+		FLAG:警備 = 1 - RESULT
+	ENDIF
+ELSEIF RESULT == 11
+	IF CFLAG:胸部下着
+		PRINTL 下着を着けないようにします
+		CFLAG:胸部下着 = 0
+	ELSE
+		PRINTL 下着を着けるようにします
+		CFLAG:胸部下着 = 1
+	ENDIF
+ELSEIF RESULT == 12
+	IF CFLAG:秘所下着
+		PRINTL 下着を着けないようにします
+		CFLAG:秘所下着 = 0
+	ELSE
+		PRINTL 下着を着けるようにします
+		CFLAG:秘所下着 = 1
+	ENDIF
+ELSEIF RESULT == 13
+	PRINTL どの方針にしますか？
+	PRINTL [0] - 叱る　　　　　通常の方針です。影響はありません
+	PRINTL [1] - 折檻　　　　　体罰を与えます。堕落や隷属が上昇します
+	PRINTL [2] - 快楽を与える　官能的な卑し目を与えます。淫妖や美麗が与えられます
+	PRINTL [3] - 改善案を教える　改善案を教えます。主人への好感度かアライメントが高くないと依存とやる気が下がります
+	PRINTL [4] - 優しく諭す　　　優しく諭します。疎通と依存が上がりますがたまにアライメントと貞操観念が下がります
+	PRINTL [5] - 戻る
+	
+	CALL SENTAKUSHI, 6
+	
+	IF RESULT != 5
+		IF RESULT == 0
+			PRINTL 叱る方針にします
+		ELSEIF RESULT == 1
+			PRINTL 折檻を与える方針にします
+		ELSEIF RESULT == 2
+			PRINTL 快楽を与える方針にします
+		ELSEIF RESULT == 3
+			PRINTL 改善案を教える方針にします
+		ELSEIF RESULT == 4
+			PRINTL 優しく諭す方針にします
+		ENDIF
+		CFLAG:躾方針 = RESULT
+	ENDIF
+ELSEIF RESULT == 14
+	PRINTL [0] - なし
+	PRINTL [1] - 服屋
+	PRINTL [2] - 図書館
+	PRINTL [3] - 商人
+	PRINTL [4] - メイド
+	PRINTL [5] - シスター
+	PRINTL [6] - 魔術ギルド
+	PRINTL [7] - 花嫁修業
+;	PRINTL [8] - 酒場
+	PRINTL [9] - 力仕事
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_WORK
+	INPUT
+	
+	IF RESULT != 8 && RESULT <= 9 && RESULT >= 0
+		CFLAG:職業 = RESULT
+	ELSEIF RESULT == 999
+		;何も行わせずに通過させる
+		
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP_WORK
+	ENDIF
+ELSEIF RESULT == 15
+	;この項目はグローバル変数40に記憶させる
+	DRAWLINE
+	PRINTFORML ～～%CALLNAME:MASTER%の前職設定～～
+	PRINTFORML %CALLNAME:MASTER%の前職を設定します
+	PRINTFORML 前職は%CALLNAME:TARGET%の育ちやすい能力に影響を与える要素です
+	PRINTFORML 迷った場合、育成をスムーズに進められる教育係がオススメです
+	DRAWLINE
+	
+	PRINTL [0] - 教育係　　　　　稼ぎの平均: $400　主人への好感度が上がりやすくなります
+	PRINTL [1] - 執事　　　　　　稼ぎの平均: $900　家事が伸びやすい
+	PRINTL [2] - 修道士　　　　　稼ぎの平均: $900　信仰が伸びやすい
+	PRINTL [3] - 賭博師　　　　　毎ターン稼ぐ　　　賭け事をして金を稼ぎます。負けが嵩むと……
+	PRINTL [4] - 魔術師　　　　　稼ぎの平均: $950　時折アイテムを入手します
+	
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP_MASTER_JOB
+	INPUT
+	
+	IF RESULT < 5 && RESULT >= 0
+		FLAG:主人の前職 = RESULT
+	ELSEIF RESULT == 999
+		
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP_MASTER_JOB
+	ENDIF
+	
+ELSEIF RESULT == 16
+	;この項目はグローバル変数15に保存させる
+	FOR L_LOCAL, 0, 12
+		PRINTFORML [{L_LOCAL}] - %CONSTELLATIO_NAME(L_LOCAL)%
+	NEXT
+	PRINTFORML [12] - 戻る
+	
+	CALL SENTAKUSHI, 13
+	
+	IF RESULT == 12
+		
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の星座を%CONSTELLATIO_NAME(RESULT)%に変更しました
+		CFLAG:星座 = RESULT
+	ENDIF
+ELSEIF RESULT == 40
+	PRINTL どの方針にしますか？
+	PRINTL [0] - 思いっきり豪華に　　　生活費が余計に$4000かかり、スタミナや体重が増加します
+	PRINTL [1] - 多め　　　　　　　　　生活費が余計に$2000かかり、少しだけスタミナや体重が増加します
+	PRINTL [2] - 普通　　　　　　　　　一般的な量の食事です。生活費は変わりません
+	PRINTL [3] - 少し減らす　　　　　　少し量を減らします。生活費が$2000浮き体重も減りますが、スタミナが減ります
+	PRINTL [4] - 体重減量政策　　　　　量を大きく減らします。生活費が$4000浮き体重もかなり減りますが、スタミナも……
+	PRINTL [5] - 戻る
+	
+	CALL SENTAKUSHI, 6
+	
+	IF RESULT == 0
+		PRINTL 思いっきり豪華な食事を与えます
+	ELSEIF RESULT == 1
+		PRINTL 数品食事を追加します
+	ELSEIF RESULT == 2
+		PRINTL 一般的な食事を行います
+	ELSEIF RESULT == 3
+		PRINTL 食事の量を少し減らします
+	ELSEIF RESULT == 4
+		PRINTL 食事の量を大幅に減らします
+	ENDIF
+	IF RESULT != 5
+		CFLAG:食事方針 = 2-RESULT
+	ENDIF
+ELSEIF RESULT == 101
+	FOR L_LOCAL, 271, 274
+		IF FLAG:L_LOCAL
+			GLOBAL:(L_LOCAL-271) = 1
+		ELSE
+			GLOBAL:(L_LOCAL-271) = 0
+		ENDIF
+		;PRINTFORML グローバル：{GLOBAL:(L_LOCAL-271)}
+	NEXT
+	
+	;チュートリアルは275番に保存
+	GLOBAL:275 = TUTORIAL
+	
+	;PRINTFORML グローバル:{GLOBAL:10}
+	GLOBAL:10 = FLAG:警備
+	
+	FOR L_LOCAL, 0, 6
+		GLOBAL:(11+L_LOCAL) = CFLAG:GLOBAL_NAME(L_LOCAL)
+	NEXT
+	GLOBAL:40 = FLAG:主人の前職
+	
+	;100番目はバージョン番号
+	GLOBAL:100 = GAMEBASE_VERSION
+	
+	SAVEGLOBAL
+	PRINTL 現在の設定を保存しました
+	PRINTL (設定内容は「global.sav」に保存されています)
+	PRINTL (次回以降のニューゲーム時にロードできます)
+ELSEIF RESULT == 102
+	LOADGLOBAL
+	PRINTL 設定を読みこみました
+	FOR L_LOCAL, 0, 3
+		IF GLOBAL:L_LOCAL
+			FLAG:(271+L_LOCAL) = 1
+		ELSE
+			FLAG:(271+L_LOCAL) = 0
+		ENDIF
+	NEXT
+	
+	FLAG:警備 = GLOBAL:10
+	
+	FOR L_LOCAL, 0, 6
+		CFLAG:GLOBAL_NAME(L_LOCAL) = GLOBAL:(11+L_LOCAL)
+	NEXT
+	
+	;チュートリアルは275番に保存
+	TUTORIAL = GLOBAL:275
+	FLAG:主人の前職 = GLOBAL:40
+ELSEIF RESULT != 1000
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP_2
+ENDIF
+
+IF RESULT != 1000
+	GOTO INPUT_LOOP_2
+ENDIF
+
+;チュートリアルがOFFの場合、チュートリアルフラグを立てる
+;276はスキップ
+IF !TUTORIAL
+	FOR L_LOCAL, 275, 278
+		IF L_LOCAL == 276
+			L_LOCAL += 1
+		ENDIF
+		FLAG:L_LOCAL = 1
+	NEXT
+ENDIF
+
+;職業が設定された場合、行動回数を1減らす
+IF CFLAG:職業
+	MAXBASE:行動回数 -= 1
+ENDIF
+
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTL ～～お知らせ～～
+PRINTL 近年、輝夜が二つの宝を持っていることが判明した
+PRINTL その名は「渾沌の力」と「夜遊びの球」
+PRINTL 
+PRINTL 「渾沌の力」は厄除けとしての力を持つらしいが
+PRINTL 「夜遊びの球」は禁宝として言い伝えられている
+PRINTL 「夜遊びの球」の使い方には充分気をつけるべし
+RESETCOLOR
+DRAWLINE
+
+GLOBAL:99 += 1
+
+;オープニング
+$INPUT_LOOP_4
+PRINTL オープニングを表示しますか？
+IF FLAG:特殊ゲーム == 1
+	CALL SETCOLOR_ABL
+	PRINTFORML (特殊オープニングがあります！)
+	RESETCOLOR
+ENDIF
+PRINTL [0] - 表示する
+PRINTL [1] - 表示しない
+INPUT
+IF RESULT == 0
+	CALL OPENING
+	DRAWLINE
+ELSEIF RESULT == 1
+	DRAWLINE
+ELSE
+	GOTO INPUT_LOOP_4
+ENDIF
+
+
+;チュートリアル表示
+$INPUT_LOOP_5
+;
+PRINTL チュートリアルを表示しますか？
+PRINTL [0] - 表示する
+PRINTL [1] - 表示しない
+INPUT
+IF RESULT == 0
+	DRAWLINE
+	PRINTL ～～始まりの時～～
+	PRINTL さあ！　これからあなたの歴史が紡がれます！
+	PRINTFORML あなたは%CALLNAME:TARGET%を5年に渡り教育し、無事に成長させなければなりません。
+	PRINTL その間には困難や苦痛、そして中には二度と引き返せない状況に陥る災難に見舞われる事もあるでしょう。
+	PRINTL 
+	PRINTL しかし、あなたはそれらを跳ねのける必要があります。
+	PRINTL 
+	PRINTL 以下のチュートリアルを読んで、教育方針を決める事に役立ててください。
+	PRINTL 
+	CALL TUTORIAL
+ELSEIF RESULT == 1
+	DRAWLINE
+ELSE
+	GOTO INPUT_LOOP_4
+ENDIF
+
+DAY = 1
+MONEY = 5000
+
+CALL START_STATUS, CFLAG:星座
+
+;Legend of Another worldの場合、淫妖+70
+IF FLAG:特殊ゲーム == 2
+	BASE:淫妖 += 70
+ENDIF
+
+;主人の前職によって補正をかける
+
+;教育係の場合、好感度が10上昇する
+IF FLAG:主人の前職 == 1
+	CFLAG:主人への友好度 = 10
+;執事の場合、家事が25上昇する
+ELSEIF FLAG:主人の前職 == 1
+	BASE:家事 += 25
+;修道士の場合、信仰が25上昇する
+ELSEIF FLAG:主人の前職 == 2
+	BASE:信仰 += 25
+;賭博師の場合、所持金+$5000
+ELSEIF FLAG:主人の前職 == 3
+	MONEY += 5000
+ENDIF
+
+SIF FLAG:5 == 9
+	MONEY += 27000
+
+VARSET LOCAL, 0
+;(2015/03/25)仕様変更
+;今までに見た能力600以上のエンディングの種類によって分岐する
+FOR L_LOCAL, 700, 881
+	;879未満でL_LOCAL-699が3の倍数に該当する番号を持つエンディングはカウントしない
+	;(300以下のエンディングを疑似的に弾くため)
+	IF !(L_LOCAL-699)%3
+		CONTINUE
+	ENDIF
+	
+	IF GLOBAL:L_LOCAL
+		LOCAL += 1
+	ENDIF
+NEXT
+
+GLOBAL:99 = LOCAL
+
+;前世譚ポイントを持っている場合
+IF GLOBAL:99
+	PRINTFORML 周回プレイを開始しますか？
+	PRINTFORML (現在所持している前世譚ポイント:{GLOBAL:99}pt)
+	PRINTL 
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		CALL JATAKA
+	ENDIF
+ENDIF
+
+
+BEGIN SHOP
+
+
+@EVENTCOM
+#PRI
+REPEAT 35
+	TFLAG:COUNT = 0
+REND
+TFLAG:100 = 0
+
+
+@EVENTCOMEND
+#PRI
+
+;夜伽モードでピリオドを使いきった
+IF CFLAG:モード == 1 && BASE:ピリオド <= 0
+	PRINTFORML 今日の夜伽を終えた……
+	BASE:行動回数 -= 1
+	BASE:ピリオド = 4
+	
+	;欲求は(50-(50-主人への友好度/2))％持ちこされる
+	;嫌悪感を1/2にする
+	;判定のため快楽は持ちこし
+	;BASE:欲求 = BASE:欲求 * (50 - (50-CFLAG:主人への友好度 / 2))
+	BASE:欲求 /= 2
+	BASE:嫌悪感 /= 2
+	
+	;淫妖の上昇
+	;計算式:快楽/10+絶頂回数*6
+	;PRINTFORML 絶頂:{TFLAG:絶頂回数}回
+	;PRINTFORML 焦らし:{TFLAG:焦らし回数}回
+	LOCAL = BASE:快楽 / 10 + TFLAG:絶頂回数 * 3 + TFLAG:焦らし回数 * 4
+	;PRINTFORML 基礎値:{LOCAL}
+	CALL CALCULATION_INYOU, LOCAL, 90
+	PRINTFORM 淫妖:{BASE:淫妖}　→　
+	BASE:淫妖 += RESULT
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML { BASE:淫妖}
+	RESETCOLOR
+	
+	TFLAG:絶頂回数 = 0
+	TFLAG:焦らし回数 = 0
+	
+	;チュートリアル
+	IF !GETBIT(FLAG:夜伽チュートリアルビット, 3) && !FLAG:夜伽チュートリアル済
+		CALL TUTORIAL_YOTOGI, 3
+		FLAG:夜伽チュートリアルビット |= 1p3
+	ENDIF
+	
+ENDIF
+
+;CPを消費しきった
+IF BASE:ＣＰ <= 0
+	PRINTFORMW (CPが底をつきました)
+	BEGIN AFTERTRAIN
+;4回行動した
+ELSEIF BASE:行動回数 <= 0
+	PRINTFORMW (行動回数が限界に達しました)
+	;夜伽モードでチュートリアル中の場合はチュートリアルに入る
+	IF !GETBIT(FLAG:夜伽チュートリアルビット, 4) && !FLAG:夜伽チュートリアル済 && CFLAG:モード == 1
+		CALL TUTORIAL_YOTOGI, 4
+		FLAG:夜伽チュートリアルビット |= 1p4
+		FLAG:夜伽チュートリアル済 = 1
+	ENDIF
+	BEGIN AFTERTRAIN
+	
+ENDIF
+
+@EVENTTURNEND
+#PRI
+
+;魔槍キャンサーを装備している場合、穢れ+1
+IF CFLAG:装備 == 592
+	PRINTFORML 魔槍からにじみ出る黒い穢れが%CALLNAME:TARGET%の身体を包み込む……
+	BASE:穢れ += 1
+ENDIF
+
+
+;気付き状態の場合、ターン数を１減らす
+IF CFLAG:気付き状態 >= 1
+	CFLAG:気付き状態 -= 1
+	IF !CFLAG:気付き状態
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %CALLNAME:TARGET%は気付きの感度が元に戻った
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+;[落書き]の消滅判定
+IF TALENT:落書き
+	TALENT:落書き -= 1
+	IF TALENT:落書き == 0
+		CALL SETCOLOR_ABL
+		PRINTFORMW %CALLNAME:TARGET%の身体に書かれた落書きが消えた！
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+;需要属性をここで決める
+FLAG:需要属性 = RAND:8
+
+;経験入手フラグのリセット
+VARSET TFLAG, 0, 300, 310
+
+REPEAT CHARANUM
+	;気力の回復
+	BASE:COUNT:1 = MAXBASE:COUNT:1
+
+	;労役中のキャラは体力回復処理無し
+	SIF CFLAG:COUNT:12 > 0
+		CONTINUE
+
+	;体力回復停止処理
+	IF CFLAG:COUNT:6 > 0
+		CFLAG:COUNT:6 -= 1
+		CONTINUE
+	ENDIF
+
+	;体力の回復（午後の調教後は夜の休みが入るので回復大きい）
+	IF TIME == 0
+		A = MAXBASE:COUNT:0 / 15
+	ELSE
+		A = MAXBASE:COUNT:0 / 5
+	ENDIF
+
+	;回復早い、回復遅い、蓬莱人
+	IF TALENT:COUNT:130
+		TIMES A , 1.50
+	ELSEIF TALENT:COUNT:131
+		TIMES A , 0.75
+	ELSEIF TALENT:COUNT:147
+		TIMES A , 1.80
+	ENDIF
+
+	;日光浴、月光浴、吸血鬼
+	IF TIME == 0
+		SIF TALENT:COUNT:133
+			A += 100
+	ELSE
+		SIF TALENT:COUNT:132
+			TIMES A , 1.50
+		SIF TALENT:COUNT:134
+			A += 100
+	ENDIF
+
+	;治療
+	IF ASSI >= 0
+		SIF TALENT:ASSI:135
+		A += 150
+	ENDIF
+
+	;休憩フラグ（休憩フラグが経っている、もしくは調教対象でない）
+	IF FLAG:0 || TARGET != COUNT
+		A += 100
+		CFLAG:COUNT:10 -= 1
+	ENDIF
+
+	;ショップで休憩を選択時
+	IF FLAG:0 == 2
+		TIMES A , 2.00
+		CFLAG:COUNT:10 -= 1
+	ENDIF
+
+	;ストレス値が0未満の場合は0にする
+	SIF CFLAG:COUNT:10 < 0
+		CFLAG:COUNT:10 = 0
+
+REND
+
+FLAG:0 = 0
+
+;午後なら次の日、午前なら午後にする
+IF TIME == 1
+	;日付変更時のイベント呼び出し
+;	CALL EVENT_NEXTDAY_TOHO
+;	CALL EVENT_NEXTDAY
+
+	DAY = DAY+1
+	IF DAY == 13
+		DAY -= 12
+		FLAG:年数 += 1
+		PRINTFORMW {FLAG:年数}年目になった……
+	ELSE
+		PRINTW 一月が過ぎた……
+	ENDIF
+	
+	;君主の権力値を300回復させる
+	;FLAG:君主の権力値 = MIN(FLAG:君主の権力値+300, 8000)
+	
+	TIME = 0
+;	;バッドエンドの判定
+;	SIF DAY > 50 && FLAG:5 == 0
+;		CALL BADENDING_1
+;	SIF MONEY < 0 && FLAG:5 == 0
+;		CALL BADENDING_2
+
+	;朝になった時のイベント呼び出し
+;	CALL EVENT_NEWDAY
+;	CALL EVENT_NEWDAY_SELF
+ELSE
+	TIME = 1
+ENDIF
+
+
+;IF CFLAG:媚薬状態 != 2 && !FLAG:淫妖入手フラグ
+;	;淫乱ゲージが100になっている場合淫乱になる
+;	IF BASE:淫乱 >= 100 && CFLAG:性格 != -1
+;		DRAWLINE
+;		PRINTFORML 度重なる色欲を招く教育により
+;		PRINTFORMW %CALLNAME:TARGET%の頭の中は常に淫欲に塗れた思考になった……
+;		CFLAG:性格 = -1
+;		BASE:淫乱 = MAXBASE:淫乱
+;		BASE:天真爛漫 = 0
+;		BASE:真面目 = 0
+;		BASE:高飛車 = 0
+;		BASE:臆病 = 0
+;		SETCOLOR 255,0,0
+;		PRINTFORMW ＜%CALLNAME:TARGET%の性格は淫乱になった＞
+;		RESETCOLOR
+;	ENDIF
+;	;性格ゲージの変化
+;	IF CFLAG:性格反応 == 0
+;		BASE:天真爛漫 += 10
+;		IF BASE:天真爛漫 > 100
+;			BASE:天真爛漫 = 100
+;		ENDIF
+;	ELSE
+;		BASE:天真爛漫 -= 10
+;		IF BASE:天真爛漫 < 0
+;			BASE:天真爛漫 = 0
+;		ENDIF
+;	ENDIF
+;
+;	IF CFLAG:性格反応 == 1
+;		BASE:真面目 += 10
+;		IF BASE:真面目 > 100
+;			BASE:真面目 = 100
+;		ENDIF
+;	ELSE
+;		BASE:真面目 -= 10
+;		IF BASE:真面目 < 0
+;			BASE:真面目 = 0
+;		ENDIF
+;	ENDIF
+;
+;	IF CFLAG:性格反応 == 2
+;		BASE:高飛車 += 10
+;		IF BASE:高飛車 > 100
+;			BASE:高飛車 = 100
+;		ENDIF
+;	ELSE
+;		BASE:高飛車 -= 10
+;		IF BASE:高飛車 < 0
+;			BASE:高飛車 = 0
+;		ENDIF
+;	ENDIF
+;
+;	IF CFLAG:性格反応 == 3
+;		BASE:臆病 += 10
+;		IF BASE:臆病 > 100
+;			BASE:臆病 = 100
+;		ENDIF
+;	ELSE
+;		BASE:臆病 -= 10
+;		IF BASE:臆病 < 0
+;			BASE:臆病 = 0
+;		ENDIF
+;	ENDIF
+;ENDIF
+
+;媚薬ゲージの減少
+IF !CFLAG:媚薬状態 && BASE:媚薬 > 0
+	BASE:媚薬 -= 2
+ENDIF
+
+;妊娠しているなら、月の最初に妊娠経過日を1日進める
+IF CFLAG:妊娠 && TIME == 0
+	CALL PREGNANCY
+ENDIF
+
+
+;非行ゲージが100
+;IF BASE:非行 >= 100 && CFLAG:性格 != -2
+;	DRAWLINE
+;	PRINTFORML 強い束縛によるストレスに耐えきれなくなった%CALLNAME:TARGET%は
+;	PRINTFORMW 非行への道を歩み始めた
+;	CFLAG:性格 = -2
+;	SETCOLOR 255,0,0
+;	PRINTFORMW ＜%CALLNAME:TARGET%の性格は非行になった＞
+;	RESETCOLOR
+;ELSEIF
+
+;住み込み期間を減らす
+IF CFLAG:住み込み期間
+	CFLAG:住み込み期間 -= 1
+	IF CFLAG:住み込み期間 <= 0
+		PRINTFORML 住み込み労働の期間を終えました
+		PRINTFORMW ＜働き先を無職に戻します。再び設定してください＞
+		;モードを元に戻し、労働先を無職に戻す
+		CFLAG:モード = 0
+		CFLAG:職業 = 0
+		CFLAG:住み込み = 0
+		
+		;達成値、ムード、客淫行値をリセットする
+		VARSET BASE, 0, 190, 193
+	ENDIF
+ENDIF
+
+;指輪を購入できるようになった事を知らせる
+IF NO:TARGET == 1 && CFLAG:主人への友好度 >= 500 && !FLAG:指輪告知メッセージ
+	DRAWLINE
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 友好度が500を超えたので、指輪を購入できるようになった！
+	RESETCOLOR
+	FLAG:指輪告知メッセージ = 1
+ENDIF
+
+;10％の確率で禁断のミルクを売りに来る
+IF !RAND:10 && !ITEM:清めの札 && MONEY >= 100000
+	DRAWLINE
+	PRINTFORML ～～玄関～～
+	PRINTFORML 謎の商人「ふふふ、今日はとても珍しい物をお見せしたく尋ねました
+	PRINTFORML 　　　　　このミルクは裏社会で生産された逸品です
+	PRINTFORML 　　　　　疲れも取れる上に、娘さんの発育にとてもいいんですよ
+	PRINTFORML 　　　　　決して損はさせません！　いかがです？」
+	LOCAL = 100000
+	PRINTFORML 禁断のミルクを${LOCAL}で買いますか？
+	CALL SETCOLOR_MONEY
+	PRINTFORML (所持金：${MONEY})
+	RESETCOLOR
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	CALL SENTAKUSHI, 2
+	IF RESULT == 0
+		PRINTFORMW 謎の商人「いい買い物をしましたね。今後も御贔屓に……」
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 禁断のミルクを手に入れた！
+		RESETCOLOR
+		
+		MONEY -= LOCAL
+		
+		ITEM:禁断のミルク += 1
+		PRINTFORMW 謎の商人「まいどありー、じっくり味わってください」
+	ELSE
+		PRINTFORMW 謎の商人「そうですか、仕方ないですな」
+	ENDIF
+ENDIF
+
+;5％の確率で清めの札を売りに来られる
+IF !RAND:20 && !ITEM:清めの札 && MONEY >= 150000
+	DRAWLINE
+	PRINTFORML ～～玄関～～
+	PRINTFORML 謎の商人「おやおや、あなたの事は噂に聞いております
+	PRINTFORML 　　　　　闇社会の誘惑から姫君を守るのに苦労されていますでしょう？
+	PRINTFORML 　　　　　なにしろ、闇社会は穢れ塗れですからね
+	PRINTFORML 　　　　　今回はこれをあなただけにお売りします
+	;清めの礼を持っている場合、$100,000で売ってくれる
+	IF ITEM:清めの礼
+		PRINTFORML 　　　　　……既に持っている？　はっ、何を言っているんですか？
+		PRINTFORM 　　　　　それは偽物ですよ。なんだったらそれを下取りして本物を
+		CALL SETCOLOR_MONEY
+		PRINT $100,000
+		RESETCOLOR
+		PRINTFORML でお売りしましょう！　どうします？」
+		LOCAL = 100000
+	ELSE
+		PRINTFORML 　　　　　これは役人達の間で必需品と言われている清めの札です
+		PRINTFORM 　　　　　今なら
+		CALL SETCOLOR_MONEY
+		PRINT $150,000
+		RESETCOLOR
+		PRINTFORML でお譲り致しましょう。さあ、どうします？」
+		LOCAL = 150000
+	ENDIF
+	
+	PRINTFORML 清めの札を${LOCAL}で買いますか？
+	CALL SETCOLOR_MONEY
+	PRINTFORML (所持金:${MONEY})
+	RESETCOLOR
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	CALL SENTAKUSHI, 2
+	IF RESULT == 0
+		PRINTFORMW 謎の商人「いい買い物をしましたね。今後も御贔屓に……」
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 清めの札を手に入れた！
+		RESETCOLOR
+		
+		MONEY -= LOCAL
+		
+		;清めの礼は下取りする
+		IF ITEM:清めの礼
+			ITEM:清めの礼 = 0
+		ENDIF
+		
+		;25％の確率で本物を入手できる
+		IF !RAND:4
+			ITEM:清めの札 += 1
+		ELSE
+			ITEM:清めの礼 += 1
+		ENDIF
+		PRINTFORMW 胡散臭い商人だった、本物かどうか確かめた方がいいだろう……
+	ELSE
+		PRINTFORMW 謎の商人「そうですか、穢れに塗れて老いる姫君でも眺めておくんですな」
+	ENDIF
+ENDIF
+
+;疲労度がゾロ目の場合、木花の布が貰える
+IF BASE:ストレス > 10 && (BASE:ストレス % 10) == BASE:ストレス / 10 && !ITEM:554 && FLAG:年数 >= 2
+	DRAWLINE
+	PRINTFORML %CALLNAME:MASTER%が屋敷の裏庭で雑務をこなしていると
+	PRINTFORMW 背後から銀髪の女性に声をかけられた
+	PRINTFORML 気品あるその女性は恭しくお辞儀をすると、%CALLNAME:1%の為に使ってほしいと言って布を渡した
+	PRINTFORMW %CALLNAME:1%には知らせなくていいのかと言うと、女性は丁重に断ってその場を去った……
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %ITEMNAME:554%を手に入れた！
+	ITEM:554 += 1
+	RESETCOLOR
+ENDIF
+
+;トリビアの効果は半月のみ
+IF CFLAG:トリビア
+	DRAWLINE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:TARGET%のトリビアの効能が切れた
+	CFLAG:興味 -= CFLAG:トリビア
+	CFLAG:トリビア = 0
+	RESETCOLOR
+ENDIF
+
+;君主に直談判した結果を表示
+IF CFLAG:君主の結果タイマー
+	CFLAG:君主の結果タイマー -= 1
+	IF !CFLAG:君主の結果タイマー
+		CALL MONAR_RESULT
+	ENDIF
+ENDIF
+
+;君主の評価が0以下になった場合
+IF BASE:君主の評価 <= 0
+	DRAWLINE
+	PRINTFORML ～～%CALLNAME:TARGET%の君主からの評価が0以下になりました～～
+	PRINTFORML 君主は%CALLNAME:MASTER%の元へ来て、制約を言い渡しました
+	
+	SELECTCASE CFLAG:君主制約
+		CASE 0
+			PRINTFORML ＜%CALLNAME:TARGET%は胸部の下着を着ける事ができなくなりました＞
+			CFLAG:胸部下着 = 0
+		CASE 1
+			PRINTFORML ＜%CALLNAME:TARGET%は秘所の下着を着ける事ができなくなりました＞
+			CFLAG:秘所下着 = 0
+		CASE 2
+			PRINTFORML ＜%CALLNAME:TARGET%の働き先が夜の店に固定されました＞
+			CFLAG:職業 = 9
+		CASEELSE
+			PRINTFORML 無理強いをされた%CALLNAME:TARGET%は君主に身体を捧げた……
+			PRINTFORML 淫妖経験+10
+			PRINTFORML 堕落経験+5
+			
+			CALL CALC_IMP, 2
+			CALL INSERT, 2, 1
+			
+			CALL COMMON_ABLUP, "淫妖", 15, "WAIT"
+			EXP:淫妖経験 += 10
+			EXP:堕落経験 += 5
+	ENDSELECT
+	
+	IF CFLAG:君主制約 < 3
+		CFLAG:君主制約 += 1
+	ENDIF
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 君主からの評価が20になった！
+	BASE:君主の評価 = 20
+	RESETCOLOR
+ENDIF
+
+LOCAL:10 = TARGET
+
+$S_LOOP
+IF CFLAG:媚薬状態 != 2
+	;淫乱ゲージを-5させる
+	;誘拐中は10ずつ上昇する
+	IF CFLAG:モード == 2
+		BASE:淫乱 += 10
+	ELSEIF !FLAG:淫妖入手フラグ
+		BASE:淫乱 -= 5
+		IF BASE:淫乱 < 0
+			BASE:淫乱 = 0
+		ENDIF
+	ENDIF
+	FLAG:淫妖入手フラグ = 0
+ENDIF
+
+;種族変身処理
+CALL SYSTEM_TRANSFORM
+
+;姉妹を攫っている場合、姉妹毎に判定を行う
+IF FLAG:攫った姉妹の数 > TARGET - 1
+	TARGET += 1
+	GOTO S_LOOP
+ELSE
+	TARGET = LOCAL:10
+ENDIF
+
+;得た経験毎の評価を行う
+CALL VALUE_EXP
+
+
+;各種ステータスを見て、一定値を越えたステータスがある場合金銭を授与
+;25,50,100,150,300,450,600,800,950
+;25　  \5,000
+;50　 \10,000
+;100  \15,000
+;150  \20,000
+;300  \40,000
+;450  \60,000
+;600  \75,000
+;800  \90,000
+;950 \100,000
+
+;全ステータスにチェックをかける
+;REPEAT 3
+;	CALL PALAM_CONVERT, COUNT
+;	LOCALS = %STR%
+;	
+;	;奨励金フラグによってランクを分ける
+;	;LOCAL:1　条件となる数値
+;	;LOCAL:2　貰える金額
+;	IF FLAG:("奨励金／"+LOCALS+"") == 0
+;		LOCAL:1 = 25
+;		LOCAL:2 = 2500
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 1
+;		LOCAL:1 = 50
+;		LOCAL:2 = 5000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 2
+;		LOCAL:1 = 100
+;		LOCAL:2 = 7500
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 3
+;		LOCAL:1 = 150
+;		LOCAL:2 = 10000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 4
+;		LOCAL:1 = 300
+;		LOCAL:2 = 15000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 5
+;		LOCAL:1 = 450
+;		LOCAL:2 = 20000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 6
+;		LOCAL:1 = 600
+;		LOCAL:2 = 25000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 7
+;		LOCAL:1 = 800
+;		LOCAL:2 = 30000
+;	ELSEIF FLAG:("奨励金／"+LOCALS+"") == 8
+;		LOCAL:1 = 950
+;		LOCAL:2 = 50000
+;	ENDIF
+;	
+;	;該当する能力が25より高い
+;	IF BASE:(LOCALS) >= LOCAL:1 && FLAG:("奨励金／"+LOCALS+"") != 9 && !FLAG:王宮追放
+;		PRINTFORML %CALLNAME:TARGET%の%LOCALS%が{LOCAL:1}を越えた！
+;		PRINTFORMW 奨励金として%CALLNAME:MASTER%に${LOCAL:2}が送られます
+;		MONEY += LOCAL:2
+;		FLAG:("奨励金／"+LOCALS+"") += 1
+;	ENDIF
+;REND
+
+;知力250以上だと学士服をプレゼントされる
+IF !ITEM:52 && BASE:知力 >= 250 && !FLAG:王宮追放
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%の知力が250以上になった事により
+	PRINTFORMW 学士服をプレゼントされた！
+	ITEM:52 = 1
+	RESETCOLOR
+ENDIF
+
+
+IF !FLAG:交渉表示フラグ && BASE:疎通 >= 80 && !FLAG:王宮追放
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%の疎通が80を越えた事により
+	PRINTFORMW 交渉ができるようになった！
+	FLAG:交渉表示フラグ = 1
+	RESETCOLOR
+ENDIF
+
+
+;休憩しておらず、誘拐もされていない場合、課外活動を呼び出す
+IF CFLAG:モード != 2 && !FLAG:休養 && !FLAG:治療 && (FLAG:年数 >= 3 || (FLAG:年数 == 2 && DAY >= 6))
+	;教育を実施した場合
+	IF TFLAG:教育
+		CALL EXTRA_MOVE, "教育", BASE:ＣＰ, MAXBASE:行動回数-BASE:行動回数
+	;遊びにでかけるを実行した場合
+	ELSEIF FLAG:遊びに出かける実行
+		CALL EXTRA_MOVE, "遊びに出かける", MAXBASE:ＣＰ*2/3, MAXBASE:行動回数-BASE:行動回数
+	ELSE
+		CALL EXTRA_MOVE, "その他",MAXBASE:ＣＰ/2, MAXBASE:行動回数-BASE:行動回数
+	ENDIF
+ENDIF
+
+
+;5年目12月終了時に純狐フラグが立っている場合、襲来してくる
+;誘拐されている場合、イベント発生に失敗した旨を表示させる
+IF CFLAG:純狐フラグ
+	CALL JUNKO_EVENT
+ENDIF
+
+
+;5年目の12月が終わった
+IF FLAG:年数 == 6 && DAY == 1 && TIME == 0
+	DRAWLINE
+	;君主が陥落している
+	IF FLAG:君主堕落
+		PRINTFORML ～～????  +>SLOGa?_???～～
+		PRINTFORML 見慣れない言語で書かれている
+		PRINTFORMW 都の文化が完全に失われてしまったようだ……
+	;淫魔だけど、君主が陥落していない
+	ELSEIF TALENT:淫魔
+		CALL ENDING_SUCCUBUS, 1
+	;従属の証を持っている
+	ELSEIF TALENT:従属の証
+		PRINTFORML ～～そして運命の日は途絶えた～～
+		PRINTFORML あなたと%CALLNAME:TARGET%は永遠にこの場所に留まり続けるのだ……
+		PRINTFORMW 運命の日など来ない……
+	ELSE
+		TARGET = 1
+		PRINTFORML ～～そして運命の日が来た～～
+		PRINTFORML 5年間に渡りを%CALLNAME:TARGET%を育成してきた%CALLNAME:MASTER%
+		PRINTFORMW 果たして、その先にはどのような未来が待ち受けているのだろうか……
+		CALL ENDING_CHECK
+	ENDIF
+ENDIF
+
+CALL EVENT_N
+
+BEGIN SHOP
+
+
+
+;--------------------------------------------
+;グローバル変数へセーブする際の文字列変換
+;式中関数版
+;--------------------------------------------
+@GLOBAL_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 6
+SIF LOCALS == ""
+	SPLIT "胸部下着_秘所下着_躾方針_職業_星座_食事方針", "_", LOCALS
+RETURNF LOCALS:ARG
+

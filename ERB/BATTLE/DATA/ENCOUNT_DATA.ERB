@@ -1,0 +1,853 @@
+﻿;------------------------------------------------------------
+;遭遇データ
+;マップと階層ごとに管理
+;特定の階層を除いては数パターンからランダムで選ばれる
+;ARG　 対象マップ
+;ARG:1 現在の階層
+;ARG:2 敗北時の処理(0:匪賊　1:獣　2:魔法使い　3:淫魔　4:触手　5:アルラウネ　6:スライム)
+;
+;手作業なので確実ではありませんが、敗北時の処理序列はアルラウネ＞淫魔＞触手＞魔法使い＞匪賊＞獣
+;グループ内にいる敵の種族の内、最も序列が強い種族が採用される
+;------------------------------------------------------------
+@ENCOUNT_DATA, ARG, ARG:1, ARG:2
+#DIM L_LOCAL, 1
+#DIM syu, 1
+
+VARSET LOCAL, 0
+
+;デバッグ用
+;LOCAL = 113
+;syu = 2
+;ARG:1 = 5
+
+
+
+;裏通り
+IF ARG == 0
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 1
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 1
+			LOCAL:1 = 1
+			syu = 0
+		ELSE
+			LOCAL = 2
+			LOCAL:1 = 1
+			syu = 0
+		ENDIF
+	;4～5Fまで
+	ELSEIF ARG:1 <= 5
+		SELECTCASE RAND:4
+			CASE 0
+				LOCAL = 1
+				LOCAL:1 = 1
+				syu = 0
+			CASE 1
+				LOCAL = 50
+				LOCAL:1 = 1
+				syu = 0
+			CASE 2
+				LOCAL = 50
+				syu = 1
+			CASE 3
+				LOCAL = 50
+				LOCAL:1 = 50
+				syu = 1
+		ENDSELECT
+	;6～7Fまで
+	ELSEIF ARG:1 <= 7
+		SELECTCASE RAND:4
+			CASE 0
+				LOCAL = 50
+				LOCAL:1 = 51
+				syu = 1
+			CASE 1
+				LOCAL = 51
+				LOCAL:1 = 1
+				syu = 0
+			CASE 2
+				LOCAL = 51
+				syu = 0
+			CASE 3
+				LOCAL = 1
+				LOCAL:1 = 1
+				syu = 0
+		ENDSELECT
+	;8F(ボス)
+	ELSEIF ARG:1 == 8
+		IF !FLAG:拠点クリア／裏通り
+			LOCAL = 107
+			LOCAL:1 = 50
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;魔術研究所
+ELSEIF ARG == 1
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 1
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 50
+			LOCAL:1 = 2
+			syu = 6
+		ELSE
+			LOCAL = 55
+			LOCAL:1 = 1
+			syu = 4
+		ENDIF
+	;4～5Fまで
+	ELSEIF ARG:1 <= 5
+		SELECTCASE RAND:4
+			CASE 0
+				LOCAL = 55
+				LOCAL:1 = 55
+				syu = 4
+			CASE 1
+				LOCAL = 2
+				LOCAL:1 = 55
+				syu = 4
+			CASE 2
+				LOCAL = 55
+				syu = 4
+			CASE 3
+				LOCAL = 1
+				LOCAL:1 = 50
+				syu = 6
+		ENDSELECT
+	;6～7Fまで
+	ELSEIF ARG:1 <= 7
+		SELECTCASE RAND:4
+			CASE 0
+				LOCAL = 50
+				LOCAL:1 = 55
+				syu = 6
+			CASE 1
+				LOCAL = 50
+				LOCAL:1 = 57
+				syu = 6
+			CASE 2
+				LOCAL = 57
+				syu = 5
+			CASE 3
+				LOCAL = 55
+				LOCAL:1 = 57
+				syu = 4
+		ENDSELECT
+	;8F(ボス)
+	ELSEIF ARG:1 == 8
+		IF !FLAG:拠点クリア／魔術実験場
+			LOCAL = 119
+			syu = 6
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;魔獣の巣
+;全8F
+ELSEIF ARG == 2
+	;1～3Fまで
+	;アルラウネ、桃スライム、ローパーがランダムで出現
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 57
+			syu = 5
+		ELSEIF !RAND:2
+			LOCAL = 57
+			LOCAL:1 = 55
+			syu = 4
+		ELSE
+			LOCAL = 55
+			LOCAL:1 = 50
+			syu = 6
+		ENDIF
+	;4～5Fまで
+	;アルラウネ、ローパー、ゴーゴンが出現
+	ELSEIF ARG:1 <= 5
+		SELECTCASE RAND:4
+			CASE 0
+				LOCAL = 57
+				LOCAL:1 = 57
+				syu = 5
+			CASE 1
+				LOCAL = 50
+				LOCAL:1 = 50
+				syu = 6
+			CASE 2
+				LOCAL = 56
+				syu = 4
+			CASE 3
+				LOCAL = 57
+				LOCAL:1 = 55
+				LOCAL:2 = 50
+				syu = 6
+		ENDSELECT
+	;6～7Fまで
+	;4～5Fと同じだが、1/16の確率で家出淫魔が現れる
+	ELSEIF ARG:1 <= 7
+		IF !RAND:16
+			LOCAL = 57
+			syu = 4
+		ELSE
+			SELECTCASE RAND:4
+				CASE 0
+					LOCAL = 57
+					LOCAL:1 = 57
+					syu = 5
+				CASE 1
+					LOCAL = 50
+					LOCAL:1 = 50
+					syu = 6
+				CASE 2
+					LOCAL = 56
+					syu = 4
+				CASE 3
+					LOCAL = 57
+					LOCAL:1 = 55
+					LOCAL:2 = 50
+					syu = 6
+			ENDSELECT
+		ENDIF
+	;8F(ボス)
+	;淫魔の生産者、里の娘が登場する
+	ELSEIF ARG:1 == 8
+		IF !FLAG:拠点クリア／魔獣の巣
+			LOCAL = 120
+			LOCAL:1 = 300
+			LOCAL:2 = 300
+			syu = 3
+		ELSE
+			LOCAL = 109
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;草原
+ELSEIF ARG == 10
+	;1～100Fまで
+	;製作途中
+	IF ARG:1 <= 100
+		LOCAL = 2
+		syu = 0
+	;11～20Fまで
+	ELSEIF ARG:1 <= 20
+		
+	;21～30Fまで
+	ELSEIF ARG:1 <= 30
+	
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;匪賊の洞窟
+ELSEIF ARG == 11
+	;1～4Fまで
+	IF ARG:1 <= 4
+		IF !RAND:3
+			LOCAL = 2
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 2
+			LOCAL:1 = 2
+			syu = 0
+		ELSE
+			LOCAL = 2
+			LOCAL:1 = 3
+			syu = 0
+		ENDIF
+	;5F(ボス)
+	ELSEIF ARG:1 == 5
+		IF !FLAG:拠点クリア／匪賊の洞窟
+			LOCAL = 102
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;枯れ果てた井戸
+ELSEIF ARG == 12
+	;1～3Fまで
+	IF ARG:1 <= 4
+		IF !RAND:3
+			LOCAL = 4
+			LOCAL:1 = 4
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 3
+			LOCAL:1 = 4
+			syu = 0
+		ELSE
+			LOCAL = 6
+			syu = 1
+		ENDIF
+	;4～6Fまで
+	ELSEIF ARG:1 <= 6
+		IF !RAND:4
+			LOCAL = 4
+			LOCAL:1 = 5
+			LOCAL:2 = 4
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 4
+			LOCAL:1 = 5
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 4
+			LOCAL:1 = 6
+			syu = 1
+		ELSE
+			LOCAL = 6
+			syu = 1
+		ENDIF
+	;7F(ボス)
+	ELSEIF ARG:1 == 7
+		IF !FLAG:拠点クリア／枯れ果てた井戸
+			LOCAL = 103
+			syu = 1
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;静寂の森
+ELSEIF ARG == 13
+	;1～3Fまで
+	IF ARG:1 <= 4
+		IF !RAND:3
+			LOCAL = 7
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 8
+			syu = 1
+		ELSE
+			LOCAL = 6
+			syu = 1
+		ENDIF
+	;4～6Fまで
+	ELSEIF ARG:1 <= 6
+		IF !RAND:4
+			LOCAL = 8
+			LOCAL = 7
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 7
+			LOCAL = 6
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 7
+			LOCAL = 7
+			syu = 1
+		ELSE
+			LOCAL = 8
+			LOCAL = 8
+			syu = 1
+		ENDIF
+	;7F(ボス)
+	ELSEIF ARG:1 == 7
+		IF !FLAG:拠点クリア／静寂の森
+			LOCAL = 111
+			LOCAL:1 = 8
+			LOCAL:2 = 8
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;匪賊のアジト１
+ELSEIF ARG == 14
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 11
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 11
+			LOCAL:1 = 11
+			syu = 0
+		ELSE
+			LOCAL = 13
+			syu = 1
+		ENDIF
+	;4～6Fまで
+	ELSEIF ARG:1 <= 6
+		IF !RAND:4
+			LOCAL = 11
+			LOCAL:1 = 10
+			syu = 2
+		ELSEIF !RAND:3
+			LOCAL = 11
+			LOCAL:1 = 13
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 11
+			LOCAL:1 = 11
+			syu = 0
+		ELSE
+			LOCAL = 11
+			LOCAL:1 = 10
+			LOCAL:2 = 13
+			syu = 1
+		ENDIF
+	;7F(ボス)
+	ELSEIF ARG:1 == 7
+		IF !FLAG:拠点クリア／匪賊のアジト１
+			LOCAL = 111
+			LOCAL:1 = 8
+			LOCAL:2 = 8
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;匪賊のアジト２
+;最深部　8F
+ELSEIF ARG == 15
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 13
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 13
+			LOCAL:1 = 11
+			syu = 0
+		ELSE
+			LOCAL = 13
+			LOCAL:1 = 11
+			LOCAL:2 = 10
+			syu = 0
+		ENDIF
+	;4～7Fまで
+	ELSEIF ARG:1 <= 7
+		IF !RAND:4
+			LOCAL = 17
+			LOCAL:1 = 13
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 13
+			LOCAL:1 = 16
+			syu = 0
+		ELSEIF !RAND:2
+			LOCAL = 16
+			LOCAL:1 = 17
+			syu = 0
+		ELSE
+			LOCAL = 17
+			LOCAL:1 = 13
+			LOCAL:2 = 13
+			syu = 1
+		ENDIF
+	;8F(ボス)
+	ELSEIF ARG:1 == 8
+		IF !FLAG:拠点クリア／匪賊のアジト２
+			LOCAL = 112
+			LOCAL:1 = 16
+			LOCAL:2 = 16
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;禁忌の森
+;最深部　8F
+ELSEIF ARG == 16
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:4
+			LOCAL = 14
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 12
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 12
+			LOCAL:1 = 14
+			LOCAL:2 = 14
+			syu = 1
+		ELSE
+			LOCAL = 12
+			LOCAL:1 = 14
+			syu = 1
+		ENDIF
+	;4～7Fまで
+	ELSEIF ARG:1 <= 7
+		IF !RAND:4
+			LOCAL = 9
+			LOCAL:1 = 12
+			syu = 6
+		ELSEIF !RAND:3
+			LOCAL = 9
+			LOCAL:1 = 14
+			LOCAL:2 = 14
+			syu = 6
+		ELSEIF !RAND:2
+			LOCAL = 9
+			LOCAL:1 = 12
+			LOCAL:2 = 14
+			syu = 6
+		ELSE
+			LOCAL = 9
+			LOCAL:1 = 9
+			LOCAL:2 = 12
+			syu = 6
+		ENDIF
+	;8F(ボス)
+	ELSEIF ARG:1 == 8
+		IF !FLAG:拠点クリア／禁忌の森
+			LOCAL = 114
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;忘れられた城
+;最終ステージ　ボスが2F連続で出ます
+;最深部　10F
+;10F　君主
+ELSEIF ARG == 17
+	;1～3Fまで
+	IF ARG:1 <= 3
+		IF !RAND:3
+			LOCAL = 13
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 13
+			LOCAL:1 = 11
+			syu = 0
+		ELSE
+			LOCAL = 13
+			LOCAL:1 = 11
+			LOCAL:2 = 10
+			syu = 2
+		ENDIF
+	;4～8Fまで
+	ELSEIF ARG:1 <= 8
+		IF !RAND:4
+			LOCAL = 17
+			LOCAL:1 = 13
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 15
+			LOCAL:1 = 16
+			syu = 6
+		ELSEIF !RAND:2
+			LOCAL = 16
+			LOCAL:1 = 17
+			syu = 0
+		ELSE
+			LOCAL = 17
+			LOCAL:1 = 15
+			LOCAL:2 = 15
+			syu = 6
+		ENDIF
+	;9F　ワールブルク実験体が出てくる
+	ELSEIF ARG:1 == 9
+		IF FLAG:ワールブルク実験体遭遇 < 1
+			FLAG:ワールブルク実験体遭遇 = 1
+		ENDIF
+		;拠点をクリアしない限り、何度でも復活する
+		IF !FLAG:拠点クリア／忘れられた城
+			LOCAL = 118
+			syu = 1
+		ELSE
+			;ランダムエンカウント
+			IF !RAND:4
+				LOCAL = 17
+				LOCAL:1 = 13
+				syu = 1
+			ELSEIF !RAND:3
+				LOCAL = 13
+				LOCAL:1 = 16
+				syu = 0
+			ELSEIF !RAND:2
+				LOCAL = 16
+				LOCAL:1 = 17
+				syu = 0
+			ELSE
+				LOCAL = 17
+				LOCAL:1 = 13
+				LOCAL:2 = 13
+				syu = 1
+			ENDIF
+		ENDIF
+	;10F(ボス)
+	ELSEIF ARG:1 == 10
+		IF !FLAG:拠点クリア／忘れられた城
+			LOCAL = 115
+			syu = 0
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;星のたまり場
+ELSEIF ARG == 18
+	;1～3Fまで
+	IF ARG:1 <= 4
+		IF !RAND:3
+			LOCAL = 52
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 53
+			syu = 1
+		ELSE
+			LOCAL = 53
+			LOCAL = 52
+			syu = 1
+		ENDIF
+	;4～6Fまで
+	ELSEIF ARG:1 <= 6
+		IF !RAND:4
+			LOCAL = 52
+			LOCAL = 52
+			syu = 1
+		ELSEIF !RAND:3
+			LOCAL = 53
+			LOCAL = 53
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 54
+			syu = 1
+		ELSE
+			LOCAL = 52
+			LOCAL = 54
+			syu = 1
+		ENDIF
+	;7～8Fまで
+	ELSEIF ARG:1 <= 8
+		IF !RAND:3
+			LOCAL = 52
+			LOCAL:1 = 54
+			LOCAL:2 = 52
+			syu = 1
+		ELSEIF !RAND:2
+			LOCAL = 53
+			LOCAL:1 = 53
+			syu = 1
+		ELSE
+			LOCAL = 54
+			LOCAL:1 = 54
+			syu = 1
+		ENDIF
+	;9F(ボス)
+	ELSEIF ARG:1 == 9
+		IF !FLAG:拠点クリア／流星の流れ場
+			LOCAL = 110
+			syu = 2
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;穢れの地
+ELSEIF ARG == 30
+	;1～4Fまで
+	IF ARG:1 <= 4
+		;疫病鼠、国司逃れの匪賊
+		IF !RAND:3
+			LOCAL = 18
+			LOCAL:1 = 20
+			syu = 0
+		;神狂いの祈祷師、国司逃れの匪賊
+		ELSEIF !RAND:2
+			LOCAL = 19
+			LOCAL:1 = 20
+			syu = 2
+		;疫病鼠、神狂いの祈祷師
+		ELSE
+			LOCAL = 18
+			LOCAL:1 = 19
+			syu = 2
+		ENDIF
+	;5～9Fまで
+	ELSEIF ARG:1 <= 9
+		;疫病鼠、痘潰し
+		IF !RAND:3
+			LOCAL = 18
+			LOCAL:1 = 21
+			syu = 1
+		;神狂いの祈祷師、疫病鼠、痘潰し
+		ELSEIF !RAND:2
+			LOCAL = 19
+			LOCAL:1 = 18
+			LOCAL:2 = 21
+			syu = 2
+		;神狂いの祈祷師、国司逃れの匪賊×2
+		ELSE
+			LOCAL = 19
+			LOCAL:1 = 20
+			LOCAL:2 = 20
+			syu = 2
+		ENDIF
+	;10～12Fまで
+	ELSEIF ARG:1 <= 12
+		;痘潰し×2、疫病鼠
+		IF !RAND:3
+			LOCAL = 21
+			LOCAL:1 = 21
+			LOCAL:2 = 18
+			syu = 1
+		;国司逃れの匪賊×2、痘潰し
+		ELSEIF !RAND:2
+			LOCAL = 20
+			LOCAL:1 = 20
+			LOCAL:2 = 21
+			syu = 0
+		;神狂いの祈祷師×2
+		ELSE
+			LOCAL = 19
+			LOCAL:1 = 19
+			syu = 2
+		ENDIF
+	;13F(ボス)
+	ELSEIF ARG:1 == 13
+		IF !FLAG:拠点クリア／穢れの地
+			;八岐大蛇
+			LOCAL = 121
+			syu = 1
+		ELSE
+			LOCAL = 104
+			syu = 2
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;榊の森
+ELSEIF ARG == 40
+	;全13F
+	
+	;1～4F
+	IF ARG:1 <= 4
+		;霊気纏い
+		IF !RAND:3
+			LOCAL = 22
+			syu = 1
+		;八咫烏もどき、死の犠牲者
+		ELSEIF !RAND:2
+			LOCAL = 23
+			LOCAL:1 = 25
+			syu = 1
+		;霊気使い、八咫烏もどき
+		ELSE
+			LOCAL = 23
+			LOCAL:1 = 25
+			syu = 1
+		ENDIF
+	;5～8F
+	ELSEIF ARG:1 <= 8
+		;霊気纏い、八咫烏もどき×2
+		IF !RAND:3
+			LOCAL = 22
+			LOCAL:1 = 23
+			LOCAL:2 = 23
+			syu = 1
+		;死の犠牲者、霊気纏い
+		ELSEIF !RAND:2
+			LOCAL = 25
+			LOCAL:1 = 23
+			syu = 1
+		;死の犠牲者×2
+		ELSE
+			LOCAL = 25
+			LOCAL:1 = 25
+			syu = 1
+		ENDIF
+	;9～12F
+	ELSEIF ARG:1 <= 12
+		;嫦娥の使い、死の犠牲者
+		IF !RAND:3
+			LOCAL = 24
+			LOCAL:1 = 25
+			syu = 1
+		;死の犠牲者×2、嫦娥の使い
+		ELSEIF !RAND:2
+			LOCAL = 25
+			LOCAL:1 = 25
+			LOCAL:2 = 24
+			syu = 1
+		;霊気纏い、八咫烏もどき、死の犠牲者
+		ELSE
+			LOCAL = 22
+			LOCAL:1 = 23
+			LOCAL:2 = 25
+			syu = 1
+		ENDIF
+	;ボス
+	ELSEIF ARG:1 == 13
+		IF !FLAG:拠点クリア／榊の森
+			;穢れ塗れの嫦娥
+			LOCAL = 122
+			syu = 2
+		ELSE
+			;(本当は嫦娥と戦わせたいけど)もう少し設定を凝りたいので、一先ず玉龍に代役を務めてもらう
+			;玉龍
+			LOCAL = 125
+			syu = 1
+		ENDIF
+	ELSE
+		PRINTL エンカウントデータエラー
+	ENDIF
+;匪賊の慰安所
+ELSEIF ARG == 99
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 50
+			LOCAL:1 = 51
+			syu = 1
+		CASE 1
+			LOCAL = 51
+			LOCAL:1 = 1
+			syu = 0
+		CASE 2
+			LOCAL = 51
+			syu = 0
+		CASE 3
+			LOCAL = 1
+			LOCAL:1 = 1
+			syu = 0
+	ENDSELECT
+ENDIF
+
+FOR L_LOCAL, 0, 3
+	IF LOCAL:L_LOCAL
+		TFLAG:(588+L_LOCAL*10) = LOCAL:L_LOCAL
+	ELSE
+		TFLAG:(588+L_LOCAL*10) = 0
+	ENDIF
+NEXT
+
+RETURN syu
+

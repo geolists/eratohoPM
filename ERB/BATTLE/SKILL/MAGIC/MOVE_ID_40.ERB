@@ -1,0 +1,142 @@
+﻿;==================================================
+;ゴスロリが持つ淫術
+;==================================================
+
+;------------------------------
+;40:　ファイアショット
+;特殊攻撃の基礎
+;気力消費が控え目で使いやすい
+;------------------------------
+@MAGIC_SKILL_40, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 40
+
+@ATTACK_MOVE_40, ARG
+PRINTFORML %STR:ARG%は炎の矢を%STR:(TFLAG:(530+ARG))%目がけて放った！
+CALL DAMAGE_CALCULATION, 1, 110, 100, ARG, TFLAG:(530+ARG), 0, 0, 4
+
+;------------------------------
+;41:　フリーズブラスト
+;スライム系と蛙に特攻
+;威力はファイアショットより落ちる
+;------------------------------
+@MAGIC_SKILL_41, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 41
+
+@ATTACK_MOVE_41, ARG
+PRINTFORML %STR:ARG%はほどばしる冷気で%STR:(TFLAG:(530+ARG))%を包み込んだ！
+CALL DAMAGE_CALCULATION, 1, 80, 100, ARG, TFLAG:(530+ARG), 0, 1004, 6
+
+;------------------------------
+;42:　スネークポイズン
+;相手を損傷状態にする攻撃技
+;気力消費が少し厳しい
+;------------------------------
+@MAGIC_SKILL_42, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 42
+
+@ATTACK_MOVE_42, ARG
+PRINTFORML %STR:ARG%は毒素が混じった波動で%STR:(TFLAG:(530+ARG))%を攻撃した！
+CALL DAMAGE_CALCULATION, 1, 90, 90, ARG, TFLAG:(530+ARG), 0, 10, 8
+
+;========================================
+;正道のゴスロリで覚えられる技
+;========================================
+
+;------------------------------
+;43:　サンダーシュート
+;優先度+1
+;命中が少し悪いのが欠点
+;------------------------------
+@MAGIC_SKILL_43, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 43
+;優先度+2
+TFLAG:(542+ARG) = 2
+
+@ATTACK_MOVE_43, ARG
+PRINTFORML %STR:ARG%は雷を呼び寄せ、%STR:(TFLAG:(530+ARG))%目掛けて射出した！
+CALL DAMAGE_CALCULATION, 1, 95, 85, ARG, TFLAG:(530+ARG), 0, 0, 7
+
+;------------------------------
+;44:　マジックストーム
+;全体攻撃
+;命中率は少し悪い
+;------------------------------
+@MAGIC_SKILL_44, ARG
+
+CALL BATTLE_ATTACK, 1, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 44
+
+@ATTACK_MOVE_44, ARG
+PRINTFORML %STR:ARG%は魔力の大渦を作りだし、相手全体を包み込んだ！
+CALL DAMAGE_CALCULATION, 1, 110, 80, ARG, TFLAG:(530+ARG), 0, 0, 11
+
+;========================================
+;46～49　淫道のゴスロリで覚えられる技
+;========================================
+
+;------------------------------
+;46:　欲情の香り
+;相手を欲情状態にする
+;------------------------------
+@MAGIC_SKILL_46, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 46
+
+@ATTACK_MOVE_46, ARG
+PRINTFORML %STR:ARG%は淫靡な香りを%STR:(TFLAG:(530+ARG))%に向けて飛ばした！
+CALL DAMAGE_CALCULATION, 3, 0, 50, ARG, TFLAG:(530+ARG), 0, 1, 3
+
+;------------------------------
+;47:　蛙変化
+;相手を蛙にする
+;邪道のゴスロリLv2以上で習得
+;------------------------------
+@MAGIC_SKILL_47, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 47
+
+@ATTACK_MOVE_47, ARG
+PRINTFORML %STR:ARG%は蛙変化を唱えた！
+CALL DAMAGE_CALCULATION, 3, 0, 70, ARG, TFLAG:(530+ARG), 0, 47, 12, 100
+
+
+
+

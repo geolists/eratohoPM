@@ -1,0 +1,346 @@
+﻿@MANAGE_GRAPHIC, ARG
+;ARG　画像表示設定(1:表示(大)　2:表示(小))
+;display 画像表示設定(1:表示(大)　2:表示(小))
+;enable　　画像が表示された？(1:表示された　0:表示されていない)
+
+#DIM display, 1
+#DIM enable, 1
+
+;引数をdisplayに引き継ぎ
+display = ARG
+VARSET enable, 0
+
+;キャラクターが輝夜の場合のみ表示
+IF TALENT:輝夜 && !SUBHUMAN(TARGET)
+	;特定の状態である場合、服装を固定する
+
+	;夜遊びの球使用中
+	IF CFLAG:使用中／夜遊びの球
+		;妖しいキャミソールで固定する
+		IF display == 1
+			HTML_PRINT "<img src='suspicious_pic' width='600' height='600'>"
+		ELSE
+			HTML_PRINT "<img src='suspicious_pic' width='400' height='400'>"
+		ENDIF
+		enable = 1
+	;淫魔になっている場合
+	ELSEIF TALENT:淫魔
+		;サキュバスキャミソールで固定する
+		IF display == 1
+			HTML_PRINT "<img src='succubus_pic' width='600' height='600'>"
+		ELSE
+			HTML_PRINT "<img src='succubus_pic' width='400' height='400'>"
+		ENDIF
+		enable = 1
+	ELSE
+		;服によって分岐
+		SELECTCASE CFLAG:服装
+			;解れかけた布切れ
+			CASE -3
+				IF display == 1
+					HTML_PRINT "<img src='worncloth_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='worncloth_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ボロの布切れ
+			CASE -2
+				IF display == 1
+					HTML_PRINT "<img src='orsecloth_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='orsecloth_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;布切れ
+			CASE -1
+				IF display == 1
+					HTML_PRINT "<img src='cloth_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='cloth_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;普段着
+			CASE 0
+				IF display == 1
+					HTML_PRINT "<img src='normal_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='normal_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;制服
+			CASE 1
+				IF display == 1
+					HTML_PRINT "<img src='schoolwear_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='schoolwear_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;月のワンピース
+			CASE 2
+				IF display == 1
+					HTML_PRINT "<img src='moononepiece_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='moononepiece_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ノースリ＆ミニスカ
+			CASE 3
+				IF display == 1
+					HTML_PRINT "<img src='nosleeve_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='nosleeve_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;キャミソール
+			CASE 4
+				IF display == 1
+					HTML_PRINT "<img src='camisole_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='camisole_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ボーイッシュ
+			CASE 5
+				IF display == 1
+					HTML_PRINT "<img src='boyish_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='boyish_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;天の羽衣
+			CASE 7
+				IF display == 1
+					HTML_PRINT "<img src='heavenlyrobe_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='heavenlyrobe_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;姫メイドレス
+			CASE 8
+				IF display == 1
+					HTML_PRINT "<img src='himaid_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='himaid_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;メイド
+			CASE 10
+				IF display == 1
+					HTML_PRINT "<img src='maid_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='maid_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;修道服
+			CASE 11
+				IF display == 1
+					HTML_PRINT "<img src='sister_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='sister_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ゴスロリ
+			CASE 12
+				IF display == 1
+					HTML_PRINT "<img src='gothic_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='gothic_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ドレス
+			CASE 13
+				IF display == 1
+					HTML_PRINT "<img src='dress_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='dress_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;剣道着
+			CASE 15
+				IF display == 1
+					HTML_PRINT "<img src='kendogi_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='kendogi_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;弓道着
+			CASE 16
+				IF display == 1
+					HTML_PRINT "<img src='kyudogi_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='kyudogi_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;メイド(ミニスカート)
+			CASE 20
+				IF display == 1
+					HTML_PRINT "<img src='maidmini_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='maidmini_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;修道服(ミニスカート)
+			CASE 21
+				IF display == 1
+					HTML_PRINT "<img src='sistermini_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='sistermini_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ゴスロリ(ミニスカート)
+			CASE 22
+				IF display == 1
+					HTML_PRINT "<img src='gothicmini_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='gothicmini_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ドレス(ミニスカート)
+			CASE 23
+				IF display == 1
+					HTML_PRINT "<img src='dressmini_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='dressmini_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;メイド(マイクロミニ)
+			CASE 30
+				IF display == 1
+					HTML_PRINT "<img src='maidmicro_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='maidmicro_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;修道服(マイクロミニ)
+			CASE 31
+				IF display == 1
+					HTML_PRINT "<img src='sistermicro_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='sistermicro_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ゴスロリ(マイクロミニ)
+			CASE 32
+				IF display == 1
+					HTML_PRINT "<img src='gothicmicro_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='gothicmicro_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ドレス(マイクロミニ)
+			CASE 33
+				IF display == 1
+					HTML_PRINT "<img src='dressmicro_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='dressmicro_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;サキュバスキャミソール
+			CASE 34
+				IF display == 1
+					HTML_PRINT "<img src='succubus_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='succubus_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;ブレザー
+			CASE 50
+				IF display == 1
+					HTML_PRINT "<img src='blazer_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='blazer_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;学士服
+			CASE 52
+				IF display == 1
+					HTML_PRINT "<img src='academicdress_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='academicdress_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;エプロンメイド
+			CASE 57
+				IF display == 1
+					HTML_PRINT "<img src='apronmaid_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='apronmaid_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;エプロンドレス
+			CASE 58
+				IF display == 1
+					HTML_PRINT "<img src='aprondress_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='aprondress_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;人魚の衣
+			CASE 63
+				IF display == 1
+					HTML_PRINT "<img src='marmaidclothing_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='marmaidclothing_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;姉妹の書生服
+			CASE 65
+				IF display == 1
+					HTML_PRINT "<img src='watatukistudent_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='watatukistudent_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;傾国のローブ
+			CASE 68
+				IF display == 1
+					HTML_PRINT "<img src='beautyrobe_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='beautyrobe_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;浴衣
+			CASE 69
+				IF display == 1
+					HTML_PRINT "<img src='yukata_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='yukata_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;純白の薄衣
+			CASE 70
+				IF display == 1
+					HTML_PRINT "<img src='purewhite_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='purewhite_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+			;妖しいキャミソール
+			CASE 73
+				IF display == 1
+					HTML_PRINT "<img src='suspicious_pic' width='600' height='600'>"
+				ELSE
+					HTML_PRINT "<img src='suspicious_pic' width='400' height='400'>"
+				ENDIF
+				enable = 1
+		ENDSELECT
+	ENDIF
+ENDIF
+
+;画像表示の大きさに応じて改行する
+;表示(大)
+IF enable
+	IF display == 1
+		PRINTL
+		PRINTL
+		PRINTL
+		PRINTL
+		PRINTL
+	;表示(小)
+	ELSE
+		PRINTL
+		PRINTL
+		PRINTL
+	ENDIF
+ENDIF
+

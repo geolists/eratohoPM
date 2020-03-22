@@ -1,0 +1,322 @@
+﻿;============================================================
+;称号システム
+;特定条件を満たすと称号を得て、様々な常在能力やスキルを身に着ける事ができる
+;
+;条件
+;1:そのランクまでの技能を習得する(技術ポイントで獲得できる)
+;2:家事経験等の条件を満たす(技能も習得する)
+
+;二方向で設定する事でゲームの幅を広げる
+;============================================================
+;--------------------------------------
+;称号付与
+;メニュー画面から付与できる
+;--------------------------------------
+@GET_HONOR
+
+;小文字は一時利用の変数(この法則はファイル内でのみ適用する)
+#DIM L_LOCAL, 1
+#DIM HON_COST, 1
+#DIM SEN, 1
+#DIM tem, 1
+
+DRAWLINE
+CALL SETCOLOR_ABL
+PRINTFORML ～～とある一室　「称号」の獲得～～
+RESETCOLOR
+PRINTFORML 司書「いらっしゃい。ここは様々な「称号」に関する資料を集めた部屋よ
+PRINTFORML 　　　貴方の生活習慣に応じた「称号」が獲得できるわ
+PRINTFORML 　　　何を獲得したいか教えて？」
+$BACK_LOOP_1
+DRAWLINE
+PRINTL どの称号を獲得しますか？
+
+VARSET SEN, 0
+;リスト形成時に使う
+VARSET tem, 0
+
+
+DRAWLINE
+;生活習慣の属性毎に1.メイド～5.花嫁をFOR文を用いて表示する
+FOR tem, 0, 8, 1
+	;武士を見るために、娼婦、淫魔はスキップする
+	IF tem == 5
+		tem += 2;
+	ENDIF
+	IF GETBIT(CFLAG:習慣職業／生活習慣, tem+1)
+		CALL ELEMENT_CONVERT, tem
+		
+		PRINTFORM ～%STR%～({CFLAG:@"属性／%STR%"}％)　属性技能ポイント:
+		CALL SETCOLOR_ABL
+		PRINTFORML {BASE:(100+tem)}
+		RESETCOLOR
+		
+		CALL ELEMENT_CONVERT, tem
+		FOR L_LOCAL, 0, 3
+			;花嫁の場合、普通系統が無い
+			IF tem == 4 && L_LOCAL < 2
+				PRINTFORML [{L_LOCAL+tem*3}] - %GETNAME_HONOR(L_LOCAL*2)%%STR%　Lv:{CHK_HONOR_LV(tem)}
+			ELSEIF tem != 4
+				PRINTFORML [{L_LOCAL+tem*3}] - %GETNAME_HONOR(L_LOCAL)%%STR%　Lv:{CHK_HONOR_LV(tem)}
+			ENDIF
+		NEXT
+		;選べる属性があるという事になるので、判定用数値を追加
+		SEN += 1
+		DRAWLINE
+	ENDIF
+NEXT
+
+IF GETBIT(CFLAG:習慣職業／生活習慣, 7)
+	DRAWLINE
+	PRINTFORML ～娼婦～　技能ポイント:{BASE:花魁技能}
+	IF (CFLAG:称号レベル / 3) == 0
+		PRINTL [18] - 下級娼婦
+	ELSEIF (CFLAG:称号レベル / 3) == 1
+		PRINTL [18] - 高級娼婦
+	ELSEIF (CFLAG:称号レベル / 3) == 2
+		PRINTL [18] - 花魁の駆け出し
+	ELSEIF (CFLAG:称号レベル / 3) == 3
+		PRINTL [18] - 人気のある花魁
+	ENDIF
+	SEN += 1
+	DRAWLINE
+ENDIF
+
+IF !SEN
+	PRINTFORML 現在、選択できる称号はありません
+ENDIF
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 999
+	RETURN 0
+ELSEIF INRANGE(RESULT , 0 , 18) && !(RESULT >= 14 && RESULT <= 17)
+	LOCAL = RESULT
+	
+	;必要な技能ポイントの計算
+	SIF LOCAL != 18
+		HON_COST = HONOR_COST(CHK_HONOR_LV(LOCAL/3), STR)
+	DRAWLINE
+	TRYCALLFORM INDI_HONOR_{LOCAL}, CHK_HONOR_LV(LOCAL/3)
+	TRYCALLFORM HONOR_CHK, HON_COST, LOCAL/3, LOCAL%3
+	;判定用の数値を避難しておく
+	tem = RESULT
+	
+	CALL SETCOLOR_ABL
+	;正道や邪道の場合、アライメント条件も表示する
+	IF LOCAL%3 == 0
+		PRINTL -必要条件-
+		PRINTFORML 【アライメントが+50以上】
+	ELSEIF LOCAL%3 == 2
+		PRINTL -必要条件-
+		PRINTFORML 【アライメントが-50以下】
+	ENDIF
+	PRINTFORM 必要経験: 
+	IF CFLAG:称号属性 == 4
+		PRINTFORM %CLASS_EXP_NAME(LOCAL/3)%:
+	ELSE
+		PRINTFORM %CLASS_EXP_NAME(LOCAL/3)%経験:
+	ENDIF
+	PRINTFORML {CLASS_MUST_EXP(CHK_HONOR_LV(LOCAL/3))}
+	PRINTFORML 必要技術ポイント：{HON_COST}
+	RESETCOLOR
+	
+	DRAWLINE
+	IF tem == -1
+		PRINTFORMW 技能ポイントが足りません
+		GOTO BACK_LOOP_1
+	ELSEIF tem == -2
+		PRINTFORMW アライメントの条件を満たしていません
+		GOTO BACK_LOOP_1
+	ELSEIF tem == -3
+		PRINTFORMW 経験の条件を満たしていません
+		GOTO BACK_LOOP_1
+	ENDIF
+	
+	;今までの属性と異なる称号を得ようとしている場合、警告メッセージを出す
+	IF LOCAL/3 != CFLAG:称号属性
+		CALL SETCOLOR_ABL
+		PRINTFORML この称号は現在の称号と属性が異なります
+		PRINTFORML レベルが1になりますがよろしいですか？
+		RESETCOLOR
+	ELSE
+		PRINTFORML この称号に変更しますか？
+	ENDIF
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		;称号獲得処理
+		;技能ポイントを減らす
+		BASE:(100+LOCAL/3) -= HON_COST
+		
+		
+		CALL ELEMENT_CONVERT, LOCAL/3
+		CALL SETCOLOR_PALAMUP
+		;花嫁の場合、普通系統が無い
+		IF LOCAL/3 == 4
+			PRINTFORML %CALLNAME:TARGET%は%GETNAME_HONOR(LOCAL%3*2)%%STR%　Lv:{CHK_HONOR_LV(LOCAL/3)}の称号を得た！
+		ELSE
+			PRINTFORMW %CALLNAME:TARGET%は%GETNAME_HONOR(LOCAL%3)%%STR%　Lv:{CHK_HONOR_LV(LOCAL/3)}の称号を得た！
+		ENDIF
+		RESETCOLOR
+		
+		;属性、アライメント、レベルを変える
+		CFLAG:称号レベル = CHK_HONOR_LV(LOCAL/3)
+		CFLAG:称号属性 = LOCAL/3
+		CFLAG:称号アライメント = LOCAL%3
+		
+		;武者修行で使う技を習得する場合、メッセージを表示する
+		
+		CALL SETCOLOR_PALAMUP
+		;正道のメイドLv2
+		IF CFLAG:称号レベル == 2 && CFLAG:称号属性 == 1 && CFLAG:称号アライメント == 0
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[仕立て上げる]を覚えた！
+		;正道のゴスロリLv1
+		ELSEIF CFLAG:称号レベル == 1 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 0
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[サンダーシュート]を覚えた！
+		;正道のゴスロリLv2
+		ELSEIF CFLAG:称号レベル == 2 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 0
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[マジックストーム]を覚えた！
+		;邪道のゴスロリLv1
+		ELSEIF CFLAG:称号レベル == 1 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 2
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[欲情の香り]を覚えた！
+		;邪道のゴスロリLv1
+		ELSEIF CFLAG:称号レベル == 2 && CFLAG:称号属性 == 3 && CFLAG:称号アライメント == 2
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[蛙変化]を覚えた！
+		;武士称号Lv1
+		ELSEIF CFLAG:称号レベル == 1 && CFLAG:称号属性 == 7
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[諸刃の剣術]を覚えた！
+		;武士称号Lv2
+		ELSEIF CFLAG:称号レベル == 2 && CFLAG:称号属性 == 7
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[雪辱の太刀]を覚えた！
+		;正道の武士Lv3
+		ELSEIF CFLAG:称号レベル == 3 && CFLAG:称号属性 == 7 && CFLAG:称号アライメント == 0
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[剣の舞]を覚えた！
+		;邪道の武士Lv3
+		ELSEIF CFLAG:称号レベル == 3 && CFLAG:称号属性 == 7 && CFLAG:称号アライメント == 2
+			PRINTFORML %CALLNAME:TARGET%は武者修行技[騙し討ち]を覚えた！
+		ENDIF
+		RESETCOLOR
+		
+		GOTO BACK_LOOP_1
+	ELSE
+		GOTO BACK_LOOP_1
+	ENDIF
+ELSE
+	PRINTL 範囲外の入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+
+;------------------------------------------------
+;数値を称号の頭名に変換(式中関数版)
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@GETNAME_HONOR, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+SIF LOCALS == ""
+	SPLIT "正道の_普通の_邪道の", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------------------
+;次に上がる称号レベル(式中関数)
+;属性が変わると1から上げる事になる
+;ARG　レベルを上げる属性
+;------------------------------------------------
+@CHK_HONOR_LV, ARG
+#FUNCTION
+
+;属性が今までの属性と異なる
+IF ARG != CFLAG:称号属性
+	LOCAL = 1
+ELSE
+	LOCAL = CFLAG:称号レベル + 1
+ENDIF
+
+RETURNF LOCAL
+
+;=========================================================================
+;称号獲得に必要な技能ポイントを計算する
+;ARG　　現在の称号レベル
+;ARGS　 対象の属性
+;=========================================================================
+@HONOR_COST, ARG, ARGS
+#FUNCTION
+
+LOCAL = (POWER(ARG, 2)+1)*500
+
+;属性の5倍だけポイントが低く済む
+LOCAL = MAX(LOCAL-CFLAG:@"属性／%ARGS%"*5, 0)
+
+RETURNF LOCAL
+
+;=========================================================================
+;称号獲得に必要な経験を計算する
+;ARG　　次の称号レベル
+;=========================================================================
+@CLASS_MUST_EXP, ARG
+#FUNCTION
+
+LOCAL = POWER(ARG, 2)*20+20
+
+RETURNF LOCAL
+
+;=========================================================================
+;称号獲得に必要な対象経験を表示する
+;ARG　　現在の称号属性
+;=========================================================================
+@CLASS_EXP_NAME, ARG
+#FUNCTIONS
+
+SELECTCASE ARG
+	CASE 0
+		LOCALS = 美麗
+	CASE 1
+		LOCALS = 家事
+	CASE 2
+		LOCALS = 信仰
+	CASE 3
+		LOCALS = 知力
+	CASE 4
+		LOCALS = 主人への友好度
+	CASE 6
+		LOCALS = 淫妖
+ENDSELECT
+
+RETURNF LOCALS
+
+;=========================================================================
+;称号獲得に必要な条件を満たしているか監視する
+;ARG　　必要な技能ポイント
+;ARG:1　対象の属性
+;ARG:2　対象の称号方針(0:正道　1:普通　2:邪道)
+;=========================================================================
+@HONOR_CHK, ARG, ARG:1, ARG:2
+
+
+;技能ポイントが足りない場合、-1を返す
+IF ARG > BASE:(100+ARG:1)
+	RETURN -1
+;正道や邪道なのにアライメントが+50未満や-50より上の場合、-2を返す
+ELSEIF (ARG:2 == 0 && BASE:アライメント < 150) || (ARG:2 == 2 && BASE:アライメント > 50)
+	RETURN -2
+;属性毎に対応した経験が足りない場合、-3を返す
+ELSEIF ARG:1 == 4 && CFLAG:主人への友好度 < CLASS_MUST_EXP(CHK_HONOR_LV(LOCAL/3))
+	RETURN -3
+;ELSEIF ARG:1 == 6 && EXP:@"%CLASS_EXP_NAME(ARG:1)%" < CLASS_MUST_EXP(CHK_HONOR_LV(LOCAL/3))
+;	RETURN -3
+ELSEIF !(ARG:1 == 4) && EXP:@"%CLASS_EXP_NAME(ARG:1)%経験" < CLASS_MUST_EXP(CHK_HONOR_LV(LOCAL/3))
+	RETURN -3
+;上記に該当しないなら1を返す
+	RETURN 1
+ENDIF
+
+
+

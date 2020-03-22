@@ -1,0 +1,235 @@
+﻿;=========================================================
+;星座関連の関数
+;=========================================================
+;-------------------------------------------
+;星座名出力
+;ARG　参照する数値
+;-------------------------------------------
+@CONSTELLATIO_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 12
+SIF LOCALS == ""
+	SPLIT "牡羊座_牡牛座_双子座_蟹座_獅子座_乙女座_天秤座_蠍座_射手座_山羊座_水瓶座_魚座", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;牡羊座　　　疎通が上がりやすいが体力が上がりづらい
+;おうし座　　武術の天才。特に弓術が得意。美麗が上がりづらい
+;双子座　　　姉妹との友好度が上がりやすいがアライメントがブレ易い
+;蟹座　　　　武術に秀でており、刀術が得意
+;しし座　　　貞操が硬く、アライメントが下降しづらい
+;乙女座　　　家事が上がりやすいが体力が上がりづらい。魔法を得意とする
+;てんびん座　疎通が上がりやすいが依存が上がりづらい
+;蠍座　　　　美麗・淫妖が上昇しやすいが貞操が下がりやすい
+;射手座　　　弓術が得意で美麗が上がりやすいが疎通が上がりづらい
+;やぎ座　　　魔術が得意で信仰が上がりやすいが疎通が上がりづらい
+;水瓶座　　　主人への友好度が上がりやすいが知力が上がりづらい(融通が効かないので)
+;うお座　　　疎通が上がりやすいが知力が上がりづらい
+
+;へびつかい座は乙女座担当と合体したような感じなので省略で
+
+;-------------------------------------------
+;星座マーク出力
+;ARG　参照する数値
+;-------------------------------------------
+@CONSTELLATIO_MARK, ARG
+
+SELECTCASE ARG
+	CASE 0
+		PRINTFORM %UNICODE(0x2648)%
+	CASE 1
+		PRINTFORM %UNICODE(0x2649)%
+	CASE 2
+		PRINTFORM %UNICODE(0x265A)%
+	CASE 3
+		PRINTFORM %UNICODE(0x265B)%
+	CASE 4
+		PRINTFORM %UNICODE(0x265C)%
+	CASE 5
+		PRINTFORM %UNICODE(0x265D)%
+	CASE 6
+		PRINTFORM %UNICODE(0x265E)%
+	CASE 7
+		PRINTFORM %UNICODE(0x265F)%
+	CASE 8
+		PRINTFORM %UNICODE(0x2650)%
+	CASE 9
+		PRINTFORM %UNICODE(0x2651)%
+	CASE 10
+		PRINTFORM %UNICODE(0x2652)%
+	CASE 11
+		PRINTFORM %UNICODE(0x2653)%
+ENDSELECT
+
+;-------------------------------------------
+;星座別補正　パラメーター用
+;ARG　　参照する数値
+;ARGS 　補正をかけたい要素(基礎能力の中から)
+;ARGS:1 上昇or下降
+;-------------------------------------------
+@CONSTELLATIO_HOSEI, ARG, ARGS, ARGS:1
+
+;基本的には上がりやすい能力は×1.2　上がりづらい能力は×0.8
+
+LOCAL:1 = 0
+;牡羊座
+IF CFLAG:星座 == 0
+	;疎通と体力のみ影響が出る
+	SELECTCASE ARGS
+		CASE "疎通"
+			LOCAL = 12
+		CASE "体力"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;牡牛座
+ELSEIF CFLAG:星座 == 1
+	;弓術と体力、それに美麗(下方修正)に補正がかかる
+	SELECTCASE ARGS
+		CASE "体力"
+			LOCAL = 12
+		CASE "弓術経験値"
+			LOCAL = 12
+		CASE "美麗"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;双子座
+ELSEIF CFLAG:星座 == 2
+	;姉妹との友好度が上がりやすいが、アライメントのブレが激しい(通常の1.5倍)
+	SELECTCASE ARGS
+		CASE "姉妹との友好度"
+			LOCAL = 12
+		CASE "アライメント"
+			LOCAL = 12
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;蟹座
+ELSEIF CFLAG:星座 == 3
+	;体力と刀術経験値が上がりやすい
+	SELECTCASE ARGS
+		CASE "体力"
+			LOCAL = 12
+		CASE "刀術経験値"
+			LOCAL = 12
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;獅子座
+ELSEIF CFLAG:星座 == 4
+	;貞操が硬く、アライメントが変化しづらい
+	SELECTCASE ARGS
+		CASE "貞操"
+			LOCAL = 12
+		CASE "アライメント"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;乙女座
+ELSEIF CFLAG:星座 == 5
+	;家事が上がりやすいが体力が上がりづらい。魔術経験値を得やすい
+	SELECTCASE ARGS
+		CASE "家事"
+			LOCAL = 12
+		CASE "体力"
+			LOCAL = 8
+		CASE "魔術経験値"
+			LOCAL = 12
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;天秤座
+ELSEIF CFLAG:星座 == 6
+	;疎通が上がりやすいが主人への友好度が上がりづらい
+	SELECTCASE ARGS
+		CASE "疎通"
+			LOCAL = 12
+		CASE "主人への友好度"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;蠍座
+ELSEIF CFLAG:星座 == 7
+	;美麗・淫妖が上昇しやすいが貞操が下がりやすい
+	SELECTCASE ARGS
+		CASE "美麗"
+			LOCAL = 12
+		CASE "淫妖"
+			LOCAL = 12
+		CASE "貞操"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;射手座
+ELSEIF CFLAG:星座 == 8
+	;弓術が得意で美麗が上がりやすいが疎通が上がりづらい
+	SELECTCASE ARGS
+		CASE "美麗"
+			LOCAL = 12
+		CASE "弓術経験値"
+			LOCAL = 12
+		CASE "疎通"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;山羊座
+ELSEIF CFLAG:星座 == 9
+	;魔術が得意で信仰が上がりやすいが疎通が上がりづらい
+	SELECTCASE ARGS
+		CASE "信仰"
+			LOCAL = 12
+		CASE "魔術経験値"
+			LOCAL = 12
+		CASE "疎通"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;水瓶座
+ELSEIF CFLAG:星座 == 10
+	;主人への友好度が上がりやすいが知力が上がりづらい(融通が効かないので)
+	SELECTCASE ARGS
+		CASE "主人への友好度"
+			LOCAL = 12
+		CASE "知力"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+;魚座
+ELSEIF CFLAG:星座 == 11
+	;疎通が上がりやすいが知力が上がりづらい
+	SELECTCASE ARGS
+		CASE "疎通"
+			LOCAL = 12
+		CASE "知力"
+			LOCAL = 8
+		CASEELSE
+			LOCAL = 10
+	ENDSELECT
+ENDIF
+
+;PRINTFORML %ARGS%
+;PRINTFORML 補正値:{LOCAL}
+;基礎パラメーターの場合は×0.1毎の補正となる
+;仮に下降する場合がある場合は×0.1毎の下降率減少となる
+IF ARGS == "美麗" || ARGS == "知力" || ARGS == "疎通" || ARGS == "家事" || ARGS == "信仰" || ARGS == "体力" || ARGS == "淫妖" || ARGS == "堕落" || ARGS == "経験値"
+	IF ARGS:1 == "上昇"
+		LOCAL:1 = ARG*LOCAL/10
+	ELSEIF ARGS:1 == "下降"
+		LOCAL:1 = ARG - ARG*(LOCAL-10)/10
+	ENDIF
+;貞操と経験値は(補正値-10)が追加の値として入る
+ELSEIF ARGS == "貞操" || ARGS == "刀術経験値" || ARGS == "弓術経験値" || ARGS == "魔術経験値" || ARGS == "淫術経験値"
+	LOCAL:1 += ARG+LOCAL-10
+ENDIF
+;PRINTFORML {LOCAL:1}
+
+RETURN LOCAL:1
+

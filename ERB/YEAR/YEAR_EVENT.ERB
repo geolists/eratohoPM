@@ -1,0 +1,754 @@
+﻿;========================================================================
+;経年イベント
+;========================================================================
+@YEAR_EVENT_GROW,ARG
+;ARG　穢れと体力経験チェックのみを行う場合、1を代入する
+;穢れチェックを半年に１回に変更する
+
+;Bは110が上限
+;ヒップは112が上限
+
+;ちなみに、そのまま成長していくとあっという間に楽しみが尽きて（？）しまうと思われるので
+;6年目以降は成長にマイナス補正がかかる
+
+
+;淫妖のピーク値が高かった年は1～3成長する
+
+;Lv4以上の場合　+3
+IF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 2 || BASE:発育要因
+	LOCAL = 0
+	
+	;発育要因による胸生育
+	IF BASE:発育要因 >= 7
+		LOCAL += 3
+	ELSEIF BASE:発育要因 >= 5
+		LOCAL += 2
+	ELSEIF BASE:発育要因 >= 2
+		LOCAL += 1
+	ENDIF
+	
+	IF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 5
+		LOCAL += 4
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 4
+		LOCAL += 3
+	;Lv3以上の場合　+3
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 3
+		LOCAL += 2
+	;Lv2以上の場合　+2
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 2
+		LOCAL += 1
+	ENDIF
+	
+	;BMIが華奢以下の場合、発育が阻害される
+	IF HANTEI_BMI() <= -2
+		LOCAL -= 2
+	ELSEIF HANTEI_BMI() <= -1
+		LOCAL -= 1
+	ENDIF
+	
+	IF FLAG:年数 >= 7
+		LOCAL = (LOCAL * (100 - 10 * LIMIT(FLAG:年数, 0, 13) - 7)) / 100
+	ENDIF
+	IF LOCAL >= 1
+		BASE:胸囲 += LOCAL
+	ENDIF
+ENDIF
+
+;ヒップも同じく淫妖のピーク値が高いと追加で上昇する
+IF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 2
+	LOCAL = 0
+	
+	;発育要因による胸生育
+	IF BASE:発育要因 >= 10
+		LOCAL += 3
+	ELSEIF BASE:発育要因 >= 7
+		LOCAL += 2
+	ELSEIF BASE:発育要因 >= 5
+		LOCAL += 1
+	ENDIF
+	
+
+	;Lv4以上の場合
+	IF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 5
+		LOCAL += 4
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 4
+		LOCAL += 3
+	;Lv3以上の場合
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 3
+		LOCAL += 2
+	;Lv2以上の場合
+	ELSEIF PALAM_LV_YEAR(CFLAG:淫妖差異の蓄積) >= 2
+		LOCAL += 1
+	ENDIF
+	
+	IF FLAG:年数 >= 7
+		LOCAL = (LOCAL * (100 - 10 * LIMIT(FLAG:年数, 0, 13) - 7)) / 100
+	ENDIF
+	
+	
+	;BMIが華奢以下の場合、発育が阻害される
+	IF HANTEI_BMI() <= -2
+		LOCAL -= 2
+	ELSEIF HANTEI_BMI() <= -1
+		LOCAL -= 1
+	ENDIF
+	
+	
+	IF LOCAL >= 1
+		BASE:ヒップ += LOCAL
+	ENDIF
+ENDIF
+
+;穢れを貯め込むとボディラインが艶やかに
+;穢れが60以上だと共に+2される
+IF FLAG:年数 <= 5
+	IF BASE:穢れ >= 10
+		BASE:胸囲 += 1
+		BASE:ヒップ += 1
+	ENDIF
+ELSEIF !ARG
+	IF BASE:穢れ >= 20
+		BASE:胸囲 += 1
+		BASE:ヒップ += 1
+	ENDIF
+ENDIF
+
+IF BASE:胸囲 > 200
+	BASE:胸囲 = 200
+ENDIF
+
+IF BASE:ヒップ > 202
+	BASE:ヒップ = 202
+ENDIF
+
+BASE:穢れ = 0
+BASE:発育要因 = 0
+CFLAG:淫妖差異の蓄積 = 0
+CFLAG:体力差異の蓄積 = 0
+
+;6月通過時には実施しない処理のため、ARG引数に応じてRETURN分岐をかける
+IF ARG
+	RETURN 0
+ENDIF
+
+;---------------------------
+;以下、年越し時の自然発育
+
+;背を伸ばす。この半年間で得た体力50につき1だけ追加で背が伸びる(最大で3)
+;基礎的な伸びは+4
+LOCAL = 4+LIMIT(CFLAG:体力差異の蓄積/50,1,3)
+
+;体重は身長の伸びの3/4倍
+BASE:身長 += LOCAL
+BASE:体重 += 10*LOCAL*3/4
+
+DRAWLINE
+;胸は基本的には1成長する
+IF FLAG:年数 <= 6
+	BASE:胸囲 += 1
+	
+	;BMIが太り気味以上の場合、胸囲+1
+	IF HANTEI_BMI() >= 1
+		BASE:胸囲 += 1
+	ENDIF
+ENDIF
+
+;淫魔は発育がいい
+IF FLAG:年数 <= 6 && TALENT:淫魔
+	BASE:胸囲 += 1
+	BASE:ヒップ += 1
+ENDIF
+
+;胸部下着が無い場合、胸は追加で1成長する
+;(成長期は6年目で終わり)
+IF !CFLAG:胸部下着 && FLAG:年数 <= 6
+	BASE:胸囲 += 1
+ENDIF
+
+;ヒップは4年目までは1ずつ上昇していく
+IF FLAG:年数 <= 4
+	BASE:ヒップ += 1
+ENDIF
+
+;PRINTFORML {YEAR_COUNT(530)}
+
+;淫妖が1000以上の場合、慰み者ルートになる
+IF BASE:淫妖 >= 1000
+	CFLAG:(YEAR_COUNT(530)-1) = 2
+;娼婦の場合、娼婦ルートに
+ELSEIF TALENT:娼婦
+	CFLAG:(YEAR_COUNT(530)-1) = 3
+ENDIF
+
+;========================================================================
+;半年に一回性格が変化する
+;========================================================================
+@HALFYEAR_EVENT_GROW
+#DIM COPY, 10
+#DIM TAG, 1
+
+;経験の数値をコピー(堕落以外)
+FOR COUNT, 71, 80
+	;初期化
+	COPY:(COUNT-71) = 0
+	;背徳経験、色気経験は排除
+	IF COUNT != 77 && COUNT != 78
+		COPY:(COUNT-71) = EXP:COUNT
+	ENDIF
+NEXT
+
+;アライメントが-39以上で、貞操が61以上の場合、淫妖経験は除外される
+IF BASE:アライメント >= 61 && BASE:貞操 >= 61
+	COPY:8 = 0
+ENDIF
+
+;最も高い経験が他の経験の平均値より一定以上高い場合、性格が変わる
+LOCAL = MAXARRAY(COPY, 0, 9)
+TAG = FINDELEMENT(EXP, LOCAL, 71, 80)
+COPY:(TAG-71) = 0
+
+;淫妖が最も高い場合、堕落経験の1/5を淫妖に加える
+IF TAG == 8
+	COPY:8 += EXP:堕落経験 / 5
+ENDIF
+
+LOCAL:2 = 0
+;取りだした要素以外の経験を足し、平均を出す
+FOR COUNT, 0, 9
+	LOCAL:2 += COPY:COUNT
+NEXT
+LOCAL:2 /= 6
+
+;最も高い要素と平均の差異を出す
+LOCAL:3 = EXP:TAG - LOCAL:2
+;6-年数の重み補正でかける
+LOCAL:3 = LOCAL:3 * (6 - LIMIT(FLAG:年数, 1, 5))
+
+;100を越えたら変化
+IF LOCAL:3 >= 100
+	;美麗が最も高い場合、高飛車になる
+	IF TAG == 71
+		CFLAG:性格 = 2
+	;知力の場合　真面目
+	ELSEIF TAG == 72
+		CFLAG:性格 = 1
+	;疎通の場合　社交的
+	ELSEIF TAG == 73
+		CFLAG:性格 = 3
+	;家事の場合　世話焼き
+	ELSEIF TAG == 74
+		CFLAG:性格 = 4
+	;信仰の場合　夢見がち
+	ELSEIF TAG == 75
+		CFLAG:性格 = 5
+	;体力の場合　男勝り
+	ELSEIF TAG == 76
+		CFLAG:性格 = 6
+	;淫妖の場合　淫乱
+	ELSEIF TAG == 79
+		CFLAG:性格 = -1
+	ENDIF
+;条件を満たさなかった場合、天真爛漫になる
+ELSE
+	CFLAG:性格 = 0
+ENDIF
+
+;------------------------------------------------------------------------
+;各パラメーター変化
+;------------------------------------------------------------------------
+@YEAR_EVENT
+#DIM L_LOCAL, 1
+;取ってきたデータを格納する変数
+#DIM copy, 10
+
+;該当する高い値を格納する変数
+#DIM sort, 3
+
+
+PRINTFORML 以下のような変化となりました
+
+REPEAT 11
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	
+	;各種経験の10％を追加
+	;PRINTFORML ターン開始時の%LOCALS% : {CFLAG:("ターン開始時の経験／"+LOCALS+"")}
+	;PRINTFORML ターン開始時の差異(%LOCALS%) : {FLAG:("差異／"+LOCALS+"")}
+	
+	FLAG:("差異／"+LOCALS+"") = (EXP:(""+LOCALS+"経験") - CFLAG:("ターン開始時の経験／"+LOCALS+"")) * (100 + 25 * CFLAG:("補正／"+LOCALS+"")) / 100
+	
+	IF FLAG:("差異／"+LOCALS+"")
+		;淫妖・堕落の場合は2％
+		IF LOCALS == "堕落" || LOCALS == "淫妖"
+			FLAG:("差異／"+LOCALS+"") += EXP:(""+LOCALS+"経験") / 50
+		ELSE
+			FLAG:("差異／"+LOCALS+"") += EXP:(""+LOCALS+"経験") / 10
+		ENDIF
+	ENDIF
+	;淫妖・堕落のマイナス補正時に、本来マイナス補正がかかる気質が逆転して上昇するのを防ぐための処理
+	IF FLAG:("差異／"+LOCALS+"") < 0 && (LOCALS == "堕落" || LOCALS == "淫妖")
+		FLAG:("差異／"+LOCALS+"") = 0
+	ENDIF
+	
+	;年齢による経験補正
+	CALL HOSEI_YEAR_KISITSU, STR, FLAG:("差異／"+LOCALS+"")
+REND
+
+;------------------
+;経験による変化
+;------------------
+;愛情経験＞淫妖経験だと堕落の影響が半減される
+IF EXP:愛情経験 > EXP:淫妖経験
+	FLAG:差異／堕落 = FLAG:差異／堕落 / 2
+ENDIF
+
+;------------------
+;素質による変化
+;------------------
+;即堕ちの場合、淫妖・堕落の影響が2倍になる
+IF TALENT:即堕ち
+	FLAG:差異／淫妖 = FLAG:差異／淫妖 * 2
+	FLAG:差異／堕落 = FLAG:差異／堕落 * 2
+ENDIF
+;嫌厭色情の場合、淫妖・堕落の影響が半分になる
+IF TALENT:嫌厭色情
+	FLAG:差異／淫妖 = FLAG:差異／淫妖 / 2
+	FLAG:差異／堕落 = FLAG:差異／堕落 / 2
+ENDIF
+;感情的の場合、全ての影響が2倍になる
+IF TALENT:感情的
+	REPEAT 10
+		CALL PALAM_CONVERT, COUNT
+		LOCALS = %STR%
+		
+		FLAG:("差異／"+LOCALS+"") *= 2
+	REND
+ENDIF
+;保守的の場合、全ての影響が半分になる
+IF TALENT:保守的
+	REPEAT 10
+		CALL PALAM_CONVERT, COUNT
+		LOCALS = %STR%
+		
+		FLAG:("差異／"+LOCALS+"") /= 2
+	REND
+ENDIF
+
+;-------------------
+
+;人魚の場合、美麗の影響値が1.5倍になる
+IF TALENT:人魚
+	FLAG:差異／美麗 = FLAG:差異／美麗*3/2
+ENDIF
+
+
+
+;高飛車の場合、堕落の影響が従来通り出る
+;それ以外は従来の半分になる
+IF CFLAG:性格 != 2
+	FLAG:差異／堕落 = FLAG:差異／堕落 * 2 / 3
+ENDIF
+
+;PRINTFORML 堕落の差異:{FLAG:差異／堕落}
+FLAG:差異／堕落 = FLAG:差異／堕落 * 2 / 3
+;PRINTFORML 2/3状態:{FLAG:差異／堕落}
+
+CFLAG:淫妖差異の蓄積 += FLAG:差異／淫妖
+CFLAG:体力差異の蓄積 += FLAG:差異／体力
+
+;LOCAL = (810 / (1+BASE:信仰心)) / 10
+
+;気品
+;美麗が関与
+;マイナス要素として堕落と淫妖がそれぞれ半分つつ関わる
+PRINTFORM 気品　　:{BASE:気品}　→　
+BASE:気品 += FLAG:差異／美麗 + (FLAG:差異／美麗 * FLAG:差異／淫妖 / 30)
+BASE:気品 -= FLAG:差異／堕落
+IF BASE:気品 < 0
+	BASE:気品 = 0
+ENDIF
+CALL CHECK_SOYOU, "気品"
+PRINTFORML {BASE:気品}
+
+;プライド
+;美麗が関与
+;マイナス要素として堕落が半分関わる
+PRINTFORM プライド:{BASE:プライド}　→　
+BASE:プライド += FLAG:差異／美麗
+BASE:プライド -= FLAG:差異／堕落
+IF BASE:プライド < 0
+	BASE:プライド = 0
+ENDIF
+CALL CHECK_SOYOU, "プライド"
+PRINTFORML {BASE:プライド}
+
+;感度
+;淫妖と堕落が関与
+;美麗・知力・疎通が高くなると下がる
+PRINTFORM 感度　　:{BASE:感度}　→　
+BASE:感度 -= (FLAG:差異／美麗 + FLAG:差異／知力 + FLAG:差異／疎通) / 6
+BASE:感度 += FLAG:差異／堕落 + FLAG:差異／淫妖
+IF BASE:感度 < 0
+	BASE:感度 = 0
+ENDIF
+CALL CHECK_SOYOU, "感度"
+PRINTFORML {BASE:感度}
+
+;話術
+;疎通が関与
+;美麗が高いと減る
+PRINTFORM 話術　　:{BASE:話術}　→　
+BASE:話術 -= FLAG:差異／美麗
+BASE:話術 += FLAG:差異／疎通
+IF BASE:話術 < 0
+	BASE:話術 = 0
+ENDIF
+CALL CHECK_SOYOU, "話術"
+PRINTFORML {BASE:話術}
+
+;常識
+;疎通や知力が関与
+;マイナス要員として堕落が関わる
+PRINTFORM 常識　　:{BASE:常識}　→　
+IF CFLAG:媚薬状態 != 2
+	BASE:常識 += (FLAG:差異／疎通 + FLAG:差異／知力) / 2
+ENDIF
+BASE:常識 -= FLAG:差異／堕落
+IF BASE:常識 < 0
+	BASE:常識 = 0
+ENDIF
+CALL CHECK_SOYOU, "常識"
+PRINTFORML {BASE:常識}
+
+;思考力
+;知力が関与
+;マイナス要素として淫妖が関わる
+PRINTFORM 思考力　:
+PRINTFORM {BASE:思考力}　→　
+IF CFLAG:媚薬状態 != 2
+	BASE:思考力 += FLAG:差異／知力 + EXP:花魁 / 30
+ENDIF
+BASE:思考力 -= EXP:娼婦 + FLAG:差異／堕落 / 2
+IF BASE:思考力 < 0
+	BASE:思考力 = 0
+ENDIF
+CALL CHECK_SOYOU, "思考力"
+PRINTFORML {BASE:思考力}
+
+;信仰心
+;信仰が関与
+;淫妖・背徳によって下がる
+PRINTFORM 信仰心　:{BASE:信仰心}　→　
+BASE:信仰心 += FLAG:差異／信仰 * 2 + (FLAG:差異／信仰 * EXP:花魁 / 30)
+BASE:信仰心 -= (EXP:娼婦 + FLAG:差異／背徳)
+IF BASE:信仰心 < 0
+	BASE:信仰心 = 0
+ENDIF
+CALL CHECK_SOYOU, "信仰心"
+PRINTFORML {BASE:信仰心}
+
+;献身
+;家事・疎通が関与
+;プライドが高いと下がる
+PRINTFORM 献身　　:{BASE:献身}　→　
+BASE:献身 += (FLAG:差異／家事 + FLAG:差異／疎通 + (FLAG:差異／家事 * FLAG:差異／淫妖 / 30)) / 2 + FLAG:差異／愛情/4
+;プライドの上昇値と同値分下がる（つまり同じ計算式）
+BASE:献身 -= FLAG:差異／美麗
+IF BASE:献身 < 0
+	BASE:献身 = 0
+ENDIF
+CALL CHECK_SOYOU, "献身"
+PRINTFORML {BASE:献身}
+
+;依存
+;背徳が関与
+;堕落によって下がる
+PRINTFORM 依存　　:
+PRINTFORM {BASE:依存}　→　
+BASE:依存 += FLAG:差異／背徳 + FLAG:差異／愛情/2
+BASE:依存 -= FLAG:差異／堕落 / 2
+IF BASE:依存 < 0
+	BASE:依存 = 0
+ENDIF
+CALL CHECK_SOYOU, "依存"
+PRINTFORML {BASE:依存}
+
+;スタミナ
+;体力が関与
+;下がる要素無し
+PRINTFORM スタミナ:
+PRINTFORM {BASE:スタミナ}　→　
+BASE:スタミナ += FLAG:差異／体力
+IF BASE:スタミナ < 0
+	BASE:スタミナ = 0
+ENDIF
+CALL CHECK_SOYOU, "スタミナ"
+PRINTFORML {BASE:スタミナ}
+
+;娼婦と花魁の経験をリセットする
+EXP:花魁 = 0
+EXP:娼婦 = 0
+
+
+;-----------------------------------------
+;興味モード発生判定
+;-----------------------------------------
+
+;元本の発生率は12.5％
+;(やる気が減ると確率が減る)
+IF !CFLAG:興味 && !RAND:(MAX(13-CFLAG:やる気, 1))
+	;(この分岐に入ったという事は)通過したので、入手経験上位3種の経験を探し出す
+
+	;各種入手経験をローカル変数(copy)に持ってくる
+	;(淫妖、堕落、色気は除く)
+	FOR L_LOCAL, 400, 408
+		CALL PALAM_CONVERT_NAME, L_LOCAL-400
+		
+		copy:(L_LOCAL-400) = (EXP:(STR+"経験")-TFLAG:L_LOCAL)
+		;PRINTFORML copy:{copy:(L_LOCAL-400)}
+	NEXT
+	
+	;色気を除外する
+	copy:6 = -1
+	
+	;上位3位をsort:0～2に代入する
+	FOR L_LOCAL, 0, 3
+		LOCAL = MAXARRAY(copy, 0, 10)
+		sort:L_LOCAL = FINDELEMENT(copy, LOCAL, 0, 10)
+		copy:(sort:L_LOCAL) = 0
+	NEXT
+	
+	;以下三行はデバッグ用処理
+	;FOR L_LOCAL, 0, 3
+	;	PRINTFORML sort:{sort:L_LOCAL}
+	;NEXT
+	
+	;sort:0～2から1つランダムで選び、ビット変換と名称変換を行い、興味タイムに移行する
+	;(ちなみに、元本の発生率は10％)
+	
+	LOCAL:1 = RAND:3
+	
+	CALL CONVERT_BIT, sort:(LOCAL:1)
+	LOCAL = RESULT
+	CALL PALAM_CONVERT_NAME, sort:(LOCAL:1)
+	
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML ～興味発生～
+	PRINTFORMW %CALLNAME:TARGET%は%STR%への興味を持った！
+	RESETCOLOR
+	
+	CFLAG:興味 = LOCAL
+ELSE
+	IF CFLAG:興味
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%の興味が元に戻った
+		RESETCOLOR
+		
+		CFLAG:興味 = 0
+	ENDIF
+ENDIF
+
+
+IF FLAG:気質ウェイト
+	FORCEWAIT
+ELSE
+	WAIT
+ENDIF
+
+;チュートリアルビットが立っていない場合
+IF !FLAG:気質チュートリアル
+	CALL TUTORIAL_KISITU
+	FLAG:気質チュートリアル = 1
+ENDIF
+
+
+;-----------------------------------
+;体重の変化
+;-----------------------------------
+;体力経験の差異/20*2だけ栄養値を引く
+IF FLAG:差異／体力/20*2
+	BASE:栄養値 = BASE:栄養値-(FLAG:差異／体力/20*2)
+ENDIF
+
+LOCAL = 0
+IF BASE:栄養値
+	IF BASE:栄養値 >= 7
+		BASE:脂肪 += 15
+		LOCAL = 2
+	ELSEIF BASE:栄養値 >= 4
+		BASE:脂肪 += 10
+		LOCAL = 2
+	ELSEIF BASE:栄養値 >= 1
+		BASE:脂肪 += 5
+		LOCAL = 1
+	ELSEIF BASE:栄養値 >= -3
+		BASE:脂肪 = MAX(BASE:脂肪-5, 0)
+		LOCAL = -1
+	ELSEIF BASE:栄養値 >= -6
+		BASE:脂肪 = MAX(BASE:脂肪-10, 0)
+		LOCAL = -2
+	ELSE
+		BASE:脂肪 = MAX(BASE:脂肪-15, 0)
+		LOCAL = -2
+	ENDIF
+ENDIF
+
+IF TALENT:妊娠
+	BASE:ウエスト = LIMIT(BASE:ウエスト+LOCAL, 51,999)
+ELSE
+	BASE:ウエスト = LIMIT(BASE:ウエスト+LOCAL, 51,BASE:胸囲-5)
+ENDIF
+
+BASE:栄養値 = 0
+
+;BMI計算して合わなくなったら普段着の番号の衣服を着させる
+CALL CLOTHE_ABL, "美麗"
+IF CFLAG:服装 >= 0 && RESULT >= 2 && HANTEI_BMI() >= 2 && !DITEMTYPE:(CFLAG:服装):11
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW 太りすぎた%CALLNAME:TARGET%の体型ではこの衣服は合わない……
+	IF !ITEM:普段着
+		PRINTFORML 止む無く布きれを身体に巻くことにした
+		IF FLAG:布の痛み == 2
+			CALL DATA_CHANGE_CLOTHE, -3, "変更"
+		ELSEIF FLAG:布の痛み == 1
+			CALL DATA_CHANGE_CLOTHE, -2, "変更"
+		ELSE
+			CALL DATA_CHANGE_CLOTHE, -1, "変更"
+		ENDIF
+	ELSE
+		PRINTFORMW 普段着に着替えた
+		CALL DATA_CHANGE_CLOTHE, 0, "変更"
+	ENDIF
+	RESETCOLOR
+ENDIF
+
+;---------------------------------------------
+;変数の初期化
+;---------------------------------------------
+VARSET FLAG, 0, 500, 505
+VARSET FLAG, 0, 510, 515
+
+REPEAT 11
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	;現在の経験を記録
+	CFLAG:("ターン開始時の経験／"+STR+"") = EXP:(""+STR+"経験")
+REND
+
+;============================================================================
+;表示合わせ
+;参照する数値
+;============================================================================
+@AJAST, ARG
+IF ARG < 10
+	PRINT   
+ELSEIF ARG < 100
+	PRINT  
+ENDIF
+
+
+;============================================================================
+;経年イベントで利用する各種パラメーターレベル
+;============================================================================
+@PALAM_LV_YEAR, ARG
+#FUNCTION
+IF ARG < 30
+	RETURNF 0
+ELSEIF ARG < 50
+	RETURNF 1
+ELSEIF ARG < 70
+	RETURNF 2
+ELSEIF ARG < 90
+	RETURNF 3
+ELSEIF ARG < 110
+	RETURNF 4
+ELSE
+	RETURNF 5
+ENDIF
+
+;============================================================================
+;経年イベントで利用する各種パラメーターレベル
+;============================================================================
+@EXP_LV_YEAR, ARG
+#FUNCTION
+IF ARG == 0
+	RETURNF -1
+ELSEIF ARG < 5
+	RETURNF 0
+ELSEIF ARG < 20
+	RETURNF 1
+ELSEIF ARG < 40
+	RETURNF 2
+ELSEIF ARG < 60
+	RETURNF 3
+ELSE
+	RETURNF 4
+ENDIF
+
+;============================================================================
+;各種素養の限界チェック
+;ARGS　参照する素養
+;============================================================================
+@CHECK_SOYOU, ARGS
+
+IF MAXBASE:ARGS < BASE:ARGS
+	BASE:ARGS = MAXBASE:ARGS
+ELSEIF BASE:ARGS < 0
+	BASE:ARGS = 0
+ENDIF
+
+
+;============================================================================
+;年齢補正をかける
+;ARGS 対象の能力
+;ARG　補正対象の値
+;============================================================================
+@HOSEI_YEAR_KISITSU, ARGS, ARG
+#DIM hosei, 1
+
+;基本的には加齢すると以下のような変遷を辿る
+;上昇しやすい：　美麗、疎通、家事
+;上昇しづらい：　知力、信仰、体力
+;
+;能力補正は　(125+25×(-補正アライメント))+(10×補正アライメント×年数)
+;妖精の場合、年数-3
+SELECTCASE ARGS
+	CASE "美麗"
+		hosei = 1
+	CASE "知力"
+		hosei = -1
+	CASE "疎通"
+		hosei = 1
+	CASE "家事"
+		hosei = 1
+	CASE "信仰"
+		hosei = -1
+	CASE "体力"
+		hosei = -1
+ENDSELECT
+
+;種族補正
+;妖精の場合、-2
+IF TALENT:妖精
+	LOCAL:1 = -2
+ELSE
+	LOCAL:1 = 0
+ENDIF
+
+LOCAL = (125+25*(-1*hosei))+(10*hosei*(FLAG:年数-1+LOCAL:1))
+
+ARG = ARG*LOCAL/100
+
+RETURN ARG
+
+;============================================================================
+;始点から年数分足す
+;ARG 始点
+;============================================================================
+@YEAR_COUNT, ARG
+#FUNCTION
+
+LOCAL = ARG + (LIMIT(FLAG:年数-1, 0, 5))
+
+RETURNF LOCAL
+

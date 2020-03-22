@@ -1,0 +1,156 @@
+﻿;==============================================================================
+;謎の泉
+;右クリックで武器が手に入るぞ！
+;妊娠周期を知ることができます
+;==============================================================================
+@MYSTERY_SPRING
+DRAWLINE
+PRINTFORML ～～王宮の外れ　謎の泉～～
+PRINTFORML 人気が無い茂みを掻き分け、古びた泉に辿りついた
+PRINTFORML 泉の中央には緑苔がびっしり付いた石碑が置かれている
+PRINTFORML 
+CALL PREGNANCY_CYCLE
+SELECTCASE RESULT
+	CASE 8
+		PRINTFORML 泉は満潮で、石碑とは対照的に透き通った水で満たされている
+	CASE 10
+		PRINTFORML 泉は6分満ちで、水音で心を癒すことができる
+	CASE 16
+		PRINTFORML 泉は5分満ちで、森がさざめく音が心地よい
+	CASE 32
+		PRINTFORML 泉は4分満ちで、潮が引いた部分の湿り気を感じる
+	CASE 64
+		PRINTFORML 泉は3分満ちで、潮が引いた部分の湿り気を感じる
+	CASE 96
+		PRINTFORML 泉は2分満ちで、泉がかなり小さく見える
+	CASE 128
+		PRINTFORML 泉は干潮で、泉がかなり小さく見える
+ENDSELECT
+DRAWLINE
+PRINTFORML %CALLNAME:TARGET%「聞いた話なんだけど、子宝に恵まれたい夫婦がここに訪れるんですって
+;淫妖の値によって変化
+IF BASE:淫妖 >= 2000
+	PRINTFORML 　　　ねえっ……身重にならずに中出しされ続ける方法ってないの……？　干潮の時にやるとか？」
+ELSEIF BASE:淫妖 >= 1500
+	PRINTFORML 　　　んっ……想像したら我慢できなくなってきちゃった……。満潮まで待たなくていいよね？」
+ELSEIF BASE:淫妖 >= 900
+	PRINTFORML 　　　これから毎日子作りしましょうね♪」
+ELSEIF BASE:淫妖 >= 600
+	PRINTFORML 　　　……まあ、ここなら人が滅多に来ないしね。満潮近くになると幻想的だろうし……」
+ELSEIF BASE:淫妖 >= 300
+	PRINTFORML 　　　……潮の満ち引きと人間の身体に纏わる周期は似ているというわ。それ由来かもね」
+ELSEIF BASE:淫妖 >= 50
+	PRINTFORML 　　　……穢れが溜まってたりしないよね？」
+ELSE
+	PRINTFORML 　　　……コウノドリが運んでくるのかしら？」
+ENDIF
+
+DRAWLINE
+PRINTL [0] - 石碑を読む
+PRINTL [1] - 泉の周りを一周する
+;魔槍キャンサーの入手条件を満たしている
+IF GLOBAL:950
+	PRINTL [2] - 魔槍の祠に行く
+ENDIF
+DRAWLINE
+PRINTL [9] - 戻る
+
+$INPUT_LOOP_1
+INPUT
+
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML %CALLNAME:MASTER%は石碑に刻まれた文章を読んだ……
+	CALL SETCOLOR_ABL
+	PRINTL 
+	PRINTFORML 光の神ヤグの妹である光速の女神ワイボは速き者を好む
+	PRINTFORML 力を借りたき者よ、泉の周りを素早く一周するのだ
+	PRINTFORML さすればワイボは力を授けん
+	PRINTL 
+	RESETCOLOR
+	
+	IF BASE:知力 >= 900
+		PRINTFORML 「……分かったわ。ねえ%CALLNAME:MASTER%。できる限り速く一周しましょう」
+		PRINTFORML 「とにかく速く回るのよ。手段は問わないわ」
+		PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%を急かした
+	ELSEIF BASE:知力 >= 600
+		PRINTFORML 「何となく分かるわ……とりあえず泉を一周してみましょう？」
+		PRINTFORML 「まずは試行錯誤してみるのよ」
+		PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%の袖を引っ張った
+	ELSEIF BASE:知力 >= 300
+		PRINTFORML 「うーん……多分深い意味は無さそうなんだよね
+		PRINTFORML 　ここで何かするべきなんだろうけど……」
+		PRINTFORMW %CALLNAME:TARGET%は後一歩腑に落ちないといった表情を浮かべた
+	ELSE
+		PRINTFORML 「……なにこれ？　意味がよく分からないわね……」
+		PRINTFORMW %CALLNAME:TARGET%は難解な内容にいまいち理解ができないらしく、首を傾げた
+	ENDIF
+	RESTART
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%と一緒に泉の周りを一周した……
+	PRINTFORMW 　　・
+	LOCAL = MESSKIP()
+	PRINTFORMW 　　・
+	PRINTFORMW 　　・
+	IF LOCAL && !ITEM:ワイボの弓
+		PRINTFORMW ！！！
+		PRINTFORMW 突然目の前に神々しい姿をした女性が現れた！
+		PRINTFORMW 「こんにちは、私は光速の神ワイボよ」
+		PRINTFORMW 「あの石碑の内容を実践する人を久々に見たわ。まさか理解してくれる人が居るだなんて」
+		PRINTFORMW 「……あら？　話聞いている暇はないみたいね？　まあ私も相当な早口なんだけど」
+		PRINTFORMW 「石碑を読んで実行してくれたのなら約束は守らないとね♪　はい、この弓を授けるわ！」
+		PRINTFORMW 目の前に弓が現れた……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %CALLNAME:TARGET%はワイボの弓を手に入れた！
+		ITEM:ワイボの弓 += 1
+		RESETCOLOR
+	ELSE
+		PRINTFORMW 　　・
+		PRINTFORMW ……
+		PRINTFORMW 何も起こらないようだ
+		RESTART
+	ENDIF
+ELSEIF RESULT == 2 && GLOBAL:950
+	CALL CANCER_CAVE
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTFORML 入力が不正です
+	GOTO INPUT_LOOP_1
+ENDIF
+
+;==============================================================================
+;魔槍の洞穴
+;魔槍キャンサー入手イベントが発生する
+;==============================================================================
+@CANCER_CAVE
+
+DRAWLINE
+PRINTFORML ～～魔槍の洞穴～～
+IF ITEM:魔槍キャンサー
+	PRINTFORMW 洞穴には、黒い竹の刈り後しか残されていない……
+ELSE
+	PRINTFORML 薄暗い洞穴の中央で、一本の黒光りした竹が生えている……
+	PRINTFORML 
+	PRINTFORML [0] - 竹に触れる(魔槍が入手できますが、穢れが発生します！)
+	PRINTFORML [1] - この場を去る
+
+	CALL SENTAKUSHI, 2
+
+	IF RESULT == 0
+		PRINTFORML %CALLNAME:TARGET%が魔槍に触れた瞬間、黒い気が%CALLNAME:TARGET%を包んだ！
+		PRINTFORMW 黒い気は徐々に%CALLNAME:TARGET%の身体に染み込んでいき、やがて見えなくなった
+		
+		BASE:穢れ += 20
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW ＜魔槍キャンサーを手に入れた！＞
+		ITEM:魔槍キャンサー += 1
+		RESETCOLOR
+	ELSE
+		RETURN 0
+	ENDIF
+ENDIF
+
+

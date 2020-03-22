@@ -1,0 +1,62 @@
+﻿;==============================================
+;打術リスト
+;==============================================
+
+;------------------------------
+;70:　強打
+;威力は高いが命中が若干悪い
+;20％の確率で相手を怯ませる
+;------------------------------
+@BEAT_SKILL_70, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 70
+
+@ATTACK_MOVE_70, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を強打した！
+CALL DAMAGE_CALCULATION, 0, 130, 75, ARG, TFLAG:(530+ARG), 0, 29, 2, 20
+
+;------------------------------
+;71:　骨砕き
+;高い威力と命中を持つが粘性体には効かない
+;------------------------------
+@BEAT_SKILL_71, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 71
+
+@ATTACK_MOVE_71, ARG
+PRINTFORML %STR:ARG%は骨砕きを放った！
+CALL DAMAGE_CALCULATION, 0, 180, 90, ARG, TFLAG:(530+ARG), 0, 1005, 5
+
+
+;------------------------------
+;72:　振り下ろし
+;基礎威力90。対象のＨＰが半分以下だと威力が2倍になる
+;------------------------------
+@BEAT_SKILL_72, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 72
+
+@ATTACK_MOVE_72, ARG
+PRINTFORML %STR:ARG%は鈍器を勢いよく振り下ろした！
+PRINTFORML %STR:(TFLAG:(530+ARG))%の体力が半分以下だとダメージが増加する！
+IF TFLAG:(550+TFLAG:(530+ARG)*10) >= TFLAG:(556+TFLAG:(530+ARG)*10)*2
+	CALL DAMAGE_CALCULATION, 0, 180, 90, ARG, TFLAG:(530+ARG), 0, 0, 8
+ELSE
+	CALL DAMAGE_CALCULATION, 0, 90, 90, ARG, TFLAG:(530+ARG), 0, 0, 8
+ENDIF
+

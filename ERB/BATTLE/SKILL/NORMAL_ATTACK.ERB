@@ -1,0 +1,274 @@
+﻿;=================================
+;通常攻撃一覧　行動番号：100～
+;ARG　 術者
+;=================================
+
+;------------------------------
+;100:　通常攻撃
+;------------------------------
+@NORMAL_ATTACK, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 100
+
+@ATTACK_MOVE_100, ARG
+PRINTFORML %STR:ARG%の攻撃！
+IF ARG <= 2
+	CALL DAMAGE_CALCULATION, 0, 80, 90, ARG, TFLAG:(530+ARG)
+ELSE
+	CALL DAMAGE_CALCULATION, 0, 50, 90, ARG, TFLAG:(530+ARG)
+ENDIF
+
+;------------------------------
+;101:　強攻撃
+;------------------------------
+@STRONG_ATTACK, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 101
+
+@ATTACK_MOVE_101, ARG
+PRINTFORML %STR:ARG%の攻撃！
+CALL DAMAGE_CALCULATION, 0, 80, 90, ARG, TFLAG:(530+ARG)
+
+;------------------------------
+;102:　愛撫
+;------------------------------
+@PETTING, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 102
+
+@ATTACK_MOVE_102, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の身体を優しく撫で回した……
+CALL DAMAGE_CALCULATION, 2, 60, 100, ARG, TFLAG:(530+ARG), 2
+
+;------------------------------
+;103:　自慰
+;------------------------------
+@SELF_PETTING, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 103
+
+@ATTACK_MOVE_103, ARG
+PRINTFORML %STR:ARG%は自身を慰めはじめた……
+
+IF ARG <= 2
+	;貞操低下処理
+	CALL CAL_CHASTE, 1, "下降"
+ENDIF
+
+CALL DAMAGE_CALCULATION, 2, 50, -1, ARG, ARG, 2, 1003
+
+
+;------------------------------
+;104:　性交
+;------------------------------
+@CLOSSING, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 104
+
+
+@ATTACK_MOVE_104, ARG
+
+;対象が女性の場合、貝合わせに移行する
+IF !TFLAG:(615+TFLAG:(530+ARG)) && !TFLAG:(615+ARG)
+	PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を押し倒し、互いの秘部を擦りつけ合った
+ELSE
+	PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の秘裂を深く突いた……
+	
+	IF TFLAG:(530+ARG) <= 2
+		IF STR:(ARG+9) == "匪賊"
+			CALL INSERT, 1, 1
+		ELSE
+			CALL INSERT, 2, 1
+		ENDIF
+		TFLAG:(621+TFLAG:(530+ARG)) += 1
+	ENDIF
+ENDIF
+
+
+CALL DAMAGE_CALCULATION, 2, 120, -1, ARG, TFLAG:(530+ARG), 2, 0
+CALL DAMAGE_CALCULATION, 2, 45, -1, ARG, ARG, 2, 1000
+
+;------------------------------
+;105:　被性交
+;------------------------------
+@CLOSSED, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 105
+
+
+@ATTACK_MOVE_105, ARG
+
+
+;対象が女性の場合、貝合わせに移行する
+IF !TFLAG:(615+TFLAG:(530+ARG)) && !TFLAG:(615+ARG)
+	PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%を押し倒し、互いの秘部を擦りつけ合った
+	
+	CALL DAMAGE_CALCULATION, 2, 120, -1, ARG, TFLAG:(530+ARG), 2, 0
+	CALL DAMAGE_CALCULATION, 2, 80, -1, ARG, ARG, 2, 1000
+ELSE
+	PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に跨り、一物を秘裂にゆっくりと挿れた……
+
+	IF ARG <= 2
+		CALL INSERT, 2, 1
+		TFLAG:(621+ARG) += 1
+	ENDIF
+	CALL DAMAGE_CALCULATION, 2, 45, -1, ARG, ARG, 2, 1000
+	CALL DAMAGE_CALCULATION, 2, 110, -1, ARG, TFLAG:(530+ARG), 2, 0
+ENDIF
+
+;------------------------------
+;106:　無差別愛撫
+;------------------------------
+@NORMAL_ID106, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 106
+
+@ATTACK_MOVE_106, ARG
+;技処理時にランダムに対象を選ぶ
+;行動内容を性交に変える
+$LOOP_NINFO
+LOCAL = RAND:6
+IF GETBIT(TFLAG:(500+LOCAL), 7) || ( LOCAL >= 3 && !TFLAG:(558+LOCAL*10)) || ARG == LOCAL || !TFLAG:(550+LOCAL*10) || TFLAG:(615+LOCAL)
+	GOTO LOOP_NINFO
+ENDIF
+TFLAG:(530+ARG) = LOCAL
+
+PRINTFORML %STR:ARG%は手っ取り早く%STR:(TFLAG:(530+ARG))%に襲いかかり
+PRINTFORML 身体を優しく撫で回した……
+
+CALL DAMAGE_CALCULATION, 2, 80, 100, ARG, TFLAG:(530+ARG), 2
+
+;------------------------------
+;107:　フェラチオor貝合わせ
+;対象者の欲情を10％上昇させた後、威力90の快楽攻撃を行う
+;------------------------------
+@NORMAL_ID107, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 107
+
+@ATTACK_MOVE_107, ARG
+PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%にしがみつき
+;相手の性別を見る
+IF TFLAG:(615+TFLAG:(530+ARG))
+	PRINTFORML 相手の立派な一物を口で咥え、舌で丹念に刺激を加えはじめた！
+ELSE
+	PRINTFORML 互いの秘部を合わせ、腰を揺らして相手に刺激を与え始めた！
+ENDIF
+
+;欲情10％上昇
+CALL DAMAGE_CALCULATION, 2, 10, 100, ARG, TFLAG:(530+ARG), 3
+CALL DAMAGE_CALCULATION, 2, 90, 100, ARG, TFLAG:(530+ARG), 2
+
+;------------------------------
+;108:　局部露出
+;自分と敵全体の欲情を20％上昇させる
+;------------------------------
+@NORMAL_ID108, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 107
+
+@ATTACK_MOVE_108, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は自ら局部を露出し、敵全員の欲情を誘った！
+PRINTFORML %STR:ARG%も敵の目の前で卑猥な行為をすることに悦びを感じているようだ
+
+;敵味方問わず欲情20％上昇
+CALL DAMAGE_CALCULATION, 2, 20, 100, ARG, ARG, 3
+FOR L_LOCAL, 0, 30, 10
+	IF TFLAG:(588+L_LOCAL)
+		CALL DAMAGE_CALCULATION, 2, 20, 100, ARG, ARG+3+L_LOCAL/10, 3
+	ENDIF
+NEXT
+
+;------------------------------
+;109:　卑猥な言葉
+;自分の欲情を40％上昇させる
+;------------------------------
+@NORMAL_ID109, ARG
+
+CALL BATTLE_ATTACK, 0, TFLAG:敵の数, ARG
+IF RESULT == -1
+	RETURN -1
+ENDIF
+TFLAG:(530+ARG) = RESULT
+TFLAG:(536+ARG) = 107
+
+@ATTACK_MOVE_109, ARG
+#DIM L_LOCAL, 1
+
+PRINTFORML %STR:ARG%は卑猥な言葉を口走った！
+PRINTFORML 局部の状態やしてほしいこと等を臆面もなく発し、%STR:ARG%は自分の言葉で欲情が高まっていく……
+
+;自分の欲情40％上昇
+CALL DAMAGE_CALCULATION, 2, 40, 100, ARG, ARG, 3
+
+;------------------------------
+;1000:　何もしない
+;------------------------------
+@SKILL_ID1000, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 1000
+
+@ATTACK_MOVE_1000, ARG
+PRINTFORML %STR:ARG%は何もしなかった
+
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, ARG, 0, 1000
+
+;------------------------------
+;1001:　何もしない(メッセージ非表示版)
+;------------------------------
+@SKILL_ID1001, ARG
+
+TFLAG:(530+ARG) = ARG
+TFLAG:(536+ARG) = 1001
+
+@ATTACK_MOVE_1001, ARG
+;PRINTFORML %STR:ARG%は何もしなかった
+
+CALL DAMAGE_CALCULATION, 3, 0, -1, ARG, ARG, 0, 1000
+
+
+

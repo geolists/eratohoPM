@@ -1,0 +1,173 @@
+﻿;=====================================================================
+;役人との交流
+;=====================================================================
+@CONTACT_OFFICER
+
+$BACK_LOOP1
+DRAWLINE
+PRINTFORML ～～談話室～～
+PRINTFORML 女中「私達はあまり関わらないようにしているんです
+PRINTFORML 　　　役人の方々は気難しいですから……」
+PRINTFORML 
+PRINTFORML [0] - 雑談を行う　　　　　役人の方々は深入った話を好まれます
+PRINTFORML [1] - 芸術について語る　　知力と芸術についての教養(美麗)が求められます
+PRINTFORML [2] - 信仰の説法　　　　　知力と信仰が求められます
+;[淫乱]かアライメントが-40以下
+IF CFLAG:性格 == -1 || BASE:アライメント <= 40
+	PRINTFORML [3] - 身体を奉げる　　　　そ、そんな事をした方々は皆……やめてくださいっ……
+ENDIF
+PRINTFORML [9] - 戻る　　　　　　　　一つ前の項目に戻ります
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML 役人と雑談を行います
+	PRINTFORML 知力が高いと評価の上がりがよくなります
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		
+		;基礎値
+		LOCAL = 10
+		
+		PRINTFORML %CALLNAME:TARGET%は役人達と雑談を行った……
+		
+		;知力/30の値を追加する
+		LOCAL += BASE:知力/30
+		
+		CALL CALCULATION_PALAM, LOCAL, "役人の評価"
+		GOTO RES
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML 役人と芸術について語ります
+	PRINTFORML 知力と美麗が高いと効果が高くなります
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		
+		;基礎値
+		LOCAL = 10
+		
+		PRINTFORML %CALLNAME:TARGET%は役人達と雑談を行った……
+		
+		;(知力+美麗)/40の値を追加する
+		LOCAL += (BASE:美麗+BASE:知力)/40
+		
+		CALL CALCULATION_PALAM, LOCAL, "役人の評価"
+		GOTO RES
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 2
+	DRAWLINE
+	PRINTFORML 役人達に信仰について説きます
+	PRINTFORML 知力と信仰が高いと効果が高くなります
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		
+		;基礎値
+		LOCAL = 10
+		
+		PRINTFORML %CALLNAME:TARGET%は役人達と雑談を行った……
+		
+		;(知力+信仰)/40の値を追加する
+		LOCAL += (BASE:信仰+BASE:知力)/40
+		
+		CALL CALCULATION_PALAM, LOCAL, "役人の評価"
+		GOTO RES
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 3
+	DRAWLINE
+	PRINTFORML 半月の間、役人たちに体を奉げる事で評価を上げます
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML 
+	PRINTL 実行しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		PRINTFORML %CALLNAME:TARGET%は役人相手に股を開き、多数人と交わり始めた
+		PRINTFORML 身体からは白い湯気が出て、喘ぎ声は王宮内へ響き渡った……
+		PRINTL 
+		
+		PRINTFORML 淫妖経験+12
+		PRINTFORML 堕落経験+4
+		
+		;上昇量は感度が僅かに関わり、後はスキルや称号が大きく関わる
+		;基礎上昇値は15+感度/60
+		LOCAL = 15+BASE:感度/60
+		CALL CLASS_EFFECT, "特殊", "役人との交わり", LOCAL
+		LOCAL = RESULT
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 役人の評価が{LOCAL}上昇した！
+		RESETCOLOR
+		
+		CALL CALC_IMP, 4
+		CALL INSERT, 2, 1
+		
+		CALL COMMON_ABLUP, "淫妖", 18, "WAIT"
+		BASE:役人の評価 = LIMIT(BASE:役人の評価+LOCAL, 0, MAXBASE:役人の評価)
+		EXP:淫妖経験 += 12
+		EXP:堕落経験 += 4
+		GOTO RES
+	ELSE
+		GOTO BACK_LOOP1
+	ENDIF
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+$RES
+;役人の評価が200以上の場合、10+(評価-200)/5％の確率で招待券を貰える
+IF BASE:役人の評価 >= 200 && RAND:100 <= 10+(BASE:役人の評価-200)/5
+	PRINTFORML 好意を寄せる役人から招待券を貰った
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 討論会招待券を手に入れた！
+	ITEM:討論会招待券 += 1
+ENDIF
+RETURN 1
+

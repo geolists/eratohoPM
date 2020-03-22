@@ -1,0 +1,261 @@
+﻿;-----------------------------------------------
+;衣服データの表示
+;-----------------------------------------------
+@SHOW_CLOTHE, ARG
+#DIM retu, 1
+
+IF ARG >= 0
+	PRINTFORML ○%ITEMNAME:ARG%
+	PRINT 　
+	CALLFORM ITEM_DETAIL_{ARG}
+	LOCAL:1 = CFLAG:服装
+	
+	;布の表示
+	PRINTFORM 　材質:
+	SELECTCASE DITEMTYPE:ARG:2
+		CASE 0
+			PRINTFORML 普通の布
+		CASEELSE
+			PRINTFORML %CLOTH_NAME(DITEMTYPE:LOCAL:2)%
+	ENDSELECT
+	
+	CALL DATA_CHANGE_CLOTHE, ARG, "表示"
+	retu = 0
+	CALL SETCOLOR_ABL
+	
+	;全壊の場合
+	IF DITEMTYPE:ARG:14 == 2
+		PRINTFORML 　【原型を留めておらず、局部を隠す事ができない】
+	;半壊の場合
+	ELSEIF DITEMTYPE:ARG:14 == 1
+		PRINTFORML 　【大部分が破れており、素肌の露出がかなり多い】
+	ENDIF
+	
+	PRINT 　
+	IF DITEMTYPE:ARG:0 == 1
+		PRINT [ミニスカート]　
+		retu += 1
+	ELSEIF DITEMTYPE:ARG:0 == 2
+		PRINT [マイクロミニ]　
+		retu += 1
+	ENDIF
+	
+	IF DITEMTYPE:ARG:1 == 1
+		PRINT [胸元広い]　
+		retu += 1
+	ELSEIF DITEMTYPE:ARG:1 == 2
+		PRINT [胸露出]　
+		retu += 1
+	ENDIF
+	RESETCOLOR
+	PRINTFORML 
+	PRINTFORML 対応バスト:%INDICATE_BUSTSIZE(CFLAG:服装)%
+	CALL CLOTHE_BUSTSIZE, CFLAG:服装
+	PRINTFORM 　許容胸囲:　
+	IF RESULT >= 900
+		PRINTFORML 無制限
+	ELSE
+		PRINTFORML ～{RESULT}
+	ENDIF
+ELSE
+	IF ARG == -3
+		PRINTL ○解れかけた布切れ
+		PRINTL 　酷使した結果繊維が所々解れてしまった布切れ
+		PRINTL 　教育の都合上局部の摩耗が特に激しく、布として形を為していない箇所すら存在する
+	ELSEIF ARG == -2
+		PRINTL ○ボロの布切れ
+		PRINTL 　使い込んだ結果所々ボロボロになった布切れ
+		PRINTL 　教育の都合上局部の摩耗が激しく、目のやり場に困ってしまう
+	ELSEIF ARG == -1
+		PRINTL ○布切れ
+		PRINTL 　何の変哲もない只の布
+		PRINTL 　裸身に布を巻いているだけなので、身体付きを忠実に浮かび上がらせる
+	ENDIF
+	CALL DATA_CHANGE_CLOTHE, ARG, "表示"
+	PRINTFORML 
+	CALL CLOTHE_BUSTSIZE, CFLAG:服装
+	PRINTFORM 　許容胸囲:　
+	IF RESULT >= 900
+		PRINTFORML 無制限
+	ELSE
+		PRINTFORML ～{RESULT}
+	ENDIF
+ENDIF
+
+;-----------------------------------------------
+;推奨バストサイズ算出
+;(Ver0.999にて仕様変更、疲労度や淫妖が蓄積するペナルティを撤廃し、代わりに衣服が高くなるようにする)
+
+;(Ver0.998まで)
+;推奨バストサイズを超えると疲労度の蓄積が激しくなり、また、淫妖が溜まるようになる
+;逆に推奨以下になると美麗と疎通の補正が２ランク下がる
+;
+;ペナルティの程度
+;適正値より+1～+5　疲労度+2＆淫妖+2
+;　　　　　+6～+10 疲労度+3＆淫妖+3
+;　　　　　+11～　 疲労度+4＆淫妖+4
+;○対処方法
+;・太らせる(ただし、BMIが一定以上になると逆に着られなくなる)
+;・ミルク(美麗+15＆疲労度-15の代わりにカロリー+15)と体力経験(100以上積むとウエスト+2、ただしヒップ-7の値までしか上昇しない)
+;-----------------------------------------------
+@CLOTHE_BUSTSIZE, ARG
+#DIM CLO_ELE, 1
+#DIM L_LOCAL,1
+#DIM ELE_COUNT, 1
+
+;布切れ系統はIDがマイナスのため、関数名が独立している
+IF ARG < 0
+	CALLFORM CLOTHE_CLOTH_{ARG*-1}, "属性"
+ELSE
+	CALLFORM CLOTHE_ID_{ARG}, "属性"
+ENDIF
+CLO_ELE = RESULT
+
+;属性によって基礎数が異なる
+;　　姫様：76
+;　メイド：78
+;シスター：78
+;　(巫女)：80
+;ゴスロリ：75
+;　　花嫁：77
+;　　淫魔：90
+;　　娼婦：91
+;　　武士：78
+;　　里娘：74
+;属性なし：78
+;※属性を２つ以上持つ場合、平均値をとる
+;例：メイド+姫様の場合、(76+78)/2=77
+
+;バストの基準値を初期化しておく
+LOCAL = 0
+ELE_COUNT = 0
+FOR L_LOCAL, 0, 10
+	IF GETBIT(CLO_ELE,L_LOCAL)
+		SELECTCASE L_LOCAL
+			;姫様
+			CASE 1
+				LOCAL += 76
+			;メイド
+			CASE 2
+				LOCAL += 78
+			;シスター
+			CASE 3
+				LOCAL += 78
+			;ゴスロリ
+			CASE 4
+				LOCAL += 75
+			;花嫁
+			CASE 5
+				LOCAL += 82
+			;淫魔
+			CASE 6
+				LOCAL += 90
+			;娼婦
+			CASE 7
+				LOCAL += 91
+			;武士
+			CASE 8
+				LOCAL += 78
+			;里娘
+			CASE 9
+				LOCAL += 74
+		ENDSELECT
+		ELE_COUNT += 1
+	ENDIF
+NEXT
+
+;属性が無い場合
+IF !CLO_ELE
+	LOCAL += 78
+	ELE_COUNT += 1
+ENDIF
+
+;複数の属性を持つ衣服の場合、それぞれの値を平均した物が値となる
+LOCAL = LOCAL/ELE_COUNT
+
+;バストサイズ補正がかかっている衣服の場合、補正1つにつき+3される
+IF ARG >= 0 && DITEMTYPE:ARG:32
+	LOCAL += 3*DITEMTYPE:ARG:32
+ENDIF
+
+;服の付加要素により、上下する
+;以下二項は半壊、全壊の場合、含まない
+;　　　半裸：+10
+;　　　全裸：無制限
+;　胸元広い：+6
+;　胸元解放：+10
+;　　巫女服：+2
+
+;布きれと全裸首輪、それと全裸は無制限
+IF ARG >= 0 && DITEMTYPE:ARG:11 != 2 && !DITEMTYPE:ARG:14
+	;胸元広い
+	IF DITEMTYPE:ARG:1 == 1
+		LOCAL += 6
+	;胸元解放
+	ELSEIF DITEMTYPE:ARG:1 == 2
+		LOCAL += 10
+	ENDIF
+	
+	;半裸
+	IF DITEMTYPE:ARG:11 == 1 && !DITEMTYPE:ARG:14
+		LOCAL += 10
+	ENDIF
+	
+	;巫女服
+	IF DITEMTYPE:ARG:12
+		LOCAL += 2
+	ENDIF
+	
+	;ミニスカート+スカート丈改造不可の服の場合、+5
+	;マイクロミニだと+10
+	IF DITEMTYPE:ARG:0 == 1 && DITEMTYPE:ARG:10 == 1
+		LOCAL += 5
+	ELSEIF DITEMTYPE:ARG:0 == 2 && DITEMTYPE:ARG:10 == 1
+		LOCAL += 10
+	ENDIF
+ELSE
+	LOCAL = 999
+ENDIF
+
+RETURN LOCAL
+
+;-----------------------------------------------
+;対応バストサイズ表示関数
+;-----------------------------------------------
+@INDICATE_BUSTSIZE, ARG
+#FUNCTIONS
+
+IF ARG >= 0
+	SELECTCASE DITEMTYPE:ARG:32
+		CASE 0
+			LOCALS = ＡＡカップ
+		CASE 1
+			LOCALS = Ａカップ
+		CASE 2
+			LOCALS = Ｂカップ
+		CASE 3
+			LOCALS = Ｃカップ
+		CASE 4
+			LOCALS = Ｄカップ
+		CASE 5
+			LOCALS = Ｅカップ
+		CASE 6
+			LOCALS = Ｆカップ
+		CASE 7
+			LOCALS = Ｇカップ
+		CASE 8
+			LOCALS = Ｈカップ
+		CASE 9
+			LOCALS = Ｉカップ
+		CASE 10
+			LOCALS = Ｊカップ
+		CASE 11
+			LOCALS = Ｋカップ
+	ENDSELECT
+ELSE
+	LOCALS = 無制限
+ENDIF
+
+
+RETURNF LOCALS
+

@@ -1,0 +1,261 @@
+﻿;========================================================
+;娼婦ルート　
+;
+;分岐チャート
+;1:王宮を追放されている？
+;　はい→　盗賊に10回以上攫われた上で主人が救援を頼んだ回数が5回未満　ED3へ
+;　　　　　10回以上攫われていない　or　救援を5回以上呼んだ
+;　　　　　→　娼婦が51％以上 or サブクラスが無い　ED4へ
+;　　　　　　　50%の立場がもう一つある　　　　　　 各立場に応じたEDへ
+
+;　いいえ→　アライメントが+1以上　→　ED1へ
+;　　　　　　　　　　　　　+1未満　→　ED2へ
+
+;========================================================
+@ENDING_SYOUHU
+
+
+
+;王宮を追放されている
+IF FLAG:王宮追放
+	;10回以上攫われ、その内助けを頼んだ回数が5回未満
+	IF FLAG:誘拐回数 >= 10 && FLAG:助けを頼んだ回数 < 5
+		CALL ENDING_SYOUHU_3
+	;全能力が600以上
+	ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+			CALL ENDING_SYOUHU_9
+	;全能力が300以上
+	ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+		CALL ENDING_SYOUHU_10
+	ELSE
+		;メイドが50％
+		IF CFLAG:属性／メイド == 50
+			CALL ENDING_SYOUHU_5
+		;シスターが50％
+		ELSEIF CFLAG:属性／シスター == 50
+			CALL ENDING_SYOUHU_6
+		;ゴスロリが50％
+		ELSEIF CFLAG:属性／ゴスロリ == 50
+			CALL ENDING_SYOUHU_7
+		;花嫁が50％
+		ELSEIF CFLAG:属性／花嫁 == 50
+			CALL ENDING_SYOUHU_8
+		ELSE
+			CALL ENDING_SYOUHU_4
+		ENDIF
+	ENDIF
+ELSE
+	;アライメントが+0以上
+	IF BASE:アライメント > 100
+		CALL ENDING_SYOUHU_1
+	ELSE
+		CALL ENDING_SYOUHU_2
+	ENDIF
+ENDIF
+
+;---------------------------------------------------------
+;ED1　再起の道
+;---------------------------------------------------------
+@ENDING_SYOUHU_1
+PRINTFORML 淫蕩への道へ堕ち、色欲の虜と化した事により一時は王宮を追放される所だった%CALLNAME:TARGET%だったが
+PRINTFORMW その後の懸命の努力により、最低限王宮に居座れる程度の生活は送れるようになった
+PRINTL
+PRINTFORML ……ただ、一度発芽してしまった娼婦の性質は消し去ることができなかったらしく
+PRINTFORMW 今も%CALLNAME:TARGET%は色欲を求めて夜な夜な都へと抜けだしている
+PRINTFORML 肥大化した本能のせいで、発覚した場合の事を考えている余裕が彼女には無いのだ……
+PRINTFORML 
+PRINTFORMW -娼婦ED No.1　再起の道-
+
+;---------------------------------------------------------
+;ED2　姉妹への裏切り
+;---------------------------------------------------------
+@ENDING_SYOUHU_2
+PRINTFORML %CALLNAME:TARGET%の数少ない理解者、それが綿月姉妹
+PRINTFORMW 娼婦の身へと堕ちてしまった彼女を擁護する貴重な存在だった
+PRINTL 
+PRINTFORMW だが、ある真夜中の夜……
+PRINTFORML %CALLNAME:TARGET%は興奮を抑えきれない様子で姉妹の部屋に忍び込み
+PRINTFORMW 熟睡している彼女らを手早く縛り上げ、そのまま袋に詰め込んだ！
+PRINTL 
+PRINTFORML 「これで、もう死ぬまで一緒ね……」
+PRINTFORMW %CALLNAME:TARGET%は姉妹を袋に詰める際に、そっと呟いた
+PRINTL
+PRINTFORMW その後、姉妹と輝夜の姿を見た者はいない
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.2　姉妹への裏切り-
+
+;---------------------------------------------------------
+;ED3　辿りついてしまった末路
+;---------------------------------------------------------
+@ENDING_SYOUHU_3
+PRINTFORML %CALLNAME:TARGET%はふと思った
+PRINTFORMW 盗賊に攫われても助けに来てくれない%CALLNAME:MASTER%は、もしかして自分を遊び道具にしているのではないかと
+PRINTFORMW そもそもこんな状況に置かれる事になったのも%CALLNAME:MASTER%に着衣を売られた事が原因なわけで……
+PRINTFORML 自らを淫蕩の道に堕とされたのは%CALLNAME:MASTER%による誘導のせいだと確信すると
+PRINTFORMW その確信はやがて恨みへと変わっていった……
+PRINTL 
+PRINTFORML 大事にされていないなら、突然姿を消しても何とも思われないわよね……
+PRINTL 
+PRINTFORMW ある日、%CALLNAME:TARGET%は再び盗賊に攫われた時に言った
+PRINTFORML 「ねえ……私を、どこかに売ってくれない……？」
+PRINTFORMW 最初は戸惑う盗賊達だったが、%CALLNAME:TARGET%の色っぽい仕草と話を聞くうちに遂に決心をしたらしい
+PRINTFORML 
+PRINTFORMW 今、%CALLNAME:TARGET%は闇世界では名の知れた店で働いている
+PRINTFORMW ある時は強姦され、またある時は公開で自慰をする
+PRINTFORMW そんな生活を、壊れるまで続けたらしい……
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.3　辿りついてしまった末路-
+
+;=============================================================
+;各種立場エンド
+;=============================================================
+
+;---------------------------------------------------------
+;ED4　娼婦エンド
+;---------------------------------------------------------
+@ENDING_SYOUHU_4
+PRINTFORMW %CALLNAME:TARGET%は今日も路地裏で道行く人を誘って性の交わりをしている
+PRINTFORMW もうかれこれ数年はかけて磨いた技巧で、交わる人は大体満足して去っていく
+PRINTFORMW 今もまた、着衣を乱してぐったりとしている%CALLNAME:TARGET%の元に通貨を置いて去っていった。
+PRINTL
+PRINTFORML 淫蕩の道に堕ち、王宮を追放された時はどうなるかと思ったが
+PRINTFORMW 穢れを嫌う月の都なだけあって意外と性の需要は高かったらしい
+PRINTFORMW ここ数年、%CALLNAME:TARGET%は局部が完全に隠れる服を着ていない
+PRINTFORMW 元は姫君だった%CALLNAME:TARGET%も、今ではすっかり娼婦として成り変わってしまったと思える
+PRINTFORMW もうすっかりこの生活にも慣れ、色欲塗れの日々を過ごし、身体を淫らに露出する服を着ても平気なようだ
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%の元に帰ってきた%CALLNAME:TARGET%は、身体を撫でられると腰を揺すって甘い声をあげた
+PRINTFORMW そして、帰ってきたばかりにも関わらず、%CALLNAME:TARGET%は%CALLNAME:MASTER%の手を引っ張って寝室へと連れていった……
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.4　娼婦エンド-
+
+;---------------------------------------------------------
+;ED5　淫乱メイドエンド
+;---------------------------------------------------------
+@ENDING_SYOUHU_5
+PRINTFORMW %CALLNAME:TARGET%は、半透明なメイド服を纏って%CALLNAME:MASTER%の一物を奉仕している
+PRINTFORMW 淫蕩の道に堕ちてしまった%CALLNAME:TARGET%ではあるが、幸いにもメイドとしての気質を教育することができた
+PRINTFORMW しかし、これはあくまで副業的なもので、娼婦としての性質の方が強いがために性に関わる行為を中心に行っている
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は顔を上げた。どうやらそろそろ稼ぎに行く時間のようだ
+PRINTFORML 王宮を追放されてからというもの、安定した収入が無くなってしまったので
+PRINTFORMW %CALLNAME:TARGET%が身体を売って通貨を稼ぐしかない
+PRINTFORML 
+PRINTFORMW こんな生活をさせてしまって申し訳ないとは思うのだが
+PRINTFORMW 名残り惜しいので今は深い事を考えず、一回交わっておくことにした
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.5　淫乱メイドエンド-
+
+;---------------------------------------------------------
+;ED6　淫乱シスターエンド
+;---------------------------------------------------------
+@ENDING_SYOUHU_6
+PRINTFORMW 都にある古びた教会
+PRINTFORMW この教会は伝統があるらしく、昔から多くの信者が定期的に集会を催していた
+PRINTFORMW %CALLNAME:TARGET%はそこに身を置いている
+PRINTFORMW ……教会の地下に
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は際どい裾の長さのスカートの修道服を着ており、首輪を通して鎖にかけられている
+PRINTFORMW 薄い布でできているらしく、服越しに乳首が見えそうだ
+PRINTFORMW そこに扉を開け、教主が戻ってきた。どうやら定例の礼拝が終わったらしい
+PRINTFORML 
+PRINTFORMW この教主、仕事の柄禁欲をしており、溜まりに溜まっていたらしく
+PRINTFORML ある日、裏通りを通った時に艶やかな表情をして客と交わる%CALLNAME:TARGET%を見かけ
+PRINTFORMW 身柄を貰うことを決心した
+PRINTFORML 
+PRINTFORMW 教主は、濡れた瞳をして見上げている%CALLNAME:TARGET%の身体を愛撫すると
+PRINTFORMW %CALLNAME:TARGET%は甘ったるい声をあげて教主に抱きついた
+PRINTFORMW 永い夜が始まりそうだ……
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.6　淫乱シスターエンド-
+
+;---------------------------------------------------------
+;ED7　淫乱ゴスロリエンド
+;---------------------------------------------------------
+@ENDING_SYOUHU_7
+PRINTFORMW 古びた洋館の地下……
+PRINTFORMW %CALLNAME:TARGET%は魔法陣を描き、奇妙な言葉を呟き始めた
+PRINTFORMW どうやら魔法を研究するギルドに入ったらしく、日夜研究に励んでいるらしい
+PRINTFORML 
+PRINTFORMW 言葉は呪文として意味を成し、魔法陣が光り出した
+PRINTFORMW その中から触手が飛び出し%CALLNAME:TARGET%の身体をあっという間に拘束してしまった
+PRINTFORMW 性に関する魔法を専門としているらしく、先日も桃色の霧を生みだし一日中自慰に耽ったばかりだ
+PRINTFORML 一通り責められ、媚声をあげて達した%CALLNAME:TARGET%は
+PRINTFORMW 触手が再び魔法陣に戻っていく事によって解放されると、蕩けた顔をして成果を書き記した……
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.7　淫乱ゴスロリエンド-
+
+;---------------------------------------------------------
+;ED8　淫乱花嫁エンド
+;---------------------------------------------------------
+@ENDING_SYOUHU_8
+PRINTFORML 王宮を追放され、長い間彷徨っていた%CALLNAME:MASTER%だったが
+PRINTFORMW 偶然にも仕事を見つけることができ、表社会に復帰することができた
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%が仕事から帰ってくると、%CALLNAME:TARGET%が濡れた瞳をして玄関に座っていた
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%が仕事を見つけるまでの間、身体を売って金を稼いだ
+PRINTFORMW その結果、すっかり娼婦の癖が染み付いてしまい、今でも露出が多い服を着て毎日%CALLNAME:MASTER%から淫らな行為を受け続けている
+PRINTFORMW 今日も、帰ってくるまでの間局部にローターを付けていたらしい
+PRINTFORML 
+PRINTFORMW %CALLNAME:MASTER%は淫乱な嫁を抱え、自分の部屋へと移動した……
+
+PRINTFORML 
+PRINTFORMW -娼婦ED No.8　淫乱花嫁エンド-
+
+;---------------------------------------------------------
+;ED9　傾国の魔物
+;---------------------------------------------------------
+@ENDING_SYOUHU_9
+PRINTFORMW ……あれから、数年の時が経った
+PRINTL 
+PRINTFORML 都の王宮に前触れも無く謎の女性が訪ねてきた
+PRINTFORMW 門番は追い払おうとしたが、知らせを聞いて門まで来た君主はその女性の見た目に心を奪われた
+PRINTFORMW 身に纏っていた衣服はとても薄い布でできていたらしく、帳を全身に纏っているようなものだったという
+PRINTL 
+PRINTFORML 君主は早速女性を宮内に招き入れ、様々なおもてなしをした
+PRINTFORMW 女性が帰るころには君主はすっかり頬を緩ませ、悲しそうな声で見送った
+PRINTFORMW もてなしは女性が訪ねる度に行われ、量は王宮に住む者を数年間養える程だったと言われる
+PRINTL 
+PRINTFORML 数ヶ月後……
+PRINTFORMW 君主は部下である兵士に反乱を起されてしまった
+PRINTFORML 女性に資産を送り過ぎたが故に兵士に給金を払う事ができなくなってしまった事が原因らしい
+PRINTFORMW 噂によると数ヶ月分滞納していたとか
+PRINTL 
+PRINTFORML 君主は何とか兵士を抑えて裁判に持ち込むが、女性との関係を持ちだされると一気に不利になり
+PRINTFORMW 最終的には扇によって"穢れを祓われてしまった"という
+PRINTL 
+PRINTFORML 今、手元には薄い衣を纏った%CALLNAME:TARGET%が居る
+PRINTFORMW 最近帰ってくる度にたくさんのお土産を持って帰ってきており
+PRINTFORMW %CALLNAME:TARGET%曰く「偉い人から貰った」物らしい
+PRINTFORML 
+PRINTFORMW -娼婦ED No.9　傾国の魔物-
+
+;---------------------------------------------------------
+;ED10　沼地の宝石
+;---------------------------------------------------------
+@ENDING_SYOUHU_10
+PRINTFORMW 売春宿が立ち並び、通りには娼婦が壁沿いに立って道行く人を誘う裏通り……
+PRINTFORML 王宮の近くに位置するにも関わらず規制が入らないのは
+PRINTFORMW 単に気付かれていないのか、あるいは……
+PRINTL 
+PRINTFORML そんな町通りに、ある一人の主が誕生しようとしていた
+PRINTFORMW それはとても美しい少女で、こんな所に身を堕としているのが惜しいぐらい神々しく見えた
+PRINTL 
+PRINTFORML その少女は裏通りにある日突然現れ、最初の内こそ光る物が無かったものの
+PRINTFORMW 何度も身体を重ね、日々を過ごしていく内に色気を帯び始め
+PRINTFORMW やがてその色気が彼女の様々な才を芽生えさせていった……
+PRINTL 
+PRINTFORML それからはあっという間だった
+PRINTFORMW 彼女の噂は客から他の娼婦へと次々に伝わっていき、終いには多くの娼婦が彼女を慕うようになった
+PRINTL 
+PRINTFORML 当の彼女は今でも何時ものように%CALLNAME:MASTER%の元で稼業を続けている
+PRINTFORMW そんな彼女――%CALLNAME:TARGET%はまるで沼地に捨てられた宝石のように輝いていた……
+PRINTFORML 
+PRINTFORMW -娼婦ED No.10　沼地の宝石-
+

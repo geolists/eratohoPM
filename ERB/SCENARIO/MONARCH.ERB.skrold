@@ -1,0 +1,107 @@
+﻿;===========================================================
+;君主語録
+;どこかで使う予定
+;===========================================================
+;君主の生まれ
+@BIRTHPOINT_MONARCH
+PRINTFORML 謎の女性「君主様は現在より遥か昔に生まれたのです
+PRINTFORML 　　　　　彼が生まれた時、まだ月の都は未熟で、穢れの概念や技術の発展が成熟していませんでした
+PRINTFORML 　　　　　そんなご時世ですから、君主は両親からこんな教えを受けたと聞いております
+PRINTFORML 　　　　　曰く「お前は月の都の発展を先導する王となるのだ」と……」
+
+PRINTFORML 老人「月の都をかつて納めていた月夜見様は、それはそれは尊大な方であった……
+PRINTFORML 　　　あの方は多少の失敗は赦していただけるし、何よりも貧富の差によって区別することがなかったのじゃ
+PRINTFORML 　　　ところが、ある日の催し事のことじゃった。月夜見様は神を殺したのじゃ……
+PRINTFORML 　　　一説によると、その神は祭事の際の料理を作っておったらしい。
+PRINTFORML 　　　出された料理に不満があって殺したのだろうと噂されておる。
+PRINTFORML 　　　」
+
+
+;成長の限界
+@ECONOMIC_GROWTH_END
+PRINTFORMW 抑えきれなくなった民衆の不満が爆発し、暴動に発展した！
+PRINTFORML 「な……なぜだ？　もう限界まで発展させただろう！」
+PRINTFORMW 君主は王宮まで押し寄せる民衆の前に出て言葉を投げた
+PRINTL 
+PRINTFORML 「うるさい！　もっと技術発展させろ！」
+PRINTFORML 「俺等貧困層が豊かになる機会は技術が進歩した時しかないんだよ！」
+PRINTFORML 「ここまで発展させておいて今更停滞とか許さんぞ！」
+PRINTFORMW 民衆の怒号が君主に浴びせられる……
+PRINTL 
+PRINTFORML 「何を言ってやがる。もう神の領域しか残ってないんだぞ
+PRINTFORMW 　これ以上の発展は……」
+PRINTFORMW 君主の言葉を民衆の声が遮った
+PRINTL 
+PRINTFORML 「は？　神を殺して発展させればいいだろ？」
+PRINTFORML 「俺等がコントロールすればいいんだ！　科学に潜む悪魔なんか殺せ！」
+PRINTFORML 「自然現象の主権は我ら月人が握るべきだ！」
+PRINTL 
+PRINTFORML 「自ら穢れを被ろうとするとは……月人としての誇りを忘れたのか……」
+PRINTFORMW 絶望と呆れが混ざった感情が君主を襲う……
+PRINTFORML 「ふん……私は死なんぞ。%CALLNAME:MASTER%と……%CALLNAME:TARGET%……！
+PRINTFORMW 　お前らを経済発展の首謀者として曝し上げ、お前らを処罰させる」
+PRINTFORMW 「そして私は生き延びるのだ。世界の発展に犠牲はつき物だからな」
+PRINTFORMW 君主が襲いかかってきた……！
+
+;忘れられた城、最深部
+@DUNGEON_LAST
+PRINTFORMW %CALLNAME:TARGET%は城の最深部へと足を踏み入れた……
+PRINTFORML そこには薄暗い広間があり、長い年月を経てボロボロになった帳から一筋の光が注ぎこんでいる
+PRINTL 
+PRINTFORMW そして、奥には王座が一つあり、座していた巨体が立ち上がった
+PRINTL 
+PRINTFORML 「よく来たな、王宮の姫君よ」
+PRINTL 
+PRINTFORML 巨体はかつかつと足音を立て、光柱の中央で立ち止まった。
+PRINTFORMW 無骨な衣服を身に着けており、顔には大きな傷がある
+PRINTL 
+PRINTFORML 「そうよ、俺が盗賊の長だ。よくここまで来れたなあ？」
+PRINTL 
+PRINTFORMW 盗賊の長はいやらしい笑みを浮かべ、%CALLNAME:TARGET%を挑発した
+PRINTFORMW この戦い、負けるわけにはいかない
+PRINTFORMW %CALLNAME:TARGET%の明るい将来を手にするためにも――
+
+;魔王の城、最深部
+@DARK_DUNGEON_LAST
+PRINTFORMW %CALLNAME:TARGET%は魔王の城最深部へと足を踏み入れた……
+PRINTFORML そこには薄暗い広間があり、吹き抜けからは存在するはずもない火山を見ることができる
+PRINTL 
+PRINTFORML 「愚か者め、お前も我を倒しに来たのか？」
+PRINTL 
+PRINTFORMW 魔王は%CALLNAME:TARGET%を舐めるように見つめ、新たな言葉を紡いだ
+;アライメントで分岐
+IF BASE:アライメント >= 50
+	PRINTL 
+	PRINTFORML 「生意気な……どうしてここまで来て平気でいられるのだ？」
+	PRINTL 
+ELSE
+	PRINTL 
+	PRINTFORML 「我を封印したければ剣を持つことだ。真実はそれで分かる」
+	PRINTL 
+ENDIF
+PRINTFORMW 理解できない内容に%CALLNAME:TARGET%は首を傾げると、魔王は呆れた様子を見せた
+PRINTL 
+PRINTFORML 「まあよい、我は手を抜かぬぞ。必ず貴様を葬ってやる」
+PRINTL 
+PRINTFORMW そう言うと魔王は身を外套を翻して戦闘態勢に入った
+PRINTFORMW さあ、魔王を倒して正義を見せつけてやろう！
+
+;バッドエンド　アライメントが-50以下の時に魔王を倒す
+PRINTFORMW 広間に魔王の断末魔が響き渡る……
+PRINTFORMW どうやら魔王は力尽きたようだ、身体が砂のようになり崩れていく
+PRINTL 
+PRINTFORML 魔王の姿が完全に消滅した後、一振りの禍々しい剣が残された
+PRINTFORMW %CALLNAME:TARGET%が魔王が残した剣に触れると、身体が漆黒の瘴気に包まれた
+PRINTFORML 「えっ……どうして……？」
+PRINTFORMW %CALLNAME:TARGET%は苦悶の表情を浮かべ、%CALLNAME:MASTER%を求めるかのように天に手を伸ばした
+PRINTFORMW しかし、虚しくも%CALLNAME:MASTER%の手はくず折れた……
+PRINTL 
+PRINTFORML 「ふふ……愚かなことよ」
+PRINTFORMW 瘴気が晴れると、中には紫色の模様が入った%CALLNAME:TARGET%の姿があった
+PRINTFORML 「こんな辺境の穢れ多き地を渡り歩いてきた身体だ、当然私が乗っ取るにふさわしい身体となっているわ……」
+PRINTFORMW 声は少女のよりは魔王のものに近く、意識だけでなく身体も同化がすすんでいる事が分かる
+PRINTFORML 「本当に愚かな娘だったと思う……今はもう違うけどね」
+PRINTFORMW 新たな魔王は笑い声を辺り一面に響かせた……
+PRINTL 
+PRINTFORMW BAD END No.-1　-「THE DEVIL」-
+

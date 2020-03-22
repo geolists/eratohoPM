@@ -1,0 +1,30 @@
+﻿;=====================================================
+;Lvアップ
+;各種素質の取得や兵力のLvアップを行う
+;=====================================================
+@LV_UP
+
+$BACK_LOOP
+DRAWLINE
+PRINTL 項目を選んでください
+PRINTL [0] - スキルの取得
+PRINTL [1] - スキルのセット
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	CALL SKILL
+ELSEIF RESULT == 1
+	CALL SKILL_SET
+ELSEIF RESULT == 999
+	RETURN 1
+ELSE
+	PRINTFORML 入力が不正です
+ENDIF
+
+IF RESULT == 1
+	RESTART
+ENDIF
+

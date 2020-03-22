@@ -1,0 +1,280 @@
+﻿;=======================================================
+;行動後の処理
+;ARG　対象
+;=======================================================
+@AFTER_MOVE, ARG
+#DIM kakuritu, 1
+
+;欲情
+IF GETBIT(TFLAG:(500+ARG), 0)
+	PRINTFORML %STR:ARG%は欲情して息を荒げている……
+	TFLAG:(506+ARG) = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/10, 0, TFLAG:(524+ARG))
+	;PRINTFORML 欲情:{TFLAG:(506+ARG)}
+	;PRINTFORML 最大欲情:{TFLAG:(524+ARG)}
+ENDIF
+
+;損傷
+IF GETBIT(TFLAG:(500+ARG), 1)
+	PRINTFORML %STR:ARG%は持続的にダメージを受けている……
+	TFLAG:(556+ARG*10) = LIMIT(TFLAG:(556+ARG*10)*15/16, 0, TFLAG:(556+ARG*10))
+	;PRINTFORML 欲情:{TFLAG:(506+ARG)}
+	;PRINTFORML 最大欲情:{TFLAG:(524+ARG)}
+	
+	;治癒率定義
+	kakuritu = 10
+	
+	;シスターの場合、治癒率が10％アップ
+	IF STR:6 == "シスター"
+		kakuritu += 10
+	ENDIF
+	
+	
+	;10％の確率で損傷が治る
+	IF kakuritu >= RAND:99+1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の損傷状態が治った！
+		TFLAG:(500+ARG) -= 2
+		RESETCOLOR
+	ENDIF
+ELSE
+	
+ENDIF
+
+;暗闇の治癒判定
+IF GETBIT(TFLAG:(500+ARG), 3)
+	;治癒率定義
+	kakuritu = 10
+	
+	;シスターの場合、治癒率が10％アップ
+	IF STR:6 == "シスター"
+		kakuritu += 10
+	ENDIF
+	
+	
+	;10％の確率で暗闇が治る
+	IF kakuritu >= RAND:99+1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の暗闇状態が治った！
+		TFLAG:(500+ARG) -= 8
+		RESETCOLOR
+	ENDIF
+ENDIF
+
+;半裸や全裸の場合、欲情ゲージが増加する
+IF TFLAG:(609+ARG) == 1 && (ARG >= 3 || (ARG <= 2 && CFLAG:性格 != -1))
+	PRINTFORML %STR:ARG%は素肌を大きく曝け出している事に羞恥を覚えている……
+	TFLAG:(506+ARG) = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/10, 0, TFLAG:(524+ARG))
+ELSEIF TFLAG:(609+ARG) == 2 && (ARG >= 3 || (ARG <= 2 && CFLAG:性格 != -1))
+	PRINTFORML %STR:ARG%は裸身を曝け出している事に対し顔を真っ赤にしている……
+	TFLAG:(506+ARG) = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/5, 0, TFLAG:(524+ARG))
+ENDIF
+
+
+;バイブを挿入している場合、快楽ダメージを得る
+IF ARG == 0 && (OTHER_ACC(500) || TFLAG:633 == 1)
+	;触手の場合、媚薬が沁み出す
+	IF TFLAG:633 == 1
+		PRINTFORML 股間に挿入されている張り型は媚薬を滲ませ、%CALLNAME:TARGET%の精神を揺さぶった……
+		CALL DAMAGE_CALCULATION, 2, 70, -1, 0, 0, 2, 1000
+		;欲情も増加
+		TFLAG:506 = LIMIT(TFLAG:(506+ARG)+TFLAG:(524+ARG)/10, 0, TFLAG:524)
+	ELSE
+		PRINTFORML 股間に挿入されている張り型が振動し%CALLNAME:TARGET%の息を荒げさせる……
+		CALL DAMAGE_CALCULATION, 2, 20, -1, 0, 0, 2, 1000
+	ENDIF
+	;装着具の場合、持続ターンを減らす
+	IF TFLAG:633 == 1
+		TFLAG:639 -= 1
+		IF !TFLAG:639
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%に付いていた張り型が抜けた！
+			TFLAG:633 = 0
+			RESETCOLOR
+		ENDIF
+	ENDIF
+ENDIF
+
+;怯み状態の解消
+IF GETBIT(TFLAG:(488+ARG), 1)
+	TFLAG:(488+ARG) -= 1p1
+ENDIF
+
+;=======================================================
+;行動前の処理
+;ARG　対象
+;=======================================================
+@BEFORE_MOVE, ARG
+#DIM PRE, 1
+
+;石化している場合、動けない
+IF GETBIT(TFLAG:(500+ARG), 2)
+	;状態異常持続時間を減らし、0になったら動ける
+	TFLAG:(627+ARG) -= 1
+	IF !TFLAG:(627+ARG)
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の石化が解けた！
+		TFLAG:(500+ARG) -= 1p2
+		RESETCOLOR
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は石化して動けない……
+		TFLAG:(536+ARG) = 1001
+		RESETCOLOR
+	ENDIF
+;怯んだ場合、動けない
+ELSEIF GETBIT(TFLAG:(488+ARG), 1)
+	PRINTFORML %STR:ARG%は怯んで動けない！
+	TFLAG:(536+ARG) = 1001
+	TFLAG:(488+ARG) -= 2
+;娼婦
+;20％の確率で性交を行う
+ELSEIF STR:(ARG+6) == "娼婦" && !RAND:5
+	PRINTFORML %CALLNAME:TARGET%は娼婦の本能に打ち勝つことができない……
+	;行動内容を性交に変える
+	TFLAG:(536+ARG) = 105
+	$LOOP_NINFO
+	LOCAL = RAND:3+3
+	IF GETBIT(TFLAG:(500+LOCAL), 7) || !TFLAG:(558+LOCAL*10)
+		GOTO LOOP_NINFO
+	ENDIF
+	TFLAG:(530+ARG) = LOCAL
+;淫魔化
+;25％の確率で性交を行う
+ELSEIF ARG <= 2 && GETBIT(CFLAG:永続状態異常, 0) && !RAND:4
+	PRINTFORML %CALLNAME:TARGET%は淫魔の本能に抗う事ができない……
+	;行動内容を性交に変える
+	TFLAG:(536+ARG) = 105
+	$LOOP
+	LOCAL = RAND:3+3
+	IF GETBIT(TFLAG:(500+LOCAL), 7) || !TFLAG:(558+LOCAL*10)
+		GOTO LOOP
+	ENDIF
+	TFLAG:(530+ARG) = LOCAL
+;欲情or味方の場合のみ欲情がMAXの時に(100-貞操)％で自慰を行う
+ELSEIF TFLAG:(500+ARG) == 1 || (!TALENT:淫魔 && !TALENT:娼婦 && ARG <= 2 && TFLAG:(506) >= TFLAG:(524) && RAND:100+1 <= LIMIT(100-BASE:(ARG+1):貞操, 0, 100))
+	;(味方のみ)欲情で入ってきた場合も、貞操/10％の確率で行動変更を避けることができる
+	IF ARG <= 2 && RAND:100+1 >= BASE:(ARG+1):貞操/10
+	
+	ELSE
+		;PRINTFORML テスト　{ARG}
+		;行動を変える確率は、(欲情/(最大絶頂+1))*100
+		PRE = TFLAG:(506+ARG) * 100 / (TFLAG:(524+ARG)+1)
+		
+		;PRINTFORML 確率:{PRE}
+		IF (ARG <= 2 && PRE >= (RAND:100 + 1)) || (ARG >= 3 && !RAND:2)
+			;PRINTFORML テスト2
+			SELECTCASE RAND:3
+				CASE 0
+					;行動内容を自慰に変える
+					TFLAG:(536+ARG) = 103
+				CASEELSE
+					;対象をランダムに変更する
+					$LOOP_RESELECT
+					;(2015/08/11更新)(色欲系の攻撃なので)敵の場合は必ず味方側のみを狙うようにする
+					IF ARG >= 3
+						LOCAL = 0
+					ELSE
+						LOCAL = RAND:3+3
+					ENDIF
+					;存在しない敵を狙うor既に戦闘不能の場合、再び対象を選ぶ
+					;主人公側にはIDがないので、LOCALが0を指定している場合は、TFLAG:558+LOCAL*10は見ない
+					IF GETBIT(TFLAG:(500+LOCAL), 7) || (LOCAL != 0 && !TFLAG:(558+LOCAL*10))
+						GOTO LOOP_RESELECT
+					ENDIF
+					TFLAG:(530+ARG) = LOCAL
+					
+					;(2015/07/29更新)自己対称形の行動を選択していた場合のために、対象を変更した後に行動変更処理を行う
+					CALL ENEMY_NINFO, ARG, 0
+			ENDSELECT
+		ENDIF
+	ENDIF
+;敵専用の処理：悪目立ち度が高い場合、(淫妖-100)/10％の確率で快楽攻撃に移ってしまう
+;(ただしボスには効かない)
+;(目立ち度の場合は、攻撃キャンセルになる)
+ELSEIF ARG >= 3 && TFLAG:(530+ARG) <= 2 && !INRANGE(ARG, 100, 199)
+	CALL CONSPI_DARK, TFLAG:(530+ARG)+1
+	LOCAL = RESULT
+	
+	;特定の肩書を持つ場合、特定の敵から+10％の確率で性行為に手を出される
+	IF NINFO_ELEMENT_HANTEI(ARG)
+		LOCAL += 10*ARG
+	ENDIF
+	
+	IF ((FLAG:特殊戦闘 != 2 && LOCAL >= RAND:99+1) || (FLAG:特殊戦闘 == 2 && LOCAL >= RAND:99+1)) && (BASE:(TFLAG:(530+ARG)+1):淫妖 >= 100 || BASE:(TFLAG:(530+ARG)+1):堕落 >= 100)
+		;PRINTFORML 悪目立ち度:{LOCAL}
+		PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%の妖艶な雰囲気に惹かれ、身体に手を出した！
+		CALL ENEMY_NINFO, ARG, 0
+	ELSE
+		CALL CONSPI, TFLAG:(530+ARG)+1
+		
+		LOCAL = RESULT
+		
+		;目立ちやすさが5以下の場合、2倍にする
+		IF LOCAL <= 5
+			LOCAL *= 2
+		ENDIF
+		
+		;見惚れる確率は最高40％
+		IF LOCAL >= 41
+			LOCAL = 40
+		ENDIF
+		
+		;以下の補正がかかると、見惚れる確率が40％より高くなる
+		
+		;[半裸][全裸]属性持ちの衣服の場合、追加で補正がかかる
+		;全裸
+		IF CFLAG:服装 <= -1 || (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 2)
+			LOCAL += 10
+		;半裸
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):14 == 1
+			LOCAL += 5
+		ENDIF
+		
+		;属性が姫様の場合、見惚れる確率+4％
+		IF STR:(6+ARG) == "姫様"
+			LOCAL += 4
+		ENDIF
+		
+		
+		IF LOCAL >= RAND:99
+			PRINTFORML %STR:ARG%は%STR:(TFLAG:(530+ARG))%に見惚れている……
+			TFLAG:(536+ARG) = 1000
+		ENDIF
+	ENDIF
+ENDIF
+
+;======================================
+;強い関心を持つ属性の組み合わせ
+;式中関数化
+;======================================
+@NINFO_ELEMENT_HANTEI, ARG
+#FUNCTION
+
+LOCAL = 0
+IF STR:(TFLAG:(530+ARG)+1) == "メイド"
+	SELECTCASE STR:(6+ARG)
+		CASE "人間"
+			LOCAL = 1
+		CASEELSE
+			LOCAL = 0
+	ENDSELECT
+ELSEIF STR:(TFLAG:(530+ARG)+1) == "シスター"
+	SELECTCASE STR:(6+ARG)
+		CASE "魔術師"
+			LOCAL = 1
+		CASE "獣"
+			LOCAL = 1
+		CASEELSE
+			LOCAL = 0
+	ENDSELECT
+ELSEIF STR:(TFLAG:(530+ARG)+1) == "ゴスロリ"
+	SELECTCASE STR:(6+ARG)
+		CASE "植物"
+			LOCAL = 1
+		CASE "淫魔"
+			LOCAL = 1
+		CASEELSE
+			LOCAL = 0
+	ENDSELECT
+ENDIF
+

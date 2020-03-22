@@ -1,0 +1,752 @@
+﻿;===========================================================
+;竜宮祭
+;コンテスト処理をここに統合
+;===========================================================
+@CONTEST
+#DIM clothe, 2
+DRAWLINE
+
+VARSET clothe, 0
+
+$BACK_LOOP
+PRINTL ～～竜宮祭～～
+PRINTL 今月は4ヶ月に1度の竜宮祭が催されます
+PRINTL 何に参加しますか？
+PRINTL [0] - コンテスト
+PRINTL [1] - 闘技大会
+PRINTL [2] - 参加しない
+
+CALL SENTAKUSHI, 3
+
+DRAWLINE
+IF RESULT == 0
+	PRINTL ～～コンテスト～～
+	PRINTL 少女達が魅力の高さで競いあいます
+	PRINTL 主に美麗が評価されますが、他の能力でも競える可能性はあります
+	PRINTL 参加しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT
+		GOTO BACK_LOOP
+	ENDIF
+	
+	;一時的に着替えることができる
+	PRINTFORML 竜宮祭の時だけ一時的に服を着替えさせますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF !RESULT
+		clothe = CFLAG:服装
+		clothe:1 = 1
+		CALL CHANGE_CLOTHES
+	ENDIF
+	
+	;年数によって候補者が変わる
+	DRAWLINE
+	PRINTL ～～コンテスト～～
+	PRINTL 司会者「さあさあ、４ヶ月ぶりにやってまいりましたコンテストの日です！
+	PRINTL 　　　　少女の総合的な魅力で競い合い、最も投票者の票を集めた娘が優勝となります！
+	PRINTL 　　　　ではみなさん！　参加者達と会って回ってください！」
+	PRINTL
+	PRINTL 　　　・
+	PRINTL 　　　・
+	;輝夜が妊娠している
+	IF TALENT:妊娠
+		PRINTFORM 審査員達は
+		;妊娠経過日で分岐
+		IF CFLAG:妊娠経過日 >= 9
+			PRINT 臨月に入って膨張したお腹の
+		ELSEIF CFLAG:妊娠経過日 >= 6
+			PRINT すっかりお腹が膨らんだ
+		ELSEIF CFLAG:妊娠経過日 >= 3
+			PRINT 微かにお腹が膨らみはじめた
+		ENDIF
+		PRINTFORML %CALLNAME:TARGET%の姿を見て
+		PRINTFORMW 驚きながら肢体を見回している……
+	ENDIF
+	
+	;半裸or全裸で反応を変える
+	IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11
+		IF CFLAG:服装 >= 0
+			IF DITEMTYPE:(CFLAG:服装):11 == 2
+				PRINT 肢体を曝け出した
+			ELSEIF DITEMTYPE:(CFLAG:服装):11 == 1
+				PRINT 大部分を露出した
+			ENDIF
+		ENDIF
+		PRINTFORM %CALLNAME:TARGET%の
+		;くびれでも変える
+		IF BODY_RIPEN(TARGET) >= 20
+			PRINT 豊満な肉つき
+		ELSEIF BODY_RIPEN(TARGET) >= 10
+			PRINT 熟した肢体
+		ELSE
+			PRINT 未熟で平坦な身体
+		ENDIF
+		PRINTFORML に審査員たちの目が釘付けになっている……
+	;布切れ系はこちら
+	ELSEIF CFLAG:服装 < 0
+		PRINTFORM 肢体を曝け出した%CALLNAME:TARGET%の
+		;くびれでも変える
+		IF BODY_RIPEN(TARGET) >= 20
+			PRINT 豊満な肉つき
+		ELSEIF BODY_RIPEN(TARGET) >= 10
+			PRINT 熟した肢体
+		ELSE
+			PRINT 未熟で平坦な身体
+		ENDIF
+		PRINTFORML に審査員たちの目が釘付けになっている……
+	ENDIF
+
+	
+	
+	
+	PRINTL 　　　・
+	PRINTFORMW どうやら投票が終わったようだ……
+	PRINTFORMW %CALLNAME:TARGET%は入賞できているのだろか
+	CALL CONTEST_PART
+	IF RESULT == 0 && !FLAG:コンテストで姉妹と出会った
+		DRAWLINE
+		PRINTFORML 「あら？　%CALLNAME:MASTER%じゃない。こんにちわ」
+		PRINTFORMW 背後から声が聞こえたので振り返ると、そこには綿月姉妹がいた
+		PRINTFORML 「%CALLNAME:TARGET%もコンテストに参加するのかしら？」
+		PRINTFORMW %CALLNAME:TARGET%は頷いた
+		PRINTFORMW 「あらあら、実はね、私達も今回のコンテストに参加していてね～」
+		PRINTFORMW 「こうして姉妹で互いを切磋琢磨しているというわけです」
+		PRINTFORMW 「たまにしか参加できないのが玉に瑕ね……まあ、お互い頑張りましょう！」
+		PRINTFORMW %CALLNAME:TARGET%は姉妹たちと握手をした！
+		FLAG:コンテストで姉妹と出会った = 1
+	ENDIF
+	CALL CONTEST_CAL
+	LOCAL = RESULT
+	CALL CONTEST_RESULT, LOCAL
+ELSEIF RESULT == 1
+	PRINTL ～～闘技大会～～
+	PRINTL 月の都中から戦闘に長けた者達が集います
+	PRINTL 
+	CALL SETCOLOR_ABL
+	PRINTL 基本的なルール
+	PRINTL ・大会はトーナメント形式で行われる(4人相手に勝ち抜けば優勝)
+	PRINTL ・淫術の使用は許されない。魔術等は可
+	PRINTL ・準優勝者までに商品が贈呈される
+	RESETCOLOR
+	PRINTL 
+	PRINTL 参加しますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT
+		GOTO BACK_LOOP
+	ENDIF
+	
+	;一時的に着替えることができる
+	PRINTFORML 竜宮祭の時だけ一時的に服を着替えさせますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF !RESULT
+		clothe = CFLAG:服装
+		clothe:1 = 1
+		CALL CHANGE_CLOTHES
+	ENDIF
+	
+	CALL COLOSSEUM, 0
+ELSE
+	RETURN 0
+ENDIF
+
+;一時的に着替えていた場合、元の服装に戻す
+IF clothe:1
+	CFLAG:服装 = clothe
+ENDIF
+
+RETURN 0
+
+;===========================================================
+;コンテスト参加者のリスト
+;上位入賞者を決定する
+;===========================================================
+@CONTEST_PART, ARG
+#DIM first, 1
+#DIM second, 1
+#DIM third, 1
+
+;1年目
+;
+;20％　40％　40％の割合で選択させる
+;
+;グループＡ
+;綿月姉妹が参加してしまっているパターン
+;こうなると中々勝てない
+;1位　綿月　依姫　総合:89
+;2位　綿月　豊姫　総合:78
+;3位　大臣の娘　　総合:65
+;
+;グループＢ
+;大臣の娘が参加していないパターン
+;最も楽
+;1位　パン屋の娘　総合:60
+;2位　武術家の娘　総合:55
+;3位　学者の娘　　総合:50
+;
+;グループＣ
+;1位　大臣の娘　　総合:65
+;2位　パン屋の娘　総合:60
+;3位　武術家の娘　総合:55
+
+;2年目
+;
+;グループＡ
+;綿月姉妹が参加してしまっているパターン
+;こうなると中々勝てない
+;1位　綿月　豊姫　総合:123
+;2位　綿月　依姫　総合:110
+;3位　芸術家の娘　総合:88
+;
+;グループＢ
+;1位　芸術家の娘　総合:88
+;2位　学者の娘　　総合:72
+;3位　パン屋の娘　総合:66
+;
+;グループＣ
+;1位　学者の娘　　　総合:72
+;2位　パン屋の娘　　総合:66
+;3位　仕立て屋の娘　総合:59
+
+;3年目
+;
+;グループＡ
+;綿月姉妹が参加してしまっているパターン
+;こうなると中々勝てない
+;1位　綿月　依姫　総合:156
+;2位　綿月　豊姫　総合:150
+;3位　学者の娘　総合:112
+;
+;グループＢ
+;1位　学者の娘　　　総合:112
+;2位　パン屋の娘　　総合:96
+;3位　大臣の娘　　　総合:80
+;
+;グループＣ
+;1位　パン屋の娘　　総合:96
+;2位　大臣の娘　　　総合:80
+;3位　花屋の娘　　　総合:70
+
+;4年目
+;
+;グループＡ
+;綿月姉妹が参加してしまっているパターン
+;こうなると中々勝てない
+;1位　綿月　豊姫　総合:199
+;2位　綿月　依姫　総合:195
+;3位　大臣の娘　　総合:146
+;
+;グループＢ
+;1位　大臣の娘　　　総合:146
+;2位　学者の娘　　　総合:128
+;3位　芸術家の娘　　総合:112
+;
+;グループＣ
+;1位　学者の娘　　　総合:128
+;2位　芸術家の娘　　総合:112
+;3位　パン屋の娘　　総合:100
+
+;5年目
+;
+;グループＡ
+;綿月姉妹が参加してしまっているパターン
+;こうなると中々勝てない
+;1位　綿月　豊姫　総合:240
+;2位　綿月　依姫　総合:240
+;3位　武道家の娘　総合:230
+;
+;グループＢ
+;1位　武道家の娘　　総合:230
+;2位　パン屋の娘　　総合:195
+;3位　芸術家の娘　　総合:182
+;
+;グループＣ
+;1位　パン屋の娘　　総合:195
+;2位　芸術家の娘　　総合:182
+;3位　学者の娘　　　総合:172
+
+
+IF FLAG:年数 == 1
+	LOCAL = RAND:5
+	
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 109
+		second = 98
+		third = 85
+		STR = 綿月　依姫　　　　　
+		STR:1 = 綿月　豊姫　　　　　
+		STR:2 = 大臣の娘　　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 80
+		second = 75
+		third = 71
+		STR = パン屋の娘　　　　　
+		STR:1 = 武術家の娘　　　　　
+		STR:2 = 学者の娘　　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 85
+		second = 80
+		third = 75
+		STR = 大臣の娘　　　　　　
+		STR:1 = パン屋の娘　　　　　
+		STR:2 = 武術家の娘　　　　　
+	ENDIF
+ELSEIF FLAG:年数 == 2
+	LOCAL = RAND:5
+	
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 138
+		second = 128
+		third = 106
+		STR = 綿月　依姫　　　　　
+		STR:1 = 綿月　豊姫　　　　　
+		STR:2 = 芸術家の娘　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 116
+		second = 100
+		third = 94
+		STR = 芸術家の娘　　　　　
+		STR:1 = 学者の娘　　　　　　
+		STR:2 = パン屋の娘　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 100
+		second = 94
+		third = 87
+		STR = 学者の娘　　　　　　
+		STR:1 = パン屋の娘　　　　　
+		STR:2 = 仕立て屋の娘　　　　
+	ENDIF
+ELSEIF FLAG:年数 == 3
+	LOCAL = RAND:5
+	
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 206
+		second = 200
+		third = 172
+		STR = 綿月　依姫　　　　　
+		STR:1 = 綿月　豊姫　　　　　
+		STR:2 = 学者の娘　　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 172
+		second = 156
+		third = 140
+		STR = 学者の娘　　　　　　
+		STR:1 = パン屋の娘　　　　　
+		STR:2 = 大臣の娘　　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 156
+		second = 140
+		third = 130
+		STR = パン屋の娘　　　　　
+		STR:1 = 大臣の娘　　　　　　
+		STR:2 = 花屋の娘　　　　　　
+	ENDIF
+ELSEIF FLAG:年数 == 4
+	LOCAL = RAND:5
+	
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 249
+		second = 245
+		third = 196
+		STR = 綿月　依姫　　　　　
+		STR:1 = 綿月　豊姫　　　　　
+		STR:2 = 大臣の娘　　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 196
+		second = 178
+		third = 162
+		STR = 大臣の娘　　　　　　
+		STR:1 = 学者の娘　　　　　　
+		STR:2 = 芸術家の娘　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 178
+		second = 162
+		third = 150
+		STR = 学者の娘　　　　　　
+		STR:1 = 芸術家の娘　　　　　
+		STR:2 = パン屋の娘　　　　　
+	ENDIF
+ELSEIF FLAG:年数 == 5
+	LOCAL = RAND:5
+	
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 270
+		second = 270
+		third = 260
+		STR = 綿月　豊姫　　　　　
+		STR:1 = 綿月　依姫　　　　　
+		STR:2 = 武道家の娘　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 260
+		second = 225
+		third = 212
+		STR = 武道家の娘　　　　　
+		STR:1 = パン屋の娘　　　　　
+		STR:2 = 芸術家の娘　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 225
+		second = 212
+		third = 202
+		STR = パン屋の娘　　　　　
+		STR:1 = 芸術家の娘　　　　　
+		STR:2 = 学者の娘　　　　　　
+	ENDIF
+;6年目以降　偶数年
+ELSEIF FLAG:年数 >= 6 && !(FLAG:年数 % 2)
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 270 + 45 * (FLAG:年数 - 5)
+		IF first > 730
+			first = 730
+		ENDIF
+		second = 270 + 45 * (FLAG:年数 - 5)
+		IF second > 630
+			second = 630
+		ENDIF
+		third = 260 + 35 * (FLAG:年数 - 5)
+		IF third > 590
+			third = 590
+		ENDIF
+		STR = 綿月　豊姫　　　　　
+		STR:1 = 綿月　依姫　　　　　
+		STR:2 = 武道家の娘　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 260 + 35 * (FLAG:年数 - 5)
+		IF first > 590
+			first = 590
+		ENDIF
+		second = 225 + 33 * (FLAG:年数 - 5)
+		IF second > 540
+			second = 540
+		ENDIF
+		third = 212 + 32 * (FLAG:年数 - 5)
+		IF third > 510
+			third = 510
+		ENDIF
+		STR = 武道家の娘　　　　　
+		STR:1 = パン屋の娘　　　　　
+		STR:2 = 芸術家の娘　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 225 + 33 * (FLAG:年数 - 5)
+		IF first > 540
+			first = 540
+		ENDIF
+		second = 212 + 32 * (FLAG:年数 - 5)
+		IF second > 510
+			second = 510
+		ENDIF
+		third = 202 + 30 * (FLAG:年数 - 5)
+		IF third > 487
+			third = 487
+		ENDIF
+		STR = パン屋の娘　　　　　
+		STR:1 = 芸術家の娘　　　　　
+		STR:2 = 学者の娘　　　　　　
+	ENDIF
+;6年目以降　奇数年
+ELSEIF FLAG:年数 >= 6 && (FLAG:年数 % 2)
+	;名前は10文字のスペースを取るようにする
+	;Ａグループ
+	IF !LOCAL
+		first = 270 + 45 * (FLAG:年数 - 5)
+		IF first > 730
+			first = 730
+		ENDIF
+		second = 270 + 45 * (FLAG:年数 - 5)
+		IF second > 630
+			second = 630
+		ENDIF
+		third = 269 + 44 * (FLAG:年数 - 5)
+		IF third > 625
+			third = 625
+		ENDIF
+		STR = 綿月　豊姫　　　　　
+		STR:1 = 綿月　依姫　　　　　
+		STR:2 = 盗賊の娘　　　　　
+	ELSEIF LOCAL == 1 || LOCAL == 2
+		first = 269 + 44 * (FLAG:年数 - 5)
+		IF first > 625
+			first = 625
+		ENDIF
+		second = 240 + 38 * (FLAG:年数 - 5)
+		IF second > 555
+			second = 555
+		ENDIF
+		third = 220 + 35 * (FLAG:年数 - 5)
+		IF third > 530
+			third = 530
+		ENDIF
+		STR = 盗賊の娘　　　　　
+		STR:1 = 不明の娘　　　　　
+		STR:2 = 弁護士の娘　　　　　
+	ELSEIF LOCAL == 3 || LOCAL == 4
+		first = 240 + 38 * (FLAG:年数 - 5)
+		IF first > 555
+			first = 555
+		ENDIF
+		second = 220 + 35 * (FLAG:年数 - 5)
+		IF second > 530
+			second = 530
+		ENDIF
+		third = 210 + 32 * (FLAG:年数 - 5)
+		IF third > 512
+			third = 512
+		ENDIF
+		STR = 不明の娘　　　　　
+		STR:1 = 弁護士の娘　　　　　
+		STR:2 = 娼婦の娘　　　　　　
+	ENDIF
+ENDIF
+
+FLAG:コンテスト1位の値 = first
+FLAG:コンテスト2位の値 = second
+FLAG:コンテスト3位の値 = third
+
+RETURN LOCAL
+
+;===========================================================
+;コンテストで用いる総合値の計算
+;===========================================================
+@CONTEST_CAL
+
+;基本算出式
+;美麗は25％　淫妖は10％　堕落は-15％
+;その他のステータスは（堕落以外）10％ずつ計算に用いる
+LOCAL = 50 + BASE:美麗 / 4 + BASE:淫妖 * 10 / 100 - BASE:堕落 * 15 / 100
+
+
+;華麗度1につき+5
+LOCAL += 5 * CFLAG:総合華麗度
+
+STR:3 = %STR%
+
+;属性持ちのアクセサリーを着けている場合は、対応する属性の％/4の分だけ総合値が上昇する
+FOR COUNT, 0, 7
+	CALL CONVERT_ACCE, COUNT
+	
+	IF CFLAG:("属性／"+STR+"") & CFLAG:属性
+		CALL CONVERT_BIT_REV, CFLAG:属性
+		CALL ELEMENT_CONVERT, RESULT
+		
+		LOCAL += CFLAG:("属性／"+STR+"") / 4
+	ENDIF
+NEXT
+
+REPEAT 5
+	LOCAL:1 = COUNT + 6
+	LOCAL += BASE:(LOCAL:1) / 10
+REND
+
+STR = %STR:3%
+RETURN LOCAL
+
+;===========================================================
+;結果発表
+;===========================================================
+@CONTEST_RESULT, ARG
+#DIM RANK, 1
+
+DRAWLINE
+PRINTL 　　　・
+PRINTL 　　　・
+PRINTW 　　　・
+
+IF FLAG:コンテスト1位の値 <= ARG
+	SETCOLOR 0,255,255
+	PRINTL Congratulations!
+	RESETCOLOR
+	
+	SETCOLOR 255,128,0
+	PRINTFORMW %CALLNAME:TARGET%は1位を獲得した！
+	RESETCOLOR
+	RANK = 1
+ELSEIF FLAG:コンテスト2位の値 <= ARG
+	PRINTFORMW %CALLNAME:TARGET%は2位を獲得した！
+	RANK = 2
+ELSEIF FLAG:コンテスト3位の値 <= ARG
+	PRINTFORMW %CALLNAME:TARGET%は3位を獲得した！
+	RANK = 3
+ELSE
+	PRINTFORMW %CALLNAME:TARGET%は入賞することができなかった……
+	RANK = 0
+ENDIF
+
+PRINTL 
+PRINTL ちなみに、順位は以下のようになりました
+;1位の場合
+IF RANK == 1
+	SETCOLOR 236,96,0
+	PRINTFORML 1位　%NAME:TARGET,10,LEFT%　　　　　　総合点:{ARG}
+	RESETCOLOR
+	PRINTFORML 2位　%STR,20,LEFT%　　総合点:{FLAG:コンテスト1位の値}
+	PRINTFORML 3位　%STR:1,20,LEFT%　　総合点:{FLAG:コンテスト2位の値}
+ELSEIF RANK == 2
+	PRINTFORML 1位　%STR,20,LEFT%　　総合点:{FLAG:コンテスト1位の値}
+	SETCOLOR 236,96,0
+	PRINTFORML 2位　%NAME:TARGET,10,LEFT%　　　　　　総合点:{ARG}
+	RESETCOLOR
+	PRINTFORML 3位　%STR:1,20,LEFT%　　総合点:{FLAG:コンテスト2位の値}
+ELSEIF RANK == 3
+	PRINTFORML 1位　%STR,20,LEFT%　　総合点:{FLAG:コンテスト1位の値}
+	PRINTFORML 2位　%STR:1,20,LEFT%　　総合点:{FLAG:コンテスト2位の値}
+	SETCOLOR 236,96,0
+	PRINTFORML 3位　%NAME:TARGET,10,LEFT%　　　　　　総合点:{ARG}
+	RESETCOLOR
+ELSE
+	PRINTFORML 1位 　%STR,20,LEFT%　　総合点:{FLAG:コンテスト1位の値}
+	PRINTFORML 2位 　%STR:1,20,LEFT%　　総合点:{FLAG:コンテスト2位の値}
+	PRINTFORML 3位 　%STR:2,20,LEFT%　　総合点:{FLAG:コンテスト3位の値}
+	PRINTL
+	SETCOLOR 236,96,0
+	PRINTFORML 番外　%NAME:TARGET,10,LEFT%　　　　　　総合点:{ARG}
+	RESETCOLOR
+ENDIF
+
+PRINTL 
+;商品の授与
+IF RANK
+	IF RANK == 1
+		LOCAL = 30000 + (FLAG:年数 - 1) * 10000
+	ELSEIF RANK == 2
+		LOCAL = 15000 + (FLAG:年数 - 1) * 5000
+	ELSE
+		LOCAL = 5000 + (FLAG:年数 - 1) * 3000
+	ENDIF
+	CALL SETCOLOR_MONEY
+	PRINTFORML 無事{RANK}位になった%CALLNAME:TARGET%には賞金として${LOCAL}が贈呈された！
+	MONEY += LOCAL
+	
+	IF RANK == 1
+		LOCAL = 100
+	ELSEIF RANK == 2
+		LOCAL = 50
+	ELSE
+		LOCAL = 25
+	ENDIF
+	
+	;装飾品がメイドセットの場合、上昇する評価値が150増加する(2位だと75、3位だと50)
+	IF ACCE_SET() == 1
+		LOCAL += 150 / RANK
+	;メイド属性の装飾品を付けている場合、1つにつき24上昇量が増加する(2位だと12、3位だと6)
+	ELSE
+		LOCAL:1 = 0
+		FOR COUNT, 0, 7
+			CALL CONVERT_ACCE, COUNT
+			
+			IF GETBIT(CFLAG:("属性／"+STR+""), 2)
+				LOCAL:1 += 1
+			ENDIF
+		NEXT
+		LOCAL += 24 * LOCAL:1 / RANK
+	ENDIF
+	CALL SETCOLOR_VALUE
+	PRINTFORMW 評価が{LOCAL}上がった！
+	CFLAG:評価 += LOCAL
+	RESETCOLOR
+	
+	;1位の場合　100％の確率で商品授与
+	IF BASE:美麗 >= 25
+		IF RANK == 1
+			CALL CONTEST_PRESENT, RANK
+		;2位の場合　50％
+		ELSEIF RANK == 2 && !RAND:2
+			CALL CONTEST_PRESENT, RANK
+		;3位の場合　25％
+		ELSEIF RANK == 3 && !RAND:4
+			CALL CONTEST_PRESENT, RANK
+		ENDIF
+	ENDIF
+ELSE
+	PRINTFORMW 今回は残念でした……次回こそは入賞できるようがんばりましょう！
+ENDIF
+RETURN 0
+
+;===========================================================
+;贈呈品
+;ARG　順位
+;===========================================================
+@CONTEST_PRESENT, ARG
+#DIM GET_ITEM, 2
+
+GET_ITEM:1 = 1
+;美麗が700以上
+IF BASE:美麗 >= 700
+	;能力-200アイテムの中から持っていない物をプレゼント
+	;(美麗だけ+100アイテムをプレゼント)
+	$RERANDAM_4
+	
+	IF !RAND:3 && !ITEM:402
+		GET_ITEM = 402
+	ELSEIF !RAND:2 && !ITEM:413
+		GET_ITEM = 413
+	ELSEIF !ITEM:423
+		GET_ITEM = 423
+	ELSEIF !ITEM:402 || !ITEM:413 || !ITEM:423
+		GOTO RERANDAM_4
+	ELSE
+		RETURN 0
+	ENDIF
+;美麗が400以上
+ELSEIF BASE:美麗 >= 400
+	;能力+100アイテムの中から持っていない物をプレゼント
+	;(美麗だけ-200アイテムをプレゼント)
+	$RERANDAM_3
+	
+	IF !RAND:3 && !ITEM:403
+		GET_ITEM = 403
+	ELSEIF !RAND:2 && !ITEM:412
+		GET_ITEM = 412
+	ELSEIF !ITEM:422
+		GET_ITEM = 422
+	ELSEIF !ITEM:403 || !ITEM:412 || !ITEM:422
+		GOTO RERANDAM_3
+	ELSE
+		RETURN 0
+	ENDIF
+;美麗が100以上
+ELSEIF BASE:美麗 >= 100
+	;能力上昇アイテムを6つプレゼント
+	GET_ITEM = 522 + RAND:5
+	GET_ITEM:1 = 6
+;それ以外
+ELSE
+	;能力上昇アイテムを3つプレゼント
+	GET_ITEM = 522 + RAND:5
+	GET_ITEM:1 = 3
+ENDIF
+PRINTFORML %CALLNAME:TARGET%の美麗に魅了された者から贈り物が贈呈された！
+CALL SETCOLOR_MONEY
+PRINTFORM %ITEMNAME:GET_ITEM%を
+IF GET_ITEM:1 >= 2
+	PRINTFORM {GET_ITEM:1}個
+ENDIF
+PRINTFORMW 手に入れた！
+ITEM:GET_ITEM += GET_ITEM:1
+RESETCOLOR
+
+

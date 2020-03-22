@@ -1,0 +1,119 @@
+﻿;--------------------------------------------------------------------------
+;君主との取引
+;--------------------------------------------------------------------------
+@CONTACT_MONAR
+$BACK_LOOP
+DRAWLINE
+PRINTFORML ～～守衛室～～
+PRINTFORML 守衛「この先は君主がおられる居室だ
+PRINTFORML 　　　くれぐれも粗相の無いようにな」
+PRINTL 
+PRINTFORML [0] - 君主へ直談判　　　　　　　そこまでして金が欲しいか？
+PRINTFORML [1] - 身体を捧げる　　　　　　　君主からの評価が上がるかもな
+PRINTFORML [9] - 戻る　　　　　　　　　　　それがいいだろうな
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	DRAWLINE
+	PRINTFORML 君主からの評価が30下がり、1月後に一定確率で$50000が手に入ります
+	PRINTFORML よろしいですか？
+	PRINTL 
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 君主からの評価が30下がった
+		RESETCOLOR
+		BASE:君主の評価 -= 30
+		CFLAG:君主の結果待ち = RAND:1
+		CFLAG:君主の結果タイマー = 2
+		
+		;ここで乱数を作っておく
+		
+		PRINTFORML 君主は封筒に結果を封入した
+		PRINTFORMW 開封は1ヶ月後に行われるらしい……
+		RESETCOLOR
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の身体を数夜の間だけ君主に捧げて、君主からの評価を上げます
+	CALL SETCOLOR_ABL
+	PRINTFORML 実行すると半月が経過します
+	RESETCOLOR
+	PRINTFORML よろしいですか？
+	PRINTL 
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		DRAWLINE
+		CALL CALCULATION_INYOU, 15, 90
+		LOCAL:5 = RESULT
+		
+		PRINTFORMW %CALLNAME:TARGET%は君主の元に赴き、夜な夜な身体を重ねた……
+		PRINTFORML 淫妖経験+10
+		PRINTFORML 堕落経験+5
+		
+		;上昇量は感度が僅かに関わり、後はスキルや称号が大きく関わる
+		;基礎上昇値は15+感度/60
+		LOCAL = 15+BASE:感度/60
+		CALL CLASS_EFFECT, "特殊", "君主との夜伽", LOCAL
+		LOCAL = RESULT
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 君主の評価が{LOCAL}上昇した！
+		RESETCOLOR
+		
+		CALL CALC_IMP, 2
+		CALL INSERT, 2, 1
+		
+		CALL COMMON_ABLUP, "淫妖", LOCAL:5, "WAIT"
+		BASE:君主の評価 = LIMIT(BASE:君主の評価+LOCAL, 0, MAXBASE:君主の評価)
+		EXP:淫妖経験 += 10
+		EXP:堕落経験 += 5
+		RETURN 1
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE 
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;-------------------------------------------------------------------------------------
+;君主に直談判した結果
+;-------------------------------------------------------------------------------------
+@MONAR_RESULT
+
+DRAWLINE
+PRINTFORML ～～直談判した結果が開封されます～～
+PRINTFORML %CALLNAME:MASTER%は封筒を開けてみました……
+IF !CFLAG:君主の結果待ち
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 中には$50000が入っていた！
+	CALL SETCOLOR_MONEY
+	PRINTFORMW $50000手に入れた！
+	RESETCOLOR
+	
+	MONEY += 50000
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW 中には何も入っていなかった……
+	RESETCOLOR
+ENDIF
+
+CFLAG:君主の結果待ち = 0
+
+

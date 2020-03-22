@@ -1,0 +1,668 @@
+﻿;========================================================
+;武士ルート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;========================================================
+@ENDING_SAMURAI
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落+淫妖が900以上
+IF BASE:堕落 + BASE:淫妖 >= 900
+	CALL ENDING_SAMURAI_1
+	LOCAL:1 = 800
+;600以上
+ELSEIF BASE:堕落 + BASE:淫妖 >= 600
+	CALL ENDING_SAMURAI_2
+	LOCAL:1 = 801
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	CALL ENDING_SAMURAI_18
+	LOCAL:1 = 817
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_SAMURAI_19
+	LOCAL:1 = 818
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_SAMURAI_20
+	LOCAL:1 = 819
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SAMURAI_3
+			LOCAL:1 = 802
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SAMURAI_4
+			LOCAL:1 = 803
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SAMURAI_5
+			LOCAL:1 = 804
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SAMURAI_6
+			LOCAL:1 = 805
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SAMURAI_7
+			LOCAL:1 = 806
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SAMURAI_8
+			LOCAL:1 = 807
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SAMURAI_9
+			LOCAL:1 = 808
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SAMURAI_10
+			LOCAL:1 = 809
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SAMURAI_11
+			LOCAL:1 = 810
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SAMURAI_12
+			LOCAL:1 = 811
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SAMURAI_13
+			LOCAL:1 = 812
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SAMURAI_14
+			LOCAL:1 = 813
+		ENDIF
+	;体力
+	ELSEIF LOCAL:1 == 10
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_SAMURAI_15
+			LOCAL:1 = 814
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_SAMURAI_16
+			LOCAL:1 = 815
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_SAMURAI_17
+			LOCAL:1 = 816
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　傾国の淫騎士
+;---------------------------------------------------------
+@ENDING_SAMURAI_1
+PRINTFORML 
+PRINTFORMW 武士が生き残るために必要なもの
+PRINTFORMW それを問うと多くの者は強さと答えるだろう
+PRINTFORMW しかし、その答えは視野が狭いと言わざるを得ない
+PRINTFORMW 実は強さが無くても生き残る道はある
+PRINTFORML 
+PRINTFORMW まだ日も登らぬ朝
+PRINTFORMW 都の外れにある洞窟の入り口。そこに男と女が立っていた
+PRINTFORMW 男は全身を筋肉で包んだ身体つきで、背が高い。一方女の方は恰好こそ洗練された身体つきをしているものの、まだ顔に幼さが残っている
+;PRINTFORMW それもそのはず。その女は%CALLNAME:TARGET%だからだ
+PRINTFORMW 男は壁に女を押し付け、後ろから腕を回すと胸当てを外し、胸を手で覆った
+PRINTFORMW そして胸を優しく揉まれると女は腰をくねらせ、痴れた吐息を漏らす
+PRINTFORMW 振り向いた拍子に唇を奪われ、吐息が色づいていることを男に知られてしまう
+PRINTFORMW 男に把握されることに羞恥を覚え、触覚は鋭利になる
+PRINTFORMW 胸を擦られる僅かな刺激にすら彼女は腰を震わせ、長い髪を揺らす
+PRINTFORMW 乳首はすっかり勃ち、衣服も汗ばんでいる。手は力なく下げられ、宙を彷徨っている
+PRINTFORMW 男の行為により、彼女の身体はすっかり堕ちてしまった
+PRINTFORMW そして、その結果が彼女の口から出る時がきた
+PRINTFORMW 男は唇を離し、彼女に言葉の自由を与える
+PRINTFORMW 赤く膨れた唇。濡れた瞳。彼女はすっかり感極まっている
+PRINTFORMW そして彼女が息を呑んだかと思えば、次の瞬間には淫ら極まる声をあげ、全身を震わせた
+PRINTFORMW 太腿はがくがく震え、手の指はぎゅっと握りしめられる
+PRINTFORMW そして膝が折り曲げられ、彼女がその場に座そうとした瞬間、男に身体を支えられた
+PRINTFORMW 行為はまだまだ終わりではない。むしろこれからが始まりなのだ
+PRINTFORMW 男は女をゆっくりと床に寝かせ、股間を覆う布を剥いた
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は武士として生き残るため、他者に身体を差し出していた
+PRINTFORMW そうなったのも彼女が武者としての腕を振るうより、自らの淫靡な体質を使った方がいいと考えたからだ
+PRINTFORMW そんな彼女の荒んだ貞操観念と淫らな身体は多くの異性を葬った
+PRINTFORMW 今日もまた、甘い香りに誘われた男が血の花を咲かせ倒せている
+PRINTFORML 
+PRINTFORMW -武士ED No.1　傾国の淫騎士
+
+;---------------------------------------------------------
+;ED2　扇情的な振る舞い
+;---------------------------------------------------------
+@ENDING_SAMURAI_2
+PRINTFORML 
+PRINTFORML 
+PRINTFORML 
+PRINTFORMW ・
+PRINTFORMW ・
+PRINTFORMW ・
+PRINTFORMW 「よし、皆寝ついたな？」
+PRINTFORMW 男が周囲を見回した後、敷居に向かって手招きをした
+PRINTFORMW すると、敷居の奥からは雪のように美しい少女が姿を現した。それは紛れもなく%CALLNAME:TARGET%だった
+PRINTFORML 「今日もよろしく頼むぜ。姐さん」
+PRINTFORMW 男は%CALLNAME:TARGET%を抱き寄せ、薄い生地に包まれた胸を擦った
+PRINTFORML 「ん……っぁ……」
+PRINTFORMW %CALLNAME:TARGET%は眉をしかめ、声を堪える
+PRINTFORMW その男は数人の女性を手籠めにしたことがあり、その経験が指を巧みにくねらせ、胸で快楽を最大限引き出す
+PRINTFORML 「ははは、お前は依然として変わらないな。もっと素直になればいいのに」
+PRINTFORMW 男の指は更にくねり、乳房の肉を挟んでは乳首を擦り、多方面からの刺激を与えていく
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はなぜ男とこのような関係を持つことになったのだろう
+PRINTFORMW それは数ヶ月前まで遡る。盗賊を討伐するため月の都中で腕が立つ者が集められた
+PRINTFORMW %CALLNAME:TARGET%もその集められた中の一人だった
+PRINTFORMW 最初は仮にも姫君なだけあって周囲から反対されたのだが、本人の強い意志により討伐隊に加入されたというわけだ
+PRINTFORML 
+PRINTFORMW ここまでの話だと美談に見えるだろう
+PRINTFORMW しかし実際には違う。決して%CALLNAME:TARGET%は正義感のみで行動したわけではない
+PRINTFORMW なぜなら、彼女の動機には多大なる不純物が紛れているのだから
+PRINTFORML 
+PRINTFORMW 盗賊が潜む場所に着いた討伐隊は、方々に散らばって探索を始めた
+PRINTFORMW %CALLNAME:TARGET%も当然ながら探索をしている。周囲は静寂に包まれ、風の流れる音のみが聴こえる
+PRINTFORMW 今ならいいだろう。そんな意思が%CALLNAME:TARGET%の脳裏を掠める
+PRINTFORMW 手を胸に伸ばし、胸当ての中に挿し入れた
+PRINTFORMW 任務中に身体を弄る背徳感で吐息が荒くなっていく
+PRINTFORMW 彼女のこうした癖は今回が初めてではない。任務で一人になる度にこうして弄っていたのだ
+PRINTFORMW 軽く達した時の快楽と身体の弛緩。それが勤務中の数少ない愉しみであった
+PRINTFORML 
+PRINTFORMW その時、背後で物音がした
+PRINTFORMW %CALLNAME:TARGET%が手を止め振り返った瞬間。身体を取り押さえられた
+PRINTFORML 「こんなところでやるとは、お前馬鹿か？」
+PRINTFORMW 汚れた指と髭のとげとげとした感触。間違いない。盗賊だ
+PRINTFORMW 胸当てに手を挿し入れ、節が膨れた指で胸の綺麗な肌を撫でる
+PRINTFORML 「んんぅっ……」
+PRINTFORMW 他人に擦られる感触に、%CALLNAME:TARGET%は喉を鳴らした
+PRINTFORMW 慣れている行為ではあるのだが、こうした公務中に、しかも敵に行われるというのが気持ちを昂ぶらせた
+PRINTFORMW 「どうした？　顔が赤いぞ？　ん？」
+PRINTFORMW 盗賊は%CALLNAME:TARGET%の顔を覗き込み、嘲笑う
+PRINTFORML 「ん……っぁ……はぁ……ぁぁっ……」
+PRINTFORMW 揺れる腰。不自然に瞬く目。溢れ出る吐息
+PRINTFORMW %CALLNAME:TARGET%は着実に色染め上げられ、高みを昇っていく
+PRINTFORML 「ほら、いっちまえよ。そうすれば楽になれるぜ？」
+PRINTFORMW 男はその言葉と同時に乳首を弾いた
+PRINTFORMW 理不尽な刺激が身体の中で残響し、抑制心をへし折っていく
+PRINTFORML 「ああ……っあ……ああああああああ……！」
+PRINTFORMW %CALLNAME:TARGET%は喉を震わせ、大きく達した
+PRINTFORMW 太腿は太く閉じられ、重心を失った身体は盗賊に支えられる
+PRINTFORML 「へへへ、これはいい上玉が手に入ったぜ」
+PRINTFORMW 熱い吐息を吐いて虚ろな目を浮かべる%CALLNAME:TARGET%の胸を弄りながら、盗賊は呟いた
+PRINTFORMW 既に片方の手では彼女の衣服を剥しにかかっている。彼女を自分たちの従属にする手筈は既に整っているのだ
+PRINTFORML 
+PRINTFORMW こうして%CALLNAME:TARGET%は盗賊と身体的な関係を結ぶことになってしまった
+PRINTFORMW はたしてそれで幸せなのだろうか。それは誰にも分からない
+PRINTFORML 
+PRINTFORMW -武士ED No.2　扇情的な振る舞い
+
+;---------------------------------------------------------
+;ED3　華溢れる武士
+;---------------------------------------------------------
+@ENDING_SAMURAI_3
+PRINTFORMW %CALLNAME:TARGET%は長きに渡る習慣により、武士となった
+PRINTFORMW その中でも取り分け高い美麗が彼女の強みである
+PRINTFORMW 今日も高い美麗からなる可憐な身のこなしにより、多くの人々の目を惹きつけて止まない
+PRINTFORML 
+PRINTFORMW ある日、いつものように修行に赴いた%CALLNAME:TARGET%は、間違えて男性を巻き込んでしまった
+PRINTFORML 彼は思わず尻もちをつき、%CALLNAME:TARGET%は大丈夫ですかという声と共に手を差し伸べた
+PRINTFORMW 彼は手を取って立ち上がり、しきりに謝る%CALLNAME:TARGET%をなだめ、そして去った
+PRINTFORMW 内心ほっとする%CALLNAME:TARGET%。しかし、この後起こる出来事を%CALLNAME:TARGET%が知る由はなかった
+PRINTFORML 
+PRINTFORMW 数日後……
+PRINTFORMW 王宮を訪ねてきたのは一人の貴族
+PRINTFORMW その貴族は、先日に%CALLNAME:TARGET%が巻き込んだ男性であるらしい
+PRINTFORMW その時の太刀と、後の対応に一目惚れしてしまったと彼は漏らす
+PRINTFORMW かくして%CALLNAME:TARGET%は貴族と婚約を結び、二人で幸せに暮らしましたとさ
+PRINTFORML 
+PRINTFORMW -武士ED No.3　華溢れる騎士-
+
+;---------------------------------------------------------
+;ED4　美しい武士
+;---------------------------------------------------------
+@ENDING_SAMURAI_4
+PRINTFORML 武士
+PRINTFORML 武道を極め、時と場所を選ばず実力を発揮できる兵のこと
+PRINTFORMW しかしそれとは別に、もう一つ求められる物があった
+PRINTFORMW それは――
+PRINTFORML 
+PRINTFORMW 「くしゅんっ！」
+PRINTFORMW 「あ、あれ……？　誰か私のこと噂してたのかな？」
+PRINTFORMW そんなことを思いながら、%CALLNAME:TARGET%は鼻を擦る
+PRINTFORMW 手には武具。そして身に着けているのは%CALLNAME:MASTER%が用意してくれた衣服
+PRINTFORMW そしてここは王宮に据え付けられた庭
+PRINTFORMW 運命の日を迎えてからも%CALLNAME:TARGET%は%CALLNAME:MASTER%の下で暮らしている
+PRINTFORML 
+PRINTFORMW そんな中、一人の女中が駆けてきた
+PRINTFORMW 腕には少女を抱いている。その少女は頬を真っ赤にし、苦しそうに呼吸している
+PRINTFORMW 女中は焦り、要点を掴まぬ言葉で事情を語る
+PRINTFORMW 曰く、王宮の前で少女が倒れていたという
+PRINTFORMW %CALLNAME:TARGET%は「私に言われても困るんだけど……」と内心思いながらも銀髪の女性へ訪ね、少女を渡した
+PRINTFORMW 
+PRINTFORML 
+PRINTFORMW そして数時間後……
+PRINTFORMW 少女は再び庭を通る。浮かべているのは満面の笑顔。
+PRINTFORMW %CALLNAME:TARGET%は軽く会釈をして労いの言葉をかけ、少女を見送った
+PRINTFORML 
+PRINTFORML ここまでの話でお分かりいただけただろうか？
+PRINTFORMW 武士に求められるもの。それは他人を気遣う精神である
+PRINTFORML 
+PRINTFORMW -武士ED No.4　美しい武士-
+
+;---------------------------------------------------------
+;ED5　綺麗な武士
+;---------------------------------------------------------
+@ENDING_SAMURAI_5
+PRINTFORMW %CALLNAME:TARGET%は武士として生きていく道を立てた
+PRINTFORMW 彼女の取り柄は周囲から一目置かれる美しさである
+PRINTFORML 
+PRINTFORML 「えーと……この皿はこの棚、そして花束は花瓶へ……」
+PRINTFORMW ここは王宮の部屋。%CALLNAME:TARGET%はその中を右往左往する
+PRINTFORMW 手に持つのは大量の包み物。それらにはリボンと共に彼女の名を綴った色紙が付いている
+PRINTFORMW そう。彼女は道行く人々から貰い物を受け、それを必死に持ち帰ってきた。
+PRINTFORML 
+PRINTFORML 「あっ！　もう酒を入れる場所が無いじゃない……%CALLNAME:MASTER%ー！　早く来てー！」
+PRINTFORMW %CALLNAME:TARGET%が廊下へ通じる戸へ向かい声をあげ、%CALLNAME:MASTER%はいつものように部屋へ駆けていく
+PRINTFORMW 王宮の物品整理を行うのは%CALLNAME:MASTER%の役目。だが、その役目も満更ではないらしい
+PRINTFORMW なぜなら、%CALLNAME:TARGET%は目に溢れんばかりの輝きを灯らせ、足取りを軽くしていたのだから
+PRINTFORML 
+PRINTFORMW -武士ED No.5　綺麗な武士-
+
+;---------------------------------------------------------
+;ED6　名高い策士
+;---------------------------------------------------------
+@ENDING_SAMURAI_6
+PRINTFORMW 武士。それば武術に長けた者である
+PRINTFORMW しかし、武術は体術のみならず、状況に応じた戦略を生み出せる知恵が求められることもある
+PRINTFORMW 幸いにも、%CALLNAME:TARGET%はその知恵に関しては他者に退けを取らない
+PRINTFORML 
+PRINTFORML 「ねえ、君主を凋落させる方法があるんだけど」
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に耳打ちをする
+PRINTFORML 内容は君主を潰す方法で、少し強引だと%CALLNAME:MASTER%は感じた
+PRINTFORMW だが他に方法を思いつかない現状では、その方法に賭けるしかない
+PRINTFORML 
+PRINTFORMW 切り立った崖の傍らに、人二人がやっと通れる程の道がある
+PRINTFORMW そこから見られる景色は絶景であり、君主も護衛を連れて度々訪れる程だ
+PRINTFORML この憩いの時を狙うのが今回行う作戦の肝である
+PRINTFORMW このような時に策略に嵌めるのはやや非情な気はするが、今まで%CALLNAME:TARGET%にしてきた行為を思えば当然の報いである
+PRINTFORML 
+PRINTFORML 「さて、%CALLNAME:MASTER%。用意はできた？」
+PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%に手を引っ張られる。おどおどしていた%CALLNAME:MASTER%に痺れを切らしたのだろう
+PRINTFORMW それもそのはず。この作戦は%CALLNAME:MASTER%にとっては複雑な状況の下行われるからだ
+PRINTFORML 「その下駄じゃ歩きづらいの？　私たまに履いたことがあるけど、そんなことなかったよ？」
+;主人公の性別をどちらにも考えている人を考慮し、ぼかしてあります
+PRINTFORMW それもそのはず。%CALLNAME:MASTER%は普段は着ないであろう華美な衣装を身に着けているからだ
+PRINTFORMW %CALLNAME:MASTER%は着物を纏い。それに合う意匠の下駄を履いている
+PRINTFORMW 作戦はこうだ。君主が景色を眺めているところに、二人で道を尋ねる
+PRINTFORMW 後宮を作る程の君主だ。この二人を見て当然見惚れるだろう。そこに油断が生じる
+PRINTFORMW その隙を突いて%CALLNAME:TARGET%が君主の背を押し、崖へ落とすという作戦だ
+PRINTFORMW 無茶がある作戦だが、そこは%CALLNAME:TARGET%の武術が対処してくれるだろう。幸い、この道には護衛が一人しか来ないのだから
+PRINTFORML 
+PRINTFORML 「ほら、来たよ。はやくっ！」
+PRINTFORMW 向こう側には君主と護衛の姿。%CALLNAME:MASTER%は意を決し、%CALLNAME:TARGET%の後をついた
+PRINTFORMW 「ご機嫌麗しゅうございます君主様。私達、道に迷ってしまって……」
+PRINTFORMW 深々とお辞儀をする%CALLNAME:TARGET%。その恭しい態度と美しさに君主は頬を緩めている
+PRINTFORMW その視線は%CALLNAME:TARGET%だけでなく%CALLNAME:MASTER%にも向けられている。どうやら君主の目を誤魔化すことができているようだ
+PRINTFORMW 君主は快く引き受け、道を案内してくれることとなった。%CALLNAME:TARGET%は%CALLNAME:MASTER%に教えてほしいと言い、後を引き渡した
+PRINTFORMW 君主の柔らかい言葉遣いで教えられる言葉を聞き、相槌を打つ%CALLNAME:MASTER%
+PRINTFORMW その間、鈍い音が鳴り、次に鳴ったのは君主の悲鳴
+PRINTFORMW 君主は%CALLNAME:MASTER%の前から姿を消した。崖から身を落としたのである。いや、正確には%CALLNAME:TARGET%が落としたというべきか
+PRINTFORMW 君主の悲鳴は徐々に遠ざかり、やがて消えた
+PRINTFORML 
+PRINTFORMW 数刻の間、互いに見つめ合う%CALLNAME:TARGET%と%CALLNAME:MASTER%。何が起こったのか分からないという様子
+PRINTFORML そして成し遂げたことが分かった時、互いに相手を抱き締め、涙を流した
+PRINTFORMW ついに諸悪の根源である君主を撃退することができたんだ、と
+PRINTFORMW 二人は口々に感謝の言葉を述べあった
+PRINTFORMW 
+PRINTFORML 
+PRINTFORMW -武士ED No.6　名高い策士-
+
+;---------------------------------------------------------
+;ED7　戦略の相談家
+;---------------------------------------------------------
+@ENDING_SAMURAI_7
+PRINTFORMW %CALLNAME:TARGET%は武士になった
+PRINTFORMW 王宮の護衛団の下で働いた後は、出家して貴族の下で働いているという
+PRINTFORML 
+PRINTFORMW そんな彼女は高い知力を活かし、貴族に助言を与えているという
+PRINTFORMW それは戦術面の話だけに留まらないらしい。先日聞いた話によると、投資についても助言をすることがあるとか
+PRINTFORML 
+PRINTFORMW どうして戦闘分野以外の知識も備え、しかも助言までするのか
+PRINTFORMW その理由を%CALLNAME:TARGET%に聞いたところ、微笑みながら言った
+PRINTFORML 
+PRINTFORMW 「当然じゃない。他者と競う事柄は全て私の仕事の範疇よ。世の中は常に争いなんだから」
+PRINTFORML 
+PRINTFORML %CALLNAME:MASTER%はその言葉に一つの説得力を感じた
+PRINTFORMW 彼女は柔軟な思考により、戦闘面以外でも興味を持っているのだ
+PRINTFORML 
+PRINTFORMW -武士ED No.7　戦略の相談家-
+
+;---------------------------------------------------------
+;ED8　頭脳派武士
+;---------------------------------------------------------
+@ENDING_SAMURAI_8
+PRINTFORML 「いい？　武士たるもの、知力も大事なんだからね」
+PRINTFORMW %CALLNAME:TARGET%は門下生を前にして、心得を教えている
+PRINTFORMW %CALLNAME:TARGET%は武士でありながら高い知力を得て、その特徴を活かした道場を開いた
+PRINTFORML 
+PRINTFORMW 道場で主に教えていることは知略である
+PRINTFORMW 彼女曰く、武力を鍛えるだけでは競争相手が多く、また、生まれついた体格差が顕著に表れるといった難点があるという
+PRINTFORMW そこで知略を活かすことにより、他の武士との差別化を図れるとのことだった
+PRINTFORML 
+PRINTFORML 「ね、うまくいったでしょう？　%CALLNAME:MASTER%も一度受けてみない？」
+PRINTFORMW 微笑みながら誘ってくる%CALLNAME:TARGET%を見て、%CALLNAME:MASTER%は一種の安堵感を得た
+PRINTFORML 
+PRINTFORMW -武士ED No.8　頭脳派武士-
+
+;---------------------------------------------------------
+;ED9　集団的戦略
+;---------------------------------------------------------
+@ENDING_SAMURAI_9
+PRINTFORML %CALLNAME:TARGET%は武士となった
+PRINTFORMW その中でも彼女は、周囲との意思伝達を手早く行ってしまうという長所を持っていた
+PRINTFORML 
+PRINTFORMW その能力を活かし、%CALLNAME:TARGET%は君主の立場を貶めるため暗躍することとなった
+PRINTFORMW まず、警備隊を集め、こっそりと情報を伝える
+PRINTFORML 伝えた情報は非常に曖昧で、かつ憶測の域を出ないものであった
+PRINTFORMW しかし、それらは全て君主に纏わる話であり、君主の動向を疑っていた警備隊にとって魅力的な話の種であった
+PRINTFORML これは%CALLNAME:TARGET%の策であり、話を広げるため敢えて厳選したのだ。
+PRINTFORMW 本人にとって魅力的な話でないと他人に話したくならないのは当然である
+PRINTFORMW %CALLNAME:TARGET%の目論見通り、流布した噂は瞬く間に広がり、君主への不信感は日に日に強まっていく
+PRINTFORML 
+PRINTFORMW そしてついにその日は来た
+PRINTFORMW 警備隊は%CALLNAME:TARGET%の下へ来て、君主討伐の策を練り始めたのだ
+PRINTFORMW %CALLNAME:TARGET%も矢継ぎ早に意見を繰り出し、討伐の作戦は現実味を帯びていく
+PRINTFORMW 議論が煮詰まってきたとき、%CALLNAME:TARGET%は机を叩き、声をあげた
+PRINTFORML 
+PRINTFORMW 「よし、この作戦で行きましょう！　必ず君主の立場を貶めるのよ！」
+PRINTFORML 
+PRINTFORMW その鶴の一声で警備隊は一斉に敬礼をした
+PRINTFORMW 後日、%CALLNAME:TARGET%と警備隊が展開した共同作戦により、君主は立場を貶められることとなった
+PRINTFORML 
+PRINTFORML いやはや、組織力というのはこれ程に恐ろしいものなのか
+PRINTFORML 上に立つ者に望まれるのは、やはり個人の実力より組織をまとめ上げる力なのだな
+PRINTFORMW とある者はその論評を自分の日記に書き残した
+PRINTFORML 
+PRINTFORMW -武士ED No.9　集団的戦略-
+
+;---------------------------------------------------------
+;ED10　毎日会う好敵手
+;---------------------------------------------------------
+@ENDING_SAMURAI_10
+PRINTFORML 
+PRINTFORMW 疎通力と言ってもピンと来ない方は多いと思う
+PRINTFORML 他人と意思疎通を行うことができる能力、こう書いても抽象的すぎて分かりづらいだろう
+PRINTFORMW では実際に見ていただくのが早いはず。ここで挙げるのは、とある一人の少女の話……
+PRINTFORML 
+PRINTFORML 「ねえねえ、%CALLNAME:MASTER%。この服どう？　似合う？」
+PRINTFORMW 煌びやかな道着を自分の身体と合わせる%CALLNAME:TARGET%。とても名の知れた仕立て屋に作らせたもので、その出来は名声通りだった
+PRINTFORML 「いいじゃない。だって今日はあの子が来るんだから」
+PRINTFORMW 今日は、と言っているが、実際には毎日来ている
+PRINTFORMW %CALLNAME:TARGET%に頻繁に勝負を挑んでいるが、一度も勝ったことはない
+PRINTFORML 
+PRINTFORMW そう思っていると、部屋の扉が開いた
+PRINTFORMW 姿を現したのは女中で、例の子が来たという報せだった
+PRINTFORML 余程%CALLNAME:TARGET%のことが気に入ったのだろう
+PRINTFORMW %CALLNAME:MASTER%は%CALLNAME:TARGET%を手を振って送り出した
+PRINTFORML 
+PRINTFORMW いかがだろうか。これが疎通力が活かされた一例である
+PRINTFORMW 別に大仰なことをする必要はない。むしろ日常を楽しくする香辛料であるのだ
+PRINTFORMW 説教臭くなってしまったが、以上で私の主張を終えさせていただく
+PRINTFORML 
+PRINTFORMW -武士ED No.10　毎日会う好敵手-
+
+;---------------------------------------------------------
+;ED11　人相のいい武士
+;---------------------------------------------------------
+@ENDING_SAMURAI_11
+PRINTFORMW 
+PRINTFORMW %CALLNAME:TARGET%は、そこそこ他人との疎通が取れる武士へと育った
+PRINTFORML 
+PRINTFORML とは言っても武士の本分は他者との疎通を取ることではない
+PRINTFORML 同業者には効力があるかも知れないが、そうでない者に対してあまり使い道は見いだせないだろう
+PRINTFORMW しいてあげるとするならば……
+PRINTFORML 
+PRINTFORML 「ねえねえ、聞いて聞いて！」
+PRINTFORMW %CALLNAME:TARGET%は嬉しそうな声をあげる
+PRINTFORML 「私ね！　またいい褒められちゃった！　いい表情ですねって！」
+PRINTFORMW %CALLNAME:MASTER%は頭を抱えた。またこれである
+PRINTFORMW 他者との疎通を取る技術をそこそこ得た%CALLNAME:TARGET%は、好感を得る技術だけは活かせるようになっていたのだ
+PRINTFORMW それ故に武士道と関係ない人からは、その人相のよさを褒められることになる。それも何度も
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%の疎通力がもう少し役に立つ日は、はたして来るのだろうか……
+PRINTFORML 
+PRINTFORML 
+PRINTFORMW -武士ED No.11　人相のいい武士-
+
+;---------------------------------------------------------
+;ED12　食料の大切さ
+;---------------------------------------------------------
+@ENDING_SAMURAI_12
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はとても家事に長けた武士へ成長した
+PRINTFORML 
+PRINTFORML 「食料は大切なのよ」
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に言った
+PRINTFORMW 手には缶詰を持っている
+PRINTFORML 
+PRINTFORML 「突然敵に攻められたらどうするの？　その時に食料がなかったら餓え死ぬだけなのよ？」
+PRINTFORMW そう言って%CALLNAME:MASTER%の腕を引っ張る%CALLNAME:TARGET%
+PRINTFORML この月の都を攻める敵なんているだろうか
+PRINTFORMW そう思う%CALLNAME:MASTER%ではあったが%CALLNAME:TARGET%の気を削ぐわけにもいかない
+PRINTFORMW 結局%CALLNAME:MASTER%は非常食作りを手伝うことにした
+PRINTFORML 
+PRINTFORMW このとき、誰がこの非常食が役に立つ日が来ると予測できただろうか
+PRINTFORMW 現に活用される時は来たのだ。なぜなら、%CALLNAME:TARGET%は警備隊等の協力者と共に君主を貶めるための籠城戦を始めたからだ
+PRINTFORMW その籠城戦が成功を収めた一因は、この非常食にある
+PRINTFORML 
+PRINTFORMW -武士ED No.12　兵站の大切さ-
+
+;---------------------------------------------------------
+;ED13　武士の鉄人
+;---------------------------------------------------------
+@ENDING_SAMURAI_13
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は家事に長けた武士へと成長した
+PRINTFORML 
+PRINTFORMW 特に上手かったのは料理である
+PRINTFORMW 毎日%CALLNAME:MASTER%に料理を作り、感想を聞いた
+PRINTFORMW 感想を糧に、より手間のかかる料理に手をかける
+PRINTFORMW その繰り返しにより、%CALLNAME:TARGET%の料理の腕はめきめきと上達していく
+PRINTFORML 
+PRINTFORMW そんなある日、%CALLNAME:TARGET%の元に一通の手紙が届いた
+PRINTFORMW %CALLNAME:TARGET%が何気なく手紙を開くと、表情を凍らせた
+PRINTFORMW それは料理大会への招待状だったのだ
+PRINTFORML 
+PRINTFORMW この時%CALLNAME:TARGET%は想いもしなかった
+PRINTFORMW 月の都で最も腕が立つ調理師。いわゆる"料理の鉄人"になるとは
+PRINTFORML 
+PRINTFORMW -武士ED No.13　武士の鉄人-
+
+;---------------------------------------------------------
+;ED14　秋刀魚は漬物
+;---------------------------------------------------------
+@ENDING_SAMURAI_14
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は家事が少し上手い武士へと成長した
+PRINTFORML 
+PRINTFORMW しかし、なまじ家事が上手になったばかりに思い違いを抱くこととなった
+PRINTFORMW ある日、%CALLNAME:TARGET%が台所に立っていた
+PRINTFORMW 手元を見るとまな板の上には秋刀魚と、そして脇には糠坪がある
+PRINTFORMW 秋刀魚を漬物にするつもりなのだろうか？
+PRINTFORML 
+PRINTFORML 「あら、この料理を知らないの？」
+PRINTFORMW 頭を傾げる%CALLNAME:MASTER%に、%CALLNAME:TARGET%は優しく問う
+PRINTFORML 「これは郷土料理の一つなの。月の都の……えーと、どこだったっけ」
+PRINTFORMW 顎に指を置いて悩む%CALLNAME:TARGET%。……まさか思いつきで作った料理なのだろうか
+PRINTFORMW そんな疑問が脳裏を過ぎるが、とりあえず任せてみることにした
+PRINTFORML 
+PRINTFORMW ちなみに、後日食べたところとても美味しかったことを付け加えておく
+PRINTFORML 
+PRINTFORMW -武士ED No.14　秋刀魚は漬物-
+
+;---------------------------------------------------------
+;ED15　武術の達人
+;---------------------------------------------------------
+@ENDING_SAMURAI_15
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%は非常に精錬された身体を持つ武士に成長した……
+PRINTFORML 
+PRINTFORMW その身のこなしの軽さは人々の間で話題となり、同時に恐れられもした
+PRINTFORMW 彼女の名前は警備隊の間にも轟き、君主討伐に向けて一歩、また一歩と歩みを進めていく
+PRINTFORML 
+PRINTFORMW ある日、%CALLNAME:MASTER%は%CALLNAME:TARGET%に呼ばれた
+PRINTFORMW そこは会議室で、警備隊も数人集まっていた
+PRINTFORML 「突然だけど、そろそろ君主を倒そうと思うの」
+PRINTFORMW その発言に%CALLNAME:MASTER%は表情を変えるが、%CALLNAME:TARGET%は気にせず言葉を続ける
+PRINTFORML 「分かってるわ。君主だもの、どんな手を使ってくるか分からないよね。そこで、私にいい考えがあるの」
+PRINTFORMW %CALLNAME:TARGET%には考えがあるらしい。どんな内容が飛び出すのだろう
+PRINTFORMW 「武術大会を開くのよ。もちろん月の都以外からも集まってもらうわ」
+PRINTFORML 
+PRINTFORMW 彼女の戦略はこうだ
+PRINTFORMW まず、武術大会を開き、高額な賞金を設定する
+PRINTFORMW そうすることで月の都の外部に巣食う輩。つまり盗賊が近寄る可能性が上がる
+PRINTFORMW すると盗賊は本来の稼業ができなくなり、彼らを手足のように使っていた君主の活動範囲も狭まる
+PRINTFORMW そして%CALLNAME:TARGET%は優勝者と戦うことにしておけば、君主の隙をついて撃破することができるという算段だ
+PRINTFORML 
+PRINTFORMW 後日、実際に武術大会が開かれ、目論見通り盗賊達がたくさん参加した
+PRINTFORMW %CALLNAME:TARGET%は君主の姿を見つけ、無事に撃破する
+PRINTFORML 
+PRINTFORMW -武士ED No.15　武術の達人-
+
+;---------------------------------------------------------
+;ED16　道場の師範
+;---------------------------------------------------------
+@ENDING_SAMURAI_16
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はかなり身体を鍛えた武士へ成長した……
+PRINTFORML 
+PRINTFORMW 柔軟な身体から打ち出される重厚な一撃は、多くの人間を魅了した
+PRINTFORML ここに、その動きに魅せられた者達の墓場が作られた
+PRINTFORMW それは、%CALLNAME:TARGET%が開いた道場
+PRINTFORMW なぜ墓場と呼ばれるのか。それは生徒が誰一人として卒業しないからである
+PRINTFORML 
+PRINTFORMW 朝早くから練習に打ち込む生徒達
+PRINTFORMW そこに%CALLNAME:TARGET%が現れると、雰囲気は一転する
+PRINTFORML 「おはよう。あら、いつものことだけど、みんな偉いわね」
+PRINTFORMW その言葉をかけられた生徒は、顔を紅潮させ行動が鋭くなった
+PRINTFORMW %CALLNAME:TARGET%の笑顔。これが早朝から道場に来た者が得られる特権である
+PRINTFORMW 今この場に居る生徒の半分以上がこれを目的としている
+PRINTFORML 
+PRINTFORMW これだけならやる気の糧になるので有意義なのだが、どうも度が過ぎる生徒が増えているらしい
+PRINTFORMW 具体的には、%CALLNAME:TARGET%の姿を見たいがためにわざと卒業しない生徒がいるのだとか
+PRINTFORML その現象には%CALLNAME:TARGET%も度々困り果てているらしく
+PRINTFORMW 「ねえ、あの子達を卒業させる方法はないの？」と%CALLNAME:MASTER%に聞くほどだ
+PRINTFORMW 今日も道場に集う墓石の数は減らない
+PRINTFORML 
+PRINTFORMW -武士ED No.16　道場の師範-
+
+;---------------------------------------------------------
+;ED17　魅力的な護衛隊
+;---------------------------------------------------------
+@ENDING_SAMURAI_17
+PRINTFORML 
+PRINTFORMW 数年後……
+PRINTFORMW %CALLNAME:TARGET%は持ち前の武術を活かし、護衛隊に勤めている
+PRINTFORMW 多くの要人を守る為、彼女は自身が持つ力を最大限発揮する
+PRINTFORML 
+PRINTFORML 彼女の強みは武術だけではない。その見た目も強みの一つである
+PRINTFORMW 男だらけの護衛隊の中に少女が一人。それはまるで草原の中に咲く花のようだ
+PRINTFORMW 女中はもちろんのこと。都の民達からも男女問わず人気があるという
+PRINTFORMW 見た目で人を魅了し、放たれる一撃は至高の瞬間を映し出す
+PRINTFORMW 目前で見た者は、それが冥土への土産となる
+PRINTFORML 
+PRINTFORMW -武士ED No.17　魅力的な護衛隊-
+
+;---------------------------------------------------------
+;ED18　覇道を究める者
+;---------------------------------------------------------
+@ENDING_SAMURAI_18
+PRINTFORML 
+PRINTFORMW ある日の朝。%CALLNAME:MASTER%は空を見つめた
+PRINTFORMW %CALLNAME:TARGET%が旅立ってから数日が経った。今頃は何をしているのだろう
+PRINTFORMW そんな思いを%CALLNAME:MASTER%は雲一つない空にぶつけた
+PRINTFORML 
+PRINTFORML %CALLNAME:TARGET%は才気溢れる武士として成長した。
+PRINTFORMW とても多くの経験を積んで体系立て、自分の物にした彼女にもはやできないことはない
+PRINTFORML そんな彼女を世間が放っておくわけがなかった
+PRINTFORMW 多くの人々が彼女を求め、王宮に押しかけてきたのだ
+PRINTFORMW その様子に嫌悪感を覚えた彼女は旅立つ決意を固め、王宮を後にしたのだ
+PRINTFORMW 彼女曰く、ほとぼりが醒めたら戻ってくるとのことだった
+PRINTFORML 
+PRINTFORMW そして今に至る。最近は彼女を求める人々はめっきり来なくなった
+PRINTFORMW 彼女が旅立ったという噂が広まったのだろうか
+PRINTFORMW それならそれで、旅先で面倒事に巻き込まれてなければいいが……
+PRINTFORMW そんなことを思っていると、塀の上から人影が降りてきた
+PRINTFORML 
+PRINTFORMW 「あらあら、お久しぶりです」
+PRINTFORML 
+PRINTFORMW 懐かしい声と姿が、そこにはあった
+PRINTFORML 
+PRINTFORMW 「結局旅先でも追われるから戻ってきちゃった。これからもよろしくお願いします」
+PRINTFORML 
+PRINTFORML 
+PRINTFORMW まさかの再開に%CALLNAME:MASTER%は胸にこみ上げる物を感じ、%CALLNAME:TARGET%をそっと抱いた
+PRINTFORML 
+PRINTFORMW -武士ED No.18　覇道を究める者-
+
+;---------------------------------------------------------
+;ED19　武者として、嫁として
+;---------------------------------------------------------
+@ENDING_SAMURAI_19
+PRINTFORML 
+PRINTFORMW %CALLNAME:TARGET%はあらゆることをそつなくこなす武士に成長した
+PRINTFORMW 今の彼女になら何を任せても人並み以上の出来で仕上げることができる
+PRINTFORML 
+PRINTFORMW ある日、%CALLNAME:TARGET%の元に一通の手紙が届いた
+PRINTFORMW 差出人は都で有名な貴族で、どうやら練習している%CALLNAME:TARGET%の姿に一目惚れしたらしい
+PRINTFORML 
+PRINTFORML 「え？　これは……受け入れるべきなの？」
+PRINTFORMW 戸惑う%CALLNAME:TARGET%。互いの立場が特異なだけに対処に困っているようだ
+PRINTFORMW これ程有能な姫君に育ったのだから、今後はこうした申し込みが増えるだろう
+PRINTFORMW %CALLNAME:TARGET%や%CALLNAME:MASTER%は、無難に断る対応を検討しなければならない
+PRINTFORML 
+PRINTFORMW -武士ED No.19　武者として、嫁として-
+
+;---------------------------------------------------------
+;ED20　欠点無き振る舞い
+;---------------------------------------------------------
+@ENDING_SAMURAI_20
+PRINTFORML 
+PRINTFORML %CALLNAME:TARGET%は何事もそれなりにできる武士に成長した
+PRINTFORMW その平均的な出来は正に欠点が無いと言っても過言ではないだろう
+PRINTFORML 
+PRINTFORMW と言いたい所だが、%CALLNAME:TARGET%は大きな悩みを抱えていた
+PRINTFORMW 机に座し、腕を組んで唸っている
+PRINTFORMW 秀でた長所がない。それが彼女の悩みだった
+PRINTFORMW 他人からすれば贅沢な悩みに見えるだろう。人によっては長所がないけど短所があるという状態もあるのだから
+PRINTFORMW しかし、彼女は現状に満足ができない様子。長所がない。これも立派な端緒になるからだ
+PRINTFORMW 貪欲に自分が興味を持つ事柄を探し、打ち込んでいく
+PRINTFORMW それはまるで自己を鍛えるきっかけを探しているかのようにも見える
+PRINTFORML 
+PRINTFORMW はたして彼女がこの思考の迷宮から抜け出す日は来るのだろうか
+PRINTFORML 
+PRINTFORMW -武士ED No.20　欠点無き振る舞い-

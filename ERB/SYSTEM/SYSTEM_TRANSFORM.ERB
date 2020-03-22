@@ -1,0 +1,164 @@
+﻿;=====================================================
+;種族変更要素
+;=====================================================
+@SYSTEM_TRANSFORM
+
+IF !TALENT:人魚
+	;天女の社で働いている場合、変異値+9
+	IF CFLAG:職業 >= 20 && CFLAG:職業 != 99 && NAME_METAWORK(CFLAG:職業-21) == "天女の社" && !TALENT:人魚
+		BASE:変異値／人魚 += 9
+	ELSEIF CFLAG:服装 != 63
+		BASE:変異値／人魚 = MAX(BASE:変異値／人魚-6,0)
+	ENDIF
+
+	;人魚の衣を身に着けている場合、変異値が+3される
+	IF CFLAG:服装 == 63 && !TALENT:人魚
+		BASE:変異値／人魚 += 3
+	ENDIF
+
+	;変異値が230以上になると人魚に変異する
+	IF BASE:変異値／人魚 >= 230
+		PRINTFORML %CALLNAME:TARGET%の身体が淡い水色の光に包まれる
+		PRINTFORMW 光の中央に居る少女は腰をくねらせ、甲高い声をあげる
+		PRINTFORML しばらく経つと光は収まり、中で%CALLNAME:TARGET%がぐったりとしている
+		PRINTFORMW その脚は魚の尾びれと化し、耳はヒレのような形になっている
+		PRINTFORML 
+		PRINTFORMW %CALLNAME:TARGET%は[人魚]になった
+		PRINTFORMW ＜下半身が合わなくなるので、全裸か半裸の衣服しか着る事ができなくなりました＞
+		TALENT:人魚 = 1
+	;150以上で警告メッセージを出す
+	ELSEIF BASE:変異値／人魚 >= 150
+		PRINTFORML %CALLNAME:TARGET%の身体に異変が生じている……
+		PRINTFORML 身体がしなやかにくねるようになり、足に所々鱗が浮き始めている
+		PRINTFORMW 一旦天女の社や人魚の衣から遠ざける必要がありそうだ……
+	ENDIF
+ENDIF
+
+;淫魔の布切れを着た状態で淫魔属性が30％以上だと淫魔化する
+IF CFLAG:服装 == 24 && CFLAG:属性／淫魔 >= 40
+	DRAWLINE
+	PRINTFORML 淫魔の布切れが黒い瘴気を滲み出させ、%CALLNAME:TARGET%の身体を包みこんだ……
+	;王宮を追放されている
+	IF !FLAG:王宮追放
+		PRINTFORML 包み込まれた身体は少しずつ変化していき
+		PRINTFORML 瘴気が晴れた頃には、%CALLNAME:TARGET%は身体を売って生計を立てるに相応しい姿となっていた……
+	ELSE
+		PRINTFORML 包み込まれた身体は少しずつ変化していき
+		PRINTFORML 瘴気が晴れた頃には、身体つきがすっかり変わった%CALLNAME:TARGET%の姿があった……
+	ENDIF
+	PRINTFORMW 肌の色が変化し、悪魔を想像させる羽が生えている
+	IF TALENT:娼婦
+		PRINTFORML 元から色事に思考を支配されていた%CALLNAME:TARGET%は
+		PRINTFORML 淫靡な表情を浮かべ、その場で更に膨らんだ胸に手をやり自慰を始めた
+	ENDIF
+	PRINTL
+	PRINTFORML %CALLNAME:TARGET%は[淫魔]を得た
+	
+	IF TALENT:傷物
+		PRINTFORML ＜想定外の事で処女を奪われた悲しみが消え、%CALLNAME:MASTER%に依存するようになりました＞
+		TALENT:傷物 = 0
+		TALENT:依存 = 1
+	ENDIF
+	PRINTFORMW ＜衣服を外せなくなりました＞
+	
+	;生活習慣を淫魔で癒着化させておく
+	;割合を淫魔100％にする
+	FOR COUNT, 0, 5
+		CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") = 3
+		CFLAG:("習慣職業／"+LIFESTYLE_NAME(COUNT)+"") = 1p6
+	NEXT
+	
+	FOR COUNT, 0, 8
+		CALL ELEMENT_CONVERT, COUNT
+		CFLAG:("属性／"+STR+"") = 0
+	NEXT
+	CFLAG:属性／淫魔 = 100
+	BASE:胸囲 += 3
+	BASE:ウエスト -= 2
+	BASE:ヒップ += 2
+	ITEM:24 = 0
+	ITEM:34 = 1
+	CFLAG:胸部下着 = 0
+	CFLAG:秘所下着 = 0
+	TALENT:淫魔 = 1
+	CFLAG:髪色 = 2
+	CFLAG:肌の色 = 2
+	CALL DATA_CHANGE_CLOTHE, 34, "変更"
+ENDIF
+
+;呪詛の布切れを着た状態で淫魔属性が15％以上だと淫魔の布切れになる
+IF CFLAG:服装 == 14 && CFLAG:属性／淫魔 >= 15
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%が着ている呪詛の布切れから黒い靄が滲み出る……
+	PRINTFORMW 布を着ている者を更に淫魔に誘い込むため、布も少し露出が多くなるように変化していく……
+	PRINTL
+	PRINTFORMW 呪詛の布切れは淫魔の布切れになった！
+	ITEM:14 = 0
+	ITEM:24 = 1
+	CALL DATA_CHANGE_CLOTHE, 24, "変更"
+ENDIF
+
+;ボロの布切れを着た状態で乞食属性25％以上＆淫妖経験が80以上になると解れる
+IF CFLAG:服装 == -2 && FLAG:布の痛み == 1 && EXP:淫妖経験 >= 80 && CFLAG:属性／乞食 >= 25
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%が着ている布切れの繊維が所々解れている
+	PRINTFORMW 特に太腿や胸元、脇等の擦れやすい場所は衣服としての役割を果たしているかどうかも際どい……
+	PRINTL
+	PRINTFORMW ボロの布切れは解れかけた布切れになった！
+	FLAG:布の痛み = 2
+	CALL DATA_CHANGE_CLOTHE, -3, "変更"
+ENDIF
+
+;布切れを着た状態で乞食属性10％以上＆淫妖経験40以上でボロボロになる
+IF CFLAG:服装 == -1 && FLAG:布の痛み == 0 && EXP:淫妖経験 >= 40 && CFLAG:属性／乞食 >= 10
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%が着ている布切れが少しボロボロになってきている
+	PRINTFORMW 肌蹴なくても太腿や胸元の露出が大きく、目のやり所に困りそうだ……
+	PRINTL
+	PRINTFORMW 布切れはボロの布切れになった！
+	FLAG:布の痛み = 1
+	CALL DATA_CHANGE_CLOTHE, -2, "変更"
+ENDIF
+
+;乞食属性が50以上なら娼婦取得
+IF !TALENT:娼婦 && CFLAG:属性／乞食 >= 50
+	DRAWLINE
+	PRINTFORML ～～引き返せない娼婦への道～～
+	PRINTFORMW 性を露わにする衣装を纏い、金銭の為になら他人に股を開く……
+	PRINTFORML その浅ましい生き方はまさに娼婦そのものだった
+	PRINTFORMW %CALLNAME:TARGET%は、その生き方で姫としての心構えを忘れさせるのに充分な時を過ごした
+	PRINTFORMW 今後彼女に残された道は、娼婦として生きる道しか残されてはいない……
+	PRINTL 
+	PRINTFORML %CALLNAME:TARGET%は[娼婦]を得た
+	PRINTFORMW ＜立場が娼婦で固定されてしまった！＞
+	CFLAG:胸部下着 = 0
+	CFLAG:秘所下着 = 0
+	TALENT:娼婦 = 1
+	FLAG:警備 = 0
+	CFLAG:職業 = 0
+	FLAG:役人の脅し = 0
+	;輝夜の場合のみ
+	IF TALENT:530
+		CALL EXILE_KINGDOM, 1
+		;ゆめみるモードの場合、対象選択可能に
+		IF FLAG:特殊ゲーム == 1
+			FLAG:姉妹陥落フラグ |= 1p0
+			CFLAG:矯正アイテム = 0
+			CFLAG:対象選択可能 = 1
+		ENDIF
+	;姉妹の場合、対応する陥落フラグを立てる
+	ELSEIF TALENT:554
+		PRINTFORMW ＜依姫は完全に%CALLNAME:MASTER%の命令に従うようになった＞
+		FLAG:姉妹陥落フラグ |= 1p1
+		CFLAG:矯正アイテム = 0
+		CFLAG:対象選択可能 = 1
+	ELSEIF TALENT:553
+		PRINTFORMW ＜豊姫は完全に%CALLNAME:MASTER%の命令に従うようになった＞
+		FLAG:姉妹陥落フラグ |= 1p2
+		CFLAG:矯正アイテム = 0
+		CFLAG:対象選択可能 = 1
+	ENDIF
+ENDIF
+
+
+

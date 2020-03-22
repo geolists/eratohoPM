@@ -1,0 +1,638 @@
+﻿;========================================================
+;姫様ルート
+;
+;分岐チャート
+;1:最も高い能力を見る
+;2:その能力の数値で分岐
+
+;========================================================
+@ENDING_HIME
+
+;LOCAL:1に見たエンディングのIDを格納するため、一旦初期化する
+LOCAL:1= 0
+
+;堕落が900以上
+IF BASE:堕落 >= 900
+	CALL ENDING_HIME_1
+	LOCAL:1 = 700
+;600以上
+ELSEIF BASE:堕落 >= 600
+	CALL ENDING_HIME_2
+	LOCAL:1 = 701
+;全能力が900以上
+ELSEIF CHECK_LIMITBASE(900, "美麗", "体力") >= 6
+	;全能力が900以上＆淫妖と堕落経験が0
+	IF !EXP:淫妖経験 && !EXP:堕落経験
+		CALL ENDING_HIME_21
+		;前世譚プレイ中の場合、エンディングフラグを立てない
+		IF !FLAG:前世譚プレイ
+			LOCAL:1 = 883
+		ENDIF
+	ELSE
+		CALL ENDING_HIME_18
+		LOCAL:1 = 717
+	ENDIF
+;全能力が600以上
+ELSEIF CHECK_LIMITBASE(600, "美麗", "体力") >= 6
+	CALL ENDING_HIME_19
+	LOCAL:1 = 718
+;全能力が300以上
+ELSEIF CHECK_LIMITBASE(300, "美麗", "体力") >= 6
+	CALL ENDING_HIME_20
+	LOCAL:1 = 719
+ELSE
+	;各能力の内高い能力をサーチ
+	LOCAL = MAXARRAY(BASE, 5, 12)
+	FINDELEMENT BASE, LOCAL, 5, 12
+
+	LOCAL:1 = RESULT
+	;最も高い能力が美麗
+	IF LOCAL:1 == 5
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_HIME_3
+			LOCAL:1 = 702
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_HIME_4
+			LOCAL:1 = 703
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_HIME_5
+			LOCAL:1 = 704
+		ENDIF
+	;知力
+	ELSEIF LOCAL:1 == 6
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_HIME_6
+			LOCAL:1 = 705
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_HIME_7
+			LOCAL:1 = 706
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_HIME_8
+			LOCAL:1 = 707
+		ENDIF
+	;疎通
+	ELSEIF LOCAL:1 == 7
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_HIME_9
+			LOCAL:1 = 708
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_HIME_10
+			LOCAL:1 = 709
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_HIME_11
+			LOCAL:1 = 710
+		ENDIF
+	;家事
+	ELSEIF LOCAL:1 == 8
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_HIME_12
+			LOCAL:1 = 711
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_HIME_13
+			LOCAL:1 = 712
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_HIME_14
+			LOCAL:1 = 713
+		ENDIF
+	;信仰
+	ELSEIF LOCAL:1 == 9
+		;900以上
+		IF LOCAL >= 900
+			CALL ENDING_HIME_15
+			LOCAL:1 = 714
+		;700以上
+		ELSEIF LOCAL >= 700
+			CALL ENDING_HIME_16
+			LOCAL:1 = 715
+		;400以上
+		ELSEIF LOCAL >= 300
+			CALL ENDING_HIME_17
+			LOCAL:1 = 716
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN LOCAL:1
+
+;---------------------------------------------------------
+;ED1　堕落した生活
+;---------------------------------------------------------
+@ENDING_HIME_1
+PRINTFORMW 様々なことがあり、一時は身の心配もしたがなんとかしてここまで成長させることができた
+PRINTFORMW %CALLNAME:MASTER%は胸を撫で下ろしていた。そう、後に起こることを知らずに……
+PRINTL 
+PRINTFORML ある日のこと、いつもの時間になっても%CALLNAME:TARGET%は姿を現さなかった
+PRINTFORML 自身の身に罰が下る事を覚悟して他の側近に聞いてみるも行方を知らないという
+PRINTFORMW %CALLNAME:MASTER%は”また”誘拐されたのかと思い、捜索隊を結成する段取りを始めた
+PRINTL 
+PRINTFORMW その頃……
+PRINTFORML 性に対する付き合い方に堕落した考えを募らせていた%CALLNAME:TARGET%は
+PRINTFORMW 役人の目を盗んで王宮を抜けだし、夜の街へと足を運んでいた
+PRINTL 
+PRINTFORML やがて店を見つけ、夜明けまでに帰ればいいやと思い遊ぶ事にした%CALLNAME:TARGET%は
+PRINTFORMW 開発された身体が伝える悦楽により次第に瞳の色を薄れさせ、終いには帰る意思を失うこととなる……
+PRINTFORML 
+PRINTFORMW -姫様ED No.1　堕落した生活-
+
+;---------------------------------------------------------
+;ED2　危険な遊び
+;---------------------------------------------------------
+@ENDING_HIME_2
+PRINTFORML 昼間の穏やかでいて、どこか明るい日差しに照らされる月の都……
+PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%と共に人々で賑わう市場を歩いていた
+PRINTFORMW どこかぎこちなく歩く姫の手を引くと、慌てた表情を浮かべた
+PRINTL 
+PRINTFORML それもそのはず、%CALLNAME:TARGET%は服の下に責め具を着けていたのだ
+PRINTFORML このような状態で衆目の目に曝されて歩かされるのだからたまったものではない
+PRINTFORMW 時折堪えるような声を漏らし、足を絡ませかけていることから責めの強さが伺える
+PRINTL 
+PRINTFORML 人通りから外れ、一息ついた%CALLNAME:MASTER%達は
+PRINTFORML 隣で大きく息をしている姫の着衣を乱し、胸を愛撫し始めた
+PRINTFORMW 突然のことで嫌がるような反応を見せたが、身体を襲う甘美な刺激により反応が変わっていった……
+PRINTFORML 
+PRINTFORMW -姫様ED No.2　危険な遊び-
+
+;---------------------------------------------------------
+;ED3　手元から離れる日
+;---------------------------------------------------------
+@ENDING_HIME_3
+PRINTFORML うっすらと青白い光が王宮を照らす頃……
+PRINTFORML %CALLNAME:MASTER%は%CALLNAME:TARGET%の部屋を訪ねた
+PRINTFORMW ノックを３回行い、返事が返ってきたので開けると%CALLNAME:TARGET%は窓辺に腰をかけて夜空を見つめていた
+PRINTL 
+PRINTFORML 「あら？　忙しい私を邪魔するなんて罪な人ね」
+PRINTFORMW 軽くとぼける姫を尻目に、%CALLNAME:MASTER%は告げなければならない事を伝えた
+PRINTL 
+PRINTFORML 「そう……私に嫁ぎ先が……」
+PRINTFORMW %CALLNAME:TARGET%は俯いて目を逸らした
+PRINTL 
+PRINTFORML つい先日、%CALLNAME:TARGET%を嫁に迎えたいと言った者が出たのだ
+PRINTFORML どうやら都で行われているコンテストで一目惚れしたとのことらしい
+PRINTFORMW その者は貴族の家系らしく、王宮の上の者も許可を出したようだ
+PRINTL 
+PRINTFORMW これまでのことが走馬灯のように想起されるなか、%CALLNAME:TARGET%は静かに口を開いた
+PRINTFORMW 「……私、よく周りの人から尊敬の眼差しでみられるのよね」
+PRINTFORMW 「都を散歩してたら小さい子から「どうやったら綺麗になるのか教えてー！」と言われた時は嬉しかったわ……」
+PRINTFORMW %CALLNAME:TARGET%は呻き声を交えながら語った
+PRINTFORMW そして最後に、こちらに花が咲いたような笑顔を向けて言った
+PRINTL 
+PRINTFORMW 「ここまで私を育ててくれて、本当にありがとう……」
+PRINTL 
+PRINTFORMW 明日の朝には、嫁ぎ先に向かうらしい……
+PRINTFORML 
+PRINTFORMW -姫様ED No.3　手元から離れる日-
+
+;---------------------------------------------------------
+;ED4　高嶺の花
+;---------------------------------------------------------
+@ENDING_HIME_4
+PRINTFORML コンテスト開催日……
+PRINTFORMW %CALLNAME:TARGET%はいつものように出場し、2位以下に大差を付けて優勝した
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の美しさは、%CALLNAME:MASTER%の教育の甲斐もあってか辺りでは敵う者が居なかった
+PRINTFORMW 他の参加者達は意識してなんとか2位に退けようとしてくるが、現状では可能性の欠片もない
+PRINTL 
+PRINTFORML だが、この実績は思わぬ弊害を作りだしてしまっていた
+PRINTFORML なんと、コンテストで連勝するがあまりに他の男性達が皆怖気付いてしまい
+PRINTFORMW 求婚の知らせが全く来ないのだ
+PRINTL 
+PRINTFORML 「まあ、私はこれでも充分楽しいからいいのだけれども……」
+PRINTFORMW %CALLNAME:MASTER%の苦労はまだまだ続きそうだ……
+PRINTFORML 
+PRINTFORMW -姫様ED No.4　高嶺の花-
+
+;---------------------------------------------------------
+;ED5　身近な花
+;---------------------------------------------------------
+@ENDING_HIME_5
+PRINTFORML 自分の部屋で%CALLNAME:TARGET%は一人悩んでいた
+PRINTFORMW 「私は都の者と比べて大分美しいという自信があったのだけどね……」
+PRINTL 
+PRINTFORML どうやら都に出かけた際、周囲の反応が芳しくなかったようだ
+PRINTFORMW 服装だけではバレないように出かけると気付いてもらえないらしい
+PRINTL 
+PRINTFORML 一人でため息をついていると、いつの間にか来ていた%CALLNAME:MASTER%が後ろから抱きついた
+PRINTFORML 「ひゃっ！？　……そ、そう？　ま、まあ貴方がそうして励ましてくれるなら私は嬉しいけど」
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%から励ましの言葉を貰い、笑顔が戻った
+PRINTL 
+PRINTFORML 「時間はまだたくさんあるしね。これからもっと美しくなればいいのよ」
+PRINTFORMW %CALLNAME:MASTER%が歩むべき道はまだまだ続く……
+PRINTFORML 
+PRINTFORMW -姫様ED No.5　身近な花-
+
+;---------------------------------------------------------
+;ED6　月の相談役
+;---------------------------------------------------------
+@ENDING_HIME_6
+PRINTFORML 思考力が非常に高く成長した%CALLNAME:TARGET%……
+PRINTFORMW その%CALLNAME:TARGET%の元に多くの役人が詰め寄る
+PRINTL 
+PRINTFORML 「あら？　この事はまだやっていないのかしら？」
+PRINTFORMW 「それは実行するべきだと言ったじゃない……」
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の思考力は王宮内でも有名になり
+PRINTFORMW その能力を政治に生かそうと多くの役人が助言を貰いに来る
+PRINTL 
+PRINTFORML %CALLNAME:MASTER%の問いに対して%CALLNAME:TARGET%は言い返した
+PRINTFORMW 「この程度でいいならいくらでも応じるわよ」
+PRINTFORML 
+PRINTFORMW -姫様ED No.6　月の相談役-
+
+;---------------------------------------------------------
+;ED7　月の発明王
+;---------------------------------------------------------
+@ENDING_HIME_7
+PRINTFORML 思考力が高くなった%CALLNAME:TARGET%は
+PRINTFORMW その力を元に様々な物を発明し、世間を騒がせた
+PRINTL 
+PRINTFORML 「今日皆さんにお見せしたい物は……」
+PRINTFORMW 今日もまた、塩の味がする砂糖を発表しているところだ
+PRINTL 
+PRINTFORML 発表会に来ている人の目が点になっているのが見える
+PRINTFORMW しかしそれも束の間で、たくさんの質問が%CALLNAME:TARGET%に投げかけられた
+PRINTL 
+PRINTFORML 「でね、今回も中々帰れなかったのよー」
+PRINTFORMW 夜遅く帰ってきた%CALLNAME:TARGET%に対し、%CALLNAME:MASTER%は夕食の用意をしている
+PRINTFORMW これからも、彼女は発明をし続けるだろう
+PRINTFORML 
+PRINTFORMW -姫様ED No.7　月の発明王-
+
+;---------------------------------------------------------
+;ED8　月の御意見番
+;---------------------------------------------------------
+@ENDING_HIME_8
+PRINTFORML %CALLNAME:TARGET%は、%CALLNAME:MASTER%と二人で食事をしている中、ふと口にした
+PRINTFORMW 「ねえ、どうして私と話してくれる人はたくさん居るのに、有事の際には誰も相手にしてくれないの？」
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の知力はそれなりに高く、発想力だけは充分鍛えられていた
+PRINTFORMW しかし、そこから発展させた思考をするには到達しなかった
+PRINTL 
+PRINTFORML %CALLNAME:MASTER%が頭を抱えていると、トンッという音と共に玉のような物が頭に当たった
+PRINTFORMW 頭を上げると%CALLNAME:TARGET%が袖で口を抑えて笑っている
+PRINTL 
+PRINTFORMW 「これが本当のお年玉ってやつね……ぷぷっ、目が点になってる……！」
+PRINTFORML 
+PRINTFORMW 急に冷えた体の運動と躾を兼ねて%CALLNAME:TARGET%を叱った
+PRINTL 
+PRINTFORMW -姫様ED No.8　月の発明王-
+
+
+;---------------------------------------------------------
+;ED9　有名な演説家
+;---------------------------------------------------------
+@ENDING_HIME_9
+PRINTFORMW %CALLNAME:TARGET%は王宮の大広間に人を集め、演説を始めた
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の疎通力は高みを極め、今や民衆の心を掴むことも容易かった
+PRINTFORMW 最初は王宮内の一部の人に対して演説を行っていたのだが……
+PRINTL 
+PRINTFORML それが王宮内全体に広がり、都の一区、その隣の一区と徐々に広げていき
+PRINTFORMW 終いには都全体に広がった
+PRINTL 
+PRINTFORML 度々演説を行っているが、その内容は月の都をよくするものなのだろうか……
+PRINTFORMW それは%CALLNAME:MASTER%では窺い知ることはできなかった
+PRINTL 
+PRINTFORML 「ふうっ……疲れたわ」
+PRINTFORMW 「何について演説したのかですって？　……兎についてよ」
+PRINTFORML 「……ウサ耳を都の住民全員に付けるようにしようかと思っ……いてっ」
+PRINTFORMW %CALLNAME:TARGET%の頭を軽く叩いた
+PRINTL 
+PRINTFORMW -姫様ED No.9　有名な演説家-
+
+;---------------------------------------------------------
+;ED10　月の3人
+;---------------------------------------------------------
+@ENDING_HIME_10
+PRINTFORMW 「桃美味しいわね」
+PRINTFORMW 豊姫は窓から手を伸ばして桃を取り頬張っている。
+PRINTFORMW 「団子美味しいわね……」
+PRINTFORMW 輝夜は皿に盛りつけられた団子に手を伸ばし頬張っている
+PRINTFORMW 「二人とも食べてばかりいないで会話してください……」
+PRINTFORMW 依姫は困った表情を浮かべている
+PRINTFORML 
+PRINTFORMW 「へえー、よっちゃん物知りー」
+PRINTFORMW 「これぐらい、月を治める立場に着く者なら知ってて当然ですから……」
+PRINTFORMW 「あらあら、昨日必死で本を読んでたでしょ？　目の下に隅ができてるわ」
+PRINTFORMW 「こ、これはただの痣です！」
+PRINTFORMW 三人は楽しそうに談笑している
+PRINTFORML 
+PRINTFORMW 綿月姉妹とすっかり仲良くなった輝夜は
+PRINTFORMW 時々こうして姉妹の元を訪ねてお泊りしている
+PRINTFORMW 彼女曰く「二人共私と違う観点を持ってて面白い」だそうだ
+PRINTFORML 
+PRINTFORMW これからも、末永く姉妹と交流を持ち続けるだろう……
+PRINTL 
+PRINTFORMW -姫様ED No.10　月の三人-
+
+;---------------------------------------------------------
+;ED11　仲良し3人
+;---------------------------------------------------------
+@ENDING_HIME_11
+PRINTFORMW 「ねえ、よっちゃん。今日はあそこへ行かない？」
+PRINTFORMW 「わ、私は警備の任務がありますので……」
+PRINTFORMW 「あらあら、たまには遊びに行ってもいいじゃない♪」
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%は依姫の手を引っ張って連れ出そうとしている
+PRINTFORMW その様子を傍らで見つめる豊姫……
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%は姉妹とすっかり仲良くなり、今では空いた時間に頻繁に遊ぶ程の仲になった
+PRINTFORMW 好奇心旺盛な%CALLNAME:TARGET%はこうして依姫を連れだすのが趣味になっているらしい
+PRINTL 
+PRINTFORML 「あら、見かけない花があるわね」
+PRINTFORML 「単に踏みつぶされてるだけじゃないのですか……？」
+PRINTFORMW 「私はそうは思わないけど～？」
+PRINTFORMW 「ね、姉さま何時の間に！？」
+PRINTFORMW 「ふふふ、ちょっと2箇所を繋いで、ね」
+PRINTL 
+PRINTFORMW これからも姉妹と一緒に笑い続けるだろう……
+PRINTL 
+PRINTFORMW -姫様ED No.11　仲良し3人-
+
+
+;---------------------------------------------------------
+;ED12　至福の料理
+;---------------------------------------------------------
+@ENDING_HIME_12
+PRINTFORMW 「よし、できたわ！」
+PRINTFORMW 「今回は私の最高傑作ね！」
+PRINTL 
+PRINTFORMW %CALLNAME:TARGET%は台所で一人喜んでいる
+PRINTFORMW 家事に熟練した%CALLNAME:TARGET%は、遂に料理を極めたようだ
+PRINTL 
+PRINTFORMW 「あら？　貴方が生活できてるのは私のおかげじゃない？」
+PRINTFORMW 「そんな不貞腐れた顔をするんじゃないの」
+PRINTL 
+PRINTFORML 料理屋を開いて以来、%CALLNAME:MASTER%は収入を%CALLNAME:TARGET%に依存していた
+PRINTFORMW 手伝いをするだけで生活できる程店が流行ったからだ
+PRINTL 
+PRINTFORML 「早速なんだけど、この料理をメニューに追加しておいてくれない？」
+PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%に料理名が書かれた紙を渡した
+PRINTL 
+PRINTFORMW 形はどうであれ、これで生活に困る事はなさそうだ……
+PRINTL 
+PRINTFORMW -姫様ED No.12　至福の料理-
+
+;---------------------------------------------------------
+;ED13　便利な掃除屋
+;---------------------------------------------------------
+@ENDING_HIME_13
+PRINTFORMW 「この汚れにはこれを使うとよく取れるのよ」
+PRINTFORMW 「ここはこうして掃除するのがコツね」
+PRINTL
+PRINTFORML %CALLNAME:TARGET%は女中に掃除のコツを教えていた
+PRINTFORMW 本来こうした知識は女中の方が多く知ってるはずなのだが、家事の知識に長けた%CALLNAME:TARGET%は女中の知識を上回ってしまった
+PRINTFORMW さすがに女中がクビになるということはなかったが、今はこうして知識を分け与えているというところだ
+PRINTL
+PRINTFORML 「ね、簡単でしょう？」
+PRINTFORMW 周囲の女中の目は点になっている
+PRINTL 
+PRINTFORMW -姫様ED No.13　便利な掃除屋-
+
+;---------------------------------------------------------
+;ED14　家事手伝い
+;---------------------------------------------------------
+@ENDING_HIME_14
+PRINTFORML 家事に慣れてきた%CALLNAME:TARGET%だったが
+PRINTFORMW 際立った特技でもなく、ただただ時間が経過していくだけであった
+PRINTL
+PRINTFORML 目立った特徴がない%CALLNAME:TARGET%は、ついに周囲から無視されはじめ
+PRINTFORMW 今では%CALLNAME:MASTER%以外相手してくれる者はいない
+PRINTL
+PRINTFORML 「悲しくないのですかって？　私は楽しいと思うからいいんだけどね」
+PRINTFORMW %CALLNAME:MASTER%の家事を手伝いながら答えた
+PRINTFORMW %CALLNAME:MASTER%の元を離れる日はまだ遠い……
+PRINTL 
+PRINTFORMW -姫様ED No.14　家事手伝い-
+
+;---------------------------------------------------------
+;ED15　信仰の祖
+;---------------------------------------------------------
+@ENDING_HIME_15
+PRINTFORMW 信仰深い%CALLNAME:TARGET%は、その深さからか遂に自らが崇められる対象となることを選んだ
+PRINTFORMW 「私自身が信仰される対象になれば失望することもありませんしね」
+PRINTL
+PRINTFORML %CALLNAME:TARGET%に集う信者の数は日に日に増し、今では都に集会場を量産するまでに至った
+PRINTFORMW 彼女が能力を用いて人々の目に焼き付けたおかげだろう
+PRINTL
+PRINTFORML 「幸運になりたい？　それなら……信じることね」
+PRINTFORMW 「今からこの壷を風化させてみせるわ」
+PRINTFORMW 「このパンは数年前のもので……」
+PRINTL
+PRINTFORMW 今日もまた、信者が集い続けるだろう
+PRINTL 
+PRINTFORMW -姫様ED No.15　信仰の祖-
+
+;---------------------------------------------------------
+;ED16　信仰の姫
+;---------------------------------------------------------
+@ENDING_HIME_16
+PRINTFORMW %CALLNAME:TARGET%は周囲より一段と強い信仰心を持つようになった
+PRINTL 
+PRINTFORML 「それじゃ、行ってくるわね！」
+PRINTFORMW 今日もまた、教会へ参拝に行くようだ
+PRINTL 
+PRINTFORML これほどの信仰心を持つ事は王族の中では珍しいことらしく
+PRINTFORMW 何度か上司に問い詰められた事があった
+PRINTL 
+PRINTFORML しかし、%CALLNAME:TARGET%の信仰を止める事は難しいだろうということは
+PRINTFORMW %CALLNAME:MASTER%が最も分かっていることで……
+PRINTL 
+PRINTFORMW -姫様ED No.16　信仰の姫-
+
+;---------------------------------------------------------
+;ED17　熱心な信者
+;---------------------------------------------------------
+@ENDING_HIME_17
+PRINTFORMW %CALLNAME:TARGET%は信仰深く成長した
+PRINTL 
+PRINTFORML 「ねえ、%CALLNAME:MASTER%は神様を信じないの？」
+PRINTFORMW 心配そうな表情で見つめる%CALLNAME:TARGET%
+PRINTL 
+PRINTFORML 前々からこのような状態で、何度誤魔化しても誘われるのだ
+PRINTFORMW なまじ信仰深くなってしまったが故に、受動的に神々を信仰する他に道は残されていないようだった
+PRINTL 
+PRINTFORML 「え……？　いやよ、私は神様を信じてるのっ！」
+PRINTFORMW お布施にかかる費用が馬鹿にならなくなってきたので辞めさせようとしたが
+PRINTFORMW やっぱり断られてしまった
+PRINTL 
+PRINTFORMW いつかはその美しい身体を神に捧げなければならない日が来てしまうのだろうか……
+PRINTL 
+PRINTFORMW -姫様ED No.17　熱心な信者-
+
+;---------------------------------------------------------
+;ED18　絶世の姫君
+;---------------------------------------------------------
+@ENDING_HIME_18
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の能力の高さは国民の間で話題になり
+PRINTFORMW 口伝で少しずつ広まっていった
+PRINTL 
+PRINTFORML しかし、そんな%CALLNAME:TARGET%も君主から虐げられている立場らしい……
+PRINTFORMW それを知った国民達は、%CALLNAME:TARGET%を解放して新たな主として擁立するための段取りを開始
+PRINTFORMW その努力は長い時を経て、遂に実る事になった
+PRINTL 
+PRINTFORML 法律、経済、軍事、そして報道能力……
+PRINTFORMW 多様な立場を持つ国民達の力は侮れるものではなかった
+PRINTFORMW 様々な方面からの責めにより、最終的に君主は独裁政治の烙印を押され王宮を追放されてしまった
+PRINTL 
+PRINTFORML 「……本当にそんな事があったの？　さすがに国民だけでは王宮に勝てないと思うんだけど……」
+PRINTFORMW 軍事で押し返せばよかったじゃない。と%CALLNAME:TARGET%は現状に疑いの目を向けて言っている
+PRINTFORMW この時彼女は知らなかったのだろう。まさか王宮内も陰ながら君主追放の動きに賛同する流れになっていたとは……
+PRINTL 
+PRINTFORML まあ何にせよ、今の彼女は追放された君主の後を継いだ
+PRINTFORMW %CALLNAME:TARGET%曰く政治は国民に全てを委ねようと思っているらしい
+PRINTFORMW 前は君主が国民の要望を取り上げ、宮内で話に出して決定していたらしいが……
+PRINTL 
+PRINTFORMW 恐らく復讐しに来るであろう君主の脅威は追い払うと一部の住民は言っているし
+PRINTFORMW 彼女の統治力も含め分からない事は多いが、未来が開けている事だけははっきりとしている
+PRINTL 
+PRINTFORMW -姫様ED No.18　絶世の姫君-
+
+
+;---------------------------------------------------------
+;ED19　対立する姫君
+;---------------------------------------------------------
+@ENDING_HIME_19
+PRINTFORML あれから数ヶ月……
+PRINTFORMW 王宮内の空気が次第に変わっていったのを感じた
+PRINTFORML %CALLNAME:TARGET%の周りに集う女中や役人は次第に増えていき
+PRINTFORMW 終いには守衛のように周囲を取り囲む程になった
+PRINTL 
+PRINTFORML そして今……%CALLNAME:TARGET%は食事を終えて廊下に出てきたところだ
+PRINTFORMW 向こう側から君主が歩いてきた。タイミングが悪いと言うべきなのだろうか
+PRINTL 
+PRINTFORML すれ違う時、互いに視線を合わせたが
+PRINTFORMW 足を止めることなく、そのまますれ違った
+PRINTL 
+PRINTFORML 「いつか機会があればいいんだけどね。今はその時ではないわ」
+PRINTFORMW %CALLNAME:TARGET%はペンを頭に当ててながら言った
+PRINTFORMW どうやら志願兵募集の張り紙の構図を考えているらしい
+PRINTFORMW いつか%CALLNAME:TARGET%の努力が実を結び、君主が姿を消す日は来るのだろうか……？
+PRINTL 
+PRINTFORMW -姫様ED No.19　対立する姫君-
+
+;---------------------------------------------------------
+;ED20　ギリギリのバランス
+;---------------------------------------------------------
+@ENDING_HIME_20
+PRINTFORML 「ねえ、いつになったら準備が終わるの？」
+PRINTFORMW 暗青色の生地でできた着物を着た%CALLNAME:TARGET%は下から覗きこんできた
+PRINTFORMW 慣れない服の着用に戸惑ってしまっている
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%を連れて王宮の会議室に入ると
+PRINTFORMW 背中を向けていた君主が振り向き、%CALLNAME:MASTER%を睨みつけた
+PRINTL 
+PRINTFORML 「ほう、お前が%CALLNAME:MASTER%か。王宮に入ってきたばかりの頃と比べると大きく変わったな」
+PRINTFORMW 君主は目を鋭く光らせ、%CALLNAME:TARGET%に視線を向けた
+PRINTL 
+PRINTFORML 「お前の両親が消えて、私の気苦労は消えたと思っていたのだが、どうやら早かったらしい」
+PRINTFORMW 君主は目を閉じて、更に話を続ける
+PRINTL 
+PRINTFORML 「新人なら何らかの失態を起こして%CALLNAME:TARGET%共々追放できると思っていたのだが……」
+PRINTFORMW 「この教育係、妙に勘が冴えてるようで見事に育て上げよった」
+PRINTFORMW 私の見る目は腐ってなかったな、と自嘲気味に笑った
+PRINTL 
+PRINTFORML 「まあいい、いつかお前らは私の権力の前に屈する時が来る」
+PRINTFORMW 「せいぜいその日までに身体を堕とす準備でもしているんだな！　くっくっくっ……」
+PRINTFORMW 君主は踵を返し、%CALLNAME:MASTER%達に背を向けて不気味な笑い声をあげて去っていった。
+PRINTL 
+PRINTFORML 君主自らが%CALLNAME:TARGET%と接触してきという事実は、君主が危機感を抱いているという何よりの証拠になる
+PRINTFORMW 後一押しが欲しい
+PRINTL 
+PRINTFORMW -姫様ED No.20　ギリギリのバランス-
+
+;---------------------------------------------------------
+;ED20　真に尊き姫君
+;---------------------------------------------------------
+@ENDING_HIME_21
+;周回プレイの場合、エンディングを見ることができない
+PRINTFORML それはとある日の、晴天清々しい朝のことだった
+PRINTFORML 
+PRINTFORML 「あら、おはようございます。%CALLNAME:MASTER%様」
+PRINTFORML 王宮の庭に出た%CALLNAME:MASTER%は、%CALLNAME:TARGET%の恭しい挨拶に出迎えられた
+IF CALLNAME:MASTER == "あなた"
+	PRINTFORMW 「あなた様」というたどたどしい呼び方に苦笑しながら、%CALLNAME:MASTER%はお辞儀を返した
+ELSE
+	PRINTFORMW 柔らかい口調で織りなされる挨拶に心を癒されながら、%CALLNAME:MASTER%はお辞儀を返した
+ENDIF
+PRINTFORML
+PRINTFORMW %CALLNAME:MASTER%は、この5年間に起こった出来事を脳裏に巡らせつつ、空を見上げた
+PRINTFORMW 色々なことがあった。予想外な出来事も多くあり、中にはどうすればいいのか分からないこともあった
+PRINTFORML それでもここまで立派に育てることができ、尚且つ%CALLNAME:TARGET%に穢れを一度も浴びせることがなかったこと
+PRINTFORMW これは本当に立派なことだし、中々できるものではないだろう
+PRINTFORML 
+PRINTFORML 「ねえ、何を考えていたの？」
+PRINTFORML 袖を引っ張られる感覚で%CALLNAME:MASTER%は我に帰った
+PRINTFORMW 横を見ると%CALLNAME:TARGET%が不安気な表情をして見つめている
+PRINTFORMW そうだった。今日は%CALLNAME:TARGET%の戴冠式。教育係である%CALLNAME:MASTER%も出ることになっていたのだった
+PRINTFORMW 幸いなことにまだ開催時刻までは余裕がある。%CALLNAME:TARGET%と手を繋ぎ、一歩足を踏み出した
+IF FLAG:周回プレイ
+	PRINTFORML 
+	DRAWLINE
+	PRINTFORML 
+	PRINTFORML その刹那の出来事だった
+	PRINTFORMW %CALLNAME:TARGET%から手が外れ、尻餅をついてしまった
+	PRINTFORML 何が起こったのか？　気が動転した%CALLNAME:MASTER%は立ち上がって前へ進もうとするが、身体が何かにぶつかり、前へ進むことができない
+	PRINTFORMW 目の前には何もなく、言葉にするならば"透明な壁"があるようだった
+	PRINTFORML 
+	PRINTFORMW 「ふふふ、この世に存在を許されぬ者とは、あなたのことですか」
+	PRINTFORMW "透明な壁"に手を這わす%CALLNAME:MASTER%の前に、一人の少女が現れた
+	PRINTFORMW その少女は片手に傘を持っており、月の都では中々見かけることのないドレスを身に纏っている
+	PRINTFORMW 「何も分からない。といった顔をしているわね。それもそうか、こんなこと、非現実的ですものね」
+	PRINTFORML 少女は傘を持たぬ手で宙に円を描くと、描いた跡が軌跡となって輝き始め、円形を作り出した
+	PRINTFORMW やがて奇跡の内側が鏡面のようになり、%CALLNAME:MASTER%の姿を映し出したかと思うと、鏡の中の景色は目まぐるしく変化しだした
+	PRINTFORMW 変化が収まった後、鏡面には白黒の情景が映し出されていた。中には%CALLNAME:MASTER%と幼き%CALLNAME:TARGET%の姿が映っている
+	PRINTFORML 「あなたは少なくとも一度は時間を遡り、あの姫に関わっているはずです」
+	PRINTFORMW 「もちろん、私の言葉だけですと誰もその事実を証明することはできません。しかし――」
+	PRINTFORMW 少女の言葉の後、%CALLNAME:MASTER%の懐が仄かに光りだした。光る場所に手を入れ弄ると、そこには真円状の結晶が入っていた
+	PRINTFORMW 「それは前世譚の力を結晶化させたもの。前世譚の力を発揮した途端、あなたはこの世の存在から浮いてしまうのです」
+	PRINTFORML 「貴方を探すのにはとても苦労しました。何しろ歴史を辿るだけでは特に変わった点はなかったのですから」
+	PRINTFORMW 少女は%CALLNAME:MASTER%に近づき、真円状の結晶を手に取った
+	PRINTFORML 「ですので貴方が前世譚の力を発揮してくれた時は助かりました。怪訝な顔をしていますが、貴方が私を呼んだも同然なのですわ」
+	PRINTFORMW 少女が口元を手で抑えながら笑い、結晶を懐にしまった
+	PRINTFORMW 「さてと、貴方にはどうしてもこの結末だけは迎えさせるわけにはいきません」
+	PRINTFORMW 「それはなぜかといいますと、あの姫が地上に堕ちる可能性が無くなってしまうからです」
+	PRINTFORML 「それがお前とどのように関係するのか、とでも言いたげな顔をしてますね。とても関係があるのです」
+	PRINTFORMW その時、%CALLNAME:MASTER%を耳鳴りが襲った。両耳を手で塞ぎ平静を取り戻そうとすると、今度は周囲の景色が震え始めた
+	PRINTFORMW 「おっと、お話が過ぎたようね。私はそろそろここから去らなければならない」
+	PRINTFORML 「それでは、また私に会いたくなったら、再び前世譚の力を使ってこの結末に辿り着くことをお勧めするわ」
+	PRINTFORMW 少女が不敵な笑みを浮かべながら手を振ると背後に現れた裂け目に身体を吸い込まれ、姿を消した。
+	PRINTFORML 
+	PRINTFORMW この空間に取り残されたのは%CALLNAME:MASTER%ただ一人
+	PRINTFORMW 最早前進も後退も許されない世界の中、%CALLNAME:MASTER%は膝を抱えて蹲るしかなかった……
+	PRINTFORML false end　No.21　……
+	CALL SETCOLOR_ABL
+	PRINTFORML あなたはこのエンディングを見ることに失敗しました
+	PRINTFORMW このエンディングを見るには、前世譚の力を適用せずにゲームを開始する必要があります
+	RESETCOLOR
+ELSE
+	PRINTL 
+	PRINTFORML 大広間は大勢の人々が集まり、賑わっていた
+	PRINTFORMW 様々な階級の住人、パンや記念硬貨を販売する商人、そして役人や女中が赤い絨毯の傍に集まっている
+	PRINTFORMW この絨毯の上を歩くのは主役である%CALLNAME:TARGET%と%CALLNAME:MASTER%。絨毯の艶深き織り目は主役を彩るのに相応しい
+	PRINTFORML 
+	PRINTFORML 「さあさあ皆さん、よくお集まりいただきました」
+	PRINTFORMW 檀上の奥から中年の貫禄ある男性が現れ、音頭を取った
+	PRINTFORMW 君主は姿を現さない。%CALLNAME:TARGET%を見るのが嫌なのか、はたまた失脚させられたのか、その真意は分からないままだ
+	PRINTFORMW 一つだけ分かっている事は、今後も君主は%CALLNAME:TARGET%に干渉しないだろうし、させるつもりもないということだけだった
+	PRINTFORML 「ふふ、まさかみんな私を祝うために来てくれるだなんてね」
+	PRINTFORMW 傍にいる%CALLNAME:TARGET%が袖口を手で抑えながら微笑む。俯いて表情を隠そうとするが、喜びに満ちていることは声色から分かる
+	PRINTFORML 「さて、行きましょうか」
+	PRINTFORMW %CALLNAME:MASTER%の手を強く握りしめ、%CALLNAME:MASTER%に顔を向けた
+	PRINTFORML 「あなたの、そして私の明るい未来へ――」
+	PRINTFORMW その表情は秋の夜長に咲く花のように可愛らしく、そして美しかった
+	PRINTFORML 
+	PRINTFORMW -姫様ED No.21　真に尊き姫君-
+ENDIF

@@ -1,0 +1,64 @@
+﻿;-------------------------------------------------
+;性交物乞い強制
+;姉妹調教コマンド
+;-------------------------------------------------
+@COM902
+
+;消費CP
+LOSEBASE:0 = 4
+
+IF BASE:ＣＰ < LOSEBASE:0
+	PRINTL CPが足りない
+	RETURN 0
+ENDIF
+
+PRINTL 性交物乞い強制
+STR:0 = 性交物乞い強制
+
+LOCAL:10 = TARGET
+LOCAL:2 = GETCHARA(2)
+LOCAL:3 = GETCHARA(3)
+
+CALL KOJO_MESSAGE_COM
+
+;姉妹それぞれが処女を失ってない場合、[傷物]を得る
+IF LOCAL:2 > 0
+	TARGET = LOCAL:2
+	;娼婦を得ている場合は[依存]を得る
+	IF TALENT:(LOCAL:2):娼婦
+		CALL INSERT, 2, 0
+	ELSE
+		CALL INSERT, 2, 1
+	ENDIF
+	TARGET = LOCAL:10
+ENDIF
+
+IF LOCAL:3 > 0
+	TARGET = LOCAL:3
+	;娼婦を得ている場合は[依存]を得る
+	IF TALENT:(LOCAL:3):娼婦
+		CALL INSERT, 2, 0
+	ELSE
+		CALL INSERT, 2, 1
+	ENDIF
+	TARGET = LOCAL:10
+ENDIF
+
+;-------------------------------------------------
+;ソース追加処理
+;-------------------------------------------------
+
+SOURCE:淫妖 = 10
+SOURCE:堕落 = 9
+SOURCE:背徳 = 7
+
+TFLAG:淫妖経験 = 7
+TFLAG:堕落経験 = 10
+TFLAG:背徳経験 = 10
+TFLAG:調教経験 = 9
+LOSEBASE:アライメント = -2
+
+TFLAG:性交 = 2
+
+RETURN 1
+

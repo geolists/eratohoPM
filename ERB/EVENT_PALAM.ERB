@@ -1,0 +1,269 @@
+﻿;====================================================================
+;各種能力イベント
+;====================================================================
+
+;--------------------------------------------------
+;美麗イベント
+;--------------------------------------------------
+@EVENT_BIREI
+DRAWLINE
+
+;Lv0
+IF PALAM_LV(BASE:美麗) == 0
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 2
+		CASE 2
+			LOCAL = 3
+		CASE 3
+			LOCAL = 4
+	ENDSELECT
+;Lv1
+ELSEIF PALAM_LV(BASE:美麗) == 1
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 5
+		CASE 2
+			LOCAL = 6
+		CASE 3
+			LOCAL = 7
+	ENDSELECT
+;Lv2
+ELSEIF PALAM_LV(BASE:美麗) == 2
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 8
+		CASE 2
+			LOCAL = 9
+		CASE 3
+			LOCAL = 10
+	ENDSELECT
+;Lv3
+ELSEIF PALAM_LV(BASE:美麗) == 3
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 11
+		CASE 2
+			LOCAL = 12
+		CASE 3
+			LOCAL = 13
+	ENDSELECT
+ENDIF
+CALLFORM EVENT_BIREI_{LOCAL}
+PRINTFORM 美麗　{BASE:美麗}　+　{RESULT}　→　
+BASE:美麗 += RESULT
+PRINTFORMW {BASE:美麗}
+
+CALL UP_STATUS
+
+;--------------------------------------------------
+;知力イベント
+;--------------------------------------------------
+@EVENT_TIRYOKU
+DRAWLINE
+
+;Lv0
+IF PALAM_LV(BASE:知力) == 0
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 2
+		CASE 2
+			LOCAL = 3
+		CASE 3
+			LOCAL = 4
+	ENDSELECT
+;Lv1
+ELSEIF PALAM_LV(BASE:知力) == 1
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 5
+		CASE 2
+			LOCAL = 6
+		CASE 3
+			LOCAL = 7
+	ENDSELECT
+;Lv2
+ELSEIF PALAM_LV(BASE:知力) == 2
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 8
+		CASE 2
+			LOCAL = 9
+		CASE 3
+			LOCAL = 10
+	ENDSELECT
+;Lv3
+ELSEIF PALAM_LV(BASE:知力) == 3
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 11
+		CASE 2
+			LOCAL = 12
+		CASE 3
+			LOCAL = 13
+	ENDSELECT
+ENDIF
+CALLFORM EVENT_TIRYOKU_{LOCAL}
+PRINTFORM 知力　{BASE:知力}　+　{RESULT}　→　
+BASE:知力 += RESULT
+PRINTFORMW {BASE:知力}
+
+CALL UP_STATUS
+
+
+;--------------------------------------------------
+;疎通イベント
+;--------------------------------------------------
+@EVENT_SOTUU
+DRAWLINE
+
+;Lv0
+IF PALAM_LV(BASE:疎通) == 0
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 2
+		CASE 2
+			LOCAL = 3
+		CASE 3
+			LOCAL = 4
+	ENDSELECT
+;Lv1
+ELSEIF PALAM_LV(BASE:疎通) == 1
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 5
+		CASE 2
+			LOCAL = 6
+		CASE 3
+			LOCAL = 7
+	ENDSELECT
+;Lv2
+ELSEIF PALAM_LV(BASE:疎通) == 2
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 8
+		CASE 2
+			LOCAL = 9
+		CASE 3
+			LOCAL = 10
+	ENDSELECT
+;Lv3
+ELSEIF PALAM_LV(BASE:疎通) == 3
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 11
+		CASE 2
+			LOCAL = 12
+		CASE 3
+			LOCAL = 13
+	ENDSELECT
+ENDIF
+CALLFORM EVENT_SOTUU_{LOCAL}
+PRINTFORM 疎通　{BASE:疎通}　+　{RESULT}　→　
+BASE:疎通 += RESULT
+PRINTFORMW {BASE:疎通}
+
+CALL UP_STATUS
+
+;--------------------------------------------------
+;淫妖イベント
+;--------------------------------------------------
+@EVENT_INYOU
+DRAWLINE
+
+;Lv0
+IF PALAM_LV(BASE:淫妖) == 0
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 2
+		CASE 2
+			LOCAL = 3
+		CASE 3
+			LOCAL = 4
+	ENDSELECT
+;Lv1
+ELSEIF PALAM_LV(BASE:淫妖) == 1
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 5
+		CASE 2
+			LOCAL = 6
+		CASE 3
+			LOCAL = 7
+	ENDSELECT
+;Lv2
+ELSEIF PALAM_LV(BASE:淫妖) == 2
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 8
+		CASE 2
+			LOCAL = 9
+		CASE 3
+			LOCAL = 10
+	ENDSELECT
+;Lv3
+ELSEIF PALAM_LV(BASE:淫妖) == 3
+	SELECTCASE RAND:4
+		CASE 0
+			LOCAL = 1
+		CASE 1
+			LOCAL = 11
+		CASE 2
+			LOCAL = 12
+		CASE 3
+			LOCAL = 13
+	ENDSELECT
+ENDIF
+CALLFORM EVENT_INYOU_{LOCAL}
+PRINTFORM 淫妖　{BASE:淫妖}　+　{RESULT}　→　
+BASE:淫妖 += RESULT
+PRINTFORMW {BASE:淫妖}
+
+CALL UP_STATUS
+
+;--------------------------------------------------
+;レベル変換
+;能力イベントの発生閾値を一括管理
+;--------------------------------------------------
+@PALAM_LV, ARG
+#FUNCTION
+IF ARG < 50
+	RETURNF 0
+ELSEIF ARG < 300
+	RETURNF 1
+ELSEIF ARG < 500
+	RETURNF 2
+ELSE
+	RETURNF 3
+ENDIF
+

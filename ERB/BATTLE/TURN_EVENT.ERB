@@ -1,0 +1,39 @@
+﻿;-----------------------------------------------------
+;ターン経過時の処理
+;-----------------------------------------------------
+@BATTLE_TURN_EVENT
+#DIM L_LOCAL,1
+
+;押し倒し
+FOR L_LOCAL, 0, TFLAG:敵の数+3
+	IF IJYOU_BATTLE(L_LOCAL) == 1
+		PRINTFORML %STR:(L_LOCAL)%は押し倒されている……
+	ENDIF
+	
+	;ターン数がある場合、1減らす
+	IF TFLAG:(494+L_LOCAL)
+		TFLAG:(494+L_LOCAL) -= 1
+	ENDIF
+	;状態異常継続時間を減らす
+	IF TFLAG:(627+L_LOCAL)
+		TFLAG:(627+L_LOCAL) -= 1
+		IF TFLAG:(500+L_LOCAL) <= 5 && TFLAG:(500+L_LOCAL) && !TFLAG:(627+L_LOCAL)
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %STR:L_LOCAL%の状態異常が回復した！
+			TFLAG:(500+L_LOCAL) = 0
+			RESETCOLOR
+		ENDIF
+	ENDIF
+NEXT
+
+
+
+;-----------------------------------------------------
+;状態異常判別(状況の方)
+;キャラの位置を教えると、TFLAGに変換してくれる
+;-----------------------------------------------------
+@IJYOU_BATTLE, ARG
+#FUNCTION
+
+RETURNF TFLAG:(488+ARG)
+

@@ -1,0 +1,2123 @@
+﻿;=============================================================
+;戦闘処理
+
+;STR:0～2　味方
+;　　3～5　敵
+
+;敵データ　ARG～ARG:2
+;ARG:3　未使用
+;敵レベル　ARG:4
+;ARG:5　経験値や金が入るかどうか(1:入手できない　0:入手できる)
+;=============================================================
+@BATTLE, ARG, ARG:1, ARG:2, ARG:3, ARG:4, ARG:5
+
+;L_LOCAL:1は行動選択メニュー設定にて使用する
+#DIM L_LOCAL, 2
+#DIM UNIT, 1
+
+#DIM HP, 4
+#DIM MAX_HP, 4
+#DIM MP, 4
+#DIM MAX_MP, 4
+#DIM ATK, 4
+#DIM DEF, 4
+#DIM MAG, 4
+#DIM SPI, 4
+#DIM yokujyo, 4
+#DIM TAG, 1
+#DIM winner, 1
+#DIM lost, 1
+#DIM suc, 1
+#DIM move, 30
+#DIM before_move, 1
+#DIM before_tag, 1
+#DIM setting_move, 1
+#DIM retu, 1
+#DIM page, 1
+
+;技の表示順を格納する変数
+;page_ele:0～page_ele:3までをFOR文で参照する
+#DIM page_ele, 4
+
+;現在設定しようとしている表示順を格納する変数
+#DIM temp_page_ele, 4
+
+
+;PRINTFORML レベル:{ARG:4}
+
+;敵欲情ゲージ＆ターン数の初期化
+;絶頂回数も初期化
+VARSET TFLAG, 0,488, 500
+VARSET TFLAG, 0,503, 506
+VARSET TFLAG, 0,509, 512
+VARSET TFLAG, 0,515, 518
+VARSET TFLAG, 0,521, 524
+VARSET TFLAG, 0,530, 542
+VARSET TFLAG, 0,633, 639
+VARSET TFLAG, 0,651, 675
+
+;関数中で使う変数も初期化
+VARSET move, -1
+
+TFLAG:ターン数 = 1
+;敵TFLAGの初期化
+;服装等も初期化
+VARSET TFLAG, 0,580, 621
+TFLAG:取得経験値 = 0
+TFLAG:取得金額 = 0
+
+;BASE:レベル = 30
+
+TFLAG:敵の数 = 0
+TFLAG:敵レベル = ARG:4
+
+CALL SET_STATUS
+
+;表示ページを初期化
+VARSET page, 1
+
+;表示順も初期化
+VARSET page_ele, 0
+
+;テスト用
+IF !GLOBAL:990 && !GLOBAL:991
+	GLOBAL:990 = 2
+	GLOBAL:991 = 4321
+	PRINTL 表示システム初期化しました
+ENDIF
+
+;敵データ読み込み
+FOR L_LOCAL, 0, 4
+	IF ARG:L_LOCAL
+		CALL ENEMY_DATA, ARG:L_LOCAL, L_LOCAL+3, ARG:4
+		TFLAG:敵の数 += 1
+	ENDIF
+NEXT
+;-----------------------------------------
+;コマンド入力部
+;-----------------------------------------
+VARSET TFLAG, 0, 542, 548
+$BACK_LOOP
+
+;優先度を初期化
+VARSET TFLAG, 0,536, 548
+
+DRAWLINE
+PRINTFORM {TFLAG:ターン数}ターン目
+IF FLAG:闘技大会
+	CALL SETCOLOR_ABL
+	PRINTFORML 　闘技大会中！
+	RESETCOLOR
+ELSEIF FLAG:特殊戦闘 == 1
+	CALL SETCOLOR_ABL
+	PRINTFORML 　人助け　目的:%STR:3%を助ける！
+	RESETCOLOR
+ELSEIF FLAG:特殊戦闘 == 2
+	CALL SETCOLOR_ABL
+	PRINTFORML 　人攫い　目的:%STR:3%を快楽によって倒す
+	RESETCOLOR
+ELSE
+	PRINTL 
+ENDIF
+CALL SHOW_HP_STATUS, 0
+
+;奥義ターン数表示
+IF TALENT:輝夜 && INRANGE(FLAG:武者修行マップ, 30, 39)
+	PRINTFORML 月の輝き　{TFLAG:必殺技ゲージ} / 6
+ENDIF
+DRAWLINE
+
+;STR:X　　　名前
+;STR:(X+1)　種別
+FOR L_LOCAL, 0, TFLAG:敵の数
+	CALL SETCOLOR_BATTLE_PLEA, L_LOCAL+3
+	IF GETBIT(TFLAG:(503+L_LOCAL), 7)
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTFORM %STR:(L_LOCAL+3),10,LEFT%　%STR:(L_LOCAL+9)%
+	RESETCOLOR
+	PRINT 　ＨＰ:
+	FOR COUNT, 0, TFLAG:(586+L_LOCAL*10)*10/TFLAG:(580+L_LOCAL*10)
+		;1/5以下
+		IF TFLAG:(586+L_LOCAL*10)*5 <= TFLAG:(580+L_LOCAL*10)
+			SETCOLOR 255, 128, 64
+		;1/2以下
+		ELSEIF TFLAG:(586+L_LOCAL*10)*2 <= TFLAG:(580+L_LOCAL*10)
+			SETCOLOR 255, 232, 196
+		ELSE
+			SETCOLOR 196, 232, 232
+		ENDIF
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+	FOR COUNT, 0, (TFLAG:(580+L_LOCAL*10)-TFLAG:(586+L_LOCAL*10))*10/TFLAG:(580+L_LOCAL*10)
+		SETCOLOR 96, 96, 96
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+	PRINT 　気力:
+	FOR COUNT, 0, TFLAG:(587+L_LOCAL*10)*10/TFLAG:(581+L_LOCAL*10)
+		;1/5以下
+		IF TFLAG:(587+L_LOCAL*10)*5 <= TFLAG:(581+L_LOCAL*10)
+			SETCOLOR 255, 128, 64
+		;1/2以下
+		ELSEIF TFLAG:(587+L_LOCAL*10)*2 <= TFLAG:(581+L_LOCAL*10)
+			SETCOLOR 255, 232, 196
+		ELSE
+			SETCOLOR 196, 232, 232
+		ENDIF
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+	FOR COUNT, 0, (TFLAG:(581+L_LOCAL*10)-TFLAG:(587+L_LOCAL*10))*10/TFLAG:(581+L_LOCAL*10)
+		SETCOLOR 96, 96, 96
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+	PRINT 　欲情:
+	FOR COUNT, 0, TFLAG:(509+L_LOCAL)*10/TFLAG:(527+L_LOCAL)
+		;4/5以上
+		IF TFLAG:(509+L_LOCAL)*5 >= TFLAG:(527+L_LOCAL)*4
+			SETCOLOR 255, 64, 160
+		;1/2以上
+		ELSEIF TFLAG:(509+L_LOCAL)*2 >= TFLAG:(527+L_LOCAL)
+			SETCOLOR 255, 196, 196
+		ELSE
+			SETCOLOR 255, 196, 228
+		ENDIF
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+	FOR COUNT, 0, (TFLAG:(527+L_LOCAL)-TFLAG:(509+L_LOCAL))*10/TFLAG:(527+L_LOCAL)
+		SETCOLOR 96, 96, 96
+		PRINTFORM %UNICODE(0x2588)%
+		RESETCOLOR
+	NEXT
+;　HP({TFLAG:(586+L_LOCAL*10)}/{TFLAG:(580+L_LOCAL*10)})　MP({TFLAG:(587+L_LOCAL*10)}/{TFLAG:(581+L_LOCAL*10)})
+	
+	IF TFLAG:(521+L_LOCAL)
+		SETCOLOR 255, 96, 160
+		PRINTFORM 　絶頂:{TFLAG:(521+L_LOCAL)}/3
+		RESETCOLOR
+	ENDIF
+	
+	;PRINTFORM 対象:{503+L_LOCAL}
+	;PRINTFORM 状態異常:{TFLAG:503}
+	
+	IF GETBIT(TFLAG:(503+L_LOCAL), 0)
+		SETCOLOR 255, 64, 160
+		PRINTL 　欲情
+		RESETCOLOR
+	ELSEIF GETBIT(TFLAG:(503+L_LOCAL), 1)
+		SETCOLOR 255, 192, 128
+		PRINTL 　損傷
+		RESETCOLOR
+	ELSEIF GETBIT(TFLAG:(503+L_LOCAL), 2)
+		SETCOLOR 128, 128, 128
+		PRINTL 　石化
+		RESETCOLOR
+	ELSEIF GETBIT(TFLAG:(503+L_LOCAL), 3)
+		SETCOLOR 64, 64, 192
+		PRINTL 　暗闇
+		RESETCOLOR
+	ELSEIF GETBIT(TFLAG:(503+L_LOCAL), 6)
+		PRINTL 　喪失
+	ELSEIF GETBIT(TFLAG:(503+L_LOCAL), 7)
+		PRINTL 　戦闘不能
+	ELSE
+		PRINTL 
+	ENDIF
+NEXT
+DRAWLINE
+
+;地上ステージの場合、一定数が経過していると「月影の矢」が撃てるようになる
+;輝夜の固有素質を持つ必要がある
+IF TFLAG:必殺技ゲージ >= 6 && TALENT:輝夜 && INRANGE(FLAG:武者修行マップ, 30, 39)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 時が満ちた。%CALLNAME:TARGET%の身体が輝いている……
+	RESETCOLOR
+ENDIF
+
+;戦闘コマンド表示　仕様メモ
+;設定した列数に応じて表示する
+;(列数が4未満の場合、項目送りを実装する)
+;(列の順序を設定できる(この場合、はみ出た分は次のページに移動))
+;具体的な実行フロー
+;GLOBAL:990　表示列数
+;GLOBAL:991　表示項目順
+
+;・各項目の題名呼び出し(GLOBAL:990の回数分FOR文で繰り返す)
+;　1.GLOBAL:991/10の余りで分岐をかける。その後、GLOBAL:991/10をLOCALに入れる
+;　2.LOCAL/10の余りで分岐をかける
+;
+;・各項目のコマンド名呼び出し
+;　1.GLOBAL:991/10の余りで分岐をかけ、その後、GLOBAL:991/10した結果をLOCALに入れる
+
+
+
+;page_eleにGLOBAL:991を分割収納する
+
+;1つ目の値はFOR文の外で作る
+LOCAL =  (GLOBAL:991%10)
+LOCAL:1 = GLOBAL:991/10
+
+FOR L_LOCAL, 0, 4
+	page_ele:L_LOCAL = LOCAL
+	;PRINTFORML page_ele:{L_LOCAL}　{page_ele:L_LOCAL}
+	
+	;1桁目の数値を読むために、10で割った余りをLOCALに代入する
+	LOCAL = (LOCAL:1%10)
+	LOCAL:1 = LOCAL:1/10
+NEXT
+
+CALL SETCOLOR_ABL
+FOR L_LOCAL, 0, GLOBAL:990
+	;4番目のpage_eleを確認する前にBREAKさせる
+	IF L_LOCAL+(page-1)*GLOBAL:990 >= 4
+		BREAK
+	ENDIF
+	
+	SELECTCASE page_ele:(L_LOCAL+(page-1)*GLOBAL:990)
+		CASE 1
+			IF CFLAG:装備
+				PRINTFORMC 【%ITEMNAME:(CFLAG:装備)%】
+			ELSE
+				PRINTC 【素手】
+			ENDIF
+		CASE 2
+			;刀
+			IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+				PRINTC 【刀術】
+			;弓
+			ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+				PRINTC 【弓術】
+			ELSE
+				PRINTC 【打術】
+			ENDIF
+		CASE 3
+			PRINTC 【魔術】
+		CASE 4
+			PRINTC 【淫術】
+	ENDSELECT
+	
+	;次の要素表示のために、LOCALにLOCAL:1を10で割った余りを入れる
+	LOCAL = (LOCAL:1%10)
+	LOCAL:1 /= 10
+NEXT
+
+PRINTL 
+RESETCOLOR
+
+;各種7枠まで
+;(for文を28回回して対応)
+FOR L_LOCAL, 0, 7*GLOBAL:990
+	;L_LOCALを(設定列数)で割った余りに応じて表示内容を変える
+	;(各項目欄の表示階層はL_LOCAL/4の結果となる)
+	IF L_LOCAL%GLOBAL:990+(page-1)*GLOBAL:990 < 4
+		;PRINTFORM {page_ele:(L_LOCAL%GLOBAL:990+(page-1)*GLOBAL:990)}
+
+		CALL INDI_BATTLECOMMAND, page_ele:(L_LOCAL%GLOBAL:990+(page-1)*GLOBAL:990), L_LOCAL/GLOBAL:990
+		move:L_LOCAL = RESULT
+	ELSE
+		move:L_LOCAL = -1
+	ENDIF
+	
+	IF move:L_LOCAL == -1
+
+		;魔術の場合、習得条件を明記する
+		IF L_LOCAL%GLOBAL:990+(page-1)*GLOBAL:990 < 4
+			IF L_LOCAL <= 2 && page_ele:(L_LOCAL%GLOBAL:990+(page-1)*GLOBAL:990) == 3
+				SETCOLOR 96, 96, 96
+				PRINTC 　 ※条件：ゴスロリ属性10%　
+			ELSE
+				SETCOLOR 96, 96, 96
+				PRINTC [---] - 　　　　　　　なし　
+			ENDIF
+		ENDIF
+	ELSE
+		PRINTFORMC [{move:L_LOCAL, 3}] - %MOVENAME(move:L_LOCAL), 18%　
+	ENDIF
+	RESETCOLOR
+	
+	;行最後の表示要素なので改行する
+	IF (L_LOCAL%GLOBAL:990) == GLOBAL:990-1
+		PRINTL 
+	ENDIF
+NEXT
+
+PRINTL 
+DRAWLINE
+IF !before_move
+	SETCOLOR 96, 96, 96
+ENDIF
+PRINTC [500] - 前回の行動を繰り返す　 
+RESETCOLOR
+PRINTC [600] - ステータス　　　　　　 
+IF !(2 % GLOBAL:990)
+	PRINTL 
+ENDIF
+PRINTC [700] - アイテム　　　　　　　 
+IF !(3 % GLOBAL:990)
+	PRINTL 
+ENDIF
+PRINTC [800] - 技の解説を見る　　　　 
+IF !(4 % GLOBAL:990)
+	PRINTL 
+ENDIF
+PRINTC [900] - 繰り返し時の対象:
+IF setting_move
+	PRINT 手動　
+ELSE
+	PRINT 自動　
+ENDIF
+IF !(5 % GLOBAL:990)
+	PRINTL 
+ENDIF
+
+;ここから先は表示するメニューが変わるので、LOCALにメニュー数を記録させる
+LOCAL = 5
+
+;表示列数が4未満の場合
+IF GLOBAL:990 < 4
+	IF page == 1
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [801] - 前のページに戻る　　　 
+	RESETCOLOR
+	
+	LOCAL++
+	IF !(LOCAL % GLOBAL:990)
+		PRINTL 
+	ENDIF
+	
+	IF page == 2
+		SETCOLOR 96, 96, 96
+	ENDIF
+	PRINTC [802] - 次のページへ進む　　　 
+	RESETCOLOR
+	
+	LOCAL++
+	IF !(LOCAL % GLOBAL:990)
+		PRINTL 
+	ENDIF
+ENDIF
+PRINTC [810] - 画面表示設定　　　　　 
+LOCAL++
+IF !(LOCAL % GLOBAL:990)
+	PRINTL 
+ENDIF
+PRINTC [999] - 逃げる　　　　　　　　 
+
+$INPUT_LOOP
+INPUT
+
+IF FINDELEMENT(move, RESULT, 0, 30) >= 0 && RESULT != 0
+	TFLAG:536 = RESULT
+	
+	;行動IDによって関数名を変更
+	;40～49　魔法
+	IF INRANGE(TFLAG:536, 40, 49)
+		CALLFORM MAGIC_SKILL_{TFLAG:536}, 0
+	;50～69　淫術
+	ELSEIF INRANGE(TFLAG:536, 50, 69)
+		CALLFORM NINFO_SKILL_{TFLAG:536}, 0
+	;70～79　打術
+	ELSEIF INRANGE(TFLAG:536, 70, 79)
+		CALLFORM BEAT_SKILL_{TFLAG:536}, 0
+	;80～89　刀術
+	ELSEIF INRANGE(TFLAG:536, 80, 89)
+		CALLFORM KATANA_SKILL_{TFLAG:536}, 0
+	;90～99　弓術
+	ELSEIF INRANGE(TFLAG:536, 90, 99)
+		CALLFORM ARROW_SKILL_{TFLAG:536}, 0
+	;300～399　武器固有技
+	ELSEIF INRANGE(TFLAG:536, 300, 399)
+		CALLFORM SPE_SKILL_{TFLAG:536}, 0
+	;400～499　属性固有技
+	ELSEIF INRANGE(TFLAG:536, 400, 499)
+		CALLFORM ELE_SKILL_{TFLAG:536}, 0
+	;1000～　何もしない
+	ELSEIF TFLAG:536 >= 1000
+		CALLFORM SKILL_ID{TFLAG:536}, 0
+	;200～　 敵専用の技
+	ELSEIF TFLAG:536 >= 200
+		CALLFORM ENEMY_SKILL_{TFLAG:536}, 0
+	;100:　通常攻撃
+	ELSEIF TFLAG:536 == 100
+		CALL NORMAL_ATTACK
+	;102:　愛撫
+	ELSEIF TFLAG:536 == 102
+		CALL PETTING
+	ENDIF
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+	;今回の行動と対象を関数内変数に保存する
+	before_move = TFLAG:536
+	TAG = TFLAG:530
+	before_tag = TAG
+;アイテムを使用した場合はアイテム選択画面まで持っていく
+ELSEIF RESULT == 500 && INRANGE(before_move, 601, 699)
+	PRINTFORML 前回の行動:アイテム使用
+	PRINTFORML 
+	CALL BATTLE_ITEM_USE
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+	TAG = TFLAG:530
+ELSEIF RESULT == 500 && before_move
+	DRAWLINE
+	PRINTFORML 前回の行動:%MOVENAME(before_move)%
+	;PRINTFORML 前回の対象:{before_tag}
+	
+	IF FINDELEMENT(move, before_move, 0, 30) == -1
+		PRINTFORML この行動は実行できません
+		GOTO BACK_LOOP
+	ENDIF
+	
+	;対象選択が手動の場合
+	IF setting_move && before_tag >= 3
+		CALL BATTLE_ATTACK, 0, TFLAG:敵の数, 0
+		IF RESULT == -1
+			GOTO BACK_LOOP
+		ENDIF
+	ELSE
+		TAG = before_tag
+		
+		$TAG_LOOP
+		;対象が既に死んでいる場合、他の敵をランダムで選ぶ
+		;(全体攻撃の場合、この処理はスキップする)
+		IF TAG != 100 && (GETBIT(TFLAG:(500+TAG), 7) || !TFLAG:(558+TAG*10))
+			TAG = 3+RAND:3
+			IF GETBIT(TFLAG:(500+TAG), 7) || !TFLAG:(558+TAG*10)
+				GOTO TAG_LOOP
+			ENDIF
+		ENDIF
+	ENDIF
+	TFLAG:530 = TAG
+	before_tag = TAG
+	
+	TFLAG:536 = before_move
+;表示列数が4未満の場合のみページ送りが可能
+ELSEIF RESULT == 801 && page >= 2 && GLOBAL:990 < 4
+	page -= 1
+	GOTO BACK_LOOP
+ELSEIF RESULT == 802 && page < 2 && GLOBAL:990 < 4
+	page += 1
+	GOTO BACK_LOOP
+ELSEIF RESULT == 810
+	$CONFIG_LOOP
+	DRAWLINE
+	PRINTFORML [0] - 表示列数:{GLOBAL:990}列
+	PRINTL [1] - 技の表示順を変える
+	PRINTL [2] - 戻る
+	
+	CALL SENTAKUSHI, 3
+	
+	IF RESULT == 0
+		PRINTFORML 表示する列数を入力してください
+		PRINTFORML (2～4列)
+		PRINTL [2] - 2列
+		PRINTL [3] - 3列
+		PRINTL [4] - 4列
+		DRAWLINE
+		PRINTL [999] - 戻る
+		
+		$INPUT_LOOP_RETU
+		INPUT
+		
+		IF INRANGE(RESULT, 2, 4)
+			;LOADGLOBAL
+			GLOBAL:990 = RESULT
+			SAVEGLOBAL
+			GOTO CONFIG_LOOP
+		ELSEIF RESULT == 999
+			GOTO CONFIG_LOOP
+		ELSE
+			PRINTL 入力が不正です
+			GOTO INPUT_LOOP_RETU
+		ENDIF
+	ELSEIF RESULT == 1
+		PRINTFORM 現在の表示順：
+		FOR L_LOCAL, 0, 4
+			SELECTCASE page_ele:L_LOCAL
+				CASE 0
+					PRINT 武器技
+				CASE 1
+					;刀
+					IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+						PRINT 刀術
+					;弓
+					ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+						PRINT 弓術
+					ELSE
+						PRINT 打術
+					ENDIF
+				CASE 2
+					PRINT 魔術
+				CASE 3
+					PRINT 淫術
+			ENDSELECT
+			PRINT →
+		NEXT
+		PRINTL
+		PRINTL
+		
+		;初期化
+		VARSET temp_page_ele, 0
+		
+		FOR L_LOCAL, 1, 5
+			DRAWLINE
+			$MOVE_TYPE_LOOP
+			PRINTFORML {L_LOCAL}番目には何を表示しますか？
+			FOR L_LOCAL:1, 0, 4
+				IF FINDELEMENT(temp_page_ele, L_LOCAL:1+1, 0, 4) != -1
+					SETCOLOR 96, 96, 96
+				ENDIF
+				PRINTFORML [{L_LOCAL:1}] - %NAME_MOVETYPE(L_LOCAL:1+1)%
+				RESETCOLOR
+			NEXT
+			PRINTL [4] - やめる
+			
+			CALL SENTAKUSHI, 5
+			
+			IF FINDELEMENT(temp_page_ele, RESULT+1, 0, 4) != -1
+				PRINTL その技種目は既に選択しています
+				GOTO MOVE_TYPE_LOOP
+			ELSEIF RESULT <= 3
+				temp_page_ele:(L_LOCAL-1) = RESULT+1
+			ELSE
+				GOTO BACK_LOOP
+			ENDIF
+			
+			;最後まで決定した場合、最終意思確認を行った後page_eleとGLOBAL:991に代入する
+			IF L_LOCAL == 4
+				PRINT 変更後の並び順:
+				FOR L_LOCAL:1, 0, 4
+					PRINTFORM %NAME_MOVETYPE(temp_page_ele:(L_LOCAL:1))%→
+				NEXT
+				PRINTL
+				PRINTL 以上の並び順に変更します
+				PRINTL よろしいですか？
+				PRINTL 
+				PRINTL [0] - はい
+				PRINTL [1] - いいえ
+				
+				CALL SENTAKUSHI, 2
+				
+				IF RESULT == 0
+					PRINTL 変更しました
+					LOADGLOBAL
+					GLOBAL:991 = temp_page_ele:0+temp_page_ele:1*10+temp_page_ele:2*100+temp_page_ele:3*1000
+					SAVEGLOBAL
+					GOTO BACK_LOOP
+				ELSE
+					GOTO BACK_LOOP
+				ENDIF
+			ENDIF
+		NEXT
+		
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 900
+	IF !setting_move
+		setting_move = 1
+	ELSE
+		setting_move = 0
+	ENDIF
+	GOTO BACK_LOOP
+ELSEIF RESULT == 600
+	CALL SHOW_BATTLE_STATUS, 0
+	PRINTW 
+	GOTO BACK_LOOP
+ELSEIF RESULT == 700
+	CALL BATTLE_ITEM_USE
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+	TAG = TFLAG:530
+ELSEIF RESULT == 800
+	DRAWLINE
+	$BACK_KAISETU
+	PRINTL どの技の解説を見ますか？
+	PRINTL 
+	;固有技
+	PRINTL [0] - 武器/属性固有技
+	
+	;刀
+	IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+		PRINTL [1] - 刀術
+	;弓
+	ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+		PRINTL [1] - 弓術
+	ELSE
+		PRINTL [1] - 打術
+	ENDIF
+	PRINTL [2] - 魔術
+	PRINTL [3] - 淫術
+	PRINTL [4] - 戻る
+	
+	CALL SENTAKUSHI, 5
+	
+	IF RESULT == 4
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 0
+		CALL SHOW_WEAPON_ELE_SKILL
+	ELSEIF RESULT == 1
+		;刀
+		IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+			CALL SHOW_KATANA_SKILL
+		;弓
+		ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+			CALL SHOW_ARROW_SKILL
+		ELSE
+			CALL SHOW_BEAT_SKILL
+		ENDIF
+	ELSEIF RESULT == 2
+		CALL SHOW_MAGIC_SKILL
+	ELSEIF RESULT == 3
+		CALL SHOW_NINFO_SKILL
+	ENDIF
+	GOTO BACK_KAISETU
+ELSEIF RESULT == 999
+	;ボス戦では逃げることができない
+	IF TFLAG:現在の階層 == TFLAG:最深部の階層
+		PRINTL 最深部では逃げることができない！
+		GOTO BACK_LOOP
+	ENDIF
+	
+	LOCAL = 50 + (BASE:レベル-TFLAG:ダンジョンレベル)*5
+	IF RAND:100+1 <= LOCAL
+		PRINTFORML %CALLNAME:TARGET%は逃げるのに成功した！
+		RETURN 0
+	ELSE
+		PRINTL 回り込まれてしまった！
+		
+		;後の判定のためにRESULTをLOCAL:1に代入
+		LOCAL:1 = 1000
+	ENDIF
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+
+
+;ターゲットと素早さを比較し、相手のが素早いと先制される
+;先制した側の仲間は連続して行動できる
+;全体攻撃技の場合、敵ID1番目の素早さを参照する(戦闘不能時の場合も)
+
+;ターゲット数が100(全体攻撃技)の場合、敵ID1番目の素早さを見る
+IF TAG == 100
+	TAG = 3
+ENDIF
+
+DRAWLINE
+CALL ENEMY_MOVE_DICIDE
+;PRINTFORML 優先度:{TFLAG:542}
+;PRINTFORML 対象参照先:{542+TAG}
+;PRINTFORML 対象の優先度:{TFLAG:(542+TAG)}
+;逃走失敗時
+IF LOCAL:1 == 1000
+	DRAWLINE
+	LOCAL:1 = 0
+	CALL ENEMY_MOVE, TAG
+;優先度が高い行動が優先される
+ELSEIF TFLAG:542 > TFLAG:(542+TAG)
+	DRAWLINE
+	CALL BEFORE_MOVE, 0
+	IF !(TFLAG:(500+L_LOCAL/10) == 6 || TFLAG:(500+L_LOCAL/10) == 7)
+		;取り替え子状態の場合、行動対象に行動者のIDを入れ、行動元に取り替え子対象のIDを入れる
+		IF SPI:1 <= 2 && GETBIT(CFLAG:永続状態異常, 2)
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, TFLAG:(645+SPI:1)
+		ELSE
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, 0
+		ENDIF
+	ENDIF
+	CALL ENEMY_MOVE, TAG
+;敵の方が優先度が高い場合
+;どうして今の今までこれを入れていなかったのか
+;優先度の高い行動をしてくる敵がいたら狙うのを避けましょう(纏めて先手を取られてしまうので)
+ELSEIF TFLAG:542 < TFLAG:(542+TAG)
+	CALL ENEMY_MOVE, TAG
+	DRAWLINE
+	CALL BEFORE_MOVE, 0
+	IF !GETBIT(TFLAG:(500+L_LOCAL/10), 6) && !GETBIT(TFLAG:(500+L_LOCAL/10), 7)
+		;取り替え子状態の場合、行動対象に行動者のIDを入れ、行動元に取り替え子対象のIDを入れる
+		IF SPI:1 <= 2 && GETBIT(CFLAG:永続状態異常, 2)
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, TFLAG:(645+SPI:1)
+		ELSE
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, 0
+		ENDIF
+	ENDIF
+ELSEIF TFLAG:味方1の素早さ*(100+25*TFLAG:(663+ARG:3))/100 >= TFLAG:(555+TAG*10)
+	DRAWLINE
+	CALL BEFORE_MOVE, 0
+	IF !GETBIT(TFLAG:(500+L_LOCAL/10), 6) && !GETBIT(TFLAG:(500+L_LOCAL/10), 7)
+		;取り替え子状態の場合、行動対象に行動者のIDを入れ、行動元に取り替え子対象のIDを入れる
+		IF SPI:1 <= 2 && GETBIT(CFLAG:永続状態異常, 2)
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, TFLAG:(645+SPI:1)
+		ELSE
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, 0
+		ENDIF
+	ENDIF
+	CALL ENEMY_MOVE, TAG
+ELSE
+	CALL ENEMY_MOVE, TAG
+	DRAWLINE
+	CALL BEFORE_MOVE, 0
+	IF !GETBIT(TFLAG:(500+L_LOCAL/10), 6) && !GETBIT(TFLAG:(500+L_LOCAL/10), 7)
+		;取り替え子状態の場合、行動対象に行動者のIDを入れ、行動元に取り替え子対象のIDを入れる
+		IF SPI:1 <= 2 && GETBIT(CFLAG:永続状態異常, 2)
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, TFLAG:(645+SPI:1)
+		ELSE
+			CALLFORM ATTACK_MOVE_{TFLAG:536}, 0
+		ENDIF
+	ENDIF
+ENDIF
+
+;ターン終了時の処理を行う
+CALL BATTLE_TURNEND
+
+winner = 0
+lost = 0
+suc = 0
+;勝利条件を満たしているかどうか判定
+IF FLAG:特殊戦闘 == 1
+	;成功変数を立てて、条件を満たさなくなったら潰す
+	suc = 1
+	;救護対象が戦闘不能の場合、失敗
+	IF !(TFLAG:586 && TFLAG:521 < 3)
+		suc = 0
+	ENDIF
+	VARSET L_LOCAL, 0
+	
+	IF TFLAG:(556+L_LOCAL*10) && TFLAG:(518+L_LOCAL) < 5
+		lost += 1
+	ENDIF
+	
+	;敵が全滅してると勝ち
+	FOR L_LOCAL, 1, TFLAG:敵の数
+		IF TFLAG:(586+L_LOCAL*10) && TFLAG:(521+L_LOCAL) < 3
+			winner += 1
+		ENDIF
+	NEXT
+ELSEIF FLAG:特殊戦闘 == 2
+	;対象が快楽で気絶していれば勝利
+	IF TFLAG:586 && TFLAG:521 >= 3
+		suc = 1
+	ENDIF
+	
+	FOR L_LOCAL, 0, TFLAG:敵の数
+		IF TFLAG:(586+L_LOCAL*10) && TFLAG:(521+L_LOCAL) < 3
+			winner += 1
+		ENDIF
+		IF TFLAG:(556+L_LOCAL*10) && !GETBIT(TFLAG:(500+L_LOCAL), 6)
+			lost += 1
+		ENDIF
+	NEXT
+ELSE
+	FOR L_LOCAL, 0, TFLAG:敵の数
+		IF TFLAG:(586+L_LOCAL*10) && TFLAG:(521+L_LOCAL) < 3 && !GETBIT(TFLAG:(503+L_LOCAL), 6) && !GETBIT(TFLAG:(503+L_LOCAL), 7)
+			winner += 1
+		ENDIF
+		IF TFLAG:(556+L_LOCAL*10) && !GETBIT(TFLAG:(500+L_LOCAL), 6) && !GETBIT(TFLAG:(500+L_LOCAL), 7)
+			lost += 1
+		ENDIF
+	NEXT
+ENDIF
+;PRINTFORML winner:{winner}
+;PRINTFORML 敵の数:{TFLAG:敵の数}
+
+DRAWLINE
+;味方側が敗北条件を満たした場合、敗北する
+IF !winner && lost
+	CALL SETCOLOR_PALAMUP
+	PRINTL 戦闘に勝利した！
+	FOR L_LOCAL, 3, 6
+		CALL GET_REMUN, TFLAG:(558+L_LOCAL*10), TFLAG:ダンジョンレベル
+	NEXT
+	IF !ARG:5
+		CALL GET_EXP, TARGET, 0, TFLAG:取得経験値
+		CALL SETCOLOR_MONEY
+		PRINTFORMW ${TFLAG:取得金額}を入手した！
+		FOR L_LOCAL, 2, 5
+			CALL DROP_ITEM, TFLAG:(588+(L_LOCAL-2)*10)
+		NEXT
+	ENDIF
+	RESETCOLOR
+	
+	IF suc
+		RETURN 2
+	ELSE
+		RETURN 1
+	ENDIF
+ELSEIF !lost
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL 戦闘に敗北した……
+	RESETCOLOR
+	
+	RETURN -1
+ELSE
+	TFLAG:ターン数 += 1
+	CALL BATTLE_TURN_EVENT
+	GOTO BACK_LOOP
+ENDIF
+
+;===========================================================
+;攻撃範囲
+;ARG　　単体or全体(0:単体　1:複数)
+;ARG:1　敵の数
+;ARG:2　行動者のID
+
+;100の値を返すと全体指定
+;それ以外はターゲットを返す
+;===========================================================
+@BATTLE_ATTACK, ARG, ARG:1, ARG:2
+#DIM L_LOCAL, 1
+
+;敵の場合、対象が輝夜しかいないので0を入れて返す
+IF ARG:2 >= 3
+	RETURN 0
+ELSEIF !ARG
+	PRINTFORML どの敵を狙いますか？
+	FOR L_LOCAL, 0, ARG:1
+		IF !TFLAG:(586+L_LOCAL*10)
+			SETCOLOR 96, 96, 96
+		ENDIF
+		PRINTFORML [{L_LOCAL+3}] - %STR:(L_LOCAL+3)%
+		RESETCOLOR
+	NEXT
+	PRINTFORML [99] - 戻る
+	
+	$INPUT_LOOP
+	INPUT
+	
+	IF RESULT <= ARG:1+3 && TFLAG:(556+RESULT*10) && RESULT >= 2
+		
+	ELSEIF RESULT == 99
+		RETURN -1
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP
+	ENDIF
+	
+	;PRINTFORML RESULT:{RESULT}
+	RETURN RESULT
+ELSE
+	RETURN 100
+ENDIF
+
+
+;-----------------------------------
+;コマンド種類表示
+;ARG　表示種類区別
+;-----------------------------------
+@NAME_MOVETYPE, ARG
+#FUNCTIONS
+
+SELECTCASE ARG
+	CASE 1
+		LOCALS = 武器技
+	CASE 2
+		;刀
+		IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+			LOCALS = 刀術
+		;弓
+		ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+			LOCALS = 弓術
+		ELSE
+			LOCALS = 打術
+		ENDIF
+	CASE 3
+		LOCALS = 魔術
+	CASE 4
+		LOCALS = 淫術
+ENDSELECT
+
+RETURNF LOCALS
+
+;===========================================================
+;コマンド表示処理
+;LOCAL%10の結果によって分岐
+;
+;1:　武器
+;2:　打術or弓術or刀術
+;3:　魔術
+;4:　淫術
+;
+;ARG　　表示コマンドの種類
+;ARG:1　表示行数の位置
+;===========================================================
+;-------------------------------
+;武器
+;-------------------------------
+@INDI_BATTLECOMMAND, ARG, ARG:1
+
+
+SELECTCASE ARG
+	;武器系統
+	CASE 1
+		LOCAL = LIST_WEAPONMOVE(ARG:1)
+	;武器依存系の術
+	CASE 2
+		;装備している武器の種類によって分岐
+		;刀
+		IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+			LOCAL = LIST_KATANAMOVE(ARG:1)
+		;弓
+		ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+			LOCAL = LIST_ARROWMOVE(ARG:1)
+		ELSE
+			LOCAL = LIST_BEATMOVE(ARG:1)
+		ENDIF
+	;魔術
+	CASE 3
+		LOCAL = LIST_MAGICMOVE(ARG:1)
+	;淫術
+	CASE 4
+		LOCAL = LIST_NINFOMOVE(ARG:1)
+ENDSELECT
+
+RETURN LOCAL
+
+;===========================================================
+;ダメージ計算
+;ARG　　物理or特殊or快楽or補助
+;ARG:1　威力
+;ARG:2　命中率
+;ARG:3　攻撃者
+;ARG:4　ダメージ対象
+;ARG:5　減少対象　0:HP　1:MP　2:絶頂ゲージ(増加(1000+Lv*200))　3:欲情(増加(1000+Lv*200))
+;ARG:6　追加効果　(1以上なら該当するIDの効果を出す)
+;ARG:7　消費気力
+;ARG:8　追加効果発生率(0の場合100％発生)
+;===========================================================
+@DAMAGE_CALCULATION, ARG, ARG:1, ARG:2, ARG:3, ARG:4, ARG:5, ARG:6, ARG:7, ARG:8
+#DIM damage, 2
+#DIM fire, 1
+#DIM ATK, 2
+#DIM DEF, 1
+#DIM LV, 2
+#DIM LOSE_TAG, 1
+#DIM WEAPON, 1
+#DIM hit, 1
+#DIM total, 1
+#DIM FLAG_TOTAL, 1
+#DIM kyuusyo, 1
+
+;(Ver1.00追加)ダメージを管理する変数を初期化する
+VARSET damage, 0
+
+hit = 0
+IF ARG:4 >= 3
+	LV = TFLAG:敵レベル
+ELSE
+	LV = BASE:レベル
+ENDIF
+
+;姉妹のお守りを装備している場合、消費気力が1割減少する
+IF OTHER_ACC(438)
+	ARG:7 = ARG:7 * 90 /100
+ENDIF
+
+;気力を減らす
+IF TFLAG:(557+ARG:3*10) < ARG:7
+	CALL SETCOLOR_PALAMDOWN
+	PRINTL しかし気力が足りなかった……
+	RESETCOLOR
+	RETURN 0
+ELSE
+	TFLAG:(557+ARG:3*10) -= ARG:7
+ENDIF
+
+
+flag_total = 0
+;全体攻撃の場合、フラグを立てる
+IF ARG:4 == 100
+	;ターゲット再選択用のラベル
+	$loop_tag
+	
+	flag_total = 1
+	ARG:4 = 3
+	;対象が戦闘不能の場合、飛ばす
+	IF GETBIT(TFLAG:(500+ARG:4), 6)
+		ARG:4 += 1
+		GOTO loop_tag
+	ENDIF
+ENDIF
+
+;全体攻撃処理の際に用いる
+total = 0
+$TOTAL_ATK
+
+;IDが1005の攻撃は粘性体に効かない
+IF ARG:6 == 1005 && STR:(ARG:4+6) == "粘性体"
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML しかし粘性体である%STR:(ARG:4)%には効かなかった……
+	RESETCOLOR
+	RETURN 0
+ENDIF
+
+WEAPON = 0
+;武器の種類を見る
+IF ARG:3 <= 2 && ARG != 1
+	;刀
+	IF CFLAG:装備 >= 1 && CFLAG:装備 <= 574
+		WEAPON = 1
+	;弓
+	ELSEIF CFLAG:装備 >= 1 && CFLAG:装備 <= 589
+		WEAPON = 2
+	;打撃
+	ELSE
+		WEAPON = 3
+	ENDIF
+ENDIF
+
+;物理
+IF ARG == 0
+	ATK = TFLAG:(552+(ARG:3*10))*MAX((100+25*TFLAG:(651+ARG:3)), 1)/100
+	;味方だと刀/弓術補正をかける
+	IF ARG:3 <= 2
+		CALL WEAPON_DATA, CFLAG:装備
+		;刀
+		IF WEAPON == 1
+			ATK:1 = RESULT*MIN(10,BASE:刀術レベル)/10
+		;弓
+		ELSEIF WEAPON == 2
+			ATK:1 = RESULT*MIN(10,BASE:弓術レベル)/10
+		ELSE
+			ATK:1 = RESULT
+		ENDIF
+		
+		;レベル補正
+		ATK:1 = ATK:1 * (100+BASE:レベル*5)/100
+		ATK += ATK:1
+	ENDIF
+	DEF = TFLAG:(553+(ARG:4*10))*MAX((100+25*TFLAG:(657+ARG:4)), 1)/100
+;特殊
+ELSEIF ARG == 1
+	ATK = TFLAG:(554+(ARG:3*10))*MAX((100+25*TFLAG:(669+ARG:3)), 1)/100
+	;味方だと魔術補正をかける
+	IF ARG:3 <= 2
+		ATK:1 = 30*MIN(10,BASE:魔術レベル)/10
+		
+		;[落書き]持ちの場合、威力1.1倍
+		IF TALENT:落書き
+			ATK:1 = ATK:1 * 11 / 10
+		ENDIF
+		
+		;レベル補正
+		ATK:1 = ATK:1 * (100+BASE:レベル*5)/100
+		ATK += ATK:1
+	ENDIF
+	DEF = TFLAG:(554+(ARG:4*10))*MAX((100+25*TFLAG:(669+ARG:4)), 1)/100
+;快楽
+ELSEIF ARG == 2
+	;攻撃力は魔力依存
+	;防御は(50+(最大欲情-現在の欲情)/2)/(最大欲情)*(60+2Lv)
+	ATK = TFLAG:(554+(ARG:3*10))*(100+50*TFLAG:(669+ARG:3))/100
+	
+	;娼婦の場合、ダメージが1.5倍になる
+	IF ARG:3 <= 2 && STR:6 == "娼婦" && ARG:3 != ARG:4
+		PRINTFORML %STR:(ARG:3)%は娼婦である事により、的確に相手の弱点を突いた！
+		ATK = ATK*3/2
+	ENDIF
+	
+	;IDが1003番の場合、攻撃力+100
+	IF ARG:6 == 1003
+		ATK += 100
+	ENDIF
+	
+	;味方だと淫術補正をかける
+	IF ARG:3 <= 2
+		ATK:1 = 30*MIN(10,BASE:淫術レベル)/10
+		
+		;レベル補正
+		ATK:1 = ATK:1 * (100+BASE:レベル*5)/100
+		ATK += ATK:1
+	ENDIF
+	
+	;相手の衣服が破けている場合、威力を強める
+	;(欲情の補正値を強める感覚で)
+	IF TFLAG:(609+ARG:4) == 2
+		LOCAL = LIMIT((TFLAG:(524+ARG:4)-TFLAG:(506+ARG:4))*7/10, 0, TFLAG:(524+ARG:4))
+	ELSEIF TFLAG:(609+ARG:4) == 1
+		LOCAL = LIMIT((TFLAG:(524+ARG:4)-TFLAG:(506+ARG:4))*9/10, 0, TFLAG:(524+ARG:4))
+	ELSE
+		LOCAL = LIMIT(TFLAG:(524+ARG:4)-TFLAG:(506+ARG:4), 0, TFLAG:(524+ARG:4))
+	ENDIF
+	IF ARG:4 <= 2
+		;味方側(主人公)の快楽防御力：　(快楽限界/2+欲情補正/2)×100/快楽限界×(60+レベル×2)/100+魔力×(100+50×魔力ランク/100)/6+貞操/5 + 1
+		DEF = (TFLAG:(524+ARG:4)/2+LOCAL/2)*100/TFLAG:(524+ARG:4)*(60+BASE:レベル*2)/100+(TFLAG:(554+(ARG:4*10))*(100+50*TFLAG:(669+ARG:4))/100)/6+BASE:(ARG:4+1):貞操/5+1
+	ELSE
+		DEF = (TFLAG:(524+ARG:4)/2+LOCAL/2)*100/TFLAG:(524+ARG:4)*(60+TFLAG:敵レベル*2)/100+(TFLAG:(554+(ARG:4*10))*(100+50*TFLAG:(669+ARG:4))/100)/6+1
+	ENDIF
+	;PRINTFORML DEF:{DEF}
+ENDIF
+
+;PRINTFORML 攻撃力:{ATK}
+;PRINTFORML 防御力:{DEF}
+;PRINTFORML ランク:{TFLAG:(651+ARG:3)}
+fire = ARG:1
+
+;ワイボの弓を装備している場合、優先度が高い技は威力+30
+IF CFLAG:装備 == 582 && TFLAG:(542+ARG:3) >= 1
+	fire += 30
+ENDIF
+
+;PRINTFORML 威力:{fire}
+
+;PRINTFORML 攻撃力:{ATK}
+
+;計算式　(攻撃力×威力/防御or魔力)×85～100％
+IF ARG != 3
+	
+	;補助以外の技は[力貯め]状況下にて必中攻撃になる
+	;(補助技が弾かれているので、ここで必中処理を行う)
+	IF GETBIT(TFLAG:(488+ARG), 3)
+		ARG:2 = -1
+		
+		;威力も2倍にする
+		fire *= 2
+		
+		;[力貯め]状況を消す
+		TFLAG:(488+ARG) -= 1p3
+	ENDIF
+	
+	;レベル補正
+	;Lv*2/60
+	IF ARG != 2
+		IF ARG:3 <= 2
+			damage = ((BASE:レベル*2/3+2)*ATK*fire/DEF/30+2)*(85+RAND:16)/100
+		ELSE
+			damage = ((TFLAG:敵レベル*2/3+2)*ATK*fire/DEF/30+2)*(85+RAND:16)/100
+		ENDIF
+	ELSE
+		damage = ATK*fire/DEF*(85+RAND:16)/100
+	ENDIF
+	
+	;PRINTFORML damage:{damage}
+	
+	;快楽攻撃の場合、欲情値の割合分ダメージが増加する
+	IF ARG == 2
+		LOCAL = TFLAG:(506+ARG:4)
+		
+		;1.25乗を再現する為に1/4乗根を算出する
+		LOCAL = SQRT(LOCAL)
+		LOCAL = SQRT(LOCAL)
+		
+		;PRINTFORML LOCAL:{LOCAL}
+		
+		damage = damage*(1+TFLAG:(506+ARG:4)*LOCAL/TFLAG:(524+ARG:4))
+	ENDIF
+	
+	;絶頂1回につきダメージが2割上昇する
+	IF TFLAG:(518+ARG:3)
+		damage = damage * (10+TFLAG:(518+ARG:3)*2) / 10
+	ENDIF
+ENDIF
+
+IF ARG:2 != -1
+	;暗闇状態の場合、命中が20％下がる
+	IF GETBIT(TFLAG:(500+ARG:3), 3)
+		ARG:2 -= 20
+	ENDIF
+	
+	;(相手の最大気力/相手の気力)*命中率で命中に補正をかける
+	ARG:2 = LIMIT(TFLAG:(551+ARG:4*10)*ARG:2/LIMIT(TFLAG:(557+ARG:4*10),1,TFLAG:(557+ARG:4*10)), 0, 100)
+	
+	
+	;ＭＰが1/5以下の場合、命中率が2/3になる
+	IF TFLAG:(557+ARG:3*10) * 5 <= TFLAG:(551+ARG:3*10)
+		ARG:2 = ARG:2 * 2 / 3
+	;ＭＰが1/2以下の場合、命中率が7/8になる
+	ELSEIF TFLAG:(557+ARG:3*10) * 2 <= TFLAG:(551+ARG:3*10)
+		ARG:2 = ARG:2 * 7 / 8
+	ENDIF
+	PRINTFORML (命中率:{ARG:2}％)
+ENDIF
+
+;補助の場合、命中判定のみ行う
+IF ARG == 3
+	IF RAND:100 <= ARG:2 || ARG:2 == -1
+		CALLFORM EFFECT_ID_{ARG:6}, ARG:3, ARG:4
+		hit = 1
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %STR:(ARG:4)%には当たらなかった
+		RESETCOLOR
+		hit = 0
+	ENDIF
+	
+	;相手or自分の気力を回復させる効果の場合、ここで回復処理を入れる
+	IF ARG:6 == 1006
+		damage = ARG:1
+		;効果量分だけ気力を回復させる
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW %STR:(ARG:4)%の気力が{damage}回復した！
+		TFLAG:(557+ARG:4*10) = MIN(TFLAG:(557+ARG:4*10)+damage, TFLAG:(551+ARG:4*10))
+		RESETCOLOR
+	ENDIF
+ELSEIF RAND:100 <= ARG:2 || ARG:2 == -1
+
+
+	;攻撃対象が[燃素纏い]状態の場合、最大HPの1/8のダメージを受ける
+	IF GETBIT(TFLAG:(500+ARG:4), 4)
+		PRINTFORML %STR:(ARG:4)%の周囲に浮かぶ燃素が爆発した！
+		damage:1 = TFLAG:(550+ARG:3*10) / 8
+		PRINTFORML %STR:(ARG:3)%は{damage:1}のダメージを受けた！
+		TFLAG:(556+ARG:3*10) -= damage:1
+		;[燃素纏い]状態を消す
+		TFLAG:(500+ARG:4) -= 1p4
+	ENDIF
+
+
+	;穢れがある場合、肩書き無しの敵に与えられるダメージが減少する
+	IF STR:(ARG:4+6) == "" && BASE:穢れ
+		;天照の石を持っている場合、代わりにダメージが1.2倍になる
+		IF ITEM:天照の石
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%が持つ天照の石が眩い光を放ち、純化の壁を打ち壊す！
+			PRINTFORML %STR:(ARG:4)%に与えられるダメージが増加した！
+			
+			;ダメージ1.2倍処理
+			damage = damage * 12 / 10
+		ELSE
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML %STR:(ARG:4)%は%STR:(ARG:3)%が持つ穢れを純化させ、防壁を作り出した！
+			PRINTFORML 穢れの多さに応じてダメージが軽減されてしまう！
+			
+			;穢れ％だけダメージが軽減される(最大50％)
+			damage = LIMIT(damage-damage*(MIN(BASE:穢れ/2,50))/100, 0, damage)
+		ENDIF
+	ENDIF
+
+
+	;ID1004の場合、粘性体あるいは蛙に与えるダメージが2倍になる
+	IF ARG:6 == 1004 && (STR:(ARG:4+6) == "粘性体" || STR:(ARG:4+6) == "蛙")
+		damage *= 2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 粘性体・蛙に特攻！
+		RESETCOLOR
+	ENDIF
+	
+	
+	;ID1009の場合、蛙に与えるダメージが2倍になる
+	IF ARG:6 == 1009 && STR:(ARG:4+6) == "蛙"
+		damage *= 2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 蛙に特攻！
+		RESETCOLOR
+	ENDIF
+	
+	;粘性体の場合、刀・弓のダメージは1/3にされる
+	IF STR:(ARG:4+6) == "粘性体" && (WEAPON == 1 || WEAPON == 2)
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 粘性体である%STR:(ARG:4)%に刀・弓はあまり効かないようだ……
+		damage /= 3
+		RESETCOLOR
+	ENDIF
+	
+	;精霊の場合物理ダメージが2/3にされるが、穢れ2につき5％ダメージが増える
+	IF STR:(ARG:4+6) == "精霊" && WEAPON
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML 精霊である%STR:(ARG:4)%に物理ダメージは効きづらいようだ……
+		IF BASE:穢れ
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML しかし、%CALLNAME:TARGET%の身体に染み込んだ穢れが精霊への殺傷力を高めた！
+			RESETCOLOR
+		ELSEIF ITEM:ワールブルクの石
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML %CALLNAME:TARGET%が持つワールブルクの石が精霊への殺傷力を高めた！
+			RESETCOLOR
+		ENDIF
+		damage = (damage*(100+(BATTLE_IMP()/2)*5))/100
+		RESETCOLOR
+	ENDIF
+	
+	;IDが1002の場合、ダメージはARG:1で定めた数値となる
+	IF ARG:6 == 1002
+		damage = ARG:1
+	ENDIF
+	
+	;竹の錫杖を装備していて精霊系にダメージを与える場合、ダメージ25％アップ
+	IF CFLAG:装備 == 599 && STR:(ARG:4+6) == "精霊"
+		damage = damage*125/100
+	ENDIF
+	
+	;------------以下、ダメージ無効処理
+	
+	;相手が花嫁の場合、10％の確率でダメージ20％カット
+	IF STR:(ARG:4+6) == "花嫁" && !RAND:10
+		PRINTFORML %STR:(ARG:4)%は愛する者のために、必死に身を守った！
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML ダメージが幾分か軽減された！
+		RESETCOLOR
+		damage = damage*80/100
+	ENDIF
+	
+	;相手がトリックスターの場合、物理or特殊で攻撃した時に1/3の確率で与えるはずだったダメージの1/2を跳ね返される(攻撃は無力化される)
+	;(2015/07/10追記)補助技・快楽技は通る
+	IF STR:(ARG:4+6) == "トリックスター" && !RAND:3 && ARG <= 1
+		PRINTFORML %STR:(ARG:4)%の肩書き[トリックスター]の能力発動！
+		PRINTFORML %STR:(ARG:4)%は突然姿を消した！
+		PRINTFORML 困惑しつつも姿を探す%STR:(ARG:3)%の背後に空間の裂け目が現れ、中から%STR:(ARG:4)%が姿を表す……
+		PRINTFORML ！！手痛い反撃が%STR:(ARG:3)%を襲う！！
+		CALL SETCOLOR_PALAMUP
+		TFLAG:(556+ARG:3*10) = LIMIT(TFLAG:(556+ARG:3*10)-damage/2, 0, TFLAG:(550+ARG:3*10))
+		PRINTFORML %STR:(ARG:3)%は{damage/2}のダメージを受けた！
+		RESETCOLOR
+		damage = 0
+	ENDIF
+	
+	;相手が箱の場合、1/5の確率で蓋を閉じて防御を行う
+	;弓、刀のみ攻撃が通らなくなる
+	IF STR:(ARG:4+6) == "箱" && !RAND:5
+		PRINTFORML %STR:(ARG:4)%は蓋を閉じ身を守った
+		PRINTFORML 刀、弓による攻撃は防がれる！
+		IF WEAPON && WEAPON != 3
+			damage = 0
+		ENDIF
+	ENDIF
+	
+	;相手が淫魔の場合、ダメージが無効にされMPが最大の10％削られる(補助技・快楽技は通る)
+	;魔力が1/3以上残っていないと機能しない
+	IF STR:(ARG:4+6) == "淫魔" && (TFLAG:(557+ARG:4*10) * 3 >= TFLAG:(551+ARG:4*10)) && ARG:6 != 1000 && !(ARG == 2 || ARG == 3)
+		PRINTFORML 漆黒の霧が%STR:(ARG:4)%を包み込み、%STR:(ARG:3)%の元へ伸びていく……
+		TIMES TFLAG:(557+ARG:3*10), 0.90
+		damage = 0
+		
+		;相手のMPは5％減少する
+		TIMES TFLAG:(557+ARG:4*10), 0.95
+	ENDIF
+	
+	;刀は獣・悪魔に対して威力が上がる
+	IF (STR:(ARG:4+6) == "獣" || STR:(ARG:4+6) == "悪魔") && WEAPON == 1
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %STR:(ARG:4+6)%を相手に、刀の威力が強まった！
+		damage = damage*12/10
+		RESETCOLOR
+	ENDIF
+	
+	;---------------------------------------------------
+	;急所率算出
+	;(2016/04/15)急所率の計算方法を変更
+	;百分率に変更する
+	;味方の急所率は、淫妖の補正を受けて最大50％まで上昇する
+	;---------------------------------------------------
+	;敵:13％　味方:25％
+	;急所に当たりやすい技の場合、急所率は倍になる
+	IF ARG:3 <= 2
+		kyuusyo = 25 + MIN(BASE:淫妖/40, 25)
+		
+		;全裸、半裸属性の服を着ている場合、更に補正をかける
+		;全裸:+10％
+		IF CFLAG:服装 < 0 || DITEMTYPE:(CFLAG:服装):11 == 2
+			kyuusyo += 10
+		;半裸:+5％
+		ELSEIF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+			kyuusyo += 5
+		ENDIF
+	ELSE
+		kyuusyo = 13
+	ENDIF
+	
+	;技IDが1008の場合、急所率が倍になる
+	;(kyuusyoは母数なので、半分にする)
+	IF ARG:6 == 1008
+		kyuusyo /= 2
+	ENDIF
+	
+	
+	;たまに威力が2倍になる(敵の場合は1/8の確率)
+	;(2015/04/02)クリティカルヒット表示が出たのに攻撃が回避されるのはDQ1っぽくていいかなと思ったが、やっぱり違和感があるので修正
+	IF damage && RAND:100+1 <= kyuusyo
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML 急所に当たった！
+		damage *= 2
+		RESETCOLOR
+	ENDIF
+	
+	
+	IF damage || ARG:5 == 3 || ARG:5 == 1
+		CALL SETCOLOR_PALAMUP
+		;PRINTFORML 対象:{556+ARG:4*10}
+		
+		;削る対象によって分岐
+		IF ARG:5 == 0
+			LOSE_TAG = 556+ARG:4*10
+			PRINTFORMW %STR:(ARG:4)%に{damage}のダメージ！
+			;3/4以上のダメージだと全部破ける
+			IF !TFLAG:(615+ARG:4) && (damage * 4 >= TFLAG:(550+ARG:4*10)*3) && TFLAG:(609+ARG:4) < 2
+				PRINTFORML %STR:(ARG:4)%の服が全て破れ、欠片だけが残った！
+				TFLAG:(609+ARG:4) = 2
+				IF ARG:4 <= 2 && CFLAG:(ARG:4):服装 >= 0
+					DITEMTYPE:(CFLAG:服装):14 = 2
+					DITEMTYPE:(CFLAG:服装):11 = 2
+				ENDIF
+			;女性の場合、最大体力の半分以上のダメージを受けると服が破ける
+			ELSEIF !TFLAG:(615+ARG:4) && (damage * 2 >= TFLAG:(550+ARG:4*10)) && !TFLAG:(609+ARG:4)
+				PRINTFORML %STR:(ARG:4)%の服が少し破れた！
+				TFLAG:(609+ARG:4) = 1
+				IF ARG:4 <= 2 && CFLAG:(ARG:4):服装 >= 0
+					DITEMTYPE:(CFLAG:服装):14 = 1
+					DITEMTYPE:(CFLAG:服装):11 = 1
+				ENDIF
+			ENDIF
+			
+			;武器経験値を入手
+			IF ARG:3 <= 2
+				IF ARG == 0 && WEAPON != 0 && WEAPON != 3
+					CALL GET_EXP, ARG:3+1, WEAPON, 5
+				ELSEIF ARG == 1
+					CALL GET_EXP, ARG:3+1, 3, 5
+				ENDIF
+			ENDIF
+		ELSEIF ARG:5 == 1
+			LOSE_TAG = 557+ARG:4*10
+			PRINTFORMW %STR:(ARG:4)%の気力を削った！
+		;絶頂まで実装しておく
+		;(欲情は従属的に上昇する要素にする)
+		ELSEIF ARG:5 == 2
+			LOSE_TAG = 512+ARG:4
+			;押し倒されている場合、ダメージが2倍に
+			IF IJYOU_BATTLE(ARG:4)
+				damage *= 2
+			ENDIF
+			PRINTFORMW %STR:(ARG:4)%に{damage}の快楽を与えた！
+			
+			;相手の欲情ゲージがMAXになった場合、
+			;IF TFLAG:(506+ARG:4) >= TFLAG:(524+ARG:4) && !TFLAG:(500+ARG:4)
+			;	CALL SETCOLOR_PALAMUP
+			;	PRINTFORMW %STR:(ARG:4)%は欲情しはじめた！
+			;	RESETCOLOR
+			;	;PRINTFORML 対象:{500+ARG:1}
+			;	TFLAG:(500+ARG:4) |= 1p0
+			;	TFLAG:(627+ARG:4) = 5
+			;	;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+			;ENDIF
+			
+			;淫術経験値を入手
+			IF ARG:3 <= 2 && ARG:6 != 1000
+				;PRINTFORML ARG:{ARG:3+1}
+				CALL GET_EXP, ARG:3+1, 4, 5
+			ENDIF
+		ELSEIF ARG:5 == 3
+			LOSE_TAG = 506+ARG:4
+			PRINTFORMW %STR:(ARG:4)%の欲情を誘った！
+		ENDIF
+		
+		IF ARG:5 == 0
+			TFLAG:LOSE_TAG = LIMIT(TFLAG:LOSE_TAG-damage, 0, TFLAG:LOSE_TAG)
+		ELSEIF ARG:5 == 1
+			TFLAG:LOSE_TAG = LIMIT(TFLAG:LOSE_TAG-(TFLAG:(551+ARG:4*10)*ARG:1/100), 0, TFLAG:(551+ARG:4*10))
+		ELSEIF ARG:5 == 3
+			TFLAG:LOSE_TAG = LIMIT(TFLAG:LOSE_TAG+(TFLAG:(524+ARG:4)*ARG:1/100), 0, TFLAG:(524+ARG:4))
+		ELSE
+			TFLAG:LOSE_TAG = LIMIT(TFLAG:LOSE_TAG+damage, 0, TFLAG:(524+ARG:4)*5)
+		ENDIF
+		
+		;不思議なモップを装備している場合、25％の確率で粘性体を即死させる
+		IF (ARG:3 <= 2 || TFLAG:(645+ARG:4) == ARG:3) && CFLAG:装備 == 598 && STR:(ARG:4+6) == "粘性体" && !RAND:4
+			PRINTFORML モップの効力により%STR:(ARG:4)%の姿が跡形も無く消え去った！
+			TFLAG:(500+ARG:4) |= 1p7
+		ENDIF
+		
+		IF ARG:5 <= 1 && !TFLAG:(556+ARG:4*10)
+			PRINTFORML %STR:(ARG:4)%は倒れた！
+			TFLAG:(500+ARG:4) |= 1p7
+			;攻撃者がゴスロリの場合、気力を2％回復
+			IF STR:(6+ARG:3) == "ゴスロリ"
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML ゴスロリである%STR:(ARG:3)%は敵を倒したことにより気力が回復した！
+				TFLAG:(557+ARG:3*10) = LIMIT(TFLAG:(557+ARG:3*10)+TFLAG:(551+ARG:3*10)/50, 0, TFLAG:(551+ARG:3*10))
+			ELSEIF STR:(6+ARG:3) == "シスター" && !RAND:10
+				;PRINTFORML シスターである%CALLNAME:(ARG:3)%は倒した敵から信仰力を得た！
+				;BASE:信仰力 += 10
+			ENDIF
+			RESETCOLOR
+		ENDIF
+		
+		IF ARG:5 == 2
+			;快楽の場合、欲情ゲージを最大の1/16+ダメージの10％分上昇させる
+			TFLAG:(506+ARG:4) = LIMIT(TFLAG:(506+ARG:4)+TFLAG:(524+ARG:4)/16+damage/10, 0, TFLAG:(524+ARG:4))
+			;気力は最大絶頂から見た割合分削る
+			;PRINTFORML 減少値:{TFLAG:(551+ARG:4*10)*(damage*100/TFLAG:(524+ARG:4))/100}
+			TFLAG:(557+ARG:4*10) = LIMIT(TFLAG:(557+ARG:4*10)-(TFLAG:(551+ARG:4*10)*(damage*100/TFLAG:(524+ARG:4))/100), 0, TFLAG:(524+ARG:4))
+			;PRINTFORML 快楽限界:{TFLAG:(524+ARG:4)}
+			IF TFLAG:(512+ARG:4) >= TFLAG:(524+ARG:4)
+				CALL SETCOLOR_PALAMUP
+				;PRINTFORML 快楽限界:{TFLAG:(524+ARG:4)}
+				;PRINTFORML 現在の快楽:{TFLAG:(512+ARG:4)}
+				;限界ゲージの2倍以上の快楽を与えた場合、2回絶頂する
+				IF TFLAG:(512+ARG:4) >= TFLAG:(524+ARG:4)*2
+					PRINTFORML 二重絶頂
+					PRINTFORMW %STR:(ARG:4)%は身体を大きく震わせ絶頂に達した！
+					TFLAG:(512+ARG:4) = 0
+					TFLAG:(506+ARG:4) = TFLAG:(524+ARG:4) * (3 + TFLAG:(518+ARG:4))/10
+					;気力を(70-10*絶頂回数)％にする
+					;ゴスロリの場合、(90-10*絶頂回数)％になる
+					IF STR:(6+ARG:4) == "ゴスロリ"
+						TFLAG:(557+ARG:4*10) = TFLAG:(551+ARG:4*10) * (9-LIMIT(TFLAG:(518+ARG:4),0,5)) / 10
+					ELSE
+						TFLAG:(557+ARG:4*10) = TFLAG:(551+ARG:4*10) * (7-LIMIT(TFLAG:(518+ARG:4),0,5)) / 10
+					ENDIF
+					TFLAG:(518+ARG:4) += 2
+					IF ARG:4 <= 2
+						;(2015/04/18)経験入手キャラ対象ズレバグ修正　一次関数を(ARG:4-1)からTARGETに変更
+						;複数人の味方キャラを実装できなくなるけど、とりあえずこれで対処
+						PRINTFORML 淫妖経験 + 8
+						EXP:淫妖経験 += 8
+						CALL KOJO_BATTLE_ECSTASY,1
+					ENDIF
+				ELSE
+					PRINTFORMW %STR:(ARG:4)%は身体を震わせ絶頂に達した！
+					TFLAG:(512+ARG:4) = 0
+					TFLAG:(506+ARG:4) = TFLAG:(524+ARG:4) * (2 + TFLAG:(518+ARG:4))/10
+					;気力を(70-10*絶頂回数)％にする
+					TFLAG:(557+ARG:4*10) = TFLAG:(551+ARG:4*10) * (7-LIMIT(TFLAG:(518+ARG:4),0,5)) / 10
+					TFLAG:(518+ARG:4) += 1
+					IF ARG:4 <= 2
+						;(2015/04/18)経験入手キャラ対象ズレバグ修正　一次関数を(ARG:4-1)からTARGETに変更
+						;複数人の味方キャラを実装できなくなるけど、とりあえずこれで対処
+						PRINTFORML 淫妖経験 + 3
+						EXP:淫妖経験 += 3
+						CALL KOJO_BATTLE_ECSTASY,0
+					ENDIF
+				ENDIF
+				
+				;気絶状態の敵が絶頂した場合、追加でメッセージを表示する
+				IF GETBIT(TFLAG:(500+ARG:4), 6)
+					;超過した回数に応じてメッセージを変える
+					;10回以上
+					IF (ARG:4 <= 2 && TFLAG:(518+ARG:4) >= 15) || (ARG:4 >= 3 && TFLAG:(518+ARG:4) >= 13)
+						PRINTFORML 身体は稀に痙攣する程度で、ほとんど反応をしない
+						PRINTFORML 恐らく余力を使い果たしてしまったのだろう
+					;5回以上
+					ELSEIF (ARG:4 <= 2 && TFLAG:(518+ARG:4) >= 10) || (ARG:4 >= 3 && TFLAG:(518+ARG:4) >= 8)
+						PRINTFORML 度重なる絶頂により、さすがに身体の反応も鈍くなっている
+					;それ以外
+					ELSE
+						PRINTFORML 気絶しているにも関わらず身体をよじる様は、依然として快楽を求めているかのようだ
+					ENDIF
+				ENDIF
+				
+				;娼婦の場合、50％の確率で絶頂によって気絶しない
+				IF ARG:4 <= 2 && TALENT:(ARG:4+1):娼婦 && !RAND:2 && !GETBIT(TFLAG:(500+ARG:4), 6) && TFLAG:(518+ARG:4) >= 5
+					PRINTFORML 娼婦として活動している%STR:(ARG:4)%は朦朧とする意識を持ち堪えさせ
+					PRINTFORML 未だ気絶しない相手へと向かって行った……
+				;5回目の絶頂(敵は3回目で気絶する)
+				ELSEIF (ARG:4 <= 2 && TFLAG:(518+ARG:4) >= 5) || (ARG:4 >= 3 && TFLAG:(518+ARG:4) >= 3)
+					PRINTFORML 何度も達した%STR:(ARG:4)%は、身体を痙攣させ気絶した！
+					TFLAG:(500+ARG:4) = 1p6
+				ELSE
+					CALL SETCOLOR_PALAMUP
+					PRINTFORMW %STR:(ARG:4)%は欲情しはじめた！
+					RESETCOLOR
+					;PRINTFORML 対象:{500+ARG:1}
+					TFLAG:(500+ARG:4) |= 1p0
+					TFLAG:(627+ARG:4) = 5
+					;PRINTFORML 状態異常:{TFLAG:(500+ARG:1)}
+				ENDIF
+				RESETCOLOR
+			ENDIF
+		ENDIF
+		hit = 1
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORMW %STR:(ARG:4)%にダメージを与えられなかった……
+		hit = 0
+	ENDIF
+	
+	;ID1001　ダメージ10％反射
+	IF ARG:6 == 1001
+		PRINTFORML %STR:(ARG:3)%は{damage/3}の反動ダメージを受けた！
+		TFLAG:(556+ARG:3*10) = LIMIT(TFLAG:(556+ARG:3*10)-damage/3, 0, TFLAG:(556+ARG:3*10))
+	ENDIF
+	
+	RESETCOLOR
+	
+	;追加効果処理
+	;追加効果発生率が設定されていない場合は100％発生する
+	IF ARG:6 && (!ARG:8 ||  ARG:8 >= RAND:99+1)
+		CALLFORM EFFECT_ID_{ARG:6}, ARG:3, ARG:4
+	ENDIF
+	
+ELSE
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORMW %STR:(ARG:4)%には当たらなかった
+	hit = 0
+	RESETCOLOR
+ENDIF
+
+;雪辱属性を持つ攻撃の場合、ダメージを与えられなかった相手のHPを最大HPの2割分のＨＰだけ減らす
+IF !damage && ARG:6 == 1007
+	PRINTFORML ダメージを与えられなかった%STR:(ARG:4)%に対して、衝撃波が襲いかかる！
+	damage = TFLAG:(550+ARG:4*10)/5
+	TFLAG:(556+ARG:4*10) = LIMIT(TFLAG:(556+ARG:4*10)-damage, 0, TFLAG:(556+ARG:4*10))
+	PRINTFORMW %STR:(ARG:4)%のＨＰは{damage}減少した
+ENDIF
+
+;全体攻撃の場合、敵の数だけダメージ処理を行う
+IF flag_total
+	total += 1
+	;念の為、敵ID最大数に達している場合も弾く構文にする
+	IF total < TFLAG:敵の数 && ARG:4 < 5
+		$loop_tag_1
+		ARG:4 += 1
+		;対象が戦闘不能の場合、飛ばす
+		IF GETBIT(TFLAG:(500+ARG:4), 6)
+			ARG:4 += 1
+			GOTO loop_tag_1
+		ENDIF
+		GOTO TOTAL_ATK
+	ENDIF
+ENDIF
+
+;行動後の処理
+IF ARG:6 != 1000
+	CALL AFTER_MOVE, ARG:3
+ENDIF
+RETURN hit
+
+;===========================================================
+;最大欲情ゲージ
+;ARG　対象
+;===========================================================
+@MAX_YOKUJO ,ARG
+#FUNCTION
+
+LOCAL = ARG * 200 + 1000
+
+RETURNF LOCAL
+
+;===========================================================
+;ステータス確認
+;ARG　対象
+;===========================================================
+@SHOW_BATTLE_STATUS, ARG
+#DIM L_LOCAL, 1
+
+DRAWLINE
+FOR L_LOCAL, 0, 5
+	CALL EXP_TABLE, ARG+1, L_LOCAL
+NEXT
+L_LOCAL = 0
+;今のところ以下にあるFOR文外のL_LOCAL等は意味なし
+PRINTFORML LV:{BASE:レベル}　EXP:{BASE:経験値／レベル,5,RIGHT}
+PRINTFORML 次のレベルまで:{MAXBASE:経験値／レベル-BASE:経験値／レベル,5,RIGHT}
+PRINTFORML HP　{TFLAG:(556+L_LOCAL+ARG*10)}/{TFLAG:(550+L_LOCAL+ARG*10)}
+PRINTFORML MP　{TFLAG:(557+L_LOCAL+ARG*10)}/{TFLAG:(551+L_LOCAL+ARG*10)}
+PRINTFORML 絶頂　{TFLAG:518+L_LOCAL+ARG*10}/5
+IF GETBIT(CFLAG:永続状態異常, 0)
+	PRINTFORML 被射精回数　{TFLAG:621+ARG}/10
+ENDIF
+DRAWLINE
+PRINTFORML 攻撃　　{TFLAG:(552+L_LOCAL+ARG*10),4,RIGHT}
+PRINTFORML 防御　　{TFLAG:(553+L_LOCAL+ARG*10),4,RIGHT}
+PRINTFORML 魔力　　{TFLAG:(554+L_LOCAL+ARG*10),4,RIGHT}
+PRINTFORML 素早さ　{TFLAG:(555+L_LOCAL+ARG*10),4,RIGHT}
+DRAWLINE
+PRINTL ○各種技巧レベル
+FOR L_LOCAL, 1, 5
+	PRINTFORML %BATTLE_EXP_NAME(L_LOCAL)%Lv{BASE:(""+BATTLE_EXP_NAME(L_LOCAL)+"レベル")}　({BASE:("経験値／"+BATTLE_EXP_NAME(L_LOCAL)+"レベル"),4,RIGHT}/{MAXBASE:("経験値／"+BATTLE_EXP_NAME(L_LOCAL)+"レベル"),4,RIGHT})
+NEXT
+
+
+;===========================================================
+;味方のステータス簡易表示
+;ARG　対象
+;===========================================================
+@SHOW_HP_STATUS, ARG
+
+CALL SETCOLOR_BATTLE_PLEA, ARG
+PRINTFORM ○%CALLNAME:TARGET%　Lv{BASE:レベル}　%STR:(6+ARG)%
+
+IF GLOBAL:4
+	CALL MANAGE_GRAPHIC, GLOBAL:4
+ENDIF
+
+RESETCOLOR
+;半壊か全壊かを表示
+IF TFLAG:609 == 1
+	SETCOLOR 255, 196, 128
+	PRINTL 　半裸
+ELSEIF TFLAG:609 == 2
+	SETCOLOR 255, 132, 32
+	PRINTL 　全裸
+ELSE
+	PRINTL 
+ENDIF
+RESETCOLOR
+PRINTFORM ＨＰ({TFLAG:(556+ARG*10),5,RIGHT}/{TFLAG:(550+ARG*10),5,RIGHT})
+FOR COUNT, 0, TFLAG:(556+ARG*10)*30/TFLAG:(550+ARG*10)
+	;1/5以下
+	IF TFLAG:(556+ARG*10)*5 <= TFLAG:(550+ARG*10)
+		SETCOLOR 255, 128, 64
+	;1/2以下
+	ELSEIF TFLAG:(556+ARG*10)*2 <= TFLAG:(550+ARG*10)
+		SETCOLOR 255, 232, 196
+	ELSE
+		SETCOLOR 196, 232, 232
+	ENDIF
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+FOR COUNT, 0, (TFLAG:(550+ARG*10)-TFLAG:(556+ARG*10))*30/TFLAG:(550+ARG*10)
+	SETCOLOR 96, 96, 96
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+PRINTL 
+PRINTFORM 気力({TFLAG:(557+ARG*10),5,RIGHT}/{TFLAG:(551+ARG*10),5,RIGHT})
+FOR COUNT, 0, TFLAG:(557+ARG*10)*30/TFLAG:(551+ARG*10)
+	;1/5以下
+	IF TFLAG:(557+ARG*10)*5 <= TFLAG:(551+ARG*10)
+		SETCOLOR 255, 128, 64
+	;1/2以下
+	ELSEIF TFLAG:(557+ARG*10)*2 <= TFLAG:(551+ARG*10)
+		SETCOLOR 255, 232, 196
+	ELSE
+		SETCOLOR 196, 232, 232
+	ENDIF
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+FOR COUNT, 0, (TFLAG:(551+ARG*10)-TFLAG:(557+ARG*10))*30/TFLAG:(551+ARG*10)
+	SETCOLOR 96, 96, 96
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+PRINTL 
+PRINTFORM 欲情({TFLAG:(506+ARG),5,RIGHT}/{TFLAG:(524+ARG),5,RIGHT})
+FOR COUNT, 0, TFLAG:(506+ARG)*30/TFLAG:(524+ARG)
+	;4/5以上
+	IF TFLAG:(506+ARG)*5 >= TFLAG:(524+ARG)*4
+		SETCOLOR 255, 64, 160
+	;1/2以上
+	ELSEIF TFLAG:(506+ARG)*2 >= TFLAG:(524+ARG)
+		SETCOLOR 255, 196, 196
+	ELSE
+		SETCOLOR 255, 196, 228
+	ENDIF
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+FOR COUNT, 0, (TFLAG:(524+ARG)-TFLAG:(506+ARG))*30/TFLAG:(524+ARG)
+	SETCOLOR 96, 96, 96
+	PRINTFORM %UNICODE(0x2588)%
+	RESETCOLOR
+NEXT
+PRINTL 
+PRINTFORML 絶頂　{TFLAG:518+ARG*10}/5
+IF GETBIT(TFLAG:(500+ARG), 0)
+	SETCOLOR 255, 64, 160
+	PRINTL 　欲情
+	RESETCOLOR
+ENDIF
+
+IF GETBIT(TFLAG:(500+ARG), 1)
+	SETCOLOR 255, 192, 128
+	PRINTL 　損傷
+	RESETCOLOR
+ENDIF
+
+IF GETBIT(TFLAG:(500+ARG), 2)
+	SETCOLOR 128, 128, 128
+	PRINTL 　石化
+	RESETCOLOR
+ENDIF
+
+IF GETBIT(TFLAG:(500+ARG), 3)
+	SETCOLOR 64, 64, 192
+	PRINTL 　暗闇
+	RESETCOLOR
+ENDIF
+
+IF GETBIT(TFLAG:(500+ARG), 6)
+	PRINTL 　喪失
+ENDIF
+
+IF GETBIT(TFLAG:(500+ARG), 7)
+	PRINTL 　戦闘不能
+ENDIF
+
+PRINTL 
+DRAWLINE
+
+;-----------------------------------------
+;回復処理
+;ARG　全回復させるかどうか
+;-----------------------------------------
+@HEALING, ARG
+TFLAG:味方1の現ＨＰ = TFLAG:味方1のＨＰ
+TFLAG:味方1の現ＭＰ = TFLAG:味方1のＭＰ
+;絶頂関連もリセットをかける
+IF ARG
+	TFLAG:欲情／味方1 = 0
+	TFLAG:絶頂ゲージ／味方1 = 0
+	TFLAG:絶頂回数／味方1 = 0
+ENDIF
+TFLAG:500 = 0
+
+;-----------------------------------------
+;初期化＆パラメーター決定
+;ARG　全回復させるかどうか
+;-----------------------------------------
+@SET_STATUS, ARG
+;輝夜のステータス決定(最大レベルは30で、レベル10で基準値になる)
+;(全て1/2にする)
+;
+;ＨＰ　　100+体力/3　　　　　　　　　　　 (最大433)
+;気力　　20+体力/10+知力/5+堕落/5+淫妖/5　(最大700)
+;攻撃　　体力/4+家事/10　　　　　　　　　 (最大300)
+;防御　　体力/4+信仰/10　　　　　　　　　 (最大300)
+;魔力　　知力/2+堕落/2+淫妖/2　　　　　　(最大1500)
+;素早さ　体力/4+疎通/5　　　　　　　　　  (最大400)
+
+;Ver0.999より
+;肩書によってステータスに補正がかかるようになります
+;
+
+STR = 輝夜
+IF TALENT:淫魔 || GETBIT(CFLAG:永続状態異常, 0)
+	IF GETBIT(CFLAG:永続状態異常, 0)
+		SETCOLOR 128,128,255
+	ENDIF
+	STR:6 = 淫魔
+	RESETCOLOR
+;スライム娘
+ELSEIF TALENT:スライム娘
+	STR:6 = 粘性体
+;アルラウネ
+ELSEIF TALENT:アルラウネ
+	STR:6 = 植物
+;触手娘
+ELSEIF TALENT:触手娘
+	STR:6 = 触手娘
+ELSEIF TALENT:娼婦
+	STR:6 = 娼婦
+ELSE
+	;何らかの称号を持っているor娼婦と淫魔以外で最も高い属性がある場合、その名前を名乗る
+	CALL DECIDE_ELEMENT, TARGET
+ENDIF
+TFLAG:味方1のＨＰ = ((100+BASE:体力/3)*BASE:レベル/10+10)*3/2*SET_STATUS_ELEMENT(TARGET, "ＨＰ")/100
+TFLAG:味方1のＭＰ = (BASE:体力/10+BASE:知力/5+BASE:堕落/5+BASE:淫妖/5)*BASE:レベル/10+20*SET_STATUS_ELEMENT(TARGET, "ＭＰ")/100
+TFLAG:味方1の攻撃 = (BASE:体力/4+BASE:家事/10)*BASE:レベル/10+5*SET_STATUS_ELEMENT(TARGET, "攻撃")/100
+TFLAG:味方1の防御 = (BASE:体力/4+BASE:信仰/10)*BASE:レベル/10+5*SET_STATUS_ELEMENT(TARGET, "防御")/100
+TFLAG:味方1の魔力 = (BASE:知力/2+BASE:堕落/2+BASE:淫妖/2)*BASE:レベル/10+5*SET_STATUS_ELEMENT(TARGET, "魔力")/100
+TFLAG:味方1の素早さ = (BASE:体力/4+BASE:疎通/5)*BASE:レベル/10+5*SET_STATUS_ELEMENT(TARGET, "素早さ")/100
+IF ARG
+	TFLAG:味方1の現ＨＰ = TFLAG:味方1のＨＰ
+	TFLAG:味方1の現ＭＰ = TFLAG:味方1のＭＰ
+ENDIF
+
+;快楽限界
+TFLAG:(524) = BASE:レベル * 200 + 1000
+
+;半裸かどうかで半壊かどうかを判別
+IF CFLAG:服装 >= 0
+	IF DITEMTYPE:(CFLAG:服装):11 == 1
+		TFLAG:609 = 1
+	ELSEIF DITEMTYPE:(CFLAG:服装):11 == 2
+		TFLAG:609 = 2
+	ELSE
+		TFLAG:609 = 0
+	ENDIF
+ELSE
+	TFLAG:609 = 2
+ENDIF
+
+;======================================================
+;戦闘時の肩書を決定する関数
+;ARG　対象
+;======================================================
+@DECIDE_ELEMENT, ARG
+
+;称号を優先する
+IF MAXARRAY(CFLAG, 230, 239) && FINDELEMENT(CFLAG, 230, 239)
+	;称号要素から属性のみを抜き取る(始値が230なので230引く)
+	LOCAL = FINDELEMENT(CFLAG, MAXARRAY(CFLAG, 230, 239), 230, 239)
+	LOCAL -= 230
+	
+;称号を持たない場合、最も高い割合を持つ属性を肩書とする
+ELSE
+	LOCAL = FINDELEMENT(CFLAG, MAXARRAY(CFLAG, 220, 229), 220, 229)
+	LOCAL -= 220
+ENDIF
+
+;ちょうどいいところに属性名を代入する変数があったので流用する
+CALL ELEMENT_CONVERT, LOCAL
+STR:6 = %STR%
+STR = %CALLNAME:ARG%
+
+RETURN 0
+
+;======================================================
+;肩書による能力値変化
+;ARG　　対象のキャラID
+;ARG:1　補正をかけるステータス
+;======================================================
+@SET_STATUS_ELEMENT, ARG, ARGS:1
+#FUNCTION
+
+;姫様　　:補正無し
+;メイド　:HP130％　攻撃110％　素早さ110％　の代わりに　MP80％　魔力70％
+;シスター：MP120％　魔力110％　の代わりに　HP80％　防御80％
+;ゴスロリ：MP140％　魔力140％　の代わりに　攻撃80％　防御70％
+;花嫁　　:HP120％　 MP120％　の代わりに　攻撃90％　素早さ70％
+;武士　　:攻撃120％　防御120％　素早さ120％　の代わりに　魔力90％(武者修行がメインの稼ぎ筋なので、マイナス補正が弱め)
+;淫魔　　:魔力170％　素早さ120％　の代わりに　HP80％
+;娼婦　　:魔力150％　の代わりに　攻撃50％
+;里娘　　:全て80％
+
+;特殊効果(実装するかどうかは未定)
+;姫様　　:敵が見惚れる確率+3％
+;メイド　:休憩時の回復力+4％
+;以下2職はプレイヤーの混乱を招くため効果変更
+;(戦闘中に戦闘と関係ない上に見慣れない要素を追加するため)
+;シスター：敵を倒した際に10％の確率で信仰力+10
+;		　 →状態異常の自然治癒率+10％
+;ゴスロリ：敵を倒した際に10％の確率で魔力+10　＆　5％の確率で気力が2％回復
+;		　 →絶頂時の気力が70-絶頂回数×10％→90-絶頂回数×10％＆敵を倒した時に気力2％回復
+;　　花嫁：敵から攻撃を受けると10％の確率でダメージを20％カット
+
+;姫様と武士以外の肩書は、それぞれ特定の敵から性行為を誘因させやすい
+;　メイド：人間
+;シスター：魔術師、獣
+;ゴスロリ：植物、淫魔
+
+;特殊肩書
+;姫メイド：
+;　姫騎士：クリティカルヒットが出る確率+5％　＆　たまに攻撃が2回出る
+;　くの一：全裸or半裸属性の衣服を着ている場合、快楽攻撃以外の技の回避率+10％
+;　姫巫女：
+;　ハニートラップ：相手が絶頂する度に君主の影響力-10
+
+
+
+;SELECTCASEで二重ネストを作ってしまうことになるが、実装面では恐らくこれが一番楽
+SELECTCASE STR:(6+ARG)
+	CASE "メイド"
+		SELECTCASE ARGS:1
+			CASE "ＨＰ"
+				LOCAL = 130
+			CASE "ＭＰ"
+				LOCAL = 80
+			CASE "攻撃"
+				LOCAL = 110
+			CASE "素早さ"
+				LOCAL = 110
+			CASE "魔力"
+				LOCAL = 70
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "シスター"
+		SELECTCASE ARGS:1
+			CASE "ＨＰ"
+				LOCAL = 80
+			CASE "ＭＰ"
+				LOCAL = 120
+			CASE "防御"
+				LOCAL = 80
+			CASE "魔力"
+				LOCAL = 110
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "ゴスロリ"
+		SELECTCASE ARGS:1
+			CASE "ＭＰ"
+				LOCAL = 140
+			CASE "攻撃"
+				LOCAL = 80
+			CASE "防御"
+				LOCAL = 70
+			CASE "魔力"
+				LOCAL = 140
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "花嫁"
+		SELECTCASE ARGS:1
+			CASE "ＨＰ"
+				LOCAL = 120
+			CASE "ＭＰ"
+				LOCAL = 120
+			CASE "攻撃"
+				LOCAL = 90
+			CASE "素早さ"
+				LOCAL = 70
+			CASE "魔力"
+				LOCAL = 140
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "武士"
+		SELECTCASE ARGS:1
+			CASE "攻撃"
+				LOCAL = 120
+			CASE "防御"
+				LOCAL = 120
+			CASE "素早さ"
+				LOCAL = 120
+			CASE "魔力"
+				LOCAL = 90
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "淫魔"
+		SELECTCASE ARGS:1
+			CASE "ＨＰ"
+				LOCAL = 80
+			CASE "素早さ"
+				LOCAL = 120
+			CASE "魔力"
+				LOCAL = 170
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "娼婦"
+		SELECTCASE ARGS:1
+			CASE "攻撃"
+				LOCAL = 50
+			CASE "魔力"
+				LOCAL = 150
+			CASEELSE
+				LOCAL = 100
+		ENDSELECT
+	CASE "里娘"
+		LOCAL = 80
+	CASEELSE
+		LOCAL = 100
+ENDSELECT
+
+RETURNF LOCAL
+
+;======================================================
+;快楽の溜まり具合に応じてキャラ名の色調を変更
+;ARG　対象
+;======================================================
+@SETCOLOR_BATTLE_PLEA, ARG
+SETCOLOR 192+LIMIT(63*TFLAG:(512+ARG)/TFLAG:(524+ARG),0,63), 192-LIMIT(128*TFLAG:(512+ARG)/TFLAG:(524+ARG), 0, 128), 192-LIMIT(32*TFLAG:(512+ARG)/TFLAG:(524+ARG), 0, 32)
+
+;======================================================
+;戦闘中の穢れ値算出関数
+;ワールブルクの石の所持数に応じて一時的に穢れ値を増やすことができる
+;======================================================
+@BATTLE_IMP
+#FUNCTION
+
+;穢れをLOCALに代入
+LOCAL = BASE:穢れ
+
+;ワールブルクの石1つにつき穢れ値を2増やす
+LOCAL += ITEM:ワールブルクの石 * 2
+
+RETURNF LOCAL
+
+
+

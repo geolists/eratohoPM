@@ -1,0 +1,191 @@
+﻿;==============================================================-
+;前世譚ポイント使用画面
+;前世譚ポイントを使って特典を受けることができます
+;==============================================================
+@JATAKA
+#DIM L_LOCAL, 2
+#DIM jataka, 5
+#DIM use_jatakapoint, 1
+
+DRAWLINE
+PRINTFORML ～～前世譚の空間　外苑～～
+PRINTFORML 辺りは不可思議な空色に包まれている
+PRINTFORML 方々に散らばった数人の侍女は不可思議な色を発する衣に身を包み、何者かが来るのを待っている
+PRINTFORML あなたは侍女に話しかけ、恩恵を受けとることができる
+$BACK_LOOP
+DRAWLINE
+PRINTFORML ～～周回恩恵選択～～
+PRINTFORML 所持前世譚ポイント:{use_jatakapoint}/{GLOBAL:99}pt
+PRINTFORML どの恩恵を受け取りますか？
+FOR L_LOCAL, 0, 5
+	PRINTFORM [{L_LOCAL}] - %JATAKA_NAME(L_LOCAL), 18, LEFT%　　必要前世譚ポイント:{NEED_JATAKAPOINT(L_LOCAL), 3, RIGHT}pt
+	IF jataka:L_LOCAL
+		CALL SETCOLOR_ABL
+		PRINTFORML 選択済み
+		RESETCOLOR
+	ELSE
+		PRINTL 
+	ENDIF
+NEXT
+PRINTFORML [5] - 決定
+;CALL SETCOLOR_ABL
+;PRINTFORML ※周回効果を受け取ったゲームでは、最も難しいエンディングを見ることができなくなります
+;RESETCOLOR
+
+CALL SENTAKUSHI, 6
+
+IF RESULT == 5
+	CALL SETCOLOR_ABL
+	PRINTFORML ○選択した恩恵
+	LOCAL = 0
+	FOR L_LOCAL, 0, 5
+		IF jataka:L_LOCAL
+			LOCAL += 1
+			PRINTFORML %JATAKA_NAME(L_LOCAL)%
+		ENDIF
+	NEXT
+	;選択した恩恵が無い場合
+	IF !LOCAL
+		PRINTFORML なし
+	ENDIF
+	RESETCOLOR
+	PRINTL 
+	IF !LOCAL
+		PRINTFORML 恩恵を受け取らず終了してよろしいですか？
+	ELSE
+		PRINTFORML 上記選択を受け取ってよろしいですか？
+	ENDIF
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		IF LOCAL
+			PRINTFORML 恩恵を受け取った！
+			CALL SETCOLOR_PALAMUP
+			FOR L_LOCAL, 0, 5
+				IF jataka:L_LOCAL
+					SELECTCASE L_LOCAL
+						CASE 0
+							PRINTL 所持金が$5000増えた！
+							MONEY += 5000
+						CASE 1
+							PRINTL 所持金が$20000増えた！
+							MONEY += 20000
+						CASE 2
+							PRINTFORML %CALLNAME:TARGET%の思考力が100上がった！
+							BASE:思考力 += 100
+						CASE 3
+							PRINTFORML %CALLNAME:TARGET%の感度以外の気質が100ずつ上がった！
+							FOR L_LOCAL:1, 40, 50
+								;感度だけ弾く
+								IF L_LOCAL != 42
+									BASE:(L_LOCAL:1) += 100
+								ENDIF
+							NEXT
+						CASE 4
+							PRINTFORML %CALLNAME:TARGET%は[習得早い]と[嫌厭色情]を得た！
+							TALENT:習得早い = 1
+							TALENT:嫌厭色情 = 1
+					ENDSELECT
+				ENDIF
+			NEXT
+			RESETCOLOR
+			FLAG:周回プレイ = 1
+		ELSE
+			PRINTFORML 
+		ENDIF
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+	
+	RETURN 0
+ELSEIF !jataka:RESULT && GLOBAL:99-use_jatakapoint < NEED_JATAKAPOINT(RESULT)
+	PRINTFORML 前世譚ポイントが足りません
+	GOTO BACK_LOOP
+ELSE
+	LOCAL = RESULT
+	DRAWLINE
+	;PRINTFORM {LOCAL}
+
+	PRINTFORML 必要前世譚ポイント：{NEED_JATAKAPOINT(LOCAL)}
+	IF !jataka:LOCAL
+		PRINTFORML 恩恵を受け取りますか？
+	ELSE
+		PRINTFORML 恩恵をキャンセルしますか？
+	ENDIF
+	PRINTFORML 
+	PRINTFORML [0] - はい
+	PRINTFORML [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		IF !jataka:LOCAL
+			PRINTFORML 恩恵を受け取りました
+			jataka:LOCAL = 1
+			use_jatakapoint += NEED_JATAKAPOINT(LOCAL)
+		ELSEIF jataka:LOCAL
+			PRINTFORML 恩恵をキャンセルしました
+			jataka:LOCAL = 0
+			use_jatakapoint -= NEED_JATAKAPOINT(LOCAL)
+		ENDIF
+	ELSE
+		GOTO BACK_LOOP
+	ENDIF
+ENDIF
+
+GOTO BACK_LOOP
+
+;PRINTFORML 外苑には数本の竹が生えている
+;PRINTFORML どの竹を選択しますか？
+
+;FOR L_LOCAL, 0, 5
+;	PRINTFORM [{L_LOCAL}] - 
+;	;記憶チェックサムを見てデータの有無を確認
+;	IF 
+;NEXT
+
+
+;======================================================
+;周回恩恵名代入
+;======================================================
+@JATAKA_NAME, ARG
+#FUNCTIONS
+
+SELECTCASE ARG
+	CASE 0
+		LOCALS = 所持金+$5000
+	CASE 1
+		LOCALS = 所持金+$20000
+	CASE 2
+		LOCALS = 思考力+100
+	CASE 3
+		LOCALS = 全気質+100(感度を除く)
+	CASE 4
+		LOCALS = [習得早い]と[嫌厭色情]を付与
+ENDSELECT
+
+RETURNF LOCALS
+
+;======================================================
+;使用前世譚ポイント算出
+;======================================================
+@NEED_JATAKAPOINT, ARG
+#FUNCTION
+
+SELECTCASE ARG
+	CASE 0
+		LOCAL = 1
+	CASE 1
+		LOCAL = 3
+	CASE 2
+		LOCAL = 5
+	CASE 3
+		LOCAL = 7
+	CASE 4
+		LOCAL = 15
+ENDSELECT
+
+RETURNF LOCAL

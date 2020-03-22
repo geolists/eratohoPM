@@ -1,0 +1,68 @@
+﻿;================================
+;使用可能な固有技表示関数
+;ARG　配列(0～5番目まで用意)
+;================================
+@LIST_WEAPONMOVE, ARG
+#FUNCTION
+
+;技設定数を管理するための変数
+#DIM id_move, 1
+
+;LOCALに配列を代入するので、まずは初期化
+VARSET LOCAL, -1
+
+;通常攻撃
+LOCAL:0 = 100
+
+;初期化
+;(0は通常攻撃で固定)
+id_move = 1
+
+;装備している武器によって分岐
+SELECTCASE CFLAG:装備
+	;エクシーの弓
+	CASE 580
+		;純化の儀
+		LOCAL:1 = 300
+		id_move += 1
+	;ヤグの弓
+	CASE 581
+		;ヤグショット
+		LOCAL:1 = 301
+		id_move += 1
+	;ヘカドの弓
+	CASE 583
+		;メモリーライト
+		LOCAL:1 = 302
+		id_move += 1
+	;月夜見の太刀
+	CASE 585
+		;夜の帳
+		LOCAL:1 = 303
+		id_move += 1
+	;魔槍キャンサー
+	CASE 592
+		;キャンサーロック
+		LOCAL:1 = 304
+		id_move += 1
+ENDSELECT
+
+;地上限定技
+;ステージが地上で、且つ他の属性素質([メイド]など)を持っていない場合
+;月影の矢を使用できる
+IF TFLAG:必殺技ゲージ >= 6 && TALENT:輝夜 && INRANGE(FLAG:武者修行マップ, 30, 39)
+	;月影の矢
+	LOCAL:id_move = 408
+ENDIF
+
+;属性固有技
+IF STR:6 == "メイド"
+	;メイドで、且つ称号Lv2以上
+	IF CFLAG:称号属性 == 1 && CFLAG:称号レベル >= 2
+		;仕立て上げる
+		LOCAL:id_move = 410
+	ENDIF
+ENDIF
+
+RETURNF LOCAL:ARG
+

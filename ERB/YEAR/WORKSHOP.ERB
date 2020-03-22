@@ -1,0 +1,30 @@
+﻿;---------------------------------------------------------------
+;行商人
+;---------------------------------------------------------------
+@WORK_SHOP
+FLAG:行商ミルク購入済み = 0
+DRAWLINE
+PRINTFORML ～～玄関～
+IF RAND:2
+	PRINTFORML 行商人「珍しい品物をお持ち致しました
+	PRINTFORML 　　　　何か買われますか？」
+ELSE
+	PRINTFORML 行商人「珍しい品物をお持ち致しました
+	PRINTFORML 　　　　高脂肪ミルク、結構人気があるんですよ
+	PRINTFORML 　　　　……ここだけの話、華奢な身体だと効き目があまり出ないんですがね」
+ENDIF
+PRINTFORML [0] - 買う
+PRINTFORML [1] - 買わない
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0	
+	FOR COUNT, 0, 3
+		FLAG:(810+COUNT) = 404+RAND:3*10+RAND:4
+	NEXT
+	CALL PRINT_SHOP_ITEM, 11
+	PRINTFORMW 行商人「今後もどうぞ御贔屓にしてください」
+ELSE
+	PRINTFORMW 行商人「さいですか。ではまた次の機会に」
+ENDIF
+

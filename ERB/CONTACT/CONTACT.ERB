@@ -1,0 +1,45 @@
+﻿;==================================================================
+;交流コマンド
+;人と交流して総合評価以外の評価を上げる事ができる
+;==================================================================
+@CONTACT
+
+DRAWLINE
+PRINTL ○評価一覧
+PRINTFORM 君主:
+CALL SETCOLOR_ABL
+PRINTFORML {BASE:君主の評価}
+RESETCOLOR
+PRINTFORM 役人:
+CALL SETCOLOR_ABL
+PRINTFORML {BASE:役人の評価}
+RESETCOLOR
+PRINTFORM 民衆:
+CALL SETCOLOR_ABL
+PRINTFORML {BASE:民衆の評価}
+RESETCOLOR
+DRAWLINE
+PRINTL どの人と交流しますか？
+PRINTL [0] - 君主
+PRINTL [1] - 役人
+PRINTL [2] - 都の民
+;後のVerで実装する……かも
+;PRINTL [3] - 彦星
+PRINTL [3] - 戻る
+
+CALL SENTAKUSHI, 4
+
+IF RESULT == 0
+	CALL CONTACT_MONAR
+ELSEIF RESULT == 1
+	CALL CONTACT_OFFICER
+ELSEIF RESULT == 2
+	CALL CONTACT_CITIZ
+ELSEIF RESULT == 3
+	RETURN 0
+ENDIF
+
+IF RESULT == 1
+	BEGIN TURNEND
+ENDIF
+

@@ -1,0 +1,38 @@
+﻿;================================
+;使用可能な淫術表示関数
+;ARG　配列(0～5番目まで用意)
+;================================
+@LIST_NINFOMOVE, ARG
+#FUNCTION
+
+;LOCALに配列を代入するので、まずは初期化
+VARSET LOCAL, -1
+
+;愛撫
+LOCAL:0 = 102
+
+IF TALENT:淫魔
+	;媚薬の香り
+	LOCAL:1 = 50
+	;不気味な笑み
+	LOCAL:2 = 51
+	;吸精のキス
+	LOCAL:3 = 52
+ELSEIF TALENT:娼婦
+	;胸愛撫
+	LOCAL:1 = 60
+	;誘い受け
+	LOCAL:2 = 61
+	;押し倒す
+	LOCAL:3 = 62
+	;乱交
+	LOCAL:4 = 63
+	;服脱がし
+	LOCAL:5 = 64
+	;自己満足
+	LOCAL:6 = 65
+ENDIF
+
+
+RETURNF LOCAL:ARG
+

@@ -1,0 +1,356 @@
+﻿;===========================================================
+;環境設定
+;コマンド外での教育方針等を設定します
+;===========================================================
+@CUSTOM
+$BACK_LOOP_0
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTFORM 警備:
+	IF FLAG:警備 == -1
+		PRINTFORML 警備していない
+	ELSEIF FLAG:警備 == 0
+		PRINTFORML 通常
+	ELSEIF FLAG:警備 == 1
+		PRINTFORML 万全
+	ENDIF
+ENDIF
+;PRINTFORML 叱り方:{FLAG:叱り方}
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTL [0] - 警備の方針を変える
+ENDIF
+;PRINTL [1] - 反応の方針を変える
+PRINTL [1] - 躾・羞恥・食事の環境を変える
+PRINTL [2] - 戻る
+
+CALL SENTAKUSHI, 3
+
+IF RESULT == 0
+	$BACK_LOOP_1
+	DRAWLINE
+	PRINTL ～警備隊詰所～
+	PRINTL 兵士「ん？　王宮の人間か？
+	IF !FLAG:警備隊との親密度 || !RAND:2
+		PRINTL 　　　私達警備隊は王宮に雇われ、今はこうして君主の動きを監視している
+		PRINTL 　　　どのような警備方針にしたいか指示してくれ。誘拐される世相になったら警備してやるから」
+	ELSE
+		PRINTL 　　　私達は警備隊だが、もう一つ部隊が存在するんだ
+		PRINTL 　　　その部隊は私達とは異なり、拠点を攻める際に動員されることになっている」
+	ENDIF
+	DRAWLINE
+	IF FLAG:警備 == 1
+		PRINTL [0] - 万全の体制で警備　現在の設定　　　警備費として半期終了時に$4000取られます
+	ELSE
+		PRINTL [0] - 万全の体制で警備　　　　　　　　　警備費として半期終了時に$4000取られます
+	ENDIF
+	IF FLAG:警備 == 0
+		PRINTL [1] - 通常の警備　　　　現在の設定　　　普通の警備です
+	ELSE
+		PRINTL [1] - 通常の警備　　　　　　　　　　　　普通の警備です
+	ENDIF
+	IF FLAG:警備 == -1
+		PRINTL [2] - 警備を解く　　　　現在の設定　　　半期終了期に収入が$4000増えます
+	ELSE
+		PRINTL [2] - 警備を解く　　　　　　　　　　　　半期終了期に収入が$4000増えます
+	ENDIF
+	PRINTL [3] - 戻る
+	
+	CALL SENTAKUSHI, 4
+	
+	IF RESULT == 0
+		IF FLAG:警備 == 1
+			PRINTL 既にその設定になっています
+			GOTO BACK_LOOP_1
+		ENDIF
+		PRINTL 万全の体制で警備します
+		FLAG:警備 = 1
+		GOTO BACK_LOOP_1
+	ELSEIF RESULT == 1
+		IF FLAG:警備 == 0
+			PRINTL 既にその設定になっています
+			GOTO BACK_LOOP_1
+		ENDIF
+		PRINTL 通常の警備をします
+		FLAG:警備 = 0
+		GOTO BACK_LOOP_1
+	ELSEIF RESULT == 2
+		IF FLAG:警備 == -1
+			PRINTL 既にその設定になっています
+			GOTO BACK_LOOP_1
+		ENDIF
+		PRINTL 警備を解きました
+		FLAG:警備 = -1
+		GOTO BACK_LOOP_1
+	ELSEIF RESULT == 3
+		GOTO BACK_LOOP_0
+	ENDIF
+ELSEIF RESULT == 1
+	CALL TACKING
+	RESTART
+;99:　この項目は没とする
+ELSEIF RESULT == 99
+	$BACK_LOOP_2
+	DRAWLINE
+	PRINTL どのような方針に変えますか？
+	PRINT [0] - 天真爛漫な行動　　
+	IF CFLAG:性格反応 == 0
+		SETCOLOR 255,176,0
+		PRINTL 肯定
+	ELSE
+		PRINTL 
+	ENDIF
+	RESETCOLOR
+	
+	PRINT [1] - 真面目な行動　　　
+	IF CFLAG:性格反応 == 1
+		SETCOLOR 255,176,0
+		PRINTL 肯定
+	ELSE
+		PRINTL 
+	ENDIF
+	RESETCOLOR
+	
+	PRINT [2] - 高飛車な行動　　　
+	IF CFLAG:性格反応 == 2
+		SETCOLOR 255,176,0
+		PRINTL 肯定
+	ELSE
+		PRINTL 
+	ENDIF
+	RESETCOLOR
+	
+	PRINT [3] - 極度に叱りつける　
+	IF CFLAG:性格反応 == 3
+		SETCOLOR 255,176,0
+		PRINTL 肯定
+	ELSE
+		PRINTL 
+	ENDIF
+	RESETCOLOR
+	PRINTL [4] - 戻る
+	
+	CALL SENTAKUSHI, 5
+	
+	IF RESULT == 0
+		IF CFLAG:性格反応 == 0
+			PRINTL 既にこの方針を採用しています
+		ELSE
+			PRINTL 肯定的な反応を返すようにします
+			CFLAG:性格反応 = 0
+		ENDIF
+		GOTO BACK_LOOP_2
+	ELSEIF RESULT == 1
+		IF CFLAG:性格反応 == 1
+			PRINTL 既にこの方針を採用しています
+		ELSE
+			PRINTL 肯定的な反応を返すようにします
+			CFLAG:性格反応 = 1
+		ENDIF
+		GOTO BACK_LOOP_2
+	ELSEIF RESULT == 2
+		IF CFLAG:性格反応 == 2
+			PRINTL 既にこの方針を採用しています
+		ELSE
+			PRINTL 肯定的な反応を返すようにします
+			CFLAG:性格反応 = 2
+		ENDIF
+		GOTO BACK_LOOP_2
+	ELSEIF RESULT == 3
+		IF CFLAG:性格反応 == 3
+			PRINTL 既にこの方針を採用しています
+		ELSE
+			PRINTL 肯定的な反応を返すようにします
+			CFLAG:性格反応 = 3
+		ENDIF
+		GOTO BACK_LOOP_2
+	ELSEIF RESULT == 4
+		GOTO BACK_LOOP_0
+	ENDIF
+ELSE
+	RETURN 0
+ENDIF
+
+;===========================================================
+;躾・羞恥系環境
+;===========================================================
+@TACKING
+#DIM vary, 1
+
+
+$BACK_LOOP
+DRAWLINE
+PRINTL 下着の有無:
+PRINT [100]胸：
+IF CFLAG:胸部下着 == 1
+	PRINT 有
+ELSE
+	SETCOLOR 128,128,128
+	PRINT 無
+	RESETCOLOR
+ENDIF
+PRINT 　[101]秘所:
+IF CFLAG:秘所下着 == 1
+	PRINTL 有
+ELSE
+	SETCOLOR 128,128,128
+	PRINTL 無
+	RESETCOLOR
+ENDIF
+
+
+PRINT [1] - 失敗or悪い事をした際の対応　:
+IF CFLAG:躾方針 == 0
+	PRINTL 叱る
+ELSEIF CFLAG:躾方針 == 1
+	PRINTL 折檻
+ELSEIF CFLAG:躾方針 == 2
+	PRINTL 快楽を与える
+ELSEIF CFLAG:躾方針 == 3
+	PRINTL 改善案を教える
+ELSEIF CFLAG:躾方針 == 4
+	PRINTL 優しく諭す
+ELSEIF CFLAG:躾方針 == 5
+	PRINTL 夜の街送り
+ENDIF
+
+IF ITEM:ロープ付き首輪
+	PRINT [2] - ロープ付き首輪:
+	IF CFLAG:隷属首輪
+		PRINTL 装着している
+	ELSE
+		PRINTL 装着していない
+	ENDIF
+ENDIF
+PRINT [3] - 食事方針　　　　　　　　　　　
+IF CFLAG:食事方針 == 2
+	PRINTL 思いっきり豪華に
+ELSEIF CFLAG:食事方針 == 1
+	PRINTL 多め
+ELSEIF CFLAG:食事方針 == 0
+	PRINTL 普通
+ELSEIF CFLAG:食事方針 == -1
+	PRINTL 少し減らす
+ELSEIF CFLAG:食事方針 == -2
+	PRINTL 体重減量政策
+ENDIF
+PRINTL [9] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF (TALENT:淫魔 || TALENT:娼婦 || CFLAG:職業 == 99) && (RESULT == 100 || RESULT == 101)
+	PRINTL 下着を着けることができない
+	GOTO BACK_LOOP
+ELSEIF RESULT == 100 && CFLAG:君主制約 >= 1
+	PRINTL 君主制約により、胸部下着を着ける事はできない
+	GOTO BACK_LOOP
+ELSEIF RESULT == 101 && CFLAG:君主制約 >= 2
+	PRINTL 君主制約により、秘所下着を着ける事はできない
+	GOTO BACK_LOOP
+ELSEIF RESULT == 100
+	IF CFLAG:胸部下着
+		PRINTL 下着を着けないようにします
+		CFLAG:胸部下着 = 0
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 下着を着けるようにします
+		CFLAG:胸部下着 = 1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 101
+	IF CFLAG:秘所下着
+		PRINTL 下着を着けないようにします
+		CFLAG:秘所下着 = 0
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 下着を着けるようにします
+		CFLAG:秘所下着 = 1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 1
+	;選択肢の数([戻る]を含む)をvaryに格納する
+	vary = 7
+	
+	PRINTL どの方針にしますか？
+	PRINTL [0] - 叱る　　　　　　通常の方針です。影響はありません
+	PRINTL [1] - 折檻　　　　　　体罰を与えます。堕落や隷属が上昇します
+	PRINTL [2] - 快楽を与える　　官能的な卑し目を与えます。淫妖や美麗が与えられます
+	PRINTL [3] - 改善案を教える　改善案を教えます。主人への好感度かアライメントが高くないと依存とやる気が下がります
+	PRINTL [4] - 優しく諭す　　　優しく諭します。疎通と依存が上がりますがたまにアライメントと貞操観念が下がります
+	;淫妖経験が150以上無いと行えない
+	IF EXP:淫妖経験 >= 150
+		PRINTL [5] - 夜の街送り　　　露出が多い格好で夜の街に放置します。
+	ENDIF
+	PRINTL [6] - 戻る
+	
+	CALL SENTAKUSHI, vary
+	
+	IF RESULT == 0
+		PRINTL 叱る方針にします
+	ELSEIF RESULT == 1
+		PRINTL 折檻を与える方針にします
+	ELSEIF RESULT == 2
+		PRINTL 快楽を与える方針にします
+	ELSEIF RESULT == 3
+		PRINTL 改善案を教える方針にします
+	ELSEIF RESULT == 4
+		PRINTL 優しく諭す方針にします
+	ELSEIF RESULT == 5
+		IF EXP:淫妖経験 < 150
+			PRINTFORML 淫妖経験が足りません
+			GOTO BACK_LOOP
+		ENDIF
+		PRINTL 夜の街に放置する方針にします
+	ENDIF
+	
+	;終端以外の数の場合、その数を躾方針に代入する
+	IF RESULT != (vary-1)
+		CFLAG:躾方針 = RESULT
+	ENDIF
+	
+	GOTO BACK_LOOP
+ELSEIF RESULT == 2 && ITEM:ロープ付き首輪
+	IF CFLAG:隷属首輪
+		PRINTL 首輪を外します
+		CFLAG:隷属首輪 = 0
+		GOTO BACK_LOOP
+	ELSE
+		PRINTL 首輪を付けます
+		CFLAG:隷属首輪 = 1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 3
+	PRINTL どの方針にしますか？
+	PRINTL [0] - 思いっきり豪華に　　　生活費が余計に$4000かかり、スタミナや体重が増加します
+	PRINTL [1] - 多め　　　　　　　　　生活費が余計に$2000かかり、少しだけスタミナや体重が増加します
+	PRINTL [2] - 普通　　　　　　　　　一般的な量の食事です。生活費は変わりません
+	PRINTL [3] - 少し減らす　　　　　　少し量を減らします。生活費が$2000浮き体重も減りますが、スタミナが減ります
+	PRINTL [4] - 体重減量政策　　　　　量を大きく減らします。生活費が$4000浮き体重もかなり減りますが、スタミナも……
+	PRINTL [5] - 戻る
+	
+	CALL SENTAKUSHI, 6
+	
+	IF RESULT == 0
+		PRINTL 思いっきり豪華な食事を与えます
+	ELSEIF RESULT == 1
+		PRINTL 数品食事を追加します
+	ELSEIF RESULT == 2
+		PRINTL 一般的な食事を行います
+	ELSEIF RESULT == 3
+		PRINTL 食事の量を少し減らします
+	ELSEIF RESULT == 4
+		PRINTL 食事の量を大幅に減らします
+	ENDIF
+	;戻る以外を選択した場合、食事方針を変更する
+	IF RESULT != 5
+		CFLAG:食事方針 = 2-RESULT
+	ENDIF
+	GOTO BACK_LOOP
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+

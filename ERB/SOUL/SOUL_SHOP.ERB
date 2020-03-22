@@ -1,0 +1,373 @@
+﻿;==============================================================
+;魂関係のイベント（闇の店関連）
+;==============================================================
+;----------------------------------------
+;闇の店　基本処理
+;----------------------------------------
+@SOUL_SHOP
+#DIM L_LOCAL, 1
+#DIM COST, 1
+
+COST = 50000
+
+DRAWLINE
+PRINTFORML ～～魂の店～～
+IF CFLAG:魂の状態
+	PRINTFORML 怪しい魔術師「なんだ、もう魂が入れ替わっているではないか
+	PRINTFORML 　　　　　　　術の制約上、二重に入れ替えはできないからの
+	PRINTFORMW 　　　　　　　今の契約が終わってから来るがよい」
+	DRAWLINE
+	RETURN 0
+ELSEIF TALENT:娼婦 || TALENT:淫魔
+	PRINTFORML 怪しい魔術師「……そのような娘なら、今更魂を入れて鍛える必要もないじゃろう
+	PRINTFORML 　　　　　　　依頼でも受けるのか？」
+	DRAWLINE
+	PRINTFORML [0] - 依頼を受ける　依頼を受けます
+ELSE
+	PRINTFORML 怪しい魔術師「よくぞおいでなすった
+	PRINTFORML 　　　　　　　この店の目的は知っておるじゃろうな？
+	PRINTFORML 　　　　　　　言っておくが、わしが扱っておる魂は闇の社会で生きる者達の物じゃ……」
+	DRAWLINE
+	PRINTFORM (代金:
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${COST}
+	RESETCOLOR
+	PRINTFORML )
+	
+	PRINTFORM [0] - 魂抜き　　
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${COST}
+	RESETCOLOR
+	PRINTFORML 　　3ヶ月の間、%CALLNAME:TARGET%の魂を抜き、代わりに他の魂を入れます
+	RESETCOLOR
+	
+	PRINTFORM [1] - 魂共生　　
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${COST}
+	RESETCOLOR
+	PRINTFORML 　　3ヶ月の間、%CALLNAME:TARGET%の身体に魂を入れ、共生させます
+	RESETCOLOR
+ENDIF
+PRINTFORML [9] - 店を出る　やめるのか？　それもよかろう……
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT == 0
+	IF TALENT:娼婦 || TALENT:淫魔
+		
+	ELSE
+		CALL SOUL_INSERT, 0
+	ENDIF
+ELSEIF RESULT == 1
+	CALL SOUL_INSERT, 1
+ELSEIF RESULT == 9
+	RETURN 0
+ELSE
+	PRINTL 不正な入力です
+	GOTO INPUT_LOOP
+ENDIF
+
+IF !RESULT
+	RESTART
+ENDIF
+
+;----------------------------------------
+;依頼
+;----------------------------------------
+@SOUL_TRAIN
+
+$BACK_LOOP_0
+DRAWLINE
+PRINTFORML どの調教依頼を受けますか？
+PRINTL 
+PRINTFORML [0] - 貴族の娘　　　　性の知識に疎い少女じゃ
+PRINTFORML [1] - 身売りされた娘　訳あって売られた娘じゃ
+PRINTFORML [2] - 家出遊女の娘　　とある事情で家を出たようじゃな……
+PRINTFORML [3] - 戻る　　　　　　それもいいじゃろう
+
+CALL SENTAKUSHI, 4
+
+IF RESULT <= 2 && RESULT >= 0
+	LOCAL = RESULT
+	PRINTFORML %SOULNAME(RESULT+4)%を%CALLNAME:TARGET%の身体に入れ、魂は依頼元の身体に入れます
+	PRINTFORML 3ヶ月の間戻す事はできませんが、よろしいですか？
+	PRINTL 
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%の魂を抜き、代わりに%SOULNAME(LOCAL)%を注入しました
+		RESETCOLOR
+		CFLAG:魂の状態 = 3
+		CFLAG:追加魂 = LOCAL
+		CFLAG:魂経過ターン = 0
+		CFLAG:交換前貞操 = BASE:貞操
+		
+		CFLAG:淫妖蓄積値 = 0
+		CFLAG:交換前淫妖 = BASE:淫妖
+		TIMES BASE:淫妖, 0.75
+		BASE:貞操 = 0
+	ELSE
+		GOTO BACK_LOOP_0
+	ENDIF
+ELSEIF RESULT == 3
+	RETURN 0
+ENDIF
+
+
+;----------------------------------------
+;魂抜き
+;ARG　モード(0:通常　1:共生)
+;----------------------------------------
+@SOUL_INSERT, ARG
+#DIM L_LOCAL, 1
+#DIM COST, 1
+
+COST = 50000
+
+$BACK_LOOP
+DRAWLINE
+IF ARG == 0
+	PRINTFORML どの魂を入れますか？
+	PRINTFORM (費用：一律
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${COST}
+	RESETCOLOR
+	PRINTFORML )
+
+	PRINTFORML [0] - 武士の魂　　　剣術に長けた娘の魂です
+	PRINTFORML [1] - 弓引きの魂　　弓術に長けた娘の魂です
+	PRINTFORML [2] - 魔術師の魂　　魔術に長けた娘の魂です
+	PRINTFORML [3] - 娼婦の魂　　　……
+	PRINTFORML [4] - 戻る　　　　　
+	
+	CALL SENTAKUSHI, 5
+
+	IF RESULT >= 0 && RESULT <= 3
+		LOCAL = RESULT
+	ELSEIF RESULT == 4
+		RETURN 0
+	ENDIF
+ELSE
+	PRINTFORM (費用：
+	CALL SETCOLOR_MONEY
+	PRINTFORM ${COST}
+	RESETCOLOR
+	PRINTFORML )
+	
+	LOCAL = 3
+ENDIF
+
+DRAWLINE
+IF ARG == 0
+	PRINTFORML %CALLNAME:TARGET%の魂を抜き、代わりに%SOULNAME(LOCAL)%を注入します
+ELSE
+	PRINTFORML %CALLNAME:TARGET%の身体に%SOULNAME(LOCAL)%を注入し、共生させます
+ENDIF
+PRINTFORML よろしいですか？
+PRINTFORML (3ヶ月間続きます)
+PRINTFORML 
+PRINTFORML [0] - はい
+PRINTFORML [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	IF MONEY < COST
+		PRINTL 所持金が足りません
+		GOTO BACK_LOOP
+	ENDIF
+	CALL SETCOLOR_PALAMUP
+	IF ARG == 0
+		PRINTFORML %CALLNAME:TARGET%の魂を抜き、代わりに%SOULNAME(LOCAL)%を注入しました
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の身体に%SOULNAME(LOCAL)%を注入し、共生させました
+	ENDIF
+	RESETCOLOR
+	CFLAG:魂の状態 = ARG+1
+	CFLAG:追加魂 = LOCAL
+	CFLAG:魂経過ターン = 0
+	CFLAG:交換前貞操 = BASE:貞操
+	IF ARG == 0
+		CFLAG:淫妖蓄積値 = 0
+		CFLAG:交換前淫妖 = BASE:淫妖
+		TIMES BASE:淫妖, 0.75
+		BASE:貞操 = 0
+	ELSE
+		CFLAG:貞操蓄積値 = 0
+		BASE:貞操 /= 2
+	ENDIF
+	
+	;入れた魂によって入れる経験を変える
+	;対象の経験+200
+	SELECTCASE LOCAL
+		;武士
+		CASE 0
+			EXP:体力経験 += 200
+		;弓引き
+		CASE 1
+			EXP:体力経験 += 200
+		;魔術師
+		CASE 2
+			EXP:知力経験 += 200
+		;娼婦
+		CASE 3
+			EXP:淫妖経験 += 200
+	ENDSELECT
+	
+	;性格変更判定を行う
+	CALL HALFYEAR_EVENT_GROW
+	RETURN 1
+ELSEIF RESULT == 1
+	IF ARG == 0
+		GOTO BACK_LOOP
+	ELSE
+		RETURN 0
+	ENDIF
+ENDIF
+
+;------------------------------------------------
+;魂の日常イベント
+;ARG　入ってる魂の種類
+;------------------------------------------------
+@SOUL_N, ARG
+
+;魂抜き
+IF CFLAG:魂の状態 == 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:TARGET%の身体に入っている%SOULNAME(CFLAG:追加魂)%は
+	IF ARG <= 1
+		PRINTFORML 自主的に身体を鍛えた。どうやら元の習慣が抜けないようだ
+		EXP:体力経験 += 5
+		PRINTFORMW 体力経験 + 5
+	ELSEIF ARG == 2
+		PRINTFORML 自主的に本を読み魔術の鍛錬を行った。どうやら元の習慣が抜けないようだ
+		EXP:知力経験 += 5
+		PRINTFORMW 知力経験 + 5
+	ELSE
+		PRINTFORML 自主的に娼館に通い、身体を慰めた。どうやら元の習慣が抜けないようだ
+		EXP:淫妖経験 += 5
+		CALL CAL_CHASTE, 3
+		PRINTFORMW 淫妖経験 + 5
+	ENDIF
+;魂共生
+;今のところ空白
+ELSEIF CFLAG:魂の状態 == 2
+	
+;依頼
+;今のところ空白
+ELSEIF CFLAG:魂の状態 == 3
+	;PRINTFORML %CALLNAME:TARGET%の身体に入っている貴族の魂は
+ENDIF
+
+
+;穢れ加算処理
+CALL CALC_IMP, 1
+
+IF CFLAG:魂の状態 <= 2
+	SELECTCASE ARG
+		;武士
+		CASE 0
+			CALL GET_EXP, TARGET, 1, 5
+		;弓引き
+		CASE 1
+			CALL GET_EXP, TARGET, 2, 5
+		;魔術師
+		CASE 2
+			CALL GET_EXP, TARGET, 3, 5
+		;娼婦
+		CASE 3
+			CALL GET_EXP, TARGET, 4, 5
+	ENDSELECT
+ENDIF
+
+;------------------------------------------------
+;魂が元に戻る際の処理
+;ARG　モード(1:魂抜き　2:共生　3:依頼)
+;------------------------------------------------
+@RESETSOUL, ARG
+#DIM GET_ABL, 1
+
+DRAWLINE
+PRINTFORML %CALLNAME:TARGET%の身体から魂が抜けていった……
+IF ARG <= 2
+	;大体は娼婦の身体に入れられる
+	IF ARG == 1
+		PRINTFORML 少し経つと%CALLNAME:TARGET%の魂が戻ってきた
+		PRINTFORML %CALLNAME:TARGET%は先ほどまで入っていた身体の感触が抜けないのか
+		PRINTFORML 艶めかしい目つきをして自らの身体を擦り、瞳を潤ませた
+		PRINTFORMW 淫妖経験 + 40
+		EXP:淫妖経験 += 40
+		
+		BASE:淫妖 = CFLAG:交換前淫妖+CFLAG:淫妖蓄積値
+		BASE:貞操 = CFLAG:交換前貞操
+		TIMES BASE:貞操, 0.75
+		
+		CALL CALCULATION_INYOU, 25, 300
+		GET_ABL = RESULT
+		PRINTFORM 淫妖: {BASE:淫妖} + {GET_ABL} → 
+		BASE:淫妖 += GET_ABL
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML {BASE:淫妖}
+		RESETCOLOR
+		
+		CALL UP_STATUS
+	ELSEIF ARG == 2
+		PRINTFORMW %CALLNAME:TARGET%はほっと息をつき、二度とこんな事をしないよう%CALLNAME:MASTER%を注意した
+		
+		BASE:貞操 = CFLAG:交換前貞操+CFLAG:貞操蓄積値
+	ENDIF
+ELSE
+	PRINTFORML 少し経つと%CALLNAME:TARGET%の魂が戻ってきた
+	PRINTFORML どうやらさんざん相手の身体を弄んだらしく、満足そうな表情を浮かべている
+	CALL SETCOLOR_MONEY
+	LOCAL = 20000+CFLAG:淫妖蓄積値*200
+	PRINTFORMW ${LOCAL}を手に入れた！
+	RESETCOLOR
+	MONEY += LOCAL
+	
+ENDIF
+
+;入れた魂によって入れる経験を変える
+;対象の経験-200
+SELECTCASE CFLAG:追加魂
+	;武士
+	CASE 0
+		EXP:体力経験 -= 200
+	;弓引き
+	CASE 1
+		EXP:体力経験 -= 200
+	;魔術師
+	CASE 2
+		EXP:知力経験 -= 200
+	;娼婦
+	CASE 3
+		EXP:淫妖経験 -= 200
+ENDSELECT
+
+;状態にリセットをかける
+CFLAG:魂の状態 = 0
+CFLAG:追加魂 = 0
+CFLAG:魂経過ターン = 0
+
+
+;性格変更判定を行う
+CALL HALFYEAR_EVENT_GROW
+
+;------------------------------------------------
+;数値をステータス名に変換(式中関数版)
+;目的：REPEATを使う時に用いる
+;ARG　数値
+;------------------------------------------------
+@SOULNAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 7
+SIF LOCALS == ""
+	SPLIT "武士の魂_弓引きの魂_魔術師の魂_娼婦の魂_領主の娘の魂_身売りされた娘の魂_家出遊女の魂", "_", LOCALS
+RETURNF LOCALS:ARG
+
+

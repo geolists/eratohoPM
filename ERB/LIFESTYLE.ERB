@@ -1,0 +1,258 @@
+﻿;================================================
+;習慣化処理
+;================================================
+@LIFESTYLE, ARG
+#DIM MAX_LV, 2
+#DIM MAX_ELE, 2
+#DIM HALF, 1
+#DIM hosei, 1
+#DIM L_COUNT, 1
+#DIM CLO_ELE, 1
+;年数補正をかけた後の蓄積予定値
+#DIM VAL_hosei, 1
+
+;PRINTFORML 判定値：{ARG}
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+LOCAL = 0
+HALF = 2
+
+IF ARG == 10
+	LOCAL = 1
+	LOCAL:1 = 4
+ELSEIF ARG == 8
+	LOCAL = 1
+	LOCAL:1 = 4
+ELSEIF ARG == 6
+	LOCAL = 1
+	LOCAL:1 = 3
+ELSEIF ARG == 4
+	LOCAL = 1
+	LOCAL:1 = 2
+ELSEIF ARG == 2
+	LOCAL = 1
+	LOCAL:1 = 1
+ELSEIF ARG == 1
+	LOCAL = 1
+	LOCAL:1 = 0
+ENDIF
+
+IF ARG == 0
+	RETURN 0
+ENDIF
+
+hosei = 100
+;装飾品がメイドセットの場合、補正は2倍になる
+IF ACCE_SET() == 1
+	hosei = 200
+ELSE
+	;属性に対応した装飾品を着けている場合、1つにつき習慣化値が10％上昇する
+	FOR COUNT, 0, 8
+		CALL CONVERT_ACCE, COUNT
+		
+		IF CFLAG:("属性／"+STR+"") & CLO_ELE
+			hosei += 10
+		ENDIF
+	NEXT
+ENDIF
+
+
+IF CFLAG:習慣レベル／思考 >= 3
+	RETURN ARG*10
+ENDIF
+
+
+CALL LIFESTYLE_YEAR
+;姫様属性の場合は年数に応じて補正をかける
+IF GETBIT(CLO_ELE, 1) && FLAG:年数 <= 4
+	VAL_hosei = RESULT / (5 - FLAG:年数)
+ELSE
+	VAL_hosei = RESULT
+ENDIF
+
+;衣服の属性強度分乗算を行う
+CALL CLOTHE_ABL, "属性"
+
+BASE:習慣化 += LOCAL * VAL_hosei * hosei * RESULT / 100
+
+;習慣職業が全て一致している場合、思考から順番に定着化できる
+;一つでも浅いレベルが違う習慣職業の場合、その要素を上書きするところから始まる
+
+IF ARG == 10 && BASE:習慣化 >= MAXBASE:習慣化 * CFLAG:習慣レベル／思考
+	LOCAL = 0
+	FOR COUNT, 510, 515
+		IF CFLAG:COUNT == CLO_ELE
+			LOCAL += 1
+		ENDIF
+	NEXT
+	
+	;最初から最後まで該当する職業で埋められている場合
+	IF LOCAL == 5
+		LOCAL = MINARRAY(CFLAG, 500, 505)
+		MAX_LV = FINDELEMENT(CFLAG, LOCAL, 500, 505)
+		CFLAG:MAX_LV += 1
+		
+		CALL SETCOLOR_PALAMUP
+		PRINTFORM %CALLNAME:TARGET%の%LIFESTYLE_NAME(MAX_LV-500)%は
+		
+		IF CFLAG:MAX_LV == 2
+			PRINT 定着化
+		ELSEIF CFLAG:MAX_LV == 3
+			PRINT 癒着化
+		ENDIF
+		PRINTL した！
+		
+		BASE:習慣化 = 0
+		RESETCOLOR
+		
+		;思考まで癒着化した場合、その属性の素質を入手するために返り値を2にする
+		;(娼婦と淫魔以外)
+		IF CFLAG:習慣レベル／思考 == 3 && !GETBIT(CLO_ELE, 6) && !GETBIT(CLO_ELE, 7)
+			LOCAL:2 = MAXARRAY(CFLAG, 220, 228)
+			IF LOCAL:2 != 100
+				
+			ELSE
+				CALL ELEMENT_CONVERT_BIT_REV, CFLAG:習慣職業／思考
+				CALL ELEMENT_CONVERT, RESULT-1
+				
+				PRINTFORML %CALLNAME:TARGET%は%STR%として生活する事が完全に染み付いた……
+				CALL SETCOLOR_PALAMUP
+				
+				PRINTFORML %CALLNAME:TARGET%は[%STR%]を得た
+				TALENT:STR = 1
+				RESETCOLOR
+				RETURN 2
+			ENDIF
+		ELSE
+			RETURN 0
+		ENDIF
+	ELSE
+		FOR L_COUNT, 5, -1, -1
+			SIF CLO_ELE == CFLAG:(L_COUNT + GETNUM(CFLAG, "習慣職業／日課"))
+				CONTINUE
+			BREAK
+		NEXT
+		LOCAL:1 = L_COUNT
+		;ゲージ条件を半減させて次の判定へ
+		HALF = 1
+	ENDIF
+ENDIF
+
+;下層の習慣から変更していく
+IF BASE:習慣化 >= MAXBASE:習慣化 * CFLAG:("習慣レベル／"+LIFESTYLE_NAME(LOCAL:1)+"") * HALF / 2
+	LOCAL:2 = 0
+	IF LOCAL:1 == 4
+		CFLAG:習慣レベル／思考 = 1
+		CFLAG:習慣職業／思考 = CLO_ELE
+		LOCAL:2 = 1
+	ELSEIF LOCAL:1 == 3
+		CFLAG:習慣レベル／行動 = 1
+		CFLAG:習慣職業／行動 = CLO_ELE
+		LOCAL:2 = 1
+	ELSEIF LOCAL:1 == 2
+		CFLAG:習慣レベル／言葉遣い = 1
+		CFLAG:習慣職業／言葉遣い = CLO_ELE
+		LOCAL:2 = 1
+	ELSEIF LOCAL:1 == 1
+		CFLAG:習慣レベル／生活習慣 = 1
+		CFLAG:習慣職業／生活習慣 = CLO_ELE
+		LOCAL:2 = 1
+	ELSEIF LOCAL:1 == 0
+		CFLAG:習慣レベル／日課 = 1
+		CFLAG:習慣職業／日課 = CLO_ELE
+		LOCAL:2 = 1
+	ENDIF
+	
+	IF LOCAL:2 == 1
+		BASE:習慣化 = 0
+	ENDIF
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%の%LIFESTYLE_NAME(LOCAL:1)%が変化した！
+	RESETCOLOR
+	RETURN 1
+ELSE
+	;条件を満たせなかった場合、返り値に限界値を入れる
+	;PRINTFORML 返り値:{ARG*10}
+	
+	;残り50で変化する場合
+	IF BASE:習慣化 + 50 >= MAXBASE:習慣化 * CFLAG:("習慣レベル／"+LIFESTYLE_NAME(LOCAL:1)+"") * HALF / 2
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML もう少しで慣れそうだ
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML この状況に慣れるまで時間がかかりそうだ……
+	ENDIF
+	RESETCOLOR
+	RETURN ARG*10
+ENDIF
+
+;--------------------------------------------
+;年数毎の蓄積値具合
+;--------------------------------------------
+@LIFESTYLE_YEAR
+IF FLAG:年数 >= 5
+	LOCAL = 10
+ELSEIF FLAG:年数 == 4
+	LOCAL = 14
+ELSEIF FLAG:年数 == 3
+	LOCAL = 25
+ELSEIF FLAG:年数 == 2
+	LOCAL = 50
+ELSEIF FLAG:年数 == 1
+	LOCAL = 100
+ENDIF
+
+RETURN LOCAL
+
+;--------------------------------------------
+;習慣の数値→言語変換
+;--------------------------------------------
+@LIFESTYLE_CONVERT, ARG
+IF ARG == 1
+	STR = 日課
+ELSEIF ARG == 2
+	STR = 生活習慣
+ELSEIF ARG == 3
+	STR = 言葉遣い
+ELSEIF ARG == 4
+	STR = 行動
+ELSEIF ARG == 5
+	STR = 思考
+ENDIF
+
+;--------------------------------------------
+;習慣の数値→言語変換
+;式中関数版
+;--------------------------------------------
+@LIFESTYLE_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 5
+SIF LOCALS == ""
+	SPLIT "日課_生活習慣_言葉遣い_行動_思考", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;---------------------------------------------
+;習慣化レベル判定
+;ARGの値が習慣層ごとに条件を満たしているかどうかを見る
+;満たしている場合は1を返す
+;---------------------------------------------
+@LIFESTYLE_LV_CONVERT, ARG
+#DIM CLO_ELE, 1
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+IF ARG > 80 && CLO_ELE != CFLAG:習慣職業／思考
+	RETURN 0
+ELSEIF ARG > 60 && CLO_ELE != CFLAG:習慣職業／行動
+	RETURN 0
+ELSEIF ARG > 40 && CLO_ELE != CFLAG:習慣職業／言葉遣い
+	RETURN 0
+ELSEIF ARG > 20 && CLO_ELE != CFLAG:習慣職業／生活習慣
+	RETURN 0
+ELSEIF ARG > 10 && CLO_ELE != CFLAG:習慣職業／日課
+	RETURN 0
+ENDIF
+RETURN 1

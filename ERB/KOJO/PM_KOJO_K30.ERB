@@ -1,0 +1,616 @@
+﻿;========================================================
+;PM用　輝夜口上　作者:toroiya
+;エンゲージリング贈呈時の口上を出すために作成しました
+;========================================================
+;//////////////////////////////////////////////
+;コマンド成功時
+;//////////////////////////////////////////////
+@PM_EVENT_K1_COMMAND_SUCSESS, ARG
+
+;成功率50％以上
+IF ARG >= 50
+	;性格によって分岐
+	SELECTCASE CFLAG:性格
+		;天真爛漫
+		CASE 0
+			PRINTFORML 「やったー！　慣れてはいるけど、やっぱり嬉しい！」
+		;真面目
+		CASE 1
+			PRINTFORML 「まあ、これぐらいはできて当然ですよね」
+		;高飛車
+		CASE 2
+			PRINTFORML 「当然じゃない。私を何者だと思っているの？」
+		;社交的
+		CASE 3
+			PRINTFORML 「褒めていただきありがとうございます。これからも頑張りますね」
+		;世話焼き
+		CASE 4
+			PRINTFORML 「まあまあ、これも将来になって困ってる人を助けられるようになるための訓練ですから」
+		;夢見がち
+		CASE 5
+			PRINTFORML 「これで将来は%CALLNAME:MASTER%と結婚して、毎日抱き合って暮らすの！」
+		;男勝り
+		CASE 6
+			PRINTFORML 「殿方には負けない程、頑張りました！」
+	ENDSELECT
+;それ以外
+ELSE
+	;性格によって分岐
+	SELECTCASE CFLAG:性格
+		;天真爛漫
+		CASE 0
+			PRINTFORML 「何はともあれ、上手くできてよかった……！」
+		;真面目
+		CASE 1
+			PRINTFORML 「こうすれば上手くできるんですね。覚えておきます」
+		;高飛車
+		CASE 2
+			PRINTFORML 「私にできないことなんて、あると思ってたの？」
+		;社交的
+		CASE 3
+			PRINTFORML 「こうして成功したのも、私と出会ってくれた人達のおかげかしら」
+		;世話焼き
+		CASE 4
+			PRINTFORML 「ふう……上手く事を運ぶのって難しいのね」
+		;夢見がち
+		CASE 5
+			PRINTFORML 「私はやっぱり天に恵まれて……！　いやいや、考えすぎかな」
+		;男勝り
+		CASE 6
+			PRINTFORML 「不可能を可能にするのが最高にかっこいいってこと、分かってくれた？」
+	ENDSELECT
+ENDIF
+
+;//////////////////////////////////////////////
+;コマンド失敗時
+;//////////////////////////////////////////////
+@PM_EVENT_K1_COMMAND_FAILED, ARG
+
+;失敗率50％以下
+IF ARG <= 50
+	;性格によって分岐
+	SELECTCASE CFLAG:性格
+		;天真爛漫
+		CASE 0
+			PRINTFORML 「うう……まさか失敗してしまうなんて……考えてもなかったわ」
+		;真面目
+		CASE 1
+			PRINTFORML 「これができないなんて……！　気が緩みすぎたのね」
+		;高飛車
+		CASE 2
+			PRINTFORML 「こ、これはたまたま周りの環境が悪いだけであって……」
+		;社交的
+		CASE 3
+			PRINTFORML 「うう……ごめんなさい。周囲の人があれだけ助けてくれたのに……」
+		;世話焼き
+		CASE 4
+			PRINTFORML 「こんなんじゃ、誰も助けられないじゃない……」
+		;夢見がち
+		CASE 5
+			PRINTFORML 「いやなの……！　こんな事で失敗してしまうだなんて、認めたくないの……」
+		;男勝り
+		CASE 6
+			PRINTFORML 「うう……私ならできるであろうものを……」
+	ENDSELECT
+;それ以外
+ELSE
+	;性格によって分岐
+	SELECTCASE CFLAG:性格
+		;天真爛漫
+		CASE 0
+			PRINTFORML 「うーん……難しいわね……」
+		;真面目
+		CASE 1
+			PRINTFORML 「さすがに無理でしたか……」
+		;高飛車
+		CASE 2
+			PRINTFORML 「私は悪くないわ……それが無理難題すぎただけよ」
+		;社交的
+		CASE 3
+			PRINTFORML 「うーん……色々な人が助けてくれるけど、やっぱり私じゃまだ無理ね」
+		;世話焼き
+		CASE 4
+			PRINTFORML 「こんな事じゃ、他の人なんて助けられないわね……」
+		;夢見がち
+		CASE 5
+			PRINTFORML 「これは、将来の私がかっこよく解決するために敢えて残しておくの」
+		;男勝り
+		CASE 6
+			PRINTFORML 「ふふ……近い内に必ずできるようになってみせるわ……」
+	ENDSELECT
+ENDIF
+
+
+;//////////////////////////////////////////////
+;コマンド実行時の口上
+;コマンド毎に関数を作り、返り値を1にする
+;//////////////////////////////////////////////
+;---------------------------------
+;100,愛撫
+;---------------------------------
+@PM_EVENT_K1_100
+CALL TRAIN_MESSAGE
+
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	IF !RAND:2
+		PRINTFORML 「はぁっ……はぁっ……はぁ……ん……」
+		PRINTFORML 「も……ん……やら……ん……っ……」
+	ELSE
+		PRINTFORML 「ん……っぁ……っん……」
+		PRINTFORML 「だ……っっ……っめ……っっ……っぁっ……」
+	ENDIF
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	IF !RAND:2
+		PRINTFORML 「はぁぁっ……く……ふぁんっ……」
+		PRINTFORML 「ちょっと……こし……なですぎ……んぁ……」
+	ELSE
+		PRINTFORML 「あっ……は……くぁぁっ……」
+		PRINTFORML 「も……こえが……ひゃんんっ……」
+	ENDIF
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	IF !RAND:2
+		PRINTFORML 「んん……ぁ……く……」
+		PRINTFORML 「ぁ……ん……からだ……あついっ……」
+	ELSE
+		PRINTFORML 「ん……く……なにこれ……」
+		PRINTFORML 「ちょ、ちょっと……からださわりすぎ……ん……！」
+	ENDIF
+;それ以下
+ELSE
+	IF !RAND:2
+		PRINTFORML 「こ……これ……大人になったら誰でもするの……？」
+	ELSE
+		PRINTFORML 「ん……恥ずかしい……」
+	ENDIF
+ENDIF
+
+RETURN 1
+;---------------------------------
+;101,キス
+;---------------------------------
+@PM_EVENT_K1_101
+CALL TRAIN_MESSAGE
+
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	IF !RAND:2
+		PRINTFORML 「ちゅ……き……か……んっ……」
+		PRINTFORML 「楽しいわ……毎日やりたいくらいに……」
+	ELSE
+		PRINTFORML 「き……か……ちゅ……ん……っ……」
+		PRINTFORML 「ぷはぁ……身体が熱いのっ……」
+	ENDIF
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	IF !RAND:2
+		PRINTFORML 「ちゅ……ん……んんぅっ……」
+		PRINTFORML 「あ、貴方の舌……とても甘いわ……」
+	ELSE
+		PRINTFORML 「んぅ……んんぅっ……ん……」
+		PRINTFORML 「ぷはぁ……舌がとてもやわらかくて、よかったですっ……」
+	ENDIF
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	IF !RAND:2
+		PRINTFORML 「ん……ちゅ……」
+		PRINTFORML 「ふふ……教育という口実で口づけできて楽しいわね……」
+	ELSE
+		PRINTFORML 「んちゅ……っは……っん……」
+		PRINTFORML 「ど、どう……？　うまくできたかしら……」
+	ENDIF
+;それ以下
+ELSE
+	IF !RAND:2
+		PRINTFORML 「うぅ……緊張する……」
+		PRINTFORML 「ん……これでいい……？」
+	ELSE
+		PRINTFORML 「女性なら誰でもするの……？」
+		PRINTFORML 「な、中には女性同士でもする人もいるですって……！？　……」
+		PRINTFORML %CALLNAME:TARGET%は顔を真っ赤にし、固まった
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;---------------------------------
+;111,自慰
+;---------------------------------
+@PM_EVENT_K1_111
+CALL TRAIN_MESSAGE
+
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	IF !RAND:2
+		PRINTFORML 「……っ……っぁ……～～っ！」
+		PRINTFORML 「～～っ……～～っ……とっても、きもちいっ……」
+	ELSE
+		PRINTFORML 「くひゃんっ、ん……～～っぁ！」
+		PRINTFORML 「と、とて……～～っ……はぁっ、はぁ……わらしっ、こわれそうぅ……」
+	ENDIF
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	IF !RAND:2
+		PRINTFORML 「んん……！　っぁ……くひゃんんぅっ……！」
+		PRINTFORML 「あふ……なかぁ……さわるとしびれる……んひゃんっ……」
+	ELSE
+		PRINTFORML 「んぁ……ぁんっ……あぁん……」
+		PRINTFORML 「んん……！　ここ、さわるときもちよく……くひゃぅぅっ……」
+	ENDIF
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	IF !RAND:2
+		PRINTFORML 「んっ……ん……！」
+		PRINTFORML 「あ、はぁっ……か、からだがふるえて……んんっ……！」
+	ELSE
+		PRINTFORML 「んっ……はぁっ……く……」
+		PRINTFORML 「あ、ん……しかいがぼやけて……んはぁっ……」
+	ENDIF
+;それ以下
+ELSE
+	IF !RAND:2
+		PRINTFORML 「んっ……ん……んん……」
+		PRINTFORML 「き、んっ……緊張……するわ……」
+	ELSE
+		PRINTFORML 「じ、自分でするの……？」
+		PRINTFORML 「んっ……ぁ……はぁ……こ、これでいい……？」
+	ENDIF
+ENDIF
+
+RETURN 1
+
+
+;---------------------------------
+;120,性交
+;---------------------------------
+@PM_EVENT_K1_120
+CALL TRAIN_MESSAGE
+
+IF TALENT:処女
+	PRINTFORML 「ん……初めてを失うのって、結構痛いのね……」
+ELSE
+	;淫妖が500以上
+	IF BASE:淫妖 >= 500
+		IF !RAND:2
+			PRINTFORML 「ひゃぁ……ぁあんっ……」
+			PRINTFORML 「はぁっ……はぁ……きもち……い……くひゃぁ……んっ……もっとぉ……」
+		ELSE
+			PRINTFORML 「くぁ……んぁんっ……」
+			PRINTFORML 「いぃのぉっ……もっと……ふかくまで……あんっ……ついてぇっ……」
+		ENDIF
+	;淫妖が250以上
+	ELSEIF BASE:淫妖 >= 250
+		IF !RAND:2
+			PRINTFORML 「んっ……ぁ……ぁんっ……」
+			PRINTFORML 「わらしっ……とっても……きもちいぃのっ……」
+		ELSE
+			PRINTFORML 「ぁふ……ん……」
+			PRINTFORML 「ひゃんんっ……いぃ……くせになり、んぁ……そぉ……」
+		ENDIF
+	;淫妖が100以上
+	ELSEIF BASE:淫妖 >= 100
+		IF !RAND:2
+			PRINTFORML 「はぁっ……はぁ……ぁっ……」
+			PRINTFORML 「んん……なんか……ヘンなのっ……」
+		ELSE
+			PRINTFORML 「んん……く……ぁ……はぁ……ん……」
+			PRINTFORML 「な……かがこすれて……ん……！」
+		ENDIF
+	;それ以下
+	ELSE
+		IF !RAND:2
+			PRINTFORML 「んっ……く……ぁ……」
+			PRINTFORML 「な、なにこれ……からだがぞくぞくって……」
+		ELSE
+			PRINTFORML 「ん……ぁ……はぁっ……」
+			PRINTFORML 「か……らだのなかに、なにかいれられるって……ん……へん……」
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;---------------------------------
+;121,立ち性交
+;---------------------------------
+@PM_EVENT_K1_121
+CALL TRAIN_MESSAGE
+
+IF TALENT:処女
+	PRINTFORML 「ん……初めてが立ってするなんて……中々貴重な経験だと思わない……？」
+ELSE
+	;淫妖が500以上
+	IF BASE:淫妖 >= 500
+		IF !RAND:2
+			PRINTFORML 「あっ……ひ……%UNICODE(0x2661)%」
+			PRINTFORML 「き、きもちよすぎるのぉ……んん……ま、またイくぅっ……%UNICODE(0x2661)%」
+		ELSE
+			PRINTFORML 「ぁんっ……ぁっっ……ぁ……」
+			PRINTFORML 「も……だめぇっ……わらし……こわれひゃぅのぉっ……」
+		ENDIF
+	;淫妖が250以上
+	ELSEIF BASE:淫妖 >= 250
+		IF !RAND:2
+			PRINTFORML 「くひゃぁ……ん……うぅんっ……」
+			PRINTFORML 「ぁっ……むねぇ……さすらないでぇっ……」
+		ELSE
+			PRINTFORML 「ひゃん……く……ぁはぁっ……」
+			PRINTFORML 「しかいがぁ……ばちばち……するのぉっ……」
+		ENDIF
+	;淫妖が100以上
+	ELSEIF BASE:淫妖 >= 100
+		IF !RAND:2
+			PRINTFORML 「んっ……ぁ……ぁあんっ……」
+			PRINTFORML 「もっと……腰……もってっ……」
+		ELSE
+			PRINTFORML 「あっ……ん……はぁっ……」
+			PRINTFORML 「わたしっ、ひわいなしせい……してるのっ……」
+		ENDIF
+	;それ以下
+	ELSE
+		IF !RAND:2
+			PRINTFORML 「あっ……く……んん……」
+			PRINTFORML 「あ、脚が震えて……んはぁっ……」
+		ELSE
+			PRINTFORML 「あ……はぁ……ん……」
+			PRINTFORML 「目が潤んで……んん……っ」
+		ENDIF
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;---------------------------------
+;210,指挿し入れ
+;---------------------------------
+@PM_EVENT_K1_210
+CALL TRAIN_MESSAGE
+;淫妖が500以上
+IF BASE:淫妖 >= 500
+	IF !RAND:2
+		PRINTFORML 「んっ……あ……%UNICODE(0x2661)%」
+		PRINTFORML 「き、んっ……きもちいぃですぅっ……%UNICODE(0x2661)%」
+	ELSE
+		PRINTFORML 「あっ、あんっ、ひゃんんっ……」
+		PRINTFORML 「んぁ……水音……ならさないでぇっ……%UNICODE(0x2661)%」
+	ENDIF
+;淫妖が250以上
+ELSEIF BASE:淫妖 >= 250
+	IF !RAND:2
+		PRINTFORML 「んんっ……ぁ……あぁんっ……」
+		PRINTFORML 「き……きもちよ……いですっ……」
+	ELSE
+		PRINTFORML 「あんっ……はぁっ……はぁ……」
+		PRINTFORML 「もっとぉ……さす……いえっ、やめ……あぁんっ……」
+	ENDIF
+;淫妖が100以上
+ELSEIF BASE:淫妖 >= 100
+	IF !RAND:2
+		PRINTFORML 「んん……やめてっ……く……」
+		PRINTFORML 「あなたたちなんか……成敗……ん……されるんだからっ……あくぅっ……」
+	ELSE
+		PRINTFORML 「あくっ……ん……べ……べつに感じてなんか……っ」
+		PRINTFORML 「やめて……そこばかりこすらないで……ん……！」
+	ENDIF
+;それ以下
+ELSE
+	IF !RAND:2
+		PRINTFORML 「うぅ……痛いっ……」
+		PRINTFORML 「早く解放してっ……」
+	ELSE
+		PRINTFORML 「く……なんという拷問なの……」
+		PRINTFORML 「離してっ……」
+	ENDIF
+ENDIF
+
+RETURN 1
+
+
+;---------------------------------
+;899,結婚指輪を贈る
+;---------------------------------
+@PM_EVENT_K1_899
+CALL TRAIN_MESSAGE
+
+PRINTFORML 「え……その指輪を私に？」
+PRINTFORML 差し出された指輪を見て、%CALLNAME:TARGET%はしきりに周囲に振り向き、頭を掻いた
+PRINTFORMW 額には汗が流れ、肩の動きから呼吸が早くなっている事が見て取れる
+PRINTFORML 「た、立場上私と%CALLNAME:MASTER%が結ばれるというのは、その……」
+PRINTFORML 人差し指の先を合わせては離し、回転させる%CALLNAME:TARGET%
+PRINTFORMW 再び言葉が出るまでその仕草は止まらなかった
+PRINTL 
+PRINTFORML しばらくの間、二人の間を静寂が包み込んでいた
+PRINTFORMW それを打ち破ったのは%CALLNAME:TARGET%だ
+PRINTFORML 「……いいよ」
+PRINTFORMW 瑞々しい唇が小さく開かれ、声が出た
+PRINTFORML 「%CALLNAME:MASTER%がそこまで本気なのなら、私……これを受け入れるわ……」
+PRINTFORML 指輪の宝石を撫で、%CALLNAME:MASTER%を見つめる
+PRINTFORMW 瞳は潤み、とても優しい眼差しが向けられている
+PRINTFORML 「その代わり、一つだけ条件を付けさせてほしいの」
+PRINTFORMW 目の前の少女は%CALLNAME:MASTER%の両手を強く握る
+PRINTFORML 「私と一緒にここではないどこかへと行って、そこで暮らしましょう」
+PRINTFORMW 手は震え、視線を逸らす。しかし、そんな態度とは裏腹に言葉は続けられる
+PRINTFORML 「もう、ここでの暮らしには飽きていたの。だから、他の場所へ行き、二人で睦まじく……」
+PRINTFORMW 声は少しずつ小さくなっていき、やがて嗚咽に埋もれてしまった
+PRINTFORML 
+PRINTFORMW もう戻れない道に来てしまったのだ
+PRINTFORMW しかし%CALLNAME:MASTER%に悔いはなく、むしろ将来に希望すら感じていた
+
+RETURN 1
+
+;//////////////////////////////////////////////
+;誕生日
+;ARG　送ったアイテム
+;//////////////////////////////////////////////
+@KOJO_BIRTHDAY_K1, ARG
+SELECTCASE ARG
+	;特製抹茶セット
+	CASE 0
+		PRINTFORML 「うわぁ……とてもいい匂い……」
+		PRINTFORML 「ねえねえ、明日になったら淹れ方を教えてっ♪」
+	;絹の寝間着
+	CASE 1
+		PRINTFORML 「この艶……最高だと思わない？」
+		PRINTFORML 「こんな物を貰って、私、とても嬉しい……」
+	;特大イナバ人形
+	CASE 2
+		PRINTFORML 「わーっ、ふわふわ～♪」
+		PRINTFORML 「うふふっ、人形をくれる%CALLNAME:MASTER%の身体もさぞかし柔らかいんでしょうね～♪」
+	;職人の楽琵琶
+	CASE 3
+		PRINTFORML 「じゃーんっ！　私、琵琶弾けるのよ！」
+		PRINTFORML 「……やっぱり弾き方教えて？」
+	;プレゼントなし
+	CASEELSE
+		PRINTFORML 「うーん……まあ、仕方ないわよね」
+		PRINTFORML 「来年は期待してるからね」
+ENDSELECT
+
+;//////////////////////////////////////////////
+;主人への誕生日プレゼント
+;ARG　送ったアイテム
+;//////////////////////////////////////////////
+@KOJO_BIRTHDAY_MASTER_K1, ARG
+SELECTCASE ARG
+	;プレゼントを渡す前の、お祝いの言葉
+	CASE 0
+		PRINTFORML 「まさか私の誕生日に、自分の誕生日を祝い返されるなんて思いもしなかったでしょう？」
+		PRINTFORML 「ふふ、今日は二人で愉しみましょうね」
+	;お手製の衣服
+	CASE 1
+		PRINTFORML 「貴方のために服を編んでみたの」
+		PRINTFORML 「幸せを願って、装飾に縁起のいい物を沢山あしらってみたのだけど、いかがかしら？」
+	;お手製の料理
+	CASE 2
+		PRINTFORML 「じゃーん！　貴方のために、今日はとっておきの御馳走を作ってみたの！」
+		PRINTFORML 「普段から好物とか薬草市の場所とか聞いていたのは、今日のためだったのよ」
+	;お手紙
+	CASE 3
+		PRINTFORML 「えーと……結構色々書いたから、私のいない所で開いてね」
+		PRINTFORML 「悪いことは書いてないから……」
+	;不気味な置物
+	CASE 4
+		PRINTFORML 「なによ。そんな嫌そうな顔して」
+		PRINTFORML 「これでも調達するのには苦労したのよ。……喜んでよね」
+ENDSELECT
+
+;//////////////////////////////////////////////
+;主人の雑務を手伝う時
+;//////////////////////////////////////////////
+@KOJO_HELPING_MASTER_K1
+
+SELECTCASE RAND:2
+	CASE 0
+		PRINTFORML 「一人で大丈夫か、って？　大丈夫よ。任せて」
+		PRINTFORML 「とりあえず読まない本は奥にしまっておくから」
+	CASE 1
+		PRINTFORML 「文書整理？　任せておいて」
+		PRINTFORML 「印鑑が必要な物と、そうでない物とで簡単にまとめてあげるから」
+ENDSELECT
+
+;//////////////////////////////////////////////
+;戦闘中に絶頂
+;ARGが1の場合、多重絶頂
+;//////////////////////////////////////////////
+@KOJO_BATTLE_ECSTASY_K1, ARG
+
+;多重絶頂
+IF ARG
+	;淫魔
+	IF TALENT:淫魔
+		IF !RAND:2
+			PRINTFORML 「このかんしょく……ぁ……ひゃぁ……！」
+			PRINTFORML 「はぁっ……はぁ……淫魔のわたしがはしたな……ぁっ、また……ぁ……！」
+		ELSE
+			PRINTFORML 「ぁ……はぁ……%UNICODE(0x2661)%」
+			PRINTFORML 「な、波のように快楽がぁ……%UNICODE(0x2661)%」
+		ENDIF
+	ELSE
+		IF BASE:淫妖 >= 600
+			IF !RAND:2
+				PRINTFORML 「んん……%UNICODE(0x2661)%　すごいのが、あたまをぉ……%UNICODE(0x2661)%」
+				PRINTFORML 「くひゃああああんっ……%UNICODE(0x2661)%　ぁ、またぁ、わらしぃイきますぅ……%UNICODE(0x2661)%」
+			ELSE
+				PRINTFORML 「ぁ……はぁぁっ……イくぅ……%UNICODE(0x2661)%　くひゃああああんっ……」
+				PRINTFORML 「ま、またイくのぉ……ひゃあああああんんっ……%UNICODE(0x2661)%」
+			ENDIF
+		ELSEIF BASE:淫妖 >= 300
+			IF !RAND:2
+				PRINTFORML 「やめ……ぁ……くひゃああああんっ……」
+				PRINTFORML 「ぁ……はぁぁんっ……また、からだがふるえてっ……ひゃあああっ……」
+			ELSE
+				PRINTFORML 「や、やめっ……もぅ、わらしっ……んぁぁぁああああっ……」
+				PRINTFORML 「ぁはぁ……また、きちゃぅ……んぁああああっ……」
+			ENDIF
+		ELSE
+			IF !RAND:2
+				PRINTFORML 「んっ……ぁ……なに、これぇっ……」
+				PRINTFORML 「すごいのがきて……まっしろにぃ……んぁぁあああああ……っ」
+			ELSE
+				PRINTFORML 「えっ、こん、あんっ、のっ……しらないぃっ……」
+				PRINTFORML 「んぁあああああっ……」
+			ENDIF
+		ENDIF
+	ENDIF
+ELSE
+	;淫魔
+	IF TALENT:淫魔
+		IF !RAND:2
+			PRINTFORML 「ぁはぁ……わたしがいっちゃうなんてぇ……%UNICODE(0x2661)%」
+		ELSE
+			PRINTFORML 「んん……！　ぁ……！」
+			PRINTFORML 「はあっ……これだからやめられないのよ……」
+		ENDIF
+	ELSE
+		IF BASE:淫妖 >= 600
+			IF !RAND:2
+				PRINTFORML 「あっ……は……らめ……イっちゃうのぉっ……」
+				PRINTFORML 「んっはぁああああああっ……」
+			ELSE
+				PRINTFORML 「くひゃ……ん……もうイくぅんっ……」
+				PRINTFORML 「ひゃあああああんっ……」
+			ENDIF
+		ELSEIF BASE:淫妖 >= 300
+			IF !RAND:2
+				PRINTFORML 「んっ……ぁ……だめぇ……もぅ……いくぅ……」
+				PRINTFORML 「ひゃああああんっ……」
+			ELSE
+				PRINTFORML 「ひゃああああっ……ん……ぁ……」
+				PRINTFORML 「はぁっ……はぁ……こんな場所で……く……」
+			ENDIF
+		ELSE
+			IF !RAND:2
+				PRINTFORML 「ぁ……だめぇ……なんか……きちゃう……」
+				PRINTFORML 「ん……ぁぁ……ひゃあああああっ……」
+			ELSE
+				PRINTFORML 「も……もぅやめ……からだ、ふるえてっ……」
+				PRINTFORML 「ひゃああああっ……はぁっ……はぁ……」
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+;//////////////////////////////////////////////
+;口上の色指定
+;ARG　0：通常　1：淫行
+;//////////////////////////////////////////////
+@KOJO_COLOR_K1, ARG
+
+SELECTCASE ARG
+	CASE 0
+		SETCOLOR 255,150,160
+	CASE 1
+		SETCOLOR 255,118,128
+ENDSELECT
+
+
+
+;//////////////////////////////////////////////
+;口上の存在判定
+;口上を作ったらこの関数を入れる。これによって存在判定を行う
+;//////////////////////////////////////////////
+@PM_FLAGMENT_K1
+
+RETURN 1
+

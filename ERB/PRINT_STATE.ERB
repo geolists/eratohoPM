@@ -1,0 +1,879 @@
+﻿@ARRANGE_CHARANAME
+;名前の表示の後の文字を揃えるための空白調整、Str.csvにて処理している
+C = NO:COUNT + 200
+PRINTS STR:C
+
+@SHOW_RACE
+#DIM MAX_PAR, 2
+#DIM L_LOCAL, 1
+
+VARSET MAX_PAR, 0
+;能力を見る選択のとき、各キャラの横で種族が表示される
+;R = NO:RESULT
+PRINT 種族：
+;淫魔を持つ場合
+IF TALENT:淫魔
+	PRINT 淫魔
+ELSEIF TALENT:人魚
+	PRINT 人魚
+ELSEIF TALENT:妖精
+	PRINT 妖精
+ELSEIF TALENT:触手娘
+	PRINT 触手娘
+ELSEIF TALENT:スライム娘
+	PRINT スライム娘
+ELSEIF TALENT:アルラウネ
+	PRINT アルラウネ
+ELSE
+	PRINT 月人
+ENDIF
+PRINT 　髪：
+;(輝夜の場合)初期は黒髪
+IF CFLAG:髪色 == 0
+	;豊姫や依姫の場合、豊姫:金髪　依姫:紫髪にする
+	IF NAME:TARGET == "依姫"
+		SETCOLOR 255, 96, 255
+		PRINT 紫髪
+	ELSEIF NAME:TARGET == "豊姫"
+		SETCOLOR 239, 207, 96
+		PRINT 金髪
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINT 黒髪
+	ENDIF
+;現時点では茶髪と灰髪のみ存在
+ELSEIF CFLAG:髪色 == 1
+	SETCOLOR 236, 180, 128
+	PRINT 茶髪
+ELSEIF CFLAG:髪色 == 2
+	SETCOLOR 164, 164, 164
+	PRINT 灰髪
+ENDIF
+RESETCOLOR
+
+PRINT 　肌の色：
+IF CFLAG:肌の色 == 0
+	;輝夜や綿月姉妹の場合
+	IF CALLNAME:TARGET == "依姫" || CALLNAME:TARGET == "豊姫" || CALLNAME:TARGET == "輝夜"
+		SETCOLOR 255,255,255
+		PRINT 白色
+	ELSE
+		SETCOLOR 248,225,195
+		PRINT 宍色
+	ENDIF
+;スライム娘とアルラウネには固有色が与えられる
+ELSEIF TALENT:スライム娘
+	SETCOLOR 0, 223, 255
+	PRINT 淡水色
+ELSEIF TALENT:アルラウネ
+	SETCOLOR 0, 255, 64
+	PRINT 緑色
+ELSEIF CFLAG:肌の色 == 1
+	SETCOLOR 232,170,128
+	PRINT 薄茶色
+ELSE
+	SETCOLOR 160,90,32
+	PRINT 小麦色
+ENDIF
+RESETCOLOR
+
+PRINT 　立場：
+REPEAT 9
+	CALL ELEMENT_CONVERT, COUNT
+	LOCALS = %STR%
+	
+	IF MAX_PAR < CFLAG:("属性／"+STR+"")
+		MAX_PAR = CFLAG:("属性／"+STR+"")
+		MAX_PAR:1 = COUNT
+	ENDIF
+REND
+CALL ELEMENT_CONVERT, MAX_PAR:1
+LOCALS = %STR%
+
+IF CFLAG:("属性／"+STR+"") >= 50
+	
+ELSE
+	IF CFLAG:("属性／"+STR+"") > 40
+		PRINTFORM 大体
+	ELSEIF CFLAG:("属性／"+STR+"") > 30
+		PRINTFORM 恐らく
+	ELSEIF CFLAG:("属性／"+STR+"") > 20
+		PRINTFORM 微妙に
+	ELSE
+		PRINTFORM なんちゃって
+	ENDIF
+ENDIF
+IF TALENT:娼婦
+	REPEAT 6
+		CALL ELEMENT_CONVERT, COUNT
+		LOCALS = %STR%
+		
+		IF CFLAG:("属性／"+STR+"") == 50
+			LOCAL = 1
+		ENDIF
+	REND
+	
+	IF CFLAG:属性／乞食 == 50 && LOCAL
+		PRINT 淫乱
+		REPEAT 5
+			CALL ELEMENT_CONVERT, COUNT
+			LOCALS = %STR%
+			
+			IF CFLAG:("属性／"+STR+"") == 50
+				IF CFLAG:服装 > 0 && DITEMTYPE:(CFLAG:服装):12
+					PRINTFORM 巫女
+				ELSE
+					PRINTFORM %STR%
+				ENDIF
+			ENDIF
+		REND
+	ELSE
+		PRINTFORM 娼婦
+	ENDIF
+ELSE
+	IF CFLAG:服装 > 0 && DITEMTYPE:(CFLAG:服装):12
+		PRINTFORM 巫女
+	ELSE
+		PRINTFORM %STR%
+	ENDIF
+ENDIF
+
+PRINT 　性格:
+IF CFLAG:性格 == 0
+	SETCOLOR 128,255,255
+	PRINT 天真爛漫
+ELSEIF CFLAG:性格 == 1
+	SETCOLOR 0,255,0
+	PRINT 真面目
+ELSEIF CFLAG:性格 == 2
+	SETCOLOR 255,128,0
+	PRINT 高飛車
+ELSEIF CFLAG:性格 == 3
+	SETCOLOR 196,255,196
+	PRINT 社交的
+ELSEIF CFLAG:性格 == 4
+	SETCOLOR 255,128,64
+	PRINT 世話焼き
+ELSEIF CFLAG:性格 == 5
+	SETCOLOR 32,255,223
+	PRINT 夢見がち
+ELSEIF CFLAG:性格 == 6
+	SETCOLOR 255,160,128
+	PRINT 男勝り
+ELSEIF CFLAG:性格 == -1
+	SETCOLOR 255,128,192
+	PRINT 淫乱
+ELSEIF CFLAG:性格 == -2
+	SETCOLOR 128,128,128
+	PRINT 非行
+ELSEIF CFLAG:性格 == -3
+	SETCOLOR 144,96,96
+	PRINT 不良
+ENDIF
+
+IF TALENT:妊娠
+	CALL SETCOLOR_PREGNANCY
+	PRINTFORM 　妊娠{CFLAG:妊娠経過日}ヶ月目
+	RESETCOLOR
+ENDIF
+
+PRINTL 
+RESETCOLOR
+PRINTFORM 　星座:%CONSTELLATIO_NAME(CFLAG:星座)%　(B:{BASE:胸囲} W:{BASE:ウエスト} H:{BASE:ヒップ}　BMI:{CULC_BMI(0)}.{CULC_BMI(1)%10}
+SELECTCASE HANTEI_BMI()
+	CASE 2
+		SETCOLOR 255,128,128
+		PRINT (太りすぎ)
+	CASE 1
+		SETCOLOR 255,162,162
+		PRINT (ふくよか)
+	CASE 0
+		SETCOLOR 196,255,162
+		PRINT (通常)
+	CASE -1
+		SETCOLOR 196,164,224
+		PRINT (華奢)
+	CASE -2
+		SETCOLOR 164,128,255
+		PRINT (耗弱)
+ENDSELECT
+RESETCOLOR
+PRINTFORML 　身長:{BASE:身長}cm　体重:{BASE:体重/10+BASE:体力/100}.{(BASE:体重/10+BASE:体力/100)%10}kg)
+;STR:1 = 
+
+PRINT 　服装:
+CALL SETCOLOR_ELEMENT, 1
+IF CFLAG:服装 == -1
+	PRINTFORM 布切れ
+ELSEIF CFLAG:服装 == -2
+	PRINTFORM ボロの布切れ
+ELSEIF CFLAG:服装 == -3
+	PRINTFORM 解れかけた布切れ
+ELSEIF CFLAG:服装 == -4
+	PRINTFORM 首輪
+ELSE
+	PRINTFORM %ITEMNAME:(CFLAG:服装)%
+ENDIF
+RESETCOLOR
+
+PRINTFORM 　潜在意識上の人格:
+
+FOR L_LOCAL, 500, 600
+	IF TALENT:L_LOCAL
+		STR:1 = %TALENTNAME:L_LOCAL%
+	ENDIF
+NEXT
+
+IF STR:1 == ""
+	PRINTFORML 年頃の娘
+ELSE
+	PRINTFORML %STR:1%
+ENDIF
+
+PRINT (
+REPEAT 9
+	CALL ELEMENT_CONVERT, COUNT
+	LOCALS = %STR%
+	
+	IF CFLAG:("属性／"+STR+"")
+		IF TALENT:娼婦 && STR == "乞食"
+			STR:1 = 娼婦
+		ELSEIF CFLAG:服装 > 0 && DITEMTYPE:(CFLAG:服装):12 && STR == "シスター"
+			STR:1 = 巫女
+		ELSE
+			STR:1 = %STR%
+		ENDIF
+		PRINTFORM  %STR:1%:{CFLAG:("属性／"+STR+"")}％　
+	ENDIF
+REND
+PRINTL )
+
+PRINTFORM 　評価:
+CALL SETCOLOR_VALUE
+PRINTFORM {CFLAG:評価}
+RESETCOLOR
+PRINTFORM 　君主の評価:
+CALL SETCOLOR_VALUE
+PRINTFORM {BASE:君主の評価}
+RESETCOLOR
+
+PRINTFORM 　役人の評価:
+CALL SETCOLOR_VALUE
+PRINTFORM {BASE:役人の評価}
+RESETCOLOR
+
+PRINTFORM 　民衆の評価:
+CALL SETCOLOR_VALUE
+PRINTFORM {BASE:民衆の評価}
+RESETCOLOR
+PRINTL 
+
+PRINTFORML 　友好度(姉妹:{CFLAG:姉妹への友好度}　主人:{CFLAG:主人への友好度})　
+
+@SHOW_INFO_PALAM
+REPEAT 15
+
+;パラメータを表示する順番を並べ替える
+
+IF COUNT == 0
+;快Ｃ
+	A = 0
+ELSEIF COUNT == 1
+;快Ｖ
+	A = 1
+ELSEIF COUNT == 2
+;快Ａ
+	A = 2
+ELSEIF COUNT == 3
+;快Ｂ
+	A = 3
+ELSEIF COUNT == 4
+;潤滑
+	A = 4
+ELSEIF COUNT == 5
+;恭順
+	A = 5
+ELSEIF COUNT == 6
+;欲情
+	A = 6
+ELSEIF COUNT == 7
+;屈服
+	A = 7
+ELSEIF COUNT == 8
+;習得
+	A = 8
+ELSEIF COUNT == 9
+;恥情
+	A = 9
+ELSEIF COUNT == 10
+;苦痛
+	A = 10
+ELSEIF COUNT == 11
+;恐怖
+	A = 11
+ELSEIF COUNT == 12
+;反感
+	A = 12
+ELSEIF COUNT == 13
+;不快
+	A = 13
+ELSEIF COUNT == 14
+;抑鬱
+	A = 14
+ENDIF
+
+
+;現在のパラメータレベルをBに代入
+IF PALAM:A < PALAMLV:1
+	B = 0
+ELSEIF PALAM:A < PALAMLV:2
+	B = 1
+ELSEIF PALAM:A < PALAMLV:3
+	B = 2
+ELSEIF PALAM:A < PALAMLV:4
+	B = 3
+ELSEIF PALAM:A < PALAMLV:5
+	B = 4
+ELSEIF PALAM:A < PALAMLV:6
+	B = 5
+ELSEIF PALAM:A < PALAMLV:7
+	B = 6
+ELSEIF PALAM:A < PALAMLV:8
+	B = 7
+ELSEIF PALAM:A < PALAMLV:9
+	B = 8
+ELSE
+	B = 9
+ENDIF
+
+;パラメータの名前・パラメータレベル・ゲージを表示
+PRINTFORM 　%PALAMNAME:A%Lv{B}[
+
+;パラメータレベルが9以上なら余計な処理は飛ばす
+IF B >= 9
+	PRINT ********
+	GOTO SHOW_INFO_PALAM_END
+ENDIF
+
+;パラメータレベルごとの閾値の8分の1を1メモリとする
+;C = PALAM:A/(PALAMLV:(B+1)/8)
+E = B+1
+C = PALAM:A/(PALAMLV:E/8)
+
+;↓のコメントアウトした部分を戻すと、パラメータ表示のゲージが
+;↓パラメータの総量を基準にしたものから、
+;↓現在のレベル→次のレベルに必要な量を基準としたものになります。
+;↓例えば、パラメータが5000（レベル３）のときはこんな感じに。
+;↓　従来 [****>>>>] Now:5000 / Next:10000 （総量として必要な10000が基準）
+;↓　これ [**>>>>>>] Now:2000 / Next: 7000 （LV3→LV4に必要な7000が基準）
+
+;C = (PALAM:A-PALAMLV:B)/((PALAMLV:E-PALAMLV:B)/8)
+
+D = 8-C
+
+;パラメータレベルに応じて溜まっている部分に記号を表示
+$SHOW_INFO_PALAM_C
+SIF C == 0
+	GOTO SHOW_INFO_PALAM_D
+SIF B >= 0
+	PRINT *
+C -= 1
+GOTO SHOW_INFO_PALAM_C
+
+;溜まっていない部分に1Lv下の記号を表示
+$SHOW_INFO_PALAM_D
+SIF D == 0
+	GOTO SHOW_INFO_PALAM_END
+SIF B >= 0
+	PRINT .
+D -= 1
+GOTO SHOW_INFO_PALAM_D
+
+$SHOW_INFO_PALAM_END
+PRINT ]
+
+;これだけ特殊
+IF A == 3 && PALAM:A >= 20000
+	PRINT 摩擦 0
+	GOTO SHOW_INFO_PALAM_NUM_END
+ENDIF
+
+;↓↓↓↓kMGT表示↓↓↓↓
+A = PALAM:A
+B = 0
+;6桁までノーマル
+IF A > 999999
+	;kキロ(1000)
+	A /= 1000
+	B += 1
+	IF A > 99999
+		;Mメガ(百万)
+		A /= 1000
+		B += 1
+		;2^31 ≒ 21億 = 2100M = 2.1G
+		;eramakerの32ビット整数ならメガまでで十分
+		IF A > 99999
+			;Gギガ(十億)
+			A /= 1000
+			B += 1
+			IF A > 99999
+				;Tテラ(兆)
+				A /= 1000
+				B += 1
+				IF A > 99999
+					;Pペタ(千兆)
+					A /= 1000
+					B += 1
+					;2^63 ≒ 920京 = 9200P = 9.2E
+					;Emueraの64ビット整数でもペタまでで十分
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+ENDIF
+
+;数値の桁数に応じて間隔を調整
+SIF A < 10
+	PRINT  
+SIF A < 100
+	PRINT  
+SIF A < 1000
+	PRINT  
+SIF A < 10000
+	PRINT  
+;接尾語が入るなら1つ減らす
+SIF A < 100000 && B == 0
+	PRINT  
+
+PRINTFORM {A}
+IF B == 1
+	PRINT k
+ELSEIF B == 2
+	PRINT M
+ELSEIF B == 3
+	PRINT G
+ELSEIF B == 4
+	PRINT T
+ELSEIF B == 5
+	PRINT P
+ENDIF
+;↑↑↑↑kMGT表示↑↑↑↑
+
+;↓↓↓↓通常表示↓↓↓↓
+;
+;	;数値の桁数に応じて間隔を調整
+;	SIF PALAM:A < 10
+;		PRINT  
+;	SIF PALAM:A < 100
+;		PRINT  
+;	SIF PALAM:A < 1000
+;		PRINT  
+;	SIF PALAM:A < 10000
+;		PRINT  
+;	SIF PALAM:A < 100000
+;		PRINT  
+;	;数値を表示・999999を超えたら999999
+;	IF PALAM:A > 999999
+;		PRINT 999999
+;	ELSE
+;		PRINTFORM {PALAM:A}
+;	ENDIF
+;
+;↑↑↑↑通常表示↑↑↑↑
+
+$SHOW_INFO_PALAM_NUM_END
+
+;3回ごとに改行
+SIF COUNT%3 == 2
+	PRINTL 
+
+REND
+
+@SHOW_INFO_ABL
+S = 0
+REPEAT 20
+	;表示概要
+	;　　　　 0,従順 　　　　 1,欲望 　　　　 2,技巧 　　　 3,Ｃ感覚
+	;　　　 4,Ｖ感覚 　　　 5,Ａ感覚 　　　 6,Ｂ感覚 　　 7,奉仕精神
+	;　　　 8,露出癖 　　 9,マゾっ気 　　10,サドっ気 　　11,レズっ気
+	;　　12,料理技能 　　13,撮影技能 　　14,歌唱技能 　　15,自慰中毒
+	;　　16,精液中毒 　　17,レズ中毒 18,セックス中毒 　　19,噴乳中毒
+	;　　20,ホモっ気 　　21,ゲイ中毒
+	
+	IF ABL:T:COUNT > 0
+		;表示位置あわせ
+		IF COUNT == 7 || COUNT == 9 || COUNT == 10 || COUNT == 11 || COUNT == 12 || COUNT == 13 || COUNT == 14 || COUNT == 15 || COUNT == 16 || COUNT == 17 || COUNT == 19 || COUNT == 20 || COUNT == 21
+			PRINT 　　
+		ELSEIF COUNT == 3 || COUNT == 4 || COUNT == 5 || COUNT == 6 || COUNT == 8
+			PRINT 　　　
+		ELSEIF COUNT == 0 || COUNT == 1 || COUNT == 2
+			PRINT 　　　　
+		ENDIF
+		
+		;表示
+		PRINTFORM %ABLNAME:COUNT%:LV
+		;数字の表示位置をそろえる
+		SIF ABL:T:COUNT < 10
+			PRINT  
+		PRINTFORM {ABL:T:COUNT}
+		S += 1
+		;改行するのか？ 続けて出力するのか？
+		IF S == 4
+			PRINTL 
+			S = 0
+		ELSE
+			PRINT 　
+		ENDIF
+	ENDIF
+REND
+PRINTL 
+
+;=============================================================================
+;PRINT_TALENT （素質）との入れ替え
+@SHOW_INFO_TALENT
+U = 0
+;リピート回数-1 の番号までの素質が表示される
+;リピート回数をあらかじめ大きめに設定（最大1000）しておくと、
+;素質の最大番号が増えたときに書き換える手間が減るが、
+;増やしすぎると処理速度に影響するので要注意
+REPEAT 600
+	IF TALENT:COUNT
+		IF TALENT:嫌厭色情
+			CALL SETCOLOR_MONEY
+		ENDIF
+		PRINTFORM [%TALENTNAME:COUNT%] 
+		RESETCOLOR
+		
+		;改行するのか？ 続けて出力するのか？
+		U += 1
+		SIF U%6 == 0
+			PRINTL 
+	ENDIF
+REND
+;最後のループで改行してなかったら、ここで改行しておく
+SIF U%6 != 0
+	PRINTL 
+
+;=============================================================================
+;気質表示
+@SHOW_INFO_KISITU
+#LOCALSIZE 2
+FOR LOCAL, 0, 10
+	PRINTFORM %GETNAME_KISITU(LOCAL), 8, LEFT%:{BASE:GETNAME_KISITU(LOCAL), 3}　
+	IF BASE:GETNAME_KISITU(LOCAL) == 600
+		SETCOLOR 0xF0C070
+	ELSEIF BASE:GETNAME_KISITU(LOCAL) >= 400
+		SETCOLOR 0xC0A070
+	ELSEIF BASE:GETNAME_KISITU(LOCAL) >= 200
+		SETCOLOR 0x70C070
+	ELSEIF BASE:GETNAME_KISITU(LOCAL) >= 100
+		SETCOLOR 0xC0C0C0
+	ELSE
+		SETCOLOR 0x7070C0
+	ENDIF
+	FOR LOCAL:1, 0, BASE:GETNAME_KISITU(LOCAL) / 20
+		PRINTFORM %UNICODE(0x258A)%
+	NEXT
+	RESETCOLOR
+	PRINTL 
+NEXT
+
+;REPEAT 9
+;	LOCAL = COUNT
+;	CALL KISITU_CONVEAT_NAME, LOCAL
+;	ENCODETOUNI %STR%
+;	PRINTFORM %STR%
+;	IF RESULT == 3
+;		PRINTFORM 　
+;	ELSEIF RESULT == 2
+;		PRINTFORM 　　
+;	ELSE
+;		
+;	ENDIF
+;	PRINTFORML ：{BASE:STR}
+;REND
+
+
+;=============================================================================
+;能力
+@SHOW_INFO_ABLITY
+
+PRINTPLAINFORM 能力：美Lv{BASE:美麗/300+1}[
+CALL SETCOLOR_PALAM, BASE:美麗
+PRINTFORM {BASE:5}
+RESETCOLOR
+
+PRINTPLAINFORM ] 知Lv{BASE:知力/300+1}[
+CALL SETCOLOR_PALAM, BASE:知力
+PRINTFORM {BASE:6}
+RESETCOLOR
+
+PRINTPLAINFORM ] 疎Lv{BASE:疎通/300+1}[
+CALL SETCOLOR_PALAM, BASE:疎通
+PRINTFORM {BASE:7}
+RESETCOLOR
+
+PRINTPLAINFORM ] 家Lv{BASE:家事/300+1}[
+CALL SETCOLOR_PALAM, BASE:家事
+PRINTFORM {BASE:8}
+RESETCOLOR
+
+PRINTPLAINFORM ] 信Lv{BASE:信仰/300+1}[
+CALL SETCOLOR_PALAM, BASE:信仰
+PRINTFORM {BASE:9}
+RESETCOLOR
+PRINTPLAINFORM ] 体Lv{BASE:体力/300+1}[
+CALL SETCOLOR_PALAM, BASE:体力
+PRINTFORM {BASE:10}
+RESETCOLOR
+PRINT ]
+;PRINTPLAINFORM ]　色[
+;CALL SETCOLOR_PALAM, BASE:色気
+;PRINTFORM {BASE:11}]
+
+PRINTL 
+PRINTPLAINFORM 　　　淫[
+IF BASE:淫妖 <= 1000
+	CALL SETCOLOR_PALAM, BASE:淫妖
+ELSE
+	SETCOLOR 255,0,0
+ENDIF
+PRINTFORM {BASE:13}
+RESETCOLOR
+
+PRINTPLAINFORM ] 堕[
+IF BASE:堕落 <= 1000
+	CALL SETCOLOR_PALAM, BASE:堕落
+ELSE
+	SETCOLOR 255,0,0
+ENDIF
+PRINTFORM {BASE:14}
+RESETCOLOR
+PRINT ]
+
+PRINTL 
+
+;=============================================================================
+;PRINT_MARK （刻印）との入れ替え
+@SHOW_INFO_MARK
+REPEAT 4
+	PRINTFORM %MARKNAME:COUNT%:LV{MARK:T:COUNT} 
+	BAR MARK:T:COUNT, 3, 3
+	
+	;最後のループ以外では間隔をあける
+	SIF COUNT < 3
+		PRINT 　
+REND
+PRINTL 
+
+;=============================================================================
+;PRINT_EXP （経験）との入れ替え
+@SHOW_INFO_EXP, ARG
+#DIM COUNT_S, 1
+X = 0
+S = 0
+REPEAT 15
+	;表示概要
+	;　　　 0.美麗経験　1.知力経験　2.疎通経験　3.淫妖経験
+	;　　　 4.堕落経験　5.精液経験　6.精飲経験
+	
+	
+	IF EXP:TARGET:(COUNT+67) > 0
+		COUNT_S = COUNT + 67
+		;PRINTFORML {COUNT_S}
+		
+		PRINTFORM %EXPNAME:(COUNT_S), 14, LEFT%：
+		;表示位置そろえる
+		IF EXP:(COUNT_S) < 10
+			PRINT    
+		ELSEIF EXP:(COUNT_S) < 100
+			PRINT   
+		ELSEIF EXP:(COUNT_S) < 1000
+			PRINT  
+		ENDIF
+		PRINTFORM {EXP:(COUNT_S)}
+		S += 1
+		
+		;改行するのか？ 続けて出力するのか？
+		IF S == 4
+			PRINTL 
+			S = 0
+		ELSE
+			PRINT 　
+		ENDIF
+	ENDIF
+REND
+PRINTL 
+;=============================================================================
+;SHOW_JUEL の珠表示部分を独立した関数に
+@SHOW_INFO_JUEL
+U = 0
+X = 0
+REPEAT 12
+	;表示順
+	; 0,快Ｃ　 1,快Ｖ　 2,快Ａ　 3,快Ｂ
+	; 5,恭順　 6,欲情　 7,屈服　 8,習得
+	; 9,恥情　10,苦痛　11,恐怖 100,否定
+	IF COUNT == 0
+		X = 0
+	ELSEIF COUNT == 1
+		X = 1
+	ELSEIF COUNT == 2
+		X = 2
+	ELSEIF COUNT == 3
+		X = 3
+		
+	ELSEIF COUNT == 4
+		X = 5
+	ELSEIF COUNT == 5
+		X = 6
+	ELSEIF COUNT == 6
+		X = 7
+	ELSEIF COUNT == 7
+		X = 8
+		
+	ELSEIF COUNT == 8
+		X = 9
+	ELSEIF COUNT == 9
+		X = 10
+	ELSEIF COUNT == 10
+		X = 11
+	ELSEIF COUNT == 11
+		X = 100
+		
+	ENDIF
+	
+	PRINTFORM 　%PALAMNAME:X%の珠:
+	
+	;表示位置そろえる
+	IF JUEL:T:X < 10
+		PRINT      
+	ELSEIF JUEL:T:X < 100
+		PRINT     
+	ELSEIF JUEL:T:X < 1000
+		PRINT    
+	ELSEIF JUEL:T:X < 10000
+		PRINT   
+	ELSEIF JUEL:T:X < 100000
+		PRINT  
+	ENDIF
+	PRINTV JUEL:T:X
+	
+	;改行or表示位置あけ
+	U += 1
+	IF U%4 == 0
+		PRINTL 
+	ELSE
+		PRINT  
+	ENDIF
+REND
+
+;最後のループで改行してなかったら、ここで改行しておく
+SIF U%4 != 0
+	PRINTL 
+
+@SHOW_INFO_CLOTHES
+T:10 = TARGET
+TARGET = T
+REPEAT 7
+	B = 46-COUNT
+	SIF COUNT == 0 && CFLAG:B
+		PRINT 全身上着　:
+	SIF COUNT == 1 && CFLAG:B
+		PRINT 上半身上着:
+	SIF COUNT == 2 && CFLAG:B
+		PRINT 下半身上着:
+	SIF COUNT == 3 && CFLAG:B
+		PRINT 上半身下着:
+	SIF COUNT == 4 && CFLAG:B
+		PRINT 下半身下着:
+	SIF COUNT == 5 && CFLAG:B
+		PRINT 足元　　　:
+	SIF COUNT == 6 && CFLAG:B
+		PRINT その他　　:
+	A = 6-COUNT
+	CALL CLOTHES_NAME
+	SIF CFLAG:B
+		PRINTL 
+REND
+T = TARGET
+TARGET = T:10
+
+;=============================================================================
+;習慣表示
+@SHOW_LIFESTYLE
+
+FOR COUNT, 0, 5
+	PRINTFORM %LIFESTYLE_NAME(COUNT), 10, LEFT%:
+	LOCAL = CFLAG:("習慣職業／"+LIFESTYLE_NAME(COUNT)+"")
+	LOCAL:1 = 0
+	WHILE LOCAL
+		IF GETBIT(LOCAL, LOCAL:1)
+			CALL ELEMENT_CONVERT, LOCAL:1-1
+			PRINTFORM %STR%　
+			
+			CALL ELEMENT_CONVERT_BIT, LOCAL:1-1
+			LOCAL -= RESULT
+		ENDIF
+		;PRINTFORML {LOCAL}
+		LOCAL:1 += 1
+	WEND
+	SETCOLOR 223, 192, 169
+	IF CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") == 3
+		PRINT [癒着化]
+	ELSEIF CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") == 2
+		PRINT [定着化]
+	ENDIF
+	RESETCOLOR
+	PRINTL 
+NEXT
+;=============================================================================
+;貞操観念について
+@SHOW_INFO_CHASTE
+
+IF TALENT:依姫
+	IF BASE:貞操 >= 190
+		PRINTFORML %CALLNAME:TARGET%「高等な神はそのような色事を嫌うのです。……本当です。信じてください」
+	ELSEIF BASE:貞操 >= 150
+		PRINTFORML %CALLNAME:TARGET%「……で、それは特訓に役に立つのですか」
+	ELSEIF BASE:貞操 >= 100
+		PRINTFORML %CALLNAME:TARGET%「たまには息抜きもいいでしょう。しかし、もう少し無難な方法はないのですか」
+	ELSEIF BASE:貞操 >= 80
+		PRINTFORML %CALLNAME:TARGET%「……なんですか？　え？　私が睨んでいる？　そ、そんなことはないはずです」
+	ELSEIF BASE:貞操 >= 50
+		PRINTFORML %CALLNAME:TARGET%「私もたまには遊びたいです……」
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%「もし武器を持たない状態で男の人に囲まれたらどうしよう、と思うことはあります……」
+	ENDIF
+ELSEIF TALENT:豊姫
+	IF BASE:貞操 >= 190
+		PRINTFORML %CALLNAME:TARGET%「あら、私がそんなことすると思っていたの？」
+	ELSEIF BASE:貞操 >= 150
+		PRINTFORML %CALLNAME:TARGET%「まあ、どうしてもしてほしいなら考えてもいいわ」
+	ELSEIF BASE:貞操 >= 100
+		PRINTFORML %CALLNAME:TARGET%「まあ、人それぞれだしねえ」
+	ELSEIF BASE:貞操 >= 80
+		PRINTFORML %CALLNAME:TARGET%「うーん……少し退屈ね」
+	ELSEIF BASE:貞操 >= 50
+		PRINTFORML %CALLNAME:TARGET%「うまい人なら誰でもいいわよ。……で、何の話をしているんでしたっけ」
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%「短く太く生きる人生でもいいかな……という気はするの」
+	ENDIF
+ELSE
+	IF BASE:貞操 >= 190
+		PRINTFORML %CALLNAME:TARGET%「色事と関わる気は全く無いわ。……私は%CALLNAME:MASTER%の事信じてるからね？」
+	ELSEIF BASE:貞操 >= 150
+		PRINTFORML %CALLNAME:TARGET%「指示された時のみ行うわ。日頃から頼る気は全くないわね」
+	ELSEIF BASE:貞操 >= 100
+		PRINTFORML %CALLNAME:TARGET%「……わざわざそんな事を聞いてくるなんて気を遣っているのかしら、あるいは……」
+	ELSEIF BASE:貞操 >= 80
+		PRINTFORML %CALLNAME:TARGET%「はぁ……刺激が無いと退屈だわ……」
+	ELSEIF BASE:貞操 >= 50
+		PRINTFORML %CALLNAME:TARGET%「私を気持ちよくしてくれるなら誰だっていいの……」
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%「気持ちよくなれればそれでいいじゃない。どうして貞操なんて守る必要があるの？」
+	ENDIF
+ENDIF
+	
+	
+

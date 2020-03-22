@@ -1,0 +1,59 @@
+﻿;================================================
+;責め具　持続効果一覧
+;================================================
+
+;------------------------------------------------
+;504 拘束バイブ
+;------------------------------------------------
+@KOUSOKU_ITEM_504
+DRAWLINE
+LOCAL = 16
+;素養補正
+;感度が関わる
+IF CFLAG:性格 == -1
+	LOCAL = (LOCAL + BASE:淫妖 / 40) * BASE:感度 / 60
+ELSE
+	LOCAL = (LOCAL + BASE:淫妖 / 40) * BASE:感度 / 90
+ENDIF
+
+PRINTFORML %CALLNAME:TARGET%はバイブを挿入したまま拘束されている……
+;淫妖が80以上入る場合
+IF LOCAL >= 80
+	PRINTFORML 甘美な刺激に溜まらず声をあげ、淫らな肢体をくねらせた
+;40以上
+ELSEIF LOCAL >= 40
+	PRINTFORML 股間に来る刺激の強さで、時折身体を揺らして小さく甘い声を漏らしてしまう
+;20以上
+ELSEIF LOCAL >= 20
+	PRINTFORML 股間から若干心地よさが滲みだし、息が荒くなっている
+;その他
+ELSE
+	PRINTFORML 拘束され自由に動けない身体でもがいている
+ENDIF
+
+IF LOCAL <= 0
+	LOCAL = 1
+ENDIF
+PRINTFORML 淫妖経験 + 6
+EXP:淫妖経験 += 6
+
+PRINTFORM 淫妖: {BASE:淫妖}　→　
+BASE:淫妖 += LOCAL
+CALL SETCOLOR_PALAMUP
+PRINTFORML {BASE:淫妖}
+RESETCOLOR
+
+BASE:淫乱 += 5 + (5 - FLAG:年数)
+RESETCOLOR
+CALL UP_STATUS
+
+;------------------------------------------------
+;505 堕落のお香
+;------------------------------------------------
+@KOUSOKU_ITEM_505
+DRAWLINE
+PRINTFORML 堕落のお香が%CALLNAME:TARGET%を包む……
+PRINTFORML 堕落経験 + 20
+EXP:堕落経験 += 20
+CALL UP_STATUS
+

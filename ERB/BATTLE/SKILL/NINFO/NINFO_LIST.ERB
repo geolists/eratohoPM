@@ -1,0 +1,101 @@
+﻿;===========================================
+;淫術スキル
+;今のところ愛撫と媚薬臭のみ実装
+;ARG　リスト参照者
+;===========================================
+@NINFO_SKILL, ARG
+;使えるスキルの種類
+;0だと使える特技が無いと出して返す
+#DIM parm, 1
+
+VARSET LOCAL, 0
+$BACK_LOOP
+parm = 0
+DRAWLINE
+IF TALENT:淫魔
+	PRINTL ○淫魔
+	PRINTL [50] - 媚薬の香り
+	LOCAL:50 = 1
+	PRINTL [51] - 不気味な笑み
+	LOCAL:51 = 1
+	PRINTL [52] - 吸精のキス
+	LOCAL:52 = 1
+	DRAWLINE
+ENDIF
+IF TALENT:娼婦
+	PRINTL ○娼婦
+	PRINTL [60] - 胸愛撫
+	LOCAL:60 = 1
+	PRINTL [61] - 誘い受け
+	LOCAL:61 = 1
+	PRINTL [62] - 押し倒す
+	LOCAL:62 = 1
+	PRINTL [63] - 乱交
+	LOCAL:63 = 1
+	PRINTL [64] - 服脱がし
+	LOCAL:64 = 1
+	PRINTL [65] - 自己満足
+	LOCAL:65 = 1
+	DRAWLINE
+ENDIF
+PRINTFORML [100] - 愛撫
+PRINTFORML [997] - 淫魔特技の説明
+PRINTFORML [998] - 娼婦特技の説明
+PRINTFORML [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT >= 50 && RESULT <= 69 && LOCAL:RESULT
+	CALLFORM NINFO_SKILL_{RESULT}
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 100
+	CALL PETTING, 0
+	IF RESULT == -1
+		GOTO BACK_LOOP
+	ENDIF
+ELSEIF RESULT == 997
+	CALL SHOW_SUCCU_SKILL
+	GOTO BACK_LOOP
+ELSEIF RESULT == 998
+	CALL SHOW_NINFO_SKILL
+	GOTO BACK_LOOP
+ELSEIF RESULT == 999
+	RETURN -1
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+;----------------------------------------------
+;淫魔淫術の説明
+;ARG　淫魔称号のレベル
+;----------------------------------------------
+@SHOW_SUCCU_SKILL, ARG
+DRAWLINE
+PRINTFORML ○淫魔淫術一覧
+PRINTFORML 　媚薬の香り　　補助　相手を欲情状態にする
+PRINTFORML 　不気味な笑み　快楽　相手の気力を一定量削る
+PRINTFORML 　吸精のキス　　快楽　相手の欲情を上昇させ、気力も10％吸収する
+PRINTL 
+PRINTFORML 　※欲情状態：一定確率で自慰を行う
+PRINTFORMW 　　　　　　　欲情が高くなると確率が上がる
+
+;----------------------------------------------
+;娼婦淫術の説明
+;ARG　淫魔称号のレベル
+;----------------------------------------------
+@SHOW_NINFO_SKILL, ARG
+DRAWLINE
+PRINTFORML ○娼婦淫術一覧
+PRINTFORML 　胸愛撫　　　　快楽　　　　　　　　　 欲情ゲージが半分以下の相手に対して威力2倍
+PRINTFORML 　誘い受け　　　補助　　　　　　　　　 相手の次の行動を愛撫にする
+PRINTFORML 　押し倒す　　　補助　　　　　　　　　 相手1人をマークし、2ターンの間快楽系コマンドの威力を強める
+PRINTFORML 　乱交　　　　　快楽　　　　　　　　　 敵味方問わず淫蕩な宴に誘いこみます。(使用者中心で行われます)
+PRINTFORML 　服脱がし　　　補助　　　　　　　　　 押し倒したか気力や欲情が半分以下(以上)な敵の衣服を剥がします(男や獣相手でも効く)
+PRINTFORML 　自己満足　　　補助　命中:必中(自分)　秘裂を開き、淫靡な香りを周囲に振り撒く、自身の気力+20％＆周囲の欲情+15％
+PRINTL 
+PRINTFORML 　※欲情状態：一定確率で自慰を行う
+PRINTFORMW 　　　　　　　欲情が高くなると確率が上がる
+

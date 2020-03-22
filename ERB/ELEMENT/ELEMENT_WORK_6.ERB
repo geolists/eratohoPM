@@ -1,0 +1,963 @@
+﻿;==============================================
+;人攫い
+;淫魔専用のコマンド
+;男からは精力を奪い、女中は淫魔にして魔界に送る
+;==============================================
+@ELEMENT_SUCCUBUS
+#DIM SUC_TAG, 1
+#DIM UNIT, 1
+#DIM battle, 1
+
+DRAWLINE
+FLAG:欲情ゲージ = 0
+FLAG:思考力ゲージ = 2000
+FLAG:淫魔化ゲージ = 0
+PRINTL 誰を襲いますか？
+PRINTL (襲うと1ターン経過します)
+PRINTL 
+DRAWLINE
+PRINTL ○王宮内の情報
+PRINTFORML 役人:{FLAG:王宮内の役人, 4, RIGHT}人
+PRINTFORML 士気:{FLAG:士気}/100
+PRINTFORML 女中:{FLAG:王宮内の女中, 4, RIGHT}人
+PRINT 王宮内の風紀:
+IF FLAG:王宮内の風紀 < 10
+	PRINTL 酒池肉林
+ELSEIF FLAG:王宮内の風紀 < 30
+	PRINTL 役人主催による性交パーティが行われている
+ELSEIF FLAG:王宮内の風紀 < 50
+	PRINTL 常に1組は性交を行っている
+ELSEIF FLAG:王宮内の風紀 < 75
+	PRINTL 女中達は役人達の熱い視線に悩まされている
+ELSEIF FLAG:王宮内の風紀 < 100
+	PRINTL 少し乱れている
+ELSE
+	PRINTL 正常
+ENDIF
+DRAWLINE
+;戦闘力の計算
+battle = FLAG:堕とした人数*(5+FLAG:淫魔レベル*5)
+PRINTL ○戦闘力情報
+PRINTFORML 淫魔化させた人数:{FLAG:堕とした人数,5, RIGHT}人
+PRINTFORML 　　　　　　味方:{battle, 5, RIGHT}
+PRINTFORML 　　　　　　　敵:{FLAG:王宮内の役人 * FLAG:士気, 5, RIGHT}
+DRAWLINE
+
+PRINTL [0] - 役人
+;女中が居ない場合は村娘を襲う
+IF !FLAG:王宮内の女中
+	PRINTL [1] - 都の娘
+ELSE
+	PRINTL [1] - 女中
+ENDIF
+;堕とした人数が100人以上
+IF FLAG:堕とした人数 >= 100 && !FLAG:君主の秘書堕落
+	PRINTL [2] - 君主の秘書
+;堕とした人数が50人以上
+ELSEIF FLAG:堕とした人数 >= 50 && !FLAG:女中の長堕落
+	PRINTL [2] - 女中の長
+ENDIF
+;こちら側の戦闘力が相手の戦闘力より高い場合
+IF battle > FLAG:王宮内の役人 * FLAG:士気
+	PRINTL [3] - 君主
+ENDIF
+PRINTL [10] - 罠を仕掛ける
+;20人以上攫っていないとレベルアップできない
+IF FLAG:堕とした人数 >= 20
+	PRINTL [11] - 淫魔化させた淫魔のレベルアップ
+ENDIF
+PRINTL [999] - 戻る
+
+$INPUT_LOOP
+INPUT
+
+UNIT = 0
+IF RESULT == 0
+	SUC_TAG = 0
+	STR = 役人
+ELSEIF RESULT == 1
+	SUC_TAG = 1
+	IF !FLAG:王宮内の女中
+		STR = 都の娘
+	ELSE
+		STR = 女中
+	ENDIF
+ELSEIF RESULT == 2 && FLAG:堕とした人数 >= 100 && !FLAG:君主の秘書堕落
+	SUC_TAG = 1
+	UNIT = 2
+	STR = 君主の秘書
+ELSEIF RESULT == 2 && FLAG:堕とした人数 >= 50 && !FLAG:女中の長堕落
+	SUC_TAG = 1
+	UNIT = 1
+	STR = 女中の長
+ELSEIF RESULT == 3 && battle * 5 > FLAG:王宮内の役人 * FLAG:士気
+	SUC_TAG = 0
+	UNIT = 3
+	STR = 君主
+ELSEIF RESULT == 10
+	CALL SUCCUBUS_TRAP
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+	RESTART
+ELSEIF RESULT == 11 && FLAG:堕とした人数 >= 20
+	IF FLAG:淫魔レベル == 5
+		PRINTL レベルは5が最大です
+		GOTO INPUT_LOOP
+	ENDIF
+	CALL SUCCUBUS_CORR_LVUP
+	IF RESULT == 1
+		BEGIN TURNEND
+	ENDIF
+	RESTART
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTL 入力が不正です
+	GOTO INPUT_LOOP
+ENDIF
+
+;君主を倒してある場合、25％の確率で依姫
+;(デバッグの為に100％)
+IF FLAG:君主堕落 && (100 >= (RAND:99 + 1)) && !GETBIT(FLAG:姉妹堕落, 0)
+	DRAWLINE
+	PRINTL 突然依姫が襲いかかってきた！
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	CALL BATTLE, 100, 0, 0, 0, 30
+	DRAWLINE
+	IF RESULT == 1
+		STR = 依姫
+		CALL DECIDE_SUCCUBUS, 1, 0
+		FLAG:姉妹堕落 |= 1p0
+		BEGIN TURNEND
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は止む無く撤退した……
+		BASE:精力 = MAXBASE:精力
+		RESETCOLOR
+		RETURN 1
+	ENDIF
+;依姫が堕落した場合、豊姫が出る
+ELSEIF GETBIT(FLAG:姉妹堕落, 0) && !GETBIT(FLAG:姉妹堕落, 1)
+	DRAWLINE
+	PRINTL 突然豊姫が襲いかかってきた！
+	CALL SET_STATUS, 1
+	CALL HEALING, 1
+	CALL BATTLE, 101, 0, 0, 0, 30
+	DRAWLINE
+	IF RESULT == 1
+		STR = 豊姫
+		CALL DECIDE_SUCCUBUS, 1, 0
+		FLAG:姉妹堕落 |= 1p1
+		BEGIN TURNEND
+	ELSE
+		CALL SETCOLOR_PALAMDOWN
+		PRINTFORML %CALLNAME:TARGET%は止む無く撤退した……
+		BASE:精力 = MAXBASE:精力
+		RESETCOLOR
+		RETURN 1
+	ENDIF
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は一人で歩いている%STR%を後ろから取り押さえて押し倒した！
+ENDIF
+
+;風紀によってメッセージが変化
+;（固有キャラでない場合のみ）
+IF !UNIT && SUC_TAG == 1
+	IF PUB_MORAL(0)
+		PRINTFORML %STR%はこちらを誘うように潤んだ目で見つめ、自ら股を開き、衣服を肌蹴た……
+	ELSEIF PUB_MORAL(2)
+		PRINTFORML %STR%は自分の番が来てしまった事に対して悲痛な声をあげて嘆いた
+	ENDIF
+ENDIF
+
+IF !UNIT
+	IF !RAND:3
+		FLAG:胸感度 = 1
+	ELSEIF !RAND:2
+		FLAG:胸感度 = 0
+	ELSE
+		FLAG:胸感度 = -1
+	ENDIF
+
+	IF !RAND:3
+		FLAG:秘核感度 = 1
+	ELSEIF !RAND:2
+		FLAG:秘核感度 = 0
+	ELSE
+		FLAG:秘核感度 = -1
+	ENDIF
+
+	IF SUC_TAG == 1
+		IF !RAND:3
+			FLAG:膣感度 = 1
+		ELSEIF !RAND:2
+			FLAG:膣感度 = 0
+		ELSE
+			FLAG:膣感度 = -1
+		ENDIF
+	ENDIF
+
+	IF !RAND:3
+		FLAG:アナル感度 = 1
+	ELSEIF !RAND:2
+		FLAG:アナル感度 = 0
+	ELSE
+		FLAG:アナル感度 = -1
+	ENDIF
+;女中の長
+ELSEIF UNIT == 1
+	FLAG:胸感度 = 1
+	FLAG:秘核感度 = -1
+	FLAG:膣感度 = 0
+	FLAG:アナル感度 = 1
+	
+	FLAG:思考力ゲージ = 4000
+;君主の秘書
+ELSEIF UNIT == 2
+	FLAG:胸感度 = 0
+	FLAG:秘核感度 = 1
+	FLAG:膣感度 = 1
+	FLAG:アナル感度 = -1
+	
+	FLAG:思考力ゲージ = 6000
+;君主
+ELSEIF UNIT == 3
+	FLAG:胸感度 = -1
+	FLAG:秘核感度 = 1
+	FLAG:膣感度 = -1
+	FLAG:アナル感度 = 0
+	
+	FLAG:思考力ゲージ = 15000
+ENDIF
+FLAG:最大思考力ゲージ = FLAG:思考力ゲージ
+
+CALLFORM MOVE_SUCCUBUS_COMMAND, SUC_TAG
+
+IF RESULT == 1
+	BEGIN TURNEND
+ELSEIF RESULT == 5
+	CALL DECIDE_SUCCUBUS, SUC_TAG, UNIT
+	BEGIN TURNEND
+ENDIF
+
+;----------------------------------------------
+;コマンド選択
+;----------------------------------------------
+@MOVE_SUCCUBUS_COMMAND, ARG
+#DIM SEX_FLAG, 1
+#DIM INDI, 4
+
+SEX_FLAG = 0
+
+DRAWLINE
+PRINTFORM %CALLNAME:TARGET%の精力:
+PRINTFORM ({BASE:精力}/{MAXBASE:精力})
+IF BASE:精力 * 100 / MAXBASE:精力 >= 50
+	SETCOLOR 0xA0F0C0
+ELSEIF BASE:精力 * 100 / MAXBASE:精力 >= 25
+	SETCOLOR 0xF0A090
+ELSE
+	SETCOLOR 0xF00000
+ENDIF
+FOR COUNT, 0, BASE:精力 / 40
+	PRINTFORM %UNICODE(0x2588)%
+NEXT
+RESETCOLOR
+
+PRINTL 
+PRINTFORM %STR%の欲情　:
+IF FLAG:欲情ゲージ >= 1500
+	SETCOLOR 0xF08030
+ELSEIF FLAG:欲情ゲージ >= 800
+	SETCOLOR 0xF0A070
+ELSEIF FLAG:欲情ゲージ >= 500
+	SETCOLOR 0xF0C0A0
+ELSE
+	SETCOLOR 0xF0D0D0
+ENDIF
+FOR COUNT, 0, FLAG:欲情ゲージ / 80
+	PRINTFORM %UNICODE(0x2588)%
+NEXT
+RESETCOLOR
+
+PRINTL 
+PRINTFORM %STR%の思考力:
+IF FLAG:思考力ゲージ >= 1500
+	SETCOLOR 0xC0F0F0
+ELSEIF FLAG:思考力ゲージ >= 800
+	SETCOLOR 0x70F0C0
+ELSEIF FLAG:思考力ゲージ >= 500
+	SETCOLOR 0x4090D0
+ELSE
+	SETCOLOR 0x3070F0
+ENDIF
+FOR COUNT, 0, FLAG:思考力ゲージ / 80
+	PRINTFORM %UNICODE(0x2588)%
+NEXT
+RESETCOLOR
+IF ARG != 0
+	PRINTL 
+	PRINTFORM 淫魔化　　　:
+	IF FLAG:淫魔化ゲージ >= 1500
+		SETCOLOR 0xC0F0F0
+	ELSEIF FLAG:淫魔化ゲージ >= 800
+		SETCOLOR 0x70F0C0
+	ELSEIF FLAG:淫魔化ゲージ >= 500
+		SETCOLOR 0x4090D0
+	ELSE
+		SETCOLOR 0x3070F0
+	ENDIF
+	FOR COUNT, 0, FLAG:淫魔化ゲージ / 80
+		PRINTFORM %UNICODE(0x2588)%
+	NEXT
+ENDIF
+RESETCOLOR
+PRINTL 
+
+IF INDI
+	CALL SETCOLOR_SKILL
+	IF FLAG:胸感度 == 1
+		PRINT [胸敏感]
+	ELSEIF FLAG:胸感度 == -1
+		PRINT [胸鈍感]
+	ENDIF
+ENDIF
+IF INDI:1
+	CALL SETCOLOR_SKILL
+	IF FLAG:秘核感度 == 1
+		PRINT 　[秘核敏感]
+	ELSEIF FLAG:秘核感度 == -1
+		PRINT 　[秘核鈍感]
+	ENDIF
+ENDIF
+IF INDI:2
+	CALL SETCOLOR_SKILL
+	IF FLAG:アナル感度 == 1
+		PRINT 　[アナル敏感]
+	ELSEIF FLAG:アナル感度 == -1
+		PRINT 　[アナル鈍感]
+	ENDIF
+ENDIF
+IF INDI:3
+	CALL SETCOLOR_SKILL
+	IF FLAG:膣感度 == 1
+		PRINT 　[膣敏感]
+	ELSEIF FLAG:膣感度 == -1
+		PRINT 　[膣鈍感]
+	ENDIF
+ENDIF
+
+RESETCOLOR
+PRINTL 
+DRAWLINE
+PRINTL [0] - 胸愛撫
+IF ARG != 0
+	PRINTL [1] - 秘核愛撫
+ENDIF
+PRINTL [2] - アナル愛撫
+IF ARG == 0
+	PRINTL [3] - フェラチオ
+ELSE
+	PRINTL [3] - 指挿し入れ
+ENDIF
+IF (FLAG:欲情ゲージ - FLAG:思考力ゲージ) >= 300
+	PRINTL [4] - 性交
+	SEX_FLAG = 1
+ENDIF
+IF FLAG:思考力ゲージ == 0 && ARG == 0
+	PRINTL [5] - 精力を奪い取る
+ELSEIF FLAG:淫魔化ゲージ == 2000 && ARG == 1
+	PRINTL [5] - 淫魔化させる
+ENDIF
+
+
+
+$INPUT_LOOP
+CALL SENTAKUSHI, 6
+
+
+IF RESULT == 4 && !SEX_FLAG || RESULT == 1 && ARG == 0
+	PRINTL その行動はできない
+	GOTO INPUT_LOOP
+ELSEIF FLAG:思考力ゲージ > 0 && RESULT == 5
+	PRINTL その行動はできない
+	GOTO INPUT_LOOP
+ELSEIF RESULT == 5
+	INDI = 0
+	INDI:1 = 0
+	INDI:2 = 0
+	INDI:3 = 0
+	RETURN 5
+ELSE
+	CALL MOVE_SUCCUBUS_DAMAGE, RESULT, ARG
+ENDIF
+
+IF RESULT == 5
+	INDI = 1
+ELSEIF RESULT == 6
+	INDI:1 = 1
+ELSEIF RESULT == 7
+	INDI:2 = 1
+ELSEIF RESULT == 8
+	INDI:3 = 1
+ELSEIF RESULT == 1
+	INDI = 0
+	INDI:1 = 0
+	INDI:2 = 0
+	INDI:3 = 0
+	RETURN 1
+ENDIF
+
+RESTART
+
+;==========================================
+;コマンド実行
+;ARG:1 性別
+;==========================================
+@MOVE_SUCCUBUS_DAMAGE, ARG, ARG:1
+#DIM ELE, 1
+#DIM hate, 1
+#DIM damage, 1
+#DIM week, 1
+#DIM INDI, 4
+
+INDI = 0
+INDI:1 = 0
+INDI:2 = 0
+INDI:3 = 0
+week = 0
+
+LOCAL = 0
+;胸愛撫
+IF ARG == 0
+	ELE = 0
+;秘核愛撫
+ELSEIF ARG == 1
+	ELE = 1
+;アナル愛撫
+ELSEIF ARG == 2
+	ELE = 2
+;フェラチオ
+ELSEIF ARG == 3 && ARG:1 == 0
+	ELE = 1
+;指挿し入れ
+ELSEIF ARG == 3 && ARG:1 == 1
+	ELE = 3
+;性交
+ELSEIF ARG == 4
+	ELE = 4
+	LOCAL = 1
+ENDIF
+
+;ダメージ計算式は自分の淫魔技巧Lv+1*現在の精力/100
+IF ELE != 4
+	damage = LIMIT((ABL:淫魔技巧 + 1) * BASE:精力 / 10 + FLAG:欲情ゲージ / 20, 1, 200000)
+ELSE
+	damage = LIMIT((ABL:淫魔技巧 + 1) * BASE:精力 / 10 + FLAG:欲情ゲージ / 5, 1, 200000)
+ENDIF
+
+;胸感度による補正
+IF ELE == 0
+	IF FLAG:胸感度 == 1
+		damage *= 2
+		week = 1
+	ELSEIF FLAG:胸感度 == -1
+		damage /= 2
+		week = -1
+	ENDIF
+	INDI = 1
+ENDIF
+
+;秘核感度による補正
+IF ELE == 1
+	IF FLAG:秘核感度 == 1
+		damage *= 2
+		week = 1
+	ELSEIF FLAG:秘核感度 == -1
+		damage /= 2
+		week = -1
+	ENDIF
+	INDI:1 = 1
+ENDIF
+
+;アナル感度による補正
+IF ELE == 2
+	IF FLAG:アナル感度 == 1
+		damage *= 2
+		week = 1
+	ELSEIF FLAG:アナル感度 == -1
+		damage /= 2
+		week = -1
+	ENDIF
+	INDI:2 = 1
+ENDIF
+
+;膣感度による補正
+IF ELE == 3
+	IF FLAG:膣感度 == 1
+		damage *= 2
+		week = 1
+	ELSEIF FLAG:膣感度 == -1
+		damage /= 2
+		week = -1
+	ENDIF
+	INDI:3 = 1
+ENDIF
+
+;100-風紀だけ追加でダメージが伸びる
+damage = damage * (200 - FLAG:王宮内の風紀) / 100
+
+IF week == -1
+	SETCOLOR 0x70A0D0
+	PRINTL あまり効いていないようだ……
+ELSEIF week == 1
+	SETCOLOR 0xF0A090
+	PRINTL 弱点を突いた！
+ENDIF
+RESETCOLOR
+PRINTFORML %STR%に{damage}の快感を与えた！
+;ダメージの分だけ思考力を減らし、欲情を増やす
+FLAG:欲情ゲージ = LIMIT(FLAG:欲情ゲージ + damage, 0, 2000)
+FLAG:思考力ゲージ = LIMIT(FLAG:思考力ゲージ - damage, 0, FLAG:最大思考力ゲージ)
+IF LOCAL
+	FLAG:淫魔化ゲージ = LIMIT(FLAG:淫魔化ゲージ + damage, 0, 2000)
+ENDIF
+
+;嫌悪感は相手の思考力-与えたダメージ/20
+hate = LIMIT((FLAG:思考力ゲージ - damage) / 20, 1, MAXBASE:精力)
+IF FLAG:思考力ゲージ * 100 / FLAG:最大思考力ゲージ <= 0
+	PRINTFORML %STR%は全身を真っ赤にし、はっきりしない言葉を発しながら弱々しい抵抗を行った……
+ELSEIF FLAG:思考力ゲージ * 100 / FLAG:最大思考力ゲージ <= 25
+	PRINTFORML %STR%は虚ろな目をしながら手を伸ばし、%CALLNAME:TARGET%の身体を何度も触った
+ELSEIF FLAG:思考力ゲージ * 100 / FLAG:最大思考力ゲージ <= 50
+	PRINTFORML %STR%は光を失った目を%CALLNAME:TARGET%に向け、弱い抵抗はしつつも責めに対して時折身体を痙攣させた
+ELSEIF FLAG:思考力ゲージ * 100 / FLAG:最大思考力ゲージ <= 75
+	PRINTFORML %STR%は身体を仄かに赤く染め、できる範囲で抵抗をした！
+ELSE
+	PRINTFORML %STR%は必死に抵抗をした！
+ENDIF
+PRINTFORML %CALLNAME:TARGET%に{hate}のダメージ！
+
+BASE:精力 -= hate
+
+;淫魔が50人以上存在する場合&ユニークキャラ相手の場合のみ
+IF FLAG:堕とした人数 >= 50 && (STR == "君主" || STR == "君主の秘書" || STR == "女中の長")
+	CALL SETCOLOR_PALAMUP
+	PRINTL 他の淫魔達が追撃を加えた！
+	damage = (1 + FLAG:淫魔レベル) * FLAG:堕とした人数 * (85 + RAND:16) / 250
+	PRINTFORML %STR%の思考力を{damage}削った！
+	FLAG:思考力ゲージ = LIMIT(FLAG:思考力ゲージ - damage, 0, FLAG:最大思考力ゲージ)
+	RESETCOLOR
+ENDIF
+
+IF BASE:精力 < 0
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:TARGET%は止む無く撤退した……
+	BASE:精力 = MAXBASE:精力
+	RESETCOLOR
+	RETURN 1
+ENDIF
+
+IF INDI
+	INDI = 0
+	RETURN 5
+ELSEIF INDI:1
+	INDI:1 = 0
+	RETURN 6
+ELSEIF INDI:2
+	INDI:2 = 0
+	RETURN 7
+ELSEIF INDI:3
+	INDI:3 = 0
+	RETURN 8
+ENDIF
+
+;==========================================
+;ゲーム決定
+;ARG　性別
+;==========================================
+@DECIDE_SUCCUBUS, ARG, ARG:1
+DRAWLINE
+IF ARG == 0
+	PRINTFORML %CALLNAME:TARGET%は、%STR%の一物を咥えて吸いついた
+	PRINTFORML 忽ち%STR%の顔はしおれていき、最後には干物となった%STR%が残されていた……
+	
+	LOCAL = 200
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME*TARGET%は{LOCAL}の精力を得た
+	RESETCOLOR
+	MAXBASE:精力 += LOCAL
+	BASE:精力 = MAXBASE:精力
+	;FLAG:士気 = LIMIT(FLAG:士気-1, 0, 100)
+	FLAG:王宮内の役人 = LIMIT(FLAG:王宮内の役人-1, 0, 400)
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は、%STR%と唇を合わせて舌を入れた
+	PRINTFORML 抵抗する気力を無くした%STR%は頭を振って弱々しく否定していたが
+	PRINTFORML %STR%の身体を瘴気が包むにつれて次第に否定していた振る舞いが消えていき
+	PRINTFORML 衣服が%CALLNAME:TARGET%と同じ物になった頃には腰に足を絡めて積極的に口づけを行っていた……
+	PRINTFORML 
+	PRINTFORMW 完全に淫魔と化した%STR%を魔界へ転送した！
+	
+	LOCAL = 50 + (200 - FLAG:王宮内の風紀 * 2)
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME*TARGET%は{LOCAL}の精力を得た
+	MAXBASE:精力 += LOCAL
+	FLAG:堕とした人数 += 1
+	FLAG:王宮内の女中 = LIMIT(FLAG:王宮内の女中-1, 0, 300)
+	BASE:精力 = MAXBASE:精力
+	LOCAL = LIMIT(FLAG:堕とした人数 / 5, 0, 20)
+	IF LOCAL && FLAG:王宮内の女中 > 0
+		PRINTFORML 他の淫魔達が女中を{LOCAL}人淫魔化させた！
+		FLAG:王宮内の女中 = LIMIT(FLAG:王宮内の女中-LOCAL, 0, 300)
+		FLAG:堕とした人数 = LIMIT(FLAG:堕とした人数+LOCAL, 0, 300)
+	ENDIF
+	RESETCOLOR
+ENDIF
+EXP:淫魔経験 += 1
+
+;固有キャラの場合、フラグを立てる
+IF ARG:1 == 1
+	FLAG:女中の長堕落 = 1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 役人達の士気が10低下した！
+	FLAG:士気 = LIMIT(FLAG:士気-10, 0, 100)
+	RESETCOLOR
+ELSEIF ARG:1 == 2
+	FLAG:君主の秘書堕落 = 1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 役人達の士気が20低下した！
+	FLAG:士気 = LIMIT(FLAG:士気-20, 0, 100)
+	RESETCOLOR
+ELSEIF ARG:1 == 3
+	FLAG:君主堕落 = 1
+	IF FLAG:年数 < 6
+		CALL ENDING_SUCCUBUS, 0
+	ELSEIF !FLAG:君主堕落
+		DRAWLINE
+		PRINTL ～～遅すぎた結末～～
+		PRINTL 既に結末を迎えたこのゲームでは特殊エンディングを見る事はできない
+		PRINTW 6年以内に達成しよう！
+		DRAWLINE
+	ENDIF
+ENDIF
+
+CALL CHECK_SUC_SKILL
+
+RETURN 1
+
+;----------------------------------------------
+;罠をしかける
+;最大精力を減らして設置する
+;減少精力:200 200 500 50 800
+;----------------------------------------------
+@SUCCUBUS_TRAP
+#DIM hosei, 1
+#DIM cost, 1
+;士気低下値
+#DIM fight, 1
+;風紀低下値
+#DIM disc, 1
+;堕とす人数補正値
+#DIM corr, 1
+;罠を仕掛ける場所
+#DIM trap_point, 1
+
+$BACK_LOOP_0
+DRAWLINE
+PRINTL どこに罠を仕掛けますか？
+PRINTL (半月で効果が消えます)
+PRINTFORML 現在の最大精力:{MAXBASE:精力}
+DRAWLINE
+;女中が多く集まる
+PRINT [0] - 台所
+IF FLAG:罠の濃度／台所
+	SETCOLOR 255,64,160
+	PRINTFORML 　　　残り{FLAG:罠の濃度／台所}ターン
+	RESETCOLOR
+ELSE
+	PRINTL 
+ENDIF
+;役人が多く集まる
+PRINT [1] - 居間
+IF FLAG:罠の濃度／居間
+	SETCOLOR 255,64,160
+	PRINTFORML 　　　残り{FLAG:罠の濃度／居間}ターン
+	RESETCOLOR
+ELSE
+	PRINTL 
+ENDIF
+;難易度が高め、集団乱交を引き起こすので風紀の低下が著しい(1.5倍ぐらい)
+PRINT [2] - 休憩所
+IF FLAG:罠の濃度／休憩所
+	SETCOLOR 255,64,160
+	PRINTFORML 　　　残り{FLAG:罠の濃度／休憩所}ターン
+	RESETCOLOR
+ELSE
+	PRINTL 
+ENDIF
+;設置難度が最も低いが、効き目がそこまでよくない
+PRINT [3] - 物置き
+IF FLAG:罠の濃度／物置き
+	SETCOLOR 255,64,160
+	PRINTFORML 　　　残り{FLAG:罠の濃度／物置き}ターン
+	RESETCOLOR
+ELSE
+	PRINTL 
+ENDIF
+;50人以上堕とすと使える。士気の低下が1.5倍される
+IF FLAG:堕とした人数 >= 50
+	PRINT [4] - 側近駐在所
+	IF FLAG:罠の濃度／側近駐在所
+		SETCOLOR 255,64,160
+		PRINTFORML 　　　残り{FLAG:罠の濃度／側近駐在所}ターン
+		RESETCOLOR
+	ELSE
+		PRINTL 
+	ENDIF
+ENDIF
+PRINTL [5] - 戻る
+
+CALL SENTAKUSHI, 6
+
+IF RESULT == 0
+	STR = 台所
+	hosei = 2
+	cost = 150
+ELSEIF RESULT == 1
+	STR = 居間
+	hosei = 1
+	cost = 150
+ELSEIF RESULT == 2
+	STR = 休憩所
+	hosei = 3
+	cost = 300
+ELSEIF RESULT == 3
+	STR = 物置き
+	hosei = 0
+	cost = 50
+ELSEIF RESULT == 4
+	IF !FLAG:堕とした人数 >= 50
+		PRINTL 入力が不正です
+		GOTO BACK_LOOP_0
+	ENDIF
+	STR = 側近駐在所
+	hosei = 2
+	cost = 600
+ELSE
+	RETURN 0
+ENDIF
+DRAWLINE
+trap_point = RESULT
+PRINTFORML %STR%にしかけるには最大精力が{cost}必要になります
+PRINTFORML しかけますか？
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+disc = 1
+fight = 1
+corr = 1
+IF RESULT == 0
+	;最大精力が不足している
+	IF MAXBASE:精力 < cost
+		PRINTL 精力が不足しています
+		GOTO BACK_LOOP_0
+	ENDIF
+	FLAG:(617+trap_point) = 4
+	PRINTFORML %CALLNAME:TARGET%は%STR%に罠をしかけた……
+	PRINTFORM 何も知らずに入ってくる
+	;居間の場合は役人のみ
+	IF STR == "居間"
+		PRINTFORM 役人
+	;台所は女中のみ
+	ELSEIF STR == "台所"
+		PRINTFORM 女中
+	;それ以外はどちらも入る
+	ELSE
+		PRINTFORM 役人と女中
+	ENDIF
+	PRINTFORMW は部屋に入った途端忽ち顔を紅く染めた
+	;居間の場合は役人のみ
+	IF STR == "居間"
+		PRINTFORML 役人はいきり立った感情を納めるために自慰をした……
+		PRINTFORMW 中にはたまたま居合わせていた女中を襲って解消する者までいた
+	;台所は女中のみ
+	ELSEIF STR == "台所"
+		PRINTFORML 女中は昂ぶり始めた身体を納めるために自慰をした……
+		PRINTFORMW 中には役人を誘惑して交わる者まで現れた
+		corr = 2
+	;物置き
+	ELSEIF STR == "物置き"
+		PRINTFORML 物陰に隠れ、荒い息をついて自慰を始める者が次々と現れ
+		PRINTFORMW 中には没頭している最中に他の者が入ってきて交わり始めることもあった
+		disc = 0
+		fight = 0
+		corr = 0
+	;休憩所
+	ELSEIF STR == "休憩所"
+		PRINTFORML 役人と女中が共用している場所らしく大多数の人数が出入りする
+		PRINTFORMW そのせいか度々集団で乱交が始まり、王宮内の風紀は低下していった……
+		disc = 2
+		corr = 3
+	;側近駐在所
+	ELSEIF STR == "側近駐在所"
+		PRINTFORML 君主の側近達が互いに交わり続けた
+		PRINTFORMW 中には何度も達して息が絶えた者もおり、罠が解けても復帰できるか怪しい……
+		fight = 2
+		corr = 2
+	ENDIF
+	
+	CALL SETCOLOR_PALAMUP
+	FLAG:士気 = LIMIT(FLAG:士気-(2+fight*1), 0, 100)
+	FLAG:王宮内の風紀 = LIMIT(FLAG:王宮内の風紀-(5+disc*5), 0, 100)
+	LOCAL = LIMIT(FLAG:堕とした人数 * (10 + corr * 5) / 50, 1, 20)
+	IF FLAG:王宮内の女中
+		FLAG:王宮内の女中 = LIMIT(FLAG:王宮内の女中-LOCAL, 0, 300)
+		FLAG:王宮内の役人 = LIMIT(FLAG:王宮内の役人-LOCAL/2, 0, 400)
+		FLAG:堕とした人数 = LIMIT(FLAG:堕とした人数+LOCAL, 0, 300)
+		PRINTFORML 女中を{LOCAL}人淫魔化させた！
+	ENDIF
+	MAXBASE:精力 -= cost
+	;LOCAL使い回し
+	LOCAL = LOCAL * (80 + RAND:21) / 25
+	PRINTFORML 精力を{LOCAL}得た！
+	MAXBASE:精力 += LOCAL
+	RESETCOLOR
+ELSE
+	GOTO BACK_LOOP_0
+ENDIF
+RETURN 1
+
+;淫魔化させられる人数
+;堕とした人数*(10+場所補正*5)/100　(最大20人)
+;例：5人堕としていて、休憩所にしかけた場合
+;5*2.5/10=1.25=1人
+;50人の場合:50*2.5/10=12人
+;100人の場合:
+;場所補正
+;台所　2
+;居間　1
+;休憩所　3
+;物置き　0
+
+;==========================================
+;罠のターン経過処理
+;==========================================
+@TRAP_TURN
+#DIM L_LOCAL, 1
+;士気低下値
+#DIM fight, 1
+;風紀低下値
+#DIM disc, 1
+;堕とす人数補正値
+#DIM corr, 1
+
+disc = 1
+fight = 1
+corr = 1
+;士気
+LOCAL = 0
+;風紀
+LOCAL:1 = 0
+;堕とした人数
+LOCAL:2 = 0
+FOR L_LOCAL, 617, 622
+	IF FLAG:L_LOCAL
+		;居間
+		IF L_LOCAL == 617
+			
+		;台所
+		ELSEIF L_LOCAL == 618
+			corr = 2
+		;物置き
+		ELSEIF L_LOCAL == 619
+			disc = 0
+			fight = 0
+			corr = 0
+		;休憩所
+		ELSEIF L_LOCAL == 620
+			disc = 2
+			corr = 3
+		;側近駐在所
+		ELSEIF L_LOCAL == 621
+			fight = 2
+			corr = 2
+		ENDIF
+		FLAG:L_LOCAL -= 1
+		LOCAL += LIMIT(fight, 0, 100)
+		LOCAL:1 += LIMIT(disc, 0, 100)
+		LOCAL:2 += LIMIT(FLAG:堕とした人数 * (10 + corr * 5) / 100, 1, 5)
+	ENDIF
+NEXT
+
+IF LOCAL || LOCAL:1 || LOCAL:2
+	DRAWLINE
+	PRINTFORMW 仕掛けた罠が王宮に住まう役人や女中を色事に駆り立てさせた……
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML 女中を{LOCAL:2}人淫魔化させた！
+	;LOCAL使い回し
+	LOCAL:2 = LOCAL:2 * (80 + RAND:21) / 8
+	PRINTFORMW 精力を{LOCAL:2}得た！
+	MAXBASE:精力 += LOCAL:2
+	RESETCOLOR
+
+	;その他要素の低下処理
+	FLAG:士気 = LIMIT(FLAG:士気-LOCAL, 0, 100)
+	FLAG:王宮内の風紀 = LIMIT(FLAG:王宮内の風紀-LOCAL:1, 0, 100)
+ENDIF
+
+;==========================================
+;レベルアップ
+;レベルは5まで
+;==========================================
+@SUCCUBUS_CORR_LVUP
+#DIM cost, 1
+DRAWLINE
+IF FLAG:淫魔レベル == 4
+	cost = 900
+ELSEIF FLAG:淫魔レベル == 3
+	cost = 700
+ELSEIF FLAG:淫魔レベル == 2
+	cost = 600
+ELSEIF FLAG:淫魔レベル == 1
+	cost = 550
+ELSE
+	cost = 500
+ENDIF
+PRINTFORML 現在のレベル:{FLAG:淫魔レベル}
+PRINTFORML 次のレベルに上げるには最大精力が{cost}必要です
+PRINTFORML 上昇させますか？
+PRINTFORML 現在の最大精力:{MAXBASE:精力}
+PRINTL 
+PRINTL [0] - はい
+PRINTL [1] - いいえ
+
+CALL SENTAKUSHI, 2
+
+IF RESULT == 0
+	PRINTFORML レベルを{FLAG:淫魔レベル+1}に上昇させた！
+	PRINTFORM 戦闘力:{FLAG:堕とした人数*(5+FLAG:淫魔レベル*5)}　→　
+	FLAG:淫魔レベル += 1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW {FLAG:堕とした人数*(5+FLAG:淫魔レベル*5)}
+	RESETCOLOR
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+;==========================================
+;淫魔技巧チェック
+;==========================================
+@CHECK_SUC_SKILL
+;淫魔経験が10を越えるごとに淫魔技巧が上がる
+;(最大5まで)
+IF (ABL:淫魔技巧 + 1) * 10 <= EXP:淫魔経験 && ABL:淫魔技巧 < 5
+	CALL SETCOLOR_PALAMUP
+	PRINTFORML %CALLNAME:TARGET%の淫魔技巧が上がった！
+	ABL:淫魔技巧 += 1
+	RESETCOLOR
+ENDIF

@@ -1,0 +1,131 @@
+﻿;****************************************************************
+;職業イベント等で使いそうな関数一覧
+;****************************************************************
+
+;-------------------------------------------------------------
+;能力毎の割合決定&行動ルート確定
+;対象の能力値/全能力値で％を決定し、後でランダムで数を決定する
+;-------------------------------------------------------------
+@ELECTION_WORK, ARGS
+#DIM L_LOCAL, 1
+#DIM PAR, 7
+#DIM R_LOCAL, 1
+#DIM TAG_PALAM, 1
+#DIM INYOU, 1
+
+;初期化
+LOCAL = 0
+LOCAL:1 = -1
+VARSET PAR, 0
+
+;淫妖の値はINYOUで管理
+INYOU = BASE:淫妖
+
+;貞操が200以上の場合
+IF BASE:貞操 >= 200
+	INYOU /= 4
+;貞操が150以上の場合
+ELSEIF BASE:貞操 >= 150
+	INYOU /= 3
+;貞操が100以上の場合
+ELSEIF BASE:貞操 >= 100
+	INYOU /= 2
+ENDIF
+
+;合計値計算
+LOCAL = BASE:美麗 + INYOU
+;対象となる能力にフラグを立てる
+IF ARGS == "知力" || ARGS == "疎通"
+	FOR L_LOCAL, 0, 2, 1
+		LOCAL += LIMIT(BASE:ABL_NAME_1(L_LOCAL), 1, 1000)
+		PAR:(L_LOCAL+3) = 1
+	NEXT
+ELSE
+	FOR L_LOCAL, 0, 2, 1
+		LOCAL += LIMIT(BASE:ABL_NAME_2(L_LOCAL), 1, 1000)
+		PAR:(L_LOCAL+1) = 1
+	NEXT
+ENDIF
+LOCAL += BASE:ARGS
+
+;中心能力も抽選に参加させる
+IF ARGS == "家事" && BASE:家事
+	PAR:3 = 1
+ELSEIF ARGS == "信仰" && BASE:信仰
+	PAR:4 = 1
+ELSEIF ARGS == "知力" && BASE:知力
+	PAR:1 = 1
+ENDIF
+
+
+IF BASE:美麗
+	PAR:0 = 1
+ENDIF
+IF INYOU
+	PAR:5 = 1
+ENDIF
+
+;割合換算
+FOR L_LOCAL, 0, 6, 1
+	IF L_LOCAL != 5
+		PAR:L_LOCAL = LIMIT(BASE:ABL_NAME(L_LOCAL), 1, 1000) * 100 * PAR:(L_LOCAL) / LOCAL
+	ELSE
+		PAR:L_LOCAL = LIMIT(INYOU, 1, 1000) * 100 * PAR:(L_LOCAL) / LOCAL
+	ENDIF
+	;PRINTFORML %ABL_NAME(L_LOCAL)%:{BASE:ABL_NAME(L_LOCAL)}
+	;PRINTFORML {PAR:L_LOCAL}
+NEXT
+
+$R_LOOP
+R_LOCAL = 100
+;実行判定
+FOR L_LOCAL, 0, 6, 1
+	;RANDがその確率を下回れば実行される
+	IF RAND:R_LOCAL < PAR:L_LOCAL
+		LOCAL:1 = L_LOCAL
+		BREAK
+	ENDIF
+	R_LOCAL -= PAR:L_LOCAL
+NEXT
+;PRINTFORML LOCAL:1{LOCAL:1}
+
+;返り値候補が-1の場合、選出しなおす
+IF LOCAL:1 == -1
+	GOTO R_LOOP
+ENDIF
+
+RETURN LOCAL:1
+
+;--------------------------------------------
+;習慣の数値→言語変換
+;式中関数版
+;--------------------------------------------
+@ABL_NAME, ARG
+#FUNCTIONS
+#LOCALSSIZE 6
+SIF LOCALS == ""
+	SPLIT "美麗_知力_疎通_家事_信仰_淫妖", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;------------------------------------
+;知力or疎通版
+;式中関数版
+;------------------------------------
+@ABL_NAME_1, ARG
+#FUNCTIONS
+#LOCALSSIZE 2
+SIF LOCALS == ""
+	SPLIT "家事_信仰", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;-------------------------------------
+;信仰or家事版
+;式中関数版
+;-------------------------------------
+@ABL_NAME_2, ARG
+#FUNCTIONS
+#LOCALSSIZE 2
+SIF LOCALS == ""
+	SPLIT "知力_疎通", "_", LOCALS
+RETURNF LOCALS:ARG
+

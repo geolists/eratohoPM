@@ -1,0 +1,231 @@
+﻿;============================================================
+;誕生日
+;月の都では誕生日は星座ごとに祝福する慣習がある
+;============================================================
+@BIRTHDAY
+DRAWLINE
+CALL SETCOLOR_MONEY
+PRINTFORML ☆☆☆誕生日☆☆☆
+RESETCOLOR
+IF !FLAG:王宮追放
+	PRINTFORML 女中「今日は%CALLNAME:TARGET%様の誕生日です！
+	PRINTFORML 　　　月の都では誕生星座毎に特定の日を定め、その日に纏めて祝福を行うんです
+	CALL BIRTHDAY_SET
+	IF RESULT != DAY
+		PRINTFORML 　　　まあ、当日に祝えなかったのは仕方がありません
+	ENDIF
+	PRINTFORML 　　　……ご存じありませんでした？」
+ELSE
+	PRINTFORML 近所の住民「お前んとこの%CALLNAME:TARGET%という娘がそろそろ誕生日迎えるんじゃねえのか？
+	PRINTFORML 　　　　　　月の都では誕生星座毎に特定の日を定め、その日に纏めて祝福を行うからな
+	CALL BIRTHDAY_SET
+	IF RESULT != DAY
+		PRINTFORML 　　　その時祝えなかったなら今祝えばいい
+	ENDIF
+	PRINTFORML 　　　　　　覚えておいて損はないぜ」
+ENDIF
+PRINTL 
+$BACK_LOOP
+PRINTFORML 何を贈りますか？　(所持金:${MONEY})
+LOCAL = 15000
+LOCAL:1 = 50000
+LOCAL:2 = 120000
+LOCAL:3 = 250000
+PRINTFORM [0] - 特製抹茶セット　
+CALL SETCOLOR_MONEY
+PRINTFORML ${LOCAL}
+RESETCOLOR
+PRINTFORM [1] - 絹の寝間着　　　
+CALL SETCOLOR_MONEY
+PRINTFORML ${LOCAL:1}
+RESETCOLOR
+PRINTFORM [2] - 特大イナバ人形　
+CALL SETCOLOR_MONEY
+PRINTFORML ${LOCAL:2}
+RESETCOLOR
+PRINTFORM [3] - 職人の楽琵琶　　
+CALL SETCOLOR_MONEY
+PRINTFORML ${LOCAL:3}
+RESETCOLOR
+PRINTFORML [4] - 何も贈らない
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 4
+	PRINTFORML %CALLNAME:TARGET%は少し残念そうにしている……
+ELSEIF MONEY <= LOCAL:RESULT
+	PRINTFORML お金が足りない
+	GOTO BACK_LOOP
+ELSEIF RESULT <= 3
+	MONEY -= LOCAL:RESULT
+	
+	SELECTCASE RESULT
+		CASE 0
+			STR = 特製抹茶セット
+		CASE 1
+			STR = 絹の寝間着
+		CASE 2
+			STR = 特大イナバ人形
+		CASE 3
+			STR = 職人の楽琵琶
+	ENDSELECT
+	PRINTFORML %CALLNAME:TARGET%に%STR%を贈った
+	LOCAL = RESULT
+	
+	CALL SAVE_COLOR, 0
+	TRYCALLFORM KOJO_COLOR_K{NO:TARGET}, 0
+	RESULT = 0
+	TRYCALLFORM KOJO_BIRTHDAY_K{NO:TARGET}, LOCAL
+	CALL SAVE_COLOR, 1
+	
+	SELECTCASE LOCAL
+		CASE 0
+			PRINTFORML %CALLNAME:TARGET%は抹茶筒を開くと、匂いを嗅いで満面の笑みを浮かべた
+			PRINTFORMW 早速明日お茶の作法を教えて、と%CALLNAME:MASTER%の裾を掴んでせがんだ……
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 家事経験 +40
+			PRINTFORML やる気が1上がった！
+			PRINTFORML 主人への友好度が50上がった！
+			;家事経験+40
+			;やる気+1
+			;主人への友好度+50
+			EXP:家事経験 += 40
+			CFLAG:やる気 = LIMIT(CFLAG:やる気+1, 1, 10)
+			CFLAG:主人への友好度 += 50
+		CASE 1
+			PRINTFORML %CALLNAME:TARGET%は寝間着を広げ、天に掲げた
+			PRINTFORMW 笑みを浮かべ、賛美の言葉をあげ始める
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 美麗経験 +10
+			PRINTFORML 疲労度が20下がった！
+			PRINTFORML やる気が2上がった！
+			PRINTFORML 主人への友好度が80上がった！
+			;疲労度-20
+			;美麗経験+10
+			;やる気+2
+			;主人への友好度+80
+			BASE:ストレス = LIMIT(BASE:ストレス-20, 0, 100)
+			EXP:美麗経験 += 10
+			CFLAG:やる気 = LIMIT(CFLAG:やる気+2, 1, 10)
+			CFLAG:主人への友好度 += 80
+		CASE 2
+			PRINTFORML %CALLNAME:TARGET%は特大イナバ人形を抱き締め、頬を摺り寄せた
+			PRINTFORMW その姿勢のまま%CALLNAME:MASTER%の元へ駆け寄り、体を寄せる
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML やる気が3上がった！
+			PRINTFORML 主人への友好度が220上がった！
+			;やる気+3
+			;主人への友好度+220
+			CFLAG:やる気 = LIMIT(CFLAG:やる気+3, 1, 10)
+			CFLAG:主人への友好度 += 220
+		CASE 3
+			PRINTFORML %CALLNAME:TARGET%は職人の楽琵琶を手に取り、弦を弾いた
+			PRINTFORMW 笑みを浮かべながら一気に弦を弾き、様々な音階を一気に奏でた
+			
+			CALL SETCOLOR_PALAMUP
+			PRINTFORML 美麗経験 +45
+			PRINTFORML やる気が2上がった！
+			PRINTFORML 主人への友好度が240上がった！
+			;やる気+2
+			;美麗経験+45
+			;主人への友好度+240
+			EXP:美麗経験 += 45
+			CFLAG:やる気 = LIMIT(CFLAG:やる気+2, 1, 10)
+			CFLAG:主人への友好度 += 240
+	ENDSELECT
+	CALL UP_STATUS
+	RESETCOLOR
+	
+	;愛情経験が年数×30より高い場合
+	IF EXP:愛情経験 >= 30*FLAG:年数
+		PRINTFORML ・
+		PRINTFORML ・
+		PRINTFORMW ・
+		PRINTFORML %CALLNAME:TARGET%は視線を逸らして懐を弄り、手を差し出した
+		PRINTFORMW 頬はすっかり赤くなり、きつく目を瞑っている
+		PRINTFORMW 手のひらには小さな竹細工が乗っている……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORMW 主人への友好度が10上がった！
+		CFLAG:主人への友好度 += 10
+		CALL UP_STATUS
+		RESETCOLOR
+	ENDIF
+	
+	;主人への友好度が300以上ある場合、お返しにプレゼントを貰える
+	IF CFLAG:主人への友好度 >= 300
+		DRAWLINE
+		PRINTFORML 後日……
+		PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%を個室に呼んだ
+		PRINTFORML 個室に入った%CALLNAME:MASTER%は、壁にかけられた垂れ幕の文字を見て驚いた
+		PRINTFORMW そこには自分の名前と共に「誕生日」と書かれていたからだ
+		PRINTFORML 
+		;口上用の文字色に変更する
+		CALL SAVE_COLOR, 0
+		TRYCALLFORM KOJO_COLOR_K{NO:TARGET}, 0
+		RESULT = 0
+		;誕生日時の口上を呼び出す
+		TRYCALLFORM KOJO_BIRTHDAY_MASTER_K{NO:TARGET}, 0
+		CALL SAVE_COLOR, 1
+		PRINTFORMW 
+		PRINTFORML 
+		PRINTFORML 月の都では、月夜見が他2人の姉弟と同時に生まれたという言い伝えに則り
+		PRINTFORMW 誕生日を祝ってもらった場合は、お返しとして親近者の誕生日も数日中に祝ってもよいという習わしがある
+		PRINTFORML 本来なら、そのような催しを行う場合は大勢の人を集めるのだが
+		PRINTFORMW 今回は%CALLNAME:TARGET%の思いつきで始めたので、参加者は2人だけである
+		PRINTFORML 
+		PRINTFORM %CALLNAME:MASTER%は%CALLNAME:TARGET%から、
+		
+		;輝夜の能力値によって分岐
+		;裁縫技術持ち
+		;(貰える恩恵があまり嬉しくないので)50％の確率で発生
+		IF TALENT:裁縫技術 && RAND:2
+			PRINTFORML お手製の衣服を貰った！
+			LOCAL = 1
+			;裁縫技術点+10
+			CALL NEEDLE_UP, 10
+		;家事が200以上
+		ELSEIF BASE:家事 >= 200
+			PRINTFORML お手製の料理を貰った！
+			LOCAL = 2
+			;家事+10(気質等の影響を受ける)
+			CALL CALCULATION_PALAM, 10, "家事"
+		ELSE
+			;アライメントが-10以上(90以上のこと)
+			IF BASE:アライメント >= 90
+				PRINTFORML お手紙を貰った！
+				LOCAL = 3
+				CALL CALCULATION_PALAM, 5, "アライメント"
+			ELSE
+				PRINTFORML 不気味な置き物を貰った！
+				LOCAL = 4
+				CALL CALCULATION_PALAM, -5, "アライメント"
+			ENDIF
+		ENDIF
+		CALL SAVE_COLOR, 0
+		TRYCALLFORM KOJO_COLOR_K{NO:TARGET}, 0
+		RESULT = 0
+		TRYCALLFORM KOJO_BIRTHDAY_MASTER_K{NO:TARGET}, LOCAL
+		CALL SAVE_COLOR, 1
+		PRINTFORMW 
+	ENDIF
+ENDIF
+
+;--------------------------------------------------
+;誕生日引用
+;--------------------------------------------------
+@BIRTHDAY_SET
+
+IF CFLAG:星座 <= 9
+	LOCAL = CFLAG:星座+3
+;へびつかい座を実装した場合、誕生月は12月で固定する
+ELSEIF CFLAG:星座 == 12
+	LOCAL = 12
+ELSE
+	LOCAL = CFLAG:星座-9
+ENDIF
+
+RETURN LOCAL
+

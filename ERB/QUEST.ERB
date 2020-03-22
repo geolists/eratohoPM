@@ -1,0 +1,548 @@
+﻿;------------------------------------------------
+;冒険に出る
+;1ターンを費やして外に出ます
+;------------------------------------------------
+@QUEST
+TFLAG:現在の階層 = 1
+
+DRAWLINE
+IF !FLAG:王宮追放
+	PRINTL ～～王宮の裏口～～
+ELSE
+	PRINTL ～～傭兵詰所～～
+ENDIF
+
+IF ITEM:嫦娥文書 && !GETBIT(FLAG:傭兵の会話フラグ, 0)
+	;(他の関数に埋め込む予定だけど)「嫦娥文書」を入手した後の傭兵の台詞
+	PRINTFORMW 傭兵「その文書は……お前、どこで手に入れたんだ？」
+	PRINTFORML 
+	PRINTFORMW 傭兵「なるほどな。最近の君主は下手を見せることが多いと思っていたが、そこまで隙を作っていたとは……
+	PRINTFORMW 　　　それは嫦娥が裁判にかけられた時の記録だよ
+	PRINTFORML 　　　ああ、嫦娥の話からしないといけないか。嫦娥は大昔に月の都に住んでいたという、姫君だよ
+	PRINTFORMW 　　　ある日、禁忌の薬を作って服用し、処刑されたんだ
+	PRINTFORMW 　　　月の都でその薬を飲むことは重罪にあたるからな。いくら王族とはいえ処刑は免れないさ
+	PRINTFORML 　　　
+	PRINTFORMW 傭兵「……なに？　嫦娥に会ってみたいだと？
+	PRINTFORML 　　　そうだな……嫦娥より後の時代になるが、穢れの地に好き好んで堕ちた奴がいる
+	PRINTFORMW 　　　そいつに会えば嫦娥がどうなったか分かるんじゃないか
+	PRINTFORML 　　　嫦娥は処刑されたから命を絶っているんじゃないか、って？　いや、それは怪しいんだよ
+	PRINTFORMW 　　　禁忌の薬を飲んだやつは不老不死になるんだ。そんなやつが処刑されて死んでいるとは思えん
+	PRINTFORMW 　　　だから俺は穢れの地に堕ちたやつが怪しいと踏んでいる。なにしろそいつ、あの月夜見が失脚した直後に堕ちたからな」
+	PRINTFORML 　　　
+	PRINTFORML 傭兵「それで穢れの地に行く方法だが、ここに行き方を記した紙がある
+	PRINTFORML 　　　この通り辿れば必ず辿り着けるぞ
+	PRINTFORMW 　　　ただし、穢れの地に行くのに条件を設けさせてもらう
+
+	PRINTFORM 　　　それは、
+	CALL SETCOLOR_ABL
+	PRINTFORML 　　　穢れを受け付けない衣か、月夜見の名を持つ太刀のどちらかを身に着けることだ
+	RESETCOLOR
+	PRINTFORMW 　　　穢れの地は月の都で最も穢れた地よりも遥かに穢れている。そんな場所に行くなら何らかの防護方法はなければならない
+	PRINTFORMW 　　　対策せずに穢れの地に行ったら一発で役人にバレるからな。だから、どちらかは身に着けていないと穢れの地に降りることを許可しないぞ」
+	
+	FLAG:傭兵の会話フラグ |= 1p0
+;ワールブルク実験体に遭遇した
+ELSEIF FLAG:ワールブルク実験体遭遇 && !FLAG:拠点クリア／忘れられた城
+	PRINTL 傭兵「噂によると、穢れを凝固させた石があるらしいな
+	PRINTL 　　　持っているだけで穢れを嫌う奴らには効果てき面なんだけど、所持者に影響は及ばないらしいぜ
+	PRINTL 　　　しっかし、そんな都合のいい石が本当に存在するのか……？」
+ELSEIF !FLAG:王宮追放
+	IF !RAND:2
+		PRINTL 傭兵「俺達は王宮の兵士軍に雇われているんだが
+		PRINTL 　　　いいぜ、ここから出た事は黙っておいてやる
+		PRINTL 　　　その代わり、生きて帰ってこいよ」
+	ELSE
+		PRINTL 傭兵「少し前に新入りが大怪我して帰ってきたんだ
+		PRINTL 　　　どうやら素早い敵に攻撃しようとしたら他の奴らに殴られ続け、終いにはやられたらしい
+		PRINTL 　　　まずは動きが鈍い敵から狙うのがいいだろうな
+	ENDIF
+ELSE
+	PRINTL 傭兵「どんな事情か分からないが
+	PRINTL 　　　戦いに命をかける奴なら大歓迎だ
+	PRINTL 　　　俺達は護衛部隊と違って柔軟だからな」
+ENDIF
+PRINTFORML 
+PRINTFORM 7尺程ある薙刀に対し、%CALLNAME:TARGET%は
+;身長によって分岐
+;180以上
+IF BASE:身長 >= 180
+	PRINT 引けを取らない程の背丈を持っている
+;170以上
+ELSEIF BASE:身長 >= 170
+	PRINT 刀身の付け根に頭が来るようになっており、興味津々だ……
+;160以上
+ELSEIF BASE:身長 >= 160
+	PRINT やや小さいが、これはこれで絵になるかも知れない
+;150以上
+ELSEIF BASE:身長 >= 150
+	PRINT 半分以上の背丈はあるが少し心細く、持たせる気にはなれない
+;それ以外
+ELSE
+	PRINT 非常に小さく、手を伸ばしても刀先に届かない
+ENDIF
+PRINTL 
+
+$BACK_LOOP
+DRAWLINE
+CALL SET_STATUS, 1
+CALL HEALING, 1
+CALL SHOW_BATTLE_STATUS, 0
+PRINT 装備:
+IF !CFLAG:装備
+	PRINTFORML 素手
+ELSE
+	PRINTFORML %ITEMNAME:(CFLAG:装備)%
+ENDIF
+DRAWLINE
+PRINTL [0] - 外に出る　　　万が一の為にどこに行くか教えてくれ
+PRINTL [1] - 武器を買う　　武器はここで売ってやろう
+PRINTL [2] - 装備を変える　買った武器は装備しないと意味が無いぞ
+PRINTL [3] - 説明を受ける　生き延びるために必要な知識だ
+PRINTL [4] - やめる　　　　無理しないことが大切だからな
+
+CALL SENTAKUSHI, 5
+
+IF RESULT == 0
+	DRAWLINE
+	$BACK_LOOP_1
+	SETCOLOR 128, 128, 255
+	PRINTFORML ○挑戦ルート
+	PRINTFORML 何をされるか分からない場所だ。リスクは高いが金は稼げるぜ
+	IF FLAG:拠点クリア／裏通り
+		CALL SETCOLOR_MONEY
+		PRINT ☆
+		SETCOLOR 128, 128, 255
+	ELSE
+		PRINT 　
+	ENDIF
+	PRINTFORML [0] - 裏通り　　　　　　推奨レベル:{DUNGEON_LV(0)}　　旧市街だ、服を取られるかもな
+	IF FLAG:拠点クリア／裏通り
+		IF FLAG:拠点クリア／魔術実験場
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 128, 128, 255
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [1] - 魔術実験場　　　　推奨レベル:{DUNGEON_LV(1)}　　人の命を何とも思わない奴らの集まりだ
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[1] - ？？？　　　　　　行先が分からないんだ。他のダンジョンを攻略して手がかりを掴んでくれ
+		SETCOLOR 128, 128, 255
+	ENDIF
+	IF FLAG:拠点クリア／魔術実験場
+		IF FLAG:拠点クリア／魔獣の巣
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 128, 128, 255
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [2] - 魔獣の巣　　　　　推奨レベル:{DUNGEON_LV(2)}　　最近、都から娘が失踪する事件が増えているらしい
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[2] - ？？？　　　　　　行先が分からないんだ。他のダンジョンを攻略して手がかりを掴んでくれ
+		SETCOLOR 128, 128, 255
+	ENDIF
+	;PRINTFORML [3] - 地獄への入り口　推奨レベル:{DUNGEON_LV(3)}　　淫魔は女性しか居ないのに増えていく……どうやって数を増やしてるんだろうな？
+	;PRINTFORML [4] - 地獄の最深部　　推奨レベル:{DUNGEON_LV(4)}　　……必ず帰ってこいよ
+	PRINTL 
+	SETCOLOR 224, 196, 196
+	DRAWLINE
+	PRINTFORML ○基本ルート
+	PRINTFORML さあ、草むらで経験を積んだら匪賊の住処を襲え！
+	PRINTFORML 　[10] - 草むら　　　　　　推奨レベル:{DUNGEON_LV(10), 2, RIGHT}　　練習だ。まずはここで戦闘に慣れるんだ。ここに主とかはいないからな
+	IF FLAG:拠点クリア／匪賊の洞窟
+		CALL SETCOLOR_MONEY
+		PRINT ☆
+		SETCOLOR 224, 196, 196
+	ELSE
+		PRINT 　
+	ENDIF
+	PRINTFORML [11] - 匪賊の洞窟　　　　推奨レベル:{DUNGEON_LV(11), 2, RIGHT}　　小手調べだ。鍛えた結果をここで見せろ
+	IF FLAG:拠点クリア／枯れ果てた井戸
+		CALL SETCOLOR_MONEY
+		PRINT ☆
+		SETCOLOR 224, 196, 196
+	ELSE
+		PRINT 　
+	ENDIF
+	PRINTFORML [12] - 枯れ果てた井戸　　推奨レベル:{DUNGEON_LV(12), 2, RIGHT}　　獣が出てくるぞ。能力が高いから気を付けろ
+	IF FLAG:拠点クリア／静寂の森
+		CALL SETCOLOR_MONEY
+		PRINT ☆
+		SETCOLOR 224, 196, 196
+	ELSE
+		PRINT 　
+	ENDIF
+	PRINTFORML [13] - 静寂の森　　　　　推奨レベル:{DUNGEON_LV(13), 2, RIGHT}　　狼男が生息しているらしい。凶暴化したら厄介だな
+	;以下、前のダンジョンをクリアした場合のみ挑戦可能
+	IF FLAG:拠点クリア／静寂の森 && FLAG:拠点クリア／匪賊の洞窟 && FLAG:拠点クリア／枯れ果てた井戸
+		IF FLAG:拠点クリア／匪賊のアジト１
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 224, 196, 196
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [14] - 匪賊のアジト１　　推奨レベル:{DUNGEON_LV(14), 2, RIGHT}　　魔法使い相手には負けるな。負けると……
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[14] - ？？？　　　　　　匪賊達の警備が固すぎる。他の拠点を叩くのが先だ
+		SETCOLOR 224, 196, 196
+	ENDIF
+	IF FLAG:拠点クリア／匪賊のアジト１
+		IF FLAG:拠点クリア／匪賊のアジト２
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 224, 196, 196
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [15] - 匪賊のアジト２　　推奨レベル:{DUNGEON_LV(15), 2, RIGHT}　　あまりにも素早い敵がいたら後から狙え
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[15] - ？？？　　　　　　匪賊達の警備が固すぎる。他の拠点を叩くのが先だ
+		SETCOLOR 224, 196, 196
+	ENDIF
+	IF FLAG:拠点クリア／匪賊のアジト２
+		IF FLAG:拠点クリア／禁忌の森
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 224, 196, 196
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [16] - 禁忌の森　　　　　推奨レベル:{DUNGEON_LV(16), 2, RIGHT}　　ここに住むスライムは凶悪だ！　対処法を用意しておけ
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[16] - ？？？　　　　　　匪賊達の警備が固すぎる。他の拠点を叩くのが先だ
+		SETCOLOR 224, 196, 196
+	ENDIF
+	IF FLAG:拠点クリア／禁忌の森
+		IF FLAG:拠点クリア／忘れられた城
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 224, 196, 196
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [17] - 忘れられた城　　　推奨レベル:{DUNGEON_LV(17), 2, RIGHT}　　ここに君主の関係者がいる。倒せ
+	ELSE
+		SETCOLOR 96, 96, 96
+		PRINTFORML 　[17] - ？？？　　　　　　匪賊達の警備が固すぎる。他の拠点を叩くのが先だ
+		SETCOLOR 224, 196, 196
+	ENDIF
+	DRAWLINE
+	CALL SETCOLOR_MONEY
+	IF GLOBAL:998
+		PRINTFORML 　[18] - 流星の流れ場　　　推奨レベル:{DUNGEON_LV(18)}　　……？　初めて見る場所だな
+	ENDIF
+	SETCOLOR 224, 196, 196
+	DRAWLINE
+	;嫦娥文書を持っていて、天の羽衣か月夜見の太刀のどちらかを装備している場合
+	IF ITEM:嫦娥文書 && (CFLAG:服装 == 7 || CFLAG:装備 == 565)
+		IF FLAG:拠点クリア／穢れの地
+			CALL SETCOLOR_MONEY
+			PRINT ☆
+			SETCOLOR 224, 196, 196
+		ELSE
+			PRINT 　
+		ENDIF
+		PRINTFORML [30] - 穢れの地　　　　推奨レベル:25　　地上は穢れだらけだ。正直な話、俺はお勧めしないぞ
+		;PRINTFORML 　[31] - 辺境の竹林　　　推奨レベル:??　　なぜそこへ行こうとするのだ。……須佐乃男？　誰だそいつは
+		DRAWLINE
+	ENDIF
+	;穢れの地をクリアする
+	IF FLAG:拠点クリア／穢れの地
+		PRINTFORML 　[40] - 榊の森　　　　推奨レベル:??　　そこは廃墟だ。何が起こっても知らないからな
+	ENDIF
+	
+	RESETCOLOR
+	PRINTL [999] - 戻る
+	
+	$INPUT_LOOP
+	INPUT
+	
+	IF RESULT != 999
+		LOCAL = RESULT
+	ENDIF
+	
+	IF RESULT == 999
+		GOTO BACK_LOOP
+	ELSEIF RESULT == 0
+		TFLAG:最深部の階層 = 8
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 1
+		TFLAG:最深部の階層 = 8
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 2
+		TFLAG:最深部の階層 = 8
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 10
+		TFLAG:最深部の階層 = 100
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 11
+		TFLAG:最深部の階層 = 5
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 12
+		TFLAG:最深部の階層 = 7
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 13
+		TFLAG:最深部の階層 = 7
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 14 && FLAG:拠点クリア／静寂の森 && FLAG:拠点クリア／匪賊の洞窟 && FLAG:拠点クリア／枯れ果てた井戸
+		TFLAG:最深部の階層 = 7
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 15 && FLAG:拠点クリア／匪賊のアジト１
+		TFLAG:最深部の階層 = 8
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 16 && FLAG:拠点クリア／匪賊のアジト２
+		TFLAG:最深部の階層 = 8
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 17 && FLAG:拠点クリア／禁忌の森
+		TFLAG:最深部の階層 = 10
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 18
+		TFLAG:最深部の階層 = 9
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 30 && ITEM:嫦娥文書 && (CFLAG:服装 == 7 || CFLAG:装備 == 565)
+		TFLAG:最深部の階層 = 13
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSEIF RESULT == 40 && FLAG:拠点クリア／穢れの地
+		TFLAG:最深部の階層 = 13
+		TFLAG:ダンジョンレベル = DUNGEON_LV(RESULT)
+	ELSE
+		PRINTL 不正な入力です
+		GOTO INPUT_LOOP
+	ENDIF
+	PRINTFORML %CONVERT_BATTLE_MAP(LOCAL)%にするのか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		PRINTL 分かった。無事帰ってこいよ
+		BASE:栄養値 -= 4
+		
+		;マップIDを変数に格納する
+		FLAG:武者修行マップ = LOCAL
+		;必殺技ゲージを0に初期化する
+		TFLAG:必殺技ゲージ = 0
+		
+		CALL MENU_QUEST, LOCAL
+		DRAWLINE
+		IF !FLAG:王宮追放
+			PRINTL ～～王宮の裏口～～
+		ELSE
+			PRINTL ～～傭兵詰所～～
+		ENDIF
+		IF RESULT == 1
+			PRINTFORML 傭兵「よく帰ってきたな！
+			PRINTFORMW 　　　慣れないことで疲れただろ？　少しの間休めよ」
+		ELSEIF RESULT == -1
+			PRINTFORML 傭兵「……
+			PRINTFORMW 　　　無理して奥まで行かれると、救出するのに時間がかかるからな……
+			PRINTFORMW 　　　自分の強さを見極めながら進み、無理だと思ったら早めに帰るのがいい」
+		ELSE
+			PRINTFORML 傭兵「相手が悪かったな
+			PRINTFORMW 　　　まあ焦る必要はないさ。体力を鍛えて挑めばいい」
+		ENDIF
+		
+		;(一応)武者修行マップに-1を代入しておく
+		FLAG:武者修行マップ = -1
+		
+		;淫魔化で10回射精された場合、戻ることができない
+		IF GETBIT(CFLAG:永続状態異常,0)
+			IF TFLAG:621 >= 10
+				DRAWLINE
+				PRINTFORMW 戻ってきた%CALLNAME:TARGET%は淫魔から戻らず、%CALLNAME:MASTER%を誘惑してきた
+				PRINTFORMW どうやら淫魔化している最中に精子を受けすぎて定着してしまったようだ……
+				PRINTFORML %CALLNAME:TARGET%は[淫魔]を得た
+				
+				IF TALENT:傷物
+					PRINTFORML ＜想定外の出来事で処女を奪われた悲しみが消え、%CALLNAME:MASTER%に依存するようになりました＞
+					TALENT:傷物 = 0
+					TALENT:依存 = 1
+				ENDIF
+				PRINTFORMW ＜衣服を外せなくなりました＞
+				
+				;生活習慣を淫魔で癒着化させておく
+				;割合を淫魔100％にする
+				FOR COUNT, 0, 5
+					CFLAG:("習慣レベル／"+LIFESTYLE_NAME(COUNT)+"") = 3
+					CFLAG:("習慣職業／"+LIFESTYLE_NAME(COUNT)+"") = 1p6
+				NEXT
+				
+				FOR COUNT, 0, 8
+					CALL ELEMENT_CONVERT, COUNT
+					CFLAG:("属性／"+STR+"") = 0
+				NEXT
+				CFLAG:属性／淫魔 = 100
+				BASE:胸囲 += 3
+				BASE:ウエスト -= 2
+				BASE:ヒップ += 2
+				ITEM:24 = 0
+				ITEM:34 = 1
+				CFLAG:胸部下着 = 0
+				CFLAG:秘所下着 = 0
+				TALENT:淫魔 = 1
+				CFLAG:髪色 = 2
+				CFLAG:肌の色 = 2
+				CALL DATA_CHANGE_CLOTHE, 34, "変更"
+				
+			ELSE
+				CALL SETCOLOR_PALAMUP
+				PRINTFORMW %CALLNAME:TARGET%は元の姿に戻った！
+				TALENT:淫魔 = 0
+				RESETCOLOR
+			ENDIF
+			CFLAG:永続状態異常 = 0
+		ENDIF
+		
+		BEGIN TURNEND
+	ELSE
+		GOTO BACK_LOOP_1
+	ENDIF
+ELSEIF RESULT == 1
+	;武器販売へ
+	CALL PRINT_SHOP_ITEM, 10
+	GOTO BACK_LOOP
+ELSEIF RESULT == 2
+	;装備変更へ
+	CALL CHANGE_WEAPON, TARGET
+	GOTO BACK_LOOP
+ELSEIF RESULT == 3
+	;説明モードへ
+	CALL TUTORIAL_BATTLE
+	GOTO BACK_LOOP
+ELSE
+	RETURN 0
+ENDIF
+
+;--------------------------------------
+;数値を場所に変換
+;--------------------------------------
+@CONVERT_BATTLE_MAP, ARG
+#FUNCTIONS
+#LOCALSSIZE 19
+IF ARG == 99
+	LOCALS = 匪賊達の慰安所
+ELSEIF ARG == 30
+	LOCALS = 穢れの地
+ELSEIF ARG == 40
+	LOCALS = 榊の森
+ELSE
+	SPLIT "裏通り_魔術実験場_魔獣の巣_淫魔の生息地_魔王の城_ダミー_ダミー_ダミー_ダミー_ダミー_草原_匪賊の洞窟_枯れ果てた井戸_静寂の森_匪賊のアジト１_匪賊のアジト２_禁忌の森_忘れられた城_流星の流れ場", "_", LOCALS
+ENDIF
+
+IF ARG <= 18
+	RETURNF LOCALS:ARG
+ELSE
+	RETURNF LOCALS
+ENDIF
+
+;--------------------------------------
+;ダンジョンレベル出力
+;--------------------------------------
+@DUNGEON_LV, ARG
+#FUNCTION
+IF ARG == 0
+	LOCAL = 15
+ELSEIF ARG == 1
+	LOCAL = 17
+ELSEIF ARG == 2
+	LOCAL = 20
+ELSEIF ARG == 3
+	LOCAL = 24
+ELSEIF ARG == 4
+	LOCAL = 28
+ELSEIF ARG == 10
+	LOCAL = 1
+ELSEIF ARG == 11
+	LOCAL = 4
+ELSEIF ARG == 12
+	LOCAL = 7
+ELSEIF ARG == 13
+	LOCAL = 12
+ELSEIF ARG == 14
+	LOCAL = 16
+ELSEIF ARG == 15
+	LOCAL = 19
+ELSEIF ARG == 16
+	LOCAL = 22
+ELSEIF ARG == 17
+	LOCAL = 25
+ELSEIF ARG == 18
+	LOCAL = 20
+ELSEIF ARG == 30
+	LOCAL = 23
+ELSEIF ARG == 40
+	LOCAL = 26
+ELSEIF ARG == 99
+	LOCAL = LIMIT(BASE:レベル-2, 1, BASE:レベル)
+ENDIF
+
+RETURNF LOCAL
+
+
+;--------------------------------------
+;チュートリアル
+;--------------------------------------
+@TUTORIAL_BATTLE
+DRAWLINE
+PRINTFORML 傭兵「いいか？　これは訓練ではない
+PRINTFORML 　　　ここで知識を得てから旅立つんだ。分かったな？」
+DRAWLINE
+PRINTL [0] - 武者修行とは？
+PRINTL [1] - パラメーターの説明
+PRINTL [2] - ゲームのコツ
+PRINTL [3] - 戻る
+
+CALL SENTAKUSHI, 4
+
+IF RESULT == 0
+	CALL SETCOLOR_ABL
+	PRINTFORML 1.武者修行とは
+	RESETCOLOR
+	PRINTFORMW %CALLNAME:TARGET%を匪賊や魔物が潜んでいる場所に送りだし探索させます
+	PRINTFORML そしてボスを倒し、最終的には君主が持つ主戦力を潰そうというのが目的になります
+	PRINTFORMW (まだラスボス等は実装してません)
+	PRINTFORML 
+	PRINTFORML 当然ですが、この道はそう簡単には行きません
+	PRINTFORML 何しろ相手は匪賊や魔物ですから、倒された時には……
+	PRINTFORMW その為、送りだす%CALLNAME:MASTER%は最良の判断と準備を行ってください
+	PRINTFORMW %CALLNAME:TARGET%の身を案じるならの話ですが……
+ELSEIF RESULT == 1
+	CALL SETCOLOR_ABL
+	PRINTFORML 2.パラメーターの説明
+	RESETCOLOR
+	PRINTFORMW 一気に説明していきましょう
+	PRINTFORML ＨＰ……体力を表します。0になると敗北となります
+	PRINTFORML 気力……ＭＰにあたるものです。減少すると相手の攻撃が当たりやすくなり
+	PRINTFORML 　　　　一定値以下になると自分の命中率が下がります。
+	PRINTL 
+	PRINTFORML 攻撃……攻撃力を表します。物理攻撃の威力が強化されます
+	PRINTFORML 攻撃……防御力を表します。物理攻撃のダメージを抑えることができます
+	PRINTFORML 魔力……魔力です。性攻撃の際にも使用します(防御側は使用しない)
+	PRINTFORML 素早さ…俊敏さを表します。高いと相手より先制して攻撃できます
+	PRINTL 
+	PRINTFORML ～術レベル……使う度に経験値を獲得し、一定値以上になるとレベルアップします。
+	PRINTFORML 　　　　　　　　　レベルが高いと該当する攻撃の威力が増加します。
+	PRINTL 
+	PRINTFORMW 以上となります
+ELSEIF RESULT == 2
+	CALL SETCOLOR_ABL
+	PRINTFORML 3.ゲームのコツ
+	RESETCOLOR
+	PRINTFORML ・特技を上手く使いましょう
+	PRINTFORML ・装飾品を試すのもいいかも
+	PRINTFORML ・体力とレベルはバランスよく上げよう
+	PRINTFORMW 　片方だけ上げても駄目という意味です
+ELSEIF RESULT == 3
+	RETURN 0
+ENDIF
+RESTART
+
+

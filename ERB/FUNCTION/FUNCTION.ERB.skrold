@@ -1,0 +1,1843 @@
+﻿;===================================
+;能力上昇時の汎用処理
+;===================================
+@UP_STATUS
+;全ステータスにチェックをかける
+REPEAT 10
+	CALL PALAM_CONVERT, COUNT
+	LOCALS = %STR%
+	
+	;ピーク値を更新した場合、新たな数値で上書きする
+	IF BASE:LOCALS > FLAG:("ピーク／"+STR+"")
+		FLAG:("ピーク／"+STR+"") = BASE:LOCALS
+	ENDIF
+	
+	IF FLAG:役人の脅し && BASE:慰み者 < 100 && TARGET >= 2
+		PRINTFORML 役人達は%CALLNAME:MASTER%に、このままだとお前達を処罰しないといけないと言った
+		PRINTFORML それから隣にいる%CALLNAME:TARGET%の股体を舐めるように見て、厭らしい笑みを浮かべた……
+		FLAG:役人の脅し = 0
+	;淫妖が1000に達した場合、バッドエンドに
+	ELSEIF BASE:淫妖 >= HANTEI_EXPOSURE_INYOU(TARGET) && !TALENT:娼婦 && !FLAG:王宮追放 && !TALENT:淫魔 && !FLAG:役人の脅し && TARGET <= 1
+		IF BASE:慰み者 < 100
+			;調教中
+			IF CFLAG:モード == 2
+				CALL BAD_END_4
+			ELSE
+				CALL BAD_END_1
+			ENDIF
+		ELSE
+			DRAWLINE
+			PRINTFORMW %CALLNAME:MASTER%と%CALLNAME:TARGET%が教育を行っているところに、突然役人達が入ってきた！
+			PRINTFORM 役人達は%CALLNAME:TARGET%の
+			IF (BASE:胸囲 + BASE:ヒップ) / 2 - BASE:ウエスト >= 40
+				PRINT 性的に熟しきった
+			ELSEIF (BASE:胸囲 + BASE:ヒップ) / 2 - BASE:ウエスト >= 30
+				PRINT 艶やかなボディラインを描く
+			ELSEIF (BASE:胸囲 + BASE:ヒップ) / 2 - BASE:ウエスト >= 20
+				PRINT 性に芽生えかけた少女のような
+			ENDIF
+			PRINTL 身体を下から上まで舐めまわすように見て
+			PRINTFORMW 自分達が%CALLNAME:TARGET%を弄んでいいなら見逃してやると言ってきた
+			PRINTL [0] - 要求を呑む
+			PRINTL [1] - 断る
+			
+			CALL SENTAKUSHI, 2
+			
+			IF RESULT == 0
+				PRINTFORMW 役人達は%CALLNAME:MASTER%は話が分かる奴だと褒め立て、歓声に沸きながら部屋を去った……
+				FLAG:役人の脅し = 1
+			ELSEIF RESULT == 1
+				PRINTFORMW 役人達は親指を下に立て、皮肉を言って部屋を去った……
+				CALL BAD_END_1
+			ENDIF
+		ENDIF
+	ENDIF
+	
+	;調教中に堕落or淫妖が1000に達した場合、バッドエンドに
+	IF CFLAG:モード == 2 && BASE:堕落 >= 1000 && !TALENT:娼婦 && !FLAG:王宮追放 && !TALENT:淫魔 && TARGET >= 2
+		DRAWLINE
+		PRINTFORMW 「えへ……えへへ……」
+		PRINTFORMW 輝夜は目から涙を流した
+		PRINTFORMW 「いいの……すごく、きもちいぃ……」
+		PRINTFORMW 輝夜は盗賊に抱きついた
+		PRINTFORMW 「わたし……きもちよければ、一生ここにいていい……」
+		PRINTFORMW 輝夜は悦びに塗れた表情を浮かべ、盗賊達の責めに媚声をあげ続けた……
+		CALL BAD_END_2
+	ENDIF
+	
+	;調教中以外では堕落は999でストップする
+	;（一部状況を除く予定はある）
+	;（淫魔は除く）
+	IF STR == "堕落" && BASE:堕落 >= 1000 && !TALENT:淫魔
+		BASE:堕落 = 999
+	ENDIF
+	
+	;該当する能力が1000より高い場合、1000に修正
+	IF BASE:(STR) > MAXBASE:(STR)
+		BASE:(STR) = MAXBASE:(STR)
+	ENDIF
+	
+	;該当する能力が0より低い場合、0に修正
+	IF BASE:(STR) < 0
+		BASE:(STR) = 0
+	ENDIF
+REND
+
+;アライメントのチェック
+
+;+100以上になったら+100に戻す
+IF BASE:アライメント > MAXBASE:アライメント
+	BASE:アライメント = MAXBASE:アライメント
+ELSEIF BASE:アライメント < 0
+	BASE:アライメント = 0
+ENDIF
+
+;疲労・ストレスのチェック
+IF BASE:疲労 > 100
+	BASE:疲労 = 100
+ELSEIF BASE:疲労 < 0
+	BASE:疲労 = 0
+ENDIF
+IF BASE:ストレス > 100
+	BASE:ストレス = 100
+ELSEIF BASE:ストレス < 0
+	BASE:ストレス = 0
+ENDIF
+
+;CPアップの判定
+IF ((MAXBASE:ＣＰ - 4) * 20) <= CFLAG:主人への友好度
+	LOCAL = CFLAG:主人への友好度 / 20 * 20
+	PRINTFORMW 主人への友好度が{LOCAL}を越えた事によってＣＰがアップした！
+	MAXBASE:ＣＰ = CFLAG:主人への友好度 / 20 + 5
+ENDIF
+
+;===================================
+;淫妖摘発判定
+;LOCAL　摘発値
+;===================================
+@HANTEI_EXPOSURE_INYOU, ARG
+#FUNCTION
+
+;初期摘発値は1000
+LOCAL = 1000
+
+;肌の色が変化していると上昇する
+IF !CFLAG:肌の色
+	
+ELSE
+	SELECTCASE CFLAG:肌の色
+		CASE 1
+			LOCAL += 400
+		CASE 2
+			LOCAL += 800
+	ENDSELECT
+ENDIF
+
+;触手娘、アルラウネ、スライム娘に変異した場合は+2001される
+;(人魚の場合はバレるので変化なし)
+IF TALENT:触手娘 || TALENT:アルラウネ || TALENT:スライム娘
+	LOCAL += 2001
+ENDIF
+
+RETURNF LOCAL
+
+;===========================================================
+;変異因子
+;ARG:1　変異因子上昇対象(1:触手娘　2:アルラウネ)
+;ARG:2　上昇量
+;
+;返り値：　1:処理を実行した　0:処理を実行しなかった(条件を満たさないので)
+;===========================================================
+@FACTOR_MUTATION, ARG:1, ARG:2
+
+;既に変異している場合、この処理を飛ばす
+IF TALENT:触手娘 || TALENT:人魚 || TALENT:アルラウネ || TALENT:スライム娘
+	RETURN 0
+ENDIF
+
+;ARG:2の分だけ上昇
+;CFLAG:570　触手姫からスタートするので、569+αで対応する
+CFLAG:(569+ARG:1) += ARG:2
+
+;対応する因子が1000を超えた場合、変異させる
+IF CFLAG:(569+ARG:1) >= 1000
+	DRAWLINE
+	;因子によって文章を変える
+	SELECTCASE ARG:1
+		;触手娘
+		CASE 1
+			PRINTFORMW %CALLNAME:TARGET%は一際高い声をあげたかと思うと、突然手足を痙攣させはじめた
+			PRINTFORMW 震えは次第に大きくなり、ある時ピンと腕や脚を反らして硬直させた
+			PRINTFORML そのまま固まったかと思うと%CALLNAME:TARGET%は悲鳴をあげ
+			PRINTFORMW それを合図に腕や脚の皮膚が裂けて中から触手が飛び出した
+			PRINTFORMW 裂けた皮膚はすぐさま塞がり、最初から触手が生えていたようにしか見えない
+			PRINTFORML 
+			PRINTFORMW 彼女の変化はこれだけでは収まらない。衣服の繊維が解かれ、彼女の身体から滑り落ちていく
+			PRINTFORMW なぜこのようなことが起こったのか。原因は皮膚に生じた粘液にある
+			PRINTFORMW この粘液には繊維質を解く作用があり、彼女の纏う衣服の繊維を解いてしまったのだ
+			PRINTFORMW もう彼女はしっかりとした衣服を着ることはできないだろう
+			PRINTFORMW ……まあ、彼女が恍惚とした表情を浮かべて触手を蠢かせているのを見る限りでは、その心配も杞憂に終わりそうだが
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%は[触手娘]になった
+			TALENT:触手娘 = 1
+		;アルラウネ
+		CASE 2
+			PRINTFORMW %CALLNAME:TARGET%は目を瞑り、全身を痙攣させはじめた
+			PRINTFORML 皮膚からは粉が大量に吹き出し、周囲に飛散していく
+			PRINTFORMW 数多の粉が宙を舞うものだから、彼女の周囲はまるで霧ができたかのようだ
+			PRINTFORML 
+			PRINTFORMW 霧のような粉の中で、彼女の身に一体何が起きているのか
+			PRINTFORMW 彼女は否が応でも花粉を摂取し、脳内を書き換えられていく
+			PRINTFORMW 書き換えられるのは記録や倫理観なのだが、それと共に脳細胞の結合も換えられていく
+			PRINTFORMW なぜわざわざ花粉を通して脳を変異させる必要があるのか
+			PRINTFORMW それは花粉を出しているのは彼女に寄生した組織だからである
+			PRINTFORMW 寄生体が彼女を自分の物にするためにこうして少しずつ変異させているというわけだ
+			PRINTFORMW 彼女の思考は生殖活動に重きが置かれ、目から輝きが失われていた
+			PRINTFORML 
+			PRINTFORMW そんな彼女の意識や認識の変化を知ってか知らずか、身体の方にも変化が現れた
+			PRINTFORMW 両脚から蔦が大量に沸き、彼女の下半身を覆い尽くした
+			PRINTFORMW 蔦同士が絡まり合い、彼女が纏う衣服を破いていくと、彼女は上半身で裸体を曝しながら、下半身では蔦を艶やかに蠢かせる存在と化した
+			PRINTFORMW 肌の色も下半身から緑色が広がっていき、境界面ではさながら水が混ざるように緑が染み込んでいく
+			PRINTFORMW こうして額や手の指先まで緑色が広がった後、彼女の頭に一片の花が咲いた。恐らく寄生完了の印なのだろう
+			PRINTFORMW 今ここに新たな花製の姫が誕生したのだ
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%は[アルラウネ]になった
+			TALENT:アルラウネ = 1
+		;スライム娘
+		CASE 3
+			PRINTFORMW %CALLNAME:TARGET%は目を瞑り、全身を痙攣させはじめた
+			PRINTFORML 皮膚は徐々に透明になっていき、周囲の景色が屈折した状態で見えはじめる
+			PRINTFORMW 彼女の身体は粘性体に犯されすぎたせいで、身体の基礎組成物質が置換される段階を迎えてしまった
+			PRINTFORML 
+			PRINTFORML それによって生じる変化は透過率のみではない、当然触感も変わる
+			PRINTFORMW 本来すべすべした肌触りだった肌は今や水を含んだスポンジのような触り心地と化し、触った手は濡れてしまう
+			PRINTFORMW また生物が本来持つ体温というものを微塵にも感じることができない
+			PRINTFORMW こんな彼女の性質は正に粘性体と呼ぶべきものだろう
+			PRINTFORML 幸いにも彼女は言葉を発することができるようではあるが
+			PRINTFORMW そこから喘ぐように出される声は気持ちいいだの蕩けそうだのといった淫蕩な代物ばかりであった
+			PRINTFORMW 最早今の彼女には姫としての行動はおろか、月人としての生態を望むことすら難しい
+			PRINTFORML 
+			PRINTFORML %CALLNAME:TARGET%は[スライム娘]になった
+			TALENT:スライム娘 = 1
+	ENDSELECT
+	;淫妖によるゲームオーバー条件が撤廃されたことを知らせる
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW ＜役人から淫妖値が原因で摘発されることがなくなった！＞
+	RESETCOLOR
+	;念の為該当する因子を0にしておく
+	CFLAG:(569+ARG:1) = 0
+	;今着ている服が全裸属性持ちではない場合、全壊させる
+	IF !NUDE(TARGET)
+		PRINTFORMW 身に着けていた%ITEMNAME:(CFLAG:服装)%はボロボロになってしまった！
+		DITEMTYPE:(CFLAG:服装):11 = 2
+		DITEMTYPE:(CFLAG:服装):14 = 2
+	ENDIF
+	
+	;夜の店以外の働き先から解雇される
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML ＜夜の店以外で働くことができなくなった！＞
+	RESETCOLOR
+	IF CFLAG:職業 != 8
+		CFLAG:職業 = 0
+	ENDIF
+ENDIF
+
+RETURN 1
+
+
+;===================================
+;衣装チェック
+;===================================
+@CHECK_CLOTHE
+#DIM CLOTHE, 2
+#DIM L_LOCAL, 1
+
+CLOTHE = 0
+FOR L_LOCAL, 0, 104
+	IF ITEM:CLOTHE_LIST(L_LOCAL)
+		CLOTHE += 1
+	ENDIF
+NEXT
+
+RETURN CLOTHE
+
+;===================================
+;装飾品チェック
+;===================================
+@CHECK_ACCESSORY
+#DIM CLOTHE, 2
+
+CLOTHE = 0
+CLOTHE:1 = 0
+REPEAT 14
+	CLOTHE:1 = 400 + COUNT
+	IF CLOTHE:1 == 404
+		CLOTHE = 410
+	ELSEIF CLOTHE:1 == 414
+		CLOTHE = 420
+	ELSEIF CLOTHE:1 == 424
+		CLOTHE = 500
+	ENDIF
+	
+	IF ITEM:(CLOTHE:1)
+		CLOTHE += 1
+	ENDIF
+	CLOTHE:1 += 1
+REND
+
+RETURN CLOTHE
+
+;-------------------------------------------------------
+;表示後に補正をかける処理
+;衣服選択時の補正に表示したくない場合に用いる
+;-------------------------------------------------------
+@CLOTHE_EFFECT_AFTER,ARGS
+#DIM CLO_ELE, 1
+#DIM 美麗, 1
+#DIM 淫妖, 1
+#DIM 堕落, 1
+#DIM アライメント, 1
+
+美麗 = 0
+淫妖 = 0
+堕落 = 0
+アライメント = 0
+
+IF CFLAG:服装 > 0
+	CALLFORM CLOTHE_ID_{CFLAG:服装}, "属性"
+	CLO_ELE = RESULT
+	IF !GETBIT(CLO_ELE, 6) && !GETBIT(CLO_ELE, 7)
+		;胸元を開ける改造の場合、Bの大きさによって補正をかける
+		IF DITEMTYPE:(CFLAG:服装):1 == 1 && !DITEMTYPE:(CFLAG:服装):11
+			VARSET LOCAL, 0
+			
+			;胸囲85以上の場合
+			IF BASE:胸囲 >= 85
+				LOCAL = 4
+				LOCAL:1 = 4
+			;胸囲80以上
+			ELSEIF BASE:胸囲 >= 80
+				LOCAL = 3
+				LOCAL:1 = 3
+			;胸囲75以上
+			ELSEIF BASE:胸囲 >= 75
+				LOCAL = 2
+				LOCAL:1 = 2
+			ELSEIF BASE:胸囲 >= 70
+				LOCAL = 1
+				LOCAL:1 = 1
+			ENDIF
+			美麗 = LOCAL
+			淫妖 = LOCAL:1
+		ENDIF
+		
+		;胸元を解放する改造の場合、Bの大きさによって補正をかける
+		IF DITEMTYPE:(CFLAG:服装):1 == 2 && !DITEMTYPE:(CFLAG:服装):11
+			VARSET LOCAL, 0
+			
+			;胸囲80以上
+			IF BASE:胸囲 >= 80
+				LOCAL = 4
+				LOCAL:1 = 4
+				LOCAL:2 = 2
+			ELSEIF BASE:胸囲 >= 70
+				LOCAL = 2
+				LOCAL:1 = 2
+				LOCAL:2 = 1
+			ENDIF
+			美麗 = LOCAL
+			淫妖 = LOCAL:1
+			堕落 = LOCAL:2
+			アライメント = -1
+		ENDIF
+	ENDIF
+ENDIF
+
+SELECTCASE ARGS
+	CASE "美麗"
+		RETURN 美麗
+	CASE "淫妖"
+		RETURN 淫妖
+	CASE "堕落"
+		RETURN 堕落
+	CASE "アライメント"
+		RETURN アライメント
+ENDSELECT
+
+;--------------------------------------------------------------------
+;入力選択
+;--------------------------------------------------------------------
+@SENTAKUSHI,ARG:0
+INPUT
+IF RESULT > (ARG:0 - 1)
+	PRINTL 不正な入力です
+	RESTART
+ELSE
+	RETURN RESULT
+ENDIF
+
+;--------------------------------------------------------------------
+;衣装変更の汎用処理
+;ARG:1 　変更する先の服装
+;ARGS:1　処理モードの設定
+;表示　　　服装を変えた後に補正を表示する
+;変更　　　服装を変更する
+;表示変更　双方の処理を行う
+;--------------------------------------------------------------------
+@DATA_CHANGE_CLOTHE, ARG:1, ARGS:1
+IF ARGS:1 == "表示"
+	LOCAL = 1
+ELSEIF ARGS:1 == "変更"
+	LOCAL = 2
+ELSEIF ARGS:1 == "表示変更"
+	LOCAL = 3
+ENDIF
+
+IF GETBIT(LOCAL, 1)
+	CFLAG:服装 = ARG:1
+ENDIF
+IF GETBIT(LOCAL, 0)
+	CALL INDICATE_CLOTHE
+ENDIF
+;CALL CLOTHE_EFFECT_AFTER
+RETURN 0
+
+;--------------------------------------------------------------------
+;処女喪失時の判定
+;ARG　[依存]か[傷物]
+;0が依存で1が傷物
+;--------------------------------------------------------------------
+@LOST_VIRGIN,ARG
+PRINTL 
+PRINTFORML %CALLNAME:TARGET%の秘裂から破瓜の血が垂れ落ちている……
+IF ARG == 0 || TALENT:淫魔 || CFLAG:性格 == -1
+	IF TALENT:淫魔 || CFLAG:性格 == -1
+		PRINTFORML %CALLNAME:TARGET%は処女を失った事に悦びを感じ
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%は%CALLNAME:MASTER%に捧げられた事に悦びを感じ
+	ENDIF
+	PRINTFORMW また、心から%CALLNAME:MASTER%に依存し始めたようだ……
+	PRINTL
+	PRINTFORMW %CALLNAME:TARGET%は[処女]を失い、[依存]を得た
+	TALENT:処女 = 0
+	TALENT:依存 = 1
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は唖然とした表情をしてしばらくの間硬直した
+	PRINTFORMW 数十分後、%CALLNAME:TARGET%がようやく見せた反応はその場に泣き崩れることだったらしい……
+	PRINTL
+	PRINTFORMW %CALLNAME:TARGET%は[処女]を失い、[傷物]を得た
+	TALENT:処女 = 0
+	TALENT:傷物 = 1
+ENDIF
+PRINTL 
+
+;--------------------------------------------------------------------
+;素質取得・消去
+;ARG:1　獲得or消去する素質No
+;ARG:2　獲得or消去
+;　　　　0:獲得　1:消去
+;--------------------------------------------------------------------
+@GET_TALENT, ARG:1, ARG:2
+
+;--------------------------------------------------------------------
+;セーブ管理画面
+;--------------------------------------------------------------------
+@SHOW_SAVEDATA
+#DIM SAVE_DATA, 20
+$BACK_LOOP
+PRINTL ロードするデータを選んでください
+DRAWLINE
+REPEAT 20
+	CHKDATA COUNT
+	SAVE_DATA:COUNT = RESULT
+	PRINTFORML [{COUNT}] - %RESULTS%
+REND
+DRAWLINE
+PRINTL [999] - やめる
+
+$INPUT_LOOP
+INPUT
+
+IF RESULT <= 20 && SAVE_DATA:RESULT == 0
+	RESULT:1 = RESULT
+	PRINTL このデータをロードしますか？
+	PRINTL [0] - はい
+	PRINTL [1] - いいえ
+	
+	CALL SENTAKUSHI, 2
+	
+	IF RESULT == 0
+		LOADDATA RESULT:1
+	ELSE
+		RESTART
+	ENDIF
+ELSEIF RESULT == 999
+	RETURN 0
+ELSE
+	PRINTFORML 入力が不正です
+	PRINTL
+	RESTART
+ENDIF
+
+;--------------------------------------------------------------------
+;王宮追放
+;発生原因によって文章を分ける予定
+;（追放される場合と、自ら出ていく場合辺りで）
+;--------------------------------------------------------------------
+@EXILE_KINGDOM, ARG
+
+;姉妹への友好度が50以上の場合、未然に阻止することができる
+IF CFLAG:姉妹への友好度 >= 50
+	DRAWLINE
+	PRINTFORML 綿月姉妹の暗躍により処罰を受けることを回避した！
+	PRINTFORMW 危うく王宮を追放されるところだった……
+	RETURN 0
+ENDIF
+
+;1：　娼婦化したことによって
+IF ARG == 1
+	DRAWLINE
+	PRINTFORML ～～王宮　追放～～
+	PRINTFORML 自ら淫蕩の道へと身を落とした%CALLNAME:TARGET%
+	PRINTFORMW 君主は出来損ないと判断し、教育係である%CALLNAME:MASTER%共々王宮から追放してしまった！
+	PRINTFORMW 資金と日用品ぐらいは持たされたものの、それ以外は着のみ着のままだ……
+	PRINTFORMW ＜王宮を追放されました＞
+	PRINTFORMW ＜一部施設が利用できなくなります＞
+	PRINTFORMW ＜衣服は布切れ以外全て没収されました＞
+
+;所持金が底をついたことによって
+;後宮に入った後に従属の証付与を4回断った場合
+ELSEIF ARG == 2 || ARG == 3
+	DRAWLINE
+	PRINTFORML ～～王宮　追放～～
+	IF ARG == 2
+		PRINTFORMW 与えられた所持金が底をつき、挙句の果てに借金を背負う羽目になってしまった%CALLNAME:MASTER%
+		PRINTFORMW 君主はにやにやしながら、%CALLNAME:TARGET%と一緒に%CALLNAME:MASTER%を王宮から追放した！
+	ELSE
+		PRINTFORMW 怒り心頭に達した君主は、暴れる%CALLNAME:TARGET%の腕を抑え刺青を入れた！
+		PRINTFORMW そして尽くす限りの罵倒の言葉を投げかけた君主は、元籠姫に布切れだけを着せて王宮から追放した！
+		TALENT:刺青 = 1
+	ENDIF
+	PRINTFORMW 資金と日用品ぐらいは持たされたものの、それ以外は着のみ着のままだ……
+	PRINTFORMW ＜王宮を追放されました＞
+	PRINTFORMW ＜一部施設が利用できなくなります＞
+	PRINTFORMW ＜衣服は布切れ以外全て没収されました＞
+	MONEY = 50000
+	FLAG:警備 = 0
+	CFLAG:職業 = 0
+ENDIF
+FLAG:王宮追放 = 1
+
+VARSET ITEM, 0, 63, 0
+
+;--------------------------------------------------------------------
+;媚薬漬け
+;--------------------------------------------------------------------
+@OVERDOSE_BIYAKU
+SETCOLOR 255,0,0
+PRINTFORML %CALLNAME:TARGET%はすっかり媚薬漬けになってしまい、淫らな事しか思い浮かばなくなったようだ……
+PRINTFORMW ＜%CALLNAME:TARGET%の性格は淫乱になった＞
+PRINTFORMW ＜思考ができなくなりました＞
+CFLAG:媚薬状態 = 2
+CFLAG:性格 = -1
+BASE:淫乱 = MAXBASE:淫乱
+BASE:天真爛漫 = 0
+BASE:真面目 = 0
+BASE:高飛車 = 0
+BASE:臆病 = 0
+BASE:思考力 = 0
+BASE:常識 = 0
+RESETCOLOR
+
+
+;--------------------------------------------------------------------
+;生活費の計算
+;--------------------------------------------------------------------
+@CON_SEIKATSU
+;基礎生活費は$35000
+
+;知力が高いと生活費が低減される
+;衣服を追加で持つと、1着につき5000かかる
+LOCAL = 35000 - 30 * BASE:知力 + 5000 * FLAG:所持服装
+
+IF LOCAL < 0
+	LOCAL = 0
+ENDIF
+
+RETURN LOCAL
+
+;--------------------------------------------------------------------
+;コマンドによる収入の計算
+;ARG　コマンド番号
+
+;DIT　入手穢れ
+;NIF　淫妖系コマンド、1なら該当
+;--------------------------------------------------------------------
+@CAL_MONEY, ARG
+#DIM SUC, 1
+#DIM DIT, 1
+#DIM NIF, 1
+
+;念の為初期化
+VARSET DIT, 1
+
+PRINTL 
+;32:　手芸品作り
+IF ARG == 32
+	
+	;裁縫技術*1000*0.8～1.0が収入となる
+	LOCAL = 1000 * TALENT:裁縫技術 * RAND(8,11)/10
+	
+	DIT = 0
+	NIF = 0
+;61:　売春
+ELSEIF ARG == 61
+	;成功判定
+	IF (RAND:99 + 1) <= 20 + ((BASE:淫妖 + BASE:堕落) / 20)
+		SUC = 1
+	ELSE
+		SUC = 0
+	ENDIF
+	
+	LOCAL = 1000 + 5 * BASE:淫妖 + 5000 * SUC
+	
+	;成功
+	IF SUC
+		PRINTFORML %CALLNAME:TARGET%は多くの客を満足させることができたようだ
+	;失敗
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%はあまり客を満足させることができなかった……
+	ENDIF
+	DIT = 1
+	NIF = 1
+ENDIF
+
+;400:　物乞い
+IF ARG == 400
+	;成功判定
+	IF (RAND:99 + 1) <= 20 + ((BASE:淫妖 + BASE:堕落) / 20)
+		SUC = 1
+	ELSE
+		SUC = 0
+	ENDIF
+	
+	LOCAL = 500 + 2 * BASE:淫妖 + 2000 * SUC
+	
+	;成功
+	IF SUC
+		PRINTFORML %CALLNAME:TARGET%の股体に多くの人が魅せられ、金銭を置いていかれた
+	;失敗
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の前にあまり人は止まらず、金貨が投げ込まれなかった……
+	ENDIF
+	DIT = 1
+	NIF = 1
+ENDIF
+
+;401:　自慰物乞い
+IF ARG == 401
+	;成功判定
+	IF (RAND:99 + 1) <= 20 + ((BASE:淫妖 + BASE:堕落) / 20)
+		SUC = 1
+	ELSE
+		SUC = 0
+	ENDIF
+	
+	LOCAL = 6000 + 7 * BASE:淫妖 + 7000 * SUC
+	
+	;成功
+	IF SUC
+		PRINTFORML 色気ある%CALLNAME:TARGET%は多くの人を満足させ、金銭を沢山置いていかれた
+	;失敗
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の前にあまり人は止まらず、金貨が投げ込まれなかった……
+	ENDIF
+	DIT = 2
+	NIF = 1
+ENDIF
+
+;402:　性交物乞い
+IF ARG == 402
+	;成功判定
+	IF (RAND:99 + 1) <= 20 + ((BASE:淫妖 + BASE:堕落) / 20)
+		SUC = 1
+	ELSE
+		SUC = 0
+	ENDIF
+	
+	LOCAL = 4000 + 10 * BASE:淫妖 + 8000 * SUC
+	
+	;成功
+	IF SUC
+		PRINTFORML %CALLNAME:TARGET%は交わった人を多く満足させ、金銭を沢山置いていかれた
+	;失敗
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の前にあまり人は止まらず、金貨が投げ込まれなかった……
+	ENDIF
+	DIT = 3
+	NIF = 1
+ENDIF
+
+;423:　渡り巫女
+IF ARG == 423
+	;成功判定
+	IF (RAND:99 + 1) <= 20 + ((BASE:淫妖 + BASE:信仰) / 20)
+		SUC = 1
+	ELSE
+		SUC = 0
+	ENDIF
+	
+	LOCAL = 4000 + 10 * BASE:信仰 + 5 * BASE:淫妖 + 8000 * SUC
+	
+	;成功
+	IF SUC
+		PRINTFORML %CALLNAME:TARGET%は交わった人を多く満足させ、お布施をたくさん貰った
+	;失敗
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%はあまり人と交わることができず、お布施集めが捗らなかった……
+	ENDIF
+	DIT = 0
+	
+	;1/5の確率でお祓い棒が手に入る
+	IF !RAND:5 && !ITEM:432
+		PRINTFORML 相手をした人からお礼の品を貰った……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:432%を手に入れた
+		RESETCOLOR
+		ITEM:432 += 1
+	;人身御供の服
+	ELSEIF !RAND:5 && !ITEM:62
+		PRINTFORML 相手をした人からお礼の品を貰った……
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %CALLNAME:TARGET%は%ITEMNAME:62%を手に入れた
+		RESETCOLOR
+		ITEM:62 += 1
+	ENDIF
+	NIF = 1
+ENDIF
+
+IF NIF
+	IF CFLAG:肌の色
+		CALL SETCOLOR_PALAMUP
+		PRINTFORML %NAME_SKINCOLOR(CFLAG:肌の色)%の肌を持つ%CALLNAME:TARGET%に惹かれる客は多く、多く金を渡す客が時折現れた……
+		RESETCOLOR
+		MONEY = MONEY * (100+HOSEI_SKIN(TARGET))/100
+	ENDIF
+ENDIF
+PRINTFORML %CALLNAME:TARGET%は${LOCAL}手に入れた
+MONEY += LOCAL
+
+IF OTHER_ACC(TARGET) != 435
+	CALL CALC_IMP, DIT
+ENDIF
+
+;----------------------------------------------
+;自慰判定
+;ARG　対象
+;----------------------------------------------
+@SELF_COM, ARG
+#FUNCTION
+
+;以下の条件を満たす場合、自慰を行わない
+;1.淫妖が無い
+;2.淫妖経験が愛情経験より少ない
+IF !BASE:淫妖 || EXP:愛情経験 > EXP:淫妖経験
+	RETURNF 0
+ENDIF
+
+;快楽動機づけ / 10 + 淫妖 / 10 + (アライメント - 100) * -1 / 10 - (貞操/10) + -10　～ +10
+;100-風紀の2割も計算に加える
+LOCAL = BASE:快楽動機づけ / 10 + BASE:淫妖 / 10 + (BASE:アライメント - 100) * -1 / 10 - (BASE:貞操 / 10)  + RAND:20 - 10 + (100 - FLAG:王宮内の風紀) / 5
+
+;淫乱だと+20
+IF CFLAG:性格 == -1
+	LOCAL += 20
+ENDIF
+
+;RAND:100 + 1が判定値より低ければ発動、1を返す
+IF RAND:100 + 1 <= LOCAL
+	RETURNF 1
+ELSE
+	RETURNF 0
+ENDIF
+
+;----------------------------------------------
+;全裸判定
+;布切れが参照されてエラー落ちするのを防ぐために追加
+;1:全裸である　0:全裸ではない
+;----------------------------------------------
+@NUDE, ARG
+#FUNCTION
+
+;布切れは全裸判定
+IF CFLAG:ARG:服装 <= -1
+	LOCAL = 1
+;今着ている服が全裸属性持ち
+ELSEIF DITEMTYPE:(CFLAG:ARG:服装):11 != 2
+	LOCAL = 1
+;上記条件を満たさない場合、全裸ではない
+ELSE
+	LOCAL = 0
+ENDIF
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;身体の豊かさ
+;(胸囲+ヒップ)/2-ウエストの値を返します
+;ARG 対象
+;----------------------------------------------
+@BODY_RIPEN, ARG
+#FUNCTION
+
+LOCAL = (BASE:ARG:胸囲 + BASE:ARG:ヒップ) / 2 - BASE:ARG:ウエスト
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;貞操変化の計算
+;ARG　 計算に用いる基準値
+;ARGS　上昇or下降
+;----------------------------------------------
+@CAL_CHASTE, ARG, ARGS
+#DIM ELE, 1
+#DIM YEAR, 1
+
+CALL CLOTHE_ABL, "属性"
+ELE = RESULT
+CALL CLOTHE_ABL, "アライメント"
+
+YEAR = LIMIT(FLAG:年数, 1, 5)
+
+;上昇する場合、基準値*アライメント/100*信仰心/100*(6-年数)/5
+;服装にアライメント補正がある場合、+1につき+0.50倍の補正がかかる
+IF ARGS == "上昇"
+	
+	LOCAL = LIMIT(ARG*BASE:アライメント*BASE:信仰心/10000*(6-YEAR)/5, 1, 200)
+	IF RESULT >= 1
+		LOCAL = (RESULT * 50 + 100) / 100
+	ENDIF
+	
+	;シスター属性を持つ場合、1.5倍の補正がかかる
+	IF GETBIT(ELE, 3)
+		TIMES LOCAL, 1.50
+	ENDIF
+	BASE:貞操 = LIMIT(BASE:貞操+LOCAL, 0, 200)
+	
+	;魂抜きor魂共生を行っている場合、貞操蓄積値に影響を与える
+	IF CFLAG:魂の状態 == 1
+		CFLAG:貞操蓄積値 += LOCAL
+	ENDIF
+;下降する場合、基準値*(100-アライメント)/50*淫妖/50*(6-年数)/5
+;
+;愛情経験が淫妖経験より多い場合、貞操の下降は無くなる
+;(娼婦、淫魔属性の服の場合は別)
+ELSEIF EXP:愛情経験 < EXP:淫妖経験 && (GETBIT(ELE, 6) || GETBIT(ELE, 7))
+	LOCAL = LIMIT(ARG*LIMIT(100-BASE:アライメント, 1, 100)*BASE:淫妖/2500*(6-YEAR)/5, 1, 200)
+	
+	;娼婦や淫魔属性の服の場合、2倍になる
+	IF GETBIT(ELE, 6) || GETBIT(ELE, 7)
+		TIMES LOCAL, 2.00
+	;半裸の服を着ていてアライメント補正が無い場合、1.25倍になる
+	ELSEIF CFLAG:服装 >= 0 && RESULT < 1 && DITEMTYPE:(CFLAG:服装):11 == 1
+		TIMES LOCAL, 1.25
+	;全裸の服の場合は1.5倍
+	ELSEIF CFLAG:服装 >= 0 && RESULT < 1 && DITEMTYPE:(CFLAG:服装):11 == 2
+		TIMES LOCAL, 1.50
+	ENDIF
+	
+	BASE:貞操 = LIMIT(BASE:貞操-LOCAL, 0, 200)
+	
+
+	;魂抜きor魂共生を行っている場合、貞操蓄積値に影響を与える
+	IF CFLAG:魂の状態 == 1
+		CFLAG:貞操蓄積値 -= LOCAL
+	ENDIF
+ENDIF
+
+;----------------------------------------------
+;技術点上昇処理
+;一定数値に達した場合、裁縫技術がレベルアップする
+;ARG　上昇する数値
+;----------------------------------------------
+@NEEDLE_UP, ARG
+
+;服装の家事補正で上昇力がよくなる
+CALL CLOTHE_ABL, "家事"
+
+LOCAL = ARG * (100 + RESULT * 25) / 100
+CALL SETCOLOR_PALAMUP
+PRINTFORML {LOCAL}の裁縫技術点を手に入れた！
+RESETCOLOR
+CFLAG:技術点 += LOCAL
+
+IF !TALENT:裁縫技術 && CFLAG:技術点 >= NEEDLE_LV(TALENT:裁縫技術)
+	TALENT:裁縫技術 += 1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW %CALLNAME:TARGET%は裁縫技術を習得した！
+	RESETCOLOR
+ELSEIF TALENT:裁縫技術 < 3 && CFLAG:技術点 >= NEEDLE_LV(TALENT:裁縫技術)
+	TALENT:裁縫技術 += 1
+	CALL SETCOLOR_PALAMUP
+	PRINTFORMW 裁縫技術が{TALENT:裁縫技術}に上がった！
+	RESETCOLOR
+ENDIF
+
+;----------------------------------------------
+;風紀レベル
+;ARG レベル
+;----------------------------------------------
+@PUB_MORAL, ARG
+#FUNCTION
+IF FLAG:王宮内の風紀 < 10
+	LOCAL = 0
+ELSEIF FLAG:王宮内の風紀 < 30
+	LOCAL = 1
+ELSEIF FLAG:王宮内の風紀 < 50
+	LOCAL = 2
+ELSEIF FLAG:王宮内の風紀 < 75
+	LOCAL = 3
+ELSEIF FLAG:王宮内の風紀 < 100
+	LOCAL = 4
+ELSE
+	LOCAL = 5
+ENDIF
+
+IF LOCAL == ARG
+	RETURNF 1
+ELSE
+	RETURNF 0
+ENDIF
+
+;----------------------------------------------
+;技術点による裁縫技術上昇条件決定
+;ARG 裁縫レベルを見る
+;----------------------------------------------
+@NEEDLE_LV, ARG
+#FUNCTION
+
+IF ARG == 0
+	LOCAL = 400
+ELSEIF ARG == 1
+	LOCAL = 800
+ELSEIF ARG == 2
+	LOCAL = 2000
+ENDIF
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;BMI判定
+;----------------------------------------------
+@HANTEI_BMI
+#FUNCTION
+
+;太りすぎ
+IF CULC_BMI(0) >= 23+FLAG:年数/2
+	LOCAL = 2
+;小太り
+ELSEIF CULC_BMI(0) >= 20+FLAG:年数/2
+	LOCAL = 1
+;通常
+ELSEIF CULC_BMI(0) >= 16+FLAG:年数/2
+	LOCAL = 0
+;やせ気味
+ELSEIF CULC_BMI(0) >= 14+FLAG:年数/2
+	LOCAL = -1
+;耗弱
+ELSE
+	LOCAL = -2
+ENDIF
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;;BMI計算
+;小数点一桁を出すかどうか　1だと出す
+;----------------------------------------------
+@CULC_BMI,ARG
+#FUNCTION
+
+IF !ARG
+	LOCAL = ((BASE:体重+BASE:脂肪)*1000+BASE:体力*100)/(BASE:身長*BASE:身長)
+ELSE
+	LOCAL = ((BASE:体重+BASE:脂肪)*1000+BASE:体力*100)*10/(BASE:身長*BASE:身長)
+ENDIF
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;バストサイズ計算
+;ARG　対象者
+;----------------------------------------------
+@CULC_BUSTSIZE,ARG
+#FUNCTION
+
+LOCAL = BASE:胸囲-(BASE:ウエスト+4+FLAG:年数)
+
+IF LOCAL <= 0
+	LOCAL = 0
+ELSE
+	LOCAL = LOCAL/3
+ENDIF
+
+RETURNF LOCAL
+
+;----------------------------------------------
+;慰み者加算計算
+;----------------------------------------------
+@PLAYTHING
+#DIM play, 1
+
+LOCAL = 1*BASE:感度/100
+
+
+;胸の大きさによってボーナスがかかる
+IF BASE:胸囲 >= 95
+	play += 5
+ELSEIF BASE:胸囲 >= 90
+	play += 4
+ELSEIF BASE:胸囲 >= 85
+	play += 3
+ELSEIF BASE:胸囲 >= 80
+	play += 2
+ELSEIF BASE:胸囲 >= 75
+	play += 1
+ENDIF
+
+CALL CLOTHE_ABL, "属性"
+LOCAL = RESULT
+
+;全裸だと2.0倍、半裸だと1.5倍
+IF CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 1
+	TIMES play, 1.50
+ELSEIF (CFLAG:服装 >= 0 && DITEMTYPE:(CFLAG:服装):11 == 2) || GETBIT(RESULT, 6) || GETBIT(RESULT, 7)
+	TIMES play, 2.00
+ENDIF
+
+BASE:慰み者 = LIMIT(BASE:慰み者+play, 0, 200)
+
+;--------------------------------------------------------------------
+;成功確率
+;基本的な成功確率計算式
+;ARG 判定数値
+;--------------------------------------------------------------------
+@SUC_PAR, ARG
+
+LOCAL = ARG
+
+;高飛車の場合、成功率が10％上昇する
+IF CFLAG:性格 == 2
+	LOCAL += 10
+ENDIF
+
+LOCAL = LIMIT(LOCAL, 0, 100)
+
+PRINTFORM (成功率:
+IF LOCAL >= 70
+	CALL SETCOLOR_PALAMUP
+ELSEIF LOCAL <= 20
+	CALL SETCOLOR_PALAMDOWN
+ENDIF
+PRINTFORM {LOCAL}％
+RESETCOLOR
+PRINTFORML )
+
+CALL PROBABILITY_PAR, LOCAL, "GOOD"
+
+IF RESULT == 1
+	;成功
+	SETCOLOR 236,96,0
+	PRINTFORML どうやら上手く行ったようだ
+	RESETCOLOR
+	
+	;口上を呼び出す　(関数名は　PM_EVENT_K1_SUCSESS)
+	;地の文を呼び出す方法は引数に組み込む
+	
+	CALL SAVE_COLOR, 0
+	TRYCALLFORM KOJO_COLOR_K{NO:TARGET}, 0
+	RESULT = 0
+	TRYCALLFORM PM_EVENT_K{NO:TARGET}_COMMAND_SUCSESS, LOCAL
+	LOCAL = RESULT
+	CALL SAVE_COLOR, 1
+	RETURN 1
+ELSE
+	;失敗
+	SETCOLOR 128,128,255
+	PRINTFORML 失敗してしまったようだ……
+	RESETCOLOR
+	
+	;口上を呼び出す　(関数名は　PM_EVENT_K1_FAILED)
+	;地の文を呼び出す方法は引数に組み込む
+	
+	CALL SAVE_COLOR, 0
+	TRYCALLFORM KOJO_COLOR_K{NO:TARGET}, 0
+	RESULT = 0
+	TRYCALLFORM PM_EVENT_K{NO:TARGET}_COMMAND_FAILED, (100-LOCAL)
+	LOCAL = RESULT
+	CALL SAVE_COLOR, 1
+	RETURN 0
+ENDIF
+
+;--------------------------------------------------------------------
+;確率判定
+;基本的な成功確率計算式
+;ARG 　判定数値
+;ARGS　グッドorバッド
+;--------------------------------------------------------------------
+@PROBABILITY_PAR, ARG, ARGS
+;乱数テーブルの数値を増減させて表現する
+LOCAL = 0
+
+;判定値が100以上でグッドイベントor判定値0以下でバッドイベントの場合
+;判定をスキップする
+IF ARGS == "GOOD" && ARG >= 100
+	RETURN 1
+ELSEIF ARGS == "BAD" && ARG <= 0
+	RETURN 0
+ENDIF
+
+;[強運]の場合
+IF TALENT:強運
+	LOCAL -= 20
+;[不運]の場合
+ELSEIF TALENT:不運
+	LOCAL += 20
+ENDIF
+
+;四つ葉のお守りを装備している場合
+;(運が10%だけよくなる)
+IF OTHER_ACC(433)
+	LOCAL -= 10
+ENDIF
+
+;グッドイベントの場合
+IF ARGS == "GOOD" && (RAND:(99 + LOCAL) + 1) <= ARG
+	RETURN 1
+;バッドイベントの場合
+ELSEIF ARGS == "BAD" && (RAND:(99 - LOCAL) + 1) <= ARG
+	RETURN 1
+ELSE
+	RETURN 0
+ENDIF
+
+
+;--------------------------------------------------------------------
+;項目揃え
+;文字数が違う要素を並べた際に、空白を補って文末を揃えるために使う
+;ARG　 文字数
+;ARGS　対象の文字列
+;--------------------------------------------------------------------
+@SPACE, ARGS, ARG
+ENCODETOUNI %ARGS%
+LOCAL = ARG - RESULT
+FOR COUNT:1, 0, LOCAL
+	PRINT 　
+NEXT
+
+;----------------------------------------------
+;ビット変換
+;ARG　対象
+;----------------------------------------------
+@CONVERT_BIT, ARG
+#DIM L_LOCAL, 1
+
+LOCAL = 1
+
+IF ARG > 0
+	FOR L_LOCAL, 0, ARG
+		LOCAL *= 2
+	NEXT
+ENDIF
+
+RETURN LOCAL
+
+;----------------------------------------------
+;ビット逆変換
+;ビット→数字
+;ARG　対象
+;----------------------------------------------
+@CONVERT_BIT_REV, ARG
+$LOOP
+
+LOCAL = 0
+
+IF !ARG % 2
+	ARG /= 2
+	LOCAL += 1
+	GOTO LOOP
+ENDIF
+
+RETURN LOCAL
+
+;----------------------------------------------
+;特定の組み合わせでアクセサリーを着けているかどうかを判定する
+;----------------------------------------------
+@ACCE_SET
+#FUNCTION
+
+;メイド属性の髪飾り・靴・本+メイド属性のその他（現在ガーターベルトのみ）を装着しているとコンボになる
+IF CFLAG:属性／髪飾り & 1p2 && CFLAG:属性／靴 & 1p2 && CFLAG:属性／本 & 1p2 && (CFLAG:属性／その他 & 1p2 || CFLAG:属性／その他2 & 1p2)
+	RETURNF 1
+;何も組み合わせを満たしていない場合、0を返す
+ELSE
+	RETURNF 0
+ENDIF
+
+
+;----------------------------------------------
+;決められた範囲の変数から、条件を満たした物の数を返す
+;(BASE限定)
+;ARG　　条件
+;ARG:1　始点
+;ARG:2　終点
+;----------------------------------------------
+@CHECK_LIMITBASE, ARG, ARGS:1, ARGS:2
+#FUNCTION
+
+LOCAL:2 = 0
+
+GETNUM BASE, ARGS:1
+LOCAL = RESULT
+GETNUM BASE, ARGS:2
+LOCAL:1 = RESULT
+
+FOR COUNT, LOCAL, LOCAL:1 + 1
+	IF BASE:COUNT >= ARG
+		LOCAL:2 += 1
+	ENDIF
+NEXT
+
+RETURNF LOCAL:2
+
+;==========================================================================
+;主人公の前職
+;==========================================================================
+@WORK_NAME_MASTER, ARG
+
+IF ARG == 0
+	STR = 教育係
+ELSEIF ARG == 1
+	STR = 執事
+ELSEIF ARG == 2
+	STR = 修道士
+ELSEIF ARG == 3
+	STR = 賭博師
+ELSEIF ARG == 4
+	STR = 魔術師
+ENDIF
+
+;==========================================================================
+;肌の色変化判定
+;穢れが50以上の場合　薄茶色
+;穢れが70以上の場合　小麦色
+;
+;ARG　キャラ番号
+;
+;2015/02/06　穢れの値に関わらず肌の色を変更できる機能を入れました。ARGSに"強制"が代入されていると穢れの値を無視して変更処理を実行します
+;==========================================================================
+@CHANGE_SKINCOLOR, ARG, ARGS
+IF (ARGS == "強制" && CFLAG:肌の色 == 1) || (BASE:穢れ >= 70 && CFLAG:肌の色 == 1)
+	DRAWLINE
+	PRINTFORML %CALLNAME:ARG%のやや茶色くなった肌に、濃い茶色の色素が煙のように広がっていく……
+	PRINTFORML 変化が終わった時、全身を小麦色に染めた%CALLNAME:ARG%ができあがっていた
+	PRINTFORMW どうやら身体に溜めこまれた穢れが肌の色を完全に変異させてしまったらしい……
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:ARG%の肌の色は小麦色に変色した！
+	IF HANTEI_EXPOSURE_INYOU(TARGET) < 1400
+		PRINTFORMW 役人の目に付きづらくなった！(摘発淫妖値:1400に変更)
+	ENDIF
+	RESETCOLOR
+	CFLAG:肌の色 = 2
+ELSEIF (ARGS == "強制" && CFLAG:肌の色 < 1) || BASE:穢れ >= 50 && CFLAG:肌の色 < 1
+	DRAWLINE
+	PRINTFORML %CALLNAME:ARG%が全身を震わせると、真っ白な肌が少しずつ茶色に変色していった
+	PRINTFORML 変化が終わると%CALLNAME:ARG%は自分の肌を見て、変色した自分の肌に驚いている
+	PRINTFORMW どうやら肌を変色させるぐらい身体に穢れが溜まっていたらしい……
+	CALL SETCOLOR_PALAMDOWN
+	PRINTFORML %CALLNAME:ARG%の肌の色は薄茶色に変色した！
+	IF HANTEI_EXPOSURE_INYOU(TARGET) < 1800
+		PRINTFORMW 役人の目に付きづらくなった！(摘発淫妖値:1800に変更)
+	ENDIF
+	RESETCOLOR
+	CFLAG:肌の色 = 1
+ENDIF
+
+;==========================================================================
+;肌の色出力
+;
+;ARG　対象キャラ
+;==========================================================================
+@NAME_SKINCOLOR, ARG
+#FUNCTIONS
+#LOCALSSIZE 3
+SIF LOCALS == ""
+	SPLIT "白色_薄茶色_小麦色", "_", LOCALS
+RETURNF LOCALS:ARG
+
+;==========================================================================
+;評価初期値
+;==========================================================================
+@VALUE_DEFAULT, ARGS
+#FUNCTION
+
+SELECTCASE ARGS
+	CASE "評価"
+		LOCAL = 0
+	CASE "君主"
+		LOCAL = 20
+	CASE "民衆"
+		LOCAL = 20
+	CASE "役人"
+		LOCAL = 20
+ENDSELECT
+
+RETURNF LOCAL
+
+;====================================================
+;季節定義
+;====================================================
+@SEASON,ARG
+#FUNCTION
+
+IF ARG <= 2
+	LOCAL = 4
+ELSEIF ARG <= 5
+	LOCAL = 1
+ELSEIF ARG <= 8
+	LOCAL = 2
+ELSEIF ARG <= 11
+	LOCAL = 3
+ELSE
+	LOCAL = 4
+ENDIF
+
+RETURNF LOCAL
+
+;==========================================================
+;亜人判定
+;主に衣服や労役で使う
+;ARG　対象のキャラNo
+;
+;返り値
+;1:亜人　0:亜人ではない
+;==========================================================
+@SUBHUMAN, ARG
+#FUNCTION
+
+;返り値代入変数の初期化
+LOCAL = 0
+
+IF TALENT:ARG:人魚
+	LOCAL = 1
+ELSEIF TALENT:ARG:触手娘
+	LOCAL = 1
+ELSEIF TALENT:ARG:アルラウネ
+	LOCAL = 1
+ELSEIF TALENT:ARG:スライム娘
+	LOCAL = 1
+ENDIF
+
+RETURNF LOCAL
+
+;============================================================================================
+;属性変化(衣服外での変化)
+;ARGS　　変化させる属性
+;ARG　　 変化量
+;============================================================================================
+@CHANGE_ELEMENT_OTHER, ARGS, ARG
+#DIM DOWN_ABL, 1
+#DIM DOWN_PAR, 1
+#DIM MAX_PAR, 4
+#DIM TARGET_PAR, 2
+#DIM CHARA_ELE, 9
+#DIM CHARA_AFTER, 9
+#DIM COPY_POINT, 9
+#DIM COPY_POINT2, 9
+#DIM CLO_ELE, 1
+#DIM L_LOCAL
+
+;衣装の属性として入っているかどうか
+#DIM ELE_FLAG, 9
+#DIM ELE_FLAG2, 9
+
+;属性数を格納する変数
+#DIM ELE, 4
+
+;比較用変数
+#DIM COM_PAR, 2
+
+CALL ELEMENT_CONVERT_REV, ARGS
+CLO_ELE = RESULT
+
+IF (CLO_ELE & 1p1 && CFLAG:属性／姫様 != 100) || (CLO_ELE & 1p2 && CFLAG:属性／メイド != 100) || (CLO_ELE & 1p3 && CFLAG:属性／シスター != 100) || (CLO_ELE & 1p4 && CFLAG:属性／ゴスロリ != 100) || (CLO_ELE & 1p5 && CFLAG:属性／花嫁 != 100) || (CLO_ELE & 1p6 && CFLAG:属性／淫魔 != 100) || (CLO_ELE & 1p7 && CFLAG:属性／乞食 != 100) || (CLO_ELE & 1p8 && CFLAG:属性／武士 != 100)
+	;PRINTFORML テスト
+	
+	;娼婦の場合、乞食の次に高い割合を調べておく
+	IF TALENT:娼婦
+		REPEAT 8
+			CALL ELEMENT_CONVERT, COUNT
+			LOCALS = %STR%
+			CALL ELEMENT_CONVERT_BIT, COUNT
+			LOCAL = RESULT
+			
+			IF MAX_PAR < CFLAG:("属性／"+STR+"") && STR != "乞食"
+				MAX_PAR = CFLAG:("属性／"+STR+"")
+				MAX_PAR:1 = COUNT
+			ENDIF
+		REND
+		
+		;最も高かった割合の属性を記憶しておく
+		CALL ELEMENT_CONVERT, MAX_PAR:1
+		LOCALS = %STR%
+		
+	ENDIF
+	
+	IF CFLAG:属性／乞食 > 50 || !TALENT:娼婦 || (TALENT:娼婦 && CFLAG:("属性／"+ARGS+"") < 50) || (TALENT:娼婦 && (ARGS != LOCALS))
+		MAX_PAR = 0
+		MAX_PAR:1 = 0
+		
+		FOR COUNT, 0, 8
+			CHARA_ELE:COUNT = CFLAG:(220+COUNT)
+			IF GETBIT(CLO_ELE, COUNT+1)
+				ELE_FLAG:COUNT = 1
+			ELSE
+				ELE_FLAG:COUNT = 0
+			ENDIF
+		NEXT
+		
+	
+		;初期化
+		VARSET ELE, 0
+		
+		;持っている属性数をサーチ
+		FOR COUNT, 0, 8
+			IF GETBIT(CLO_ELE, COUNT+1)
+				ELE += 1
+				ELE:1 += 1
+			ENDIF
+		NEXT
+		
+		;弾く属性をサーチ
+		FOR COUNT, 0, 8
+			;既定の属性値に達している属性をサーチ
+			IF GETBIT(CLO_ELE, COUNT+1) && CFLAG:(220+COUNT) == 100/ELE
+				ELE:1 -= 1
+			ENDIF
+		NEXT
+		
+		
+		;PRINTFORML {RESULT}
+		;条件を満たせなかった場合、属性変化値を減らす
+		;IF RESULT >= 10
+		;	ARG = RESULT - CHARA_ELE
+		;ENDIF
+		
+		PRINTFORML %CALLNAME:TARGET%の属性が変化した
+		FOR COUNT, 0, 8
+			;属性の内最も高い要素を取る
+			MAX_PAR = MAXARRAY(CHARA_ELE, 0, 8)
+			;該当する属性の位置を取得
+			MAX_PAR:1 = FINDELEMENT(CHARA_ELE, MAX_PAR, 0, 8)
+			
+			;取得したスワップ用変数は0に
+			CHARA_AFTER:COUNT = CHARA_ELE:(MAX_PAR:1)
+			CHARA_ELE:(MAX_PAR:1) = -1
+			COPY_POINT:COUNT = MAX_PAR:1
+			ELE_FLAG2:COUNT = ELE_FLAG:(MAX_PAR:1)
+			ELE_FLAG:(MAX_PAR:1) = 0
+		NEXT
+		
+		;衣装の属性と一致する属性を選出
+		FOR COUNT, 0, 7
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG2, 1, 0, 8)
+			
+			;フラグが立った物が見つからない場合、立っていない物を順に入れていく
+			IF MAX_PAR:1 == -1
+				MAX_PAR:1 = FINDELEMENT(ELE_FLAG2, 0, 0, 8)
+			ENDIF
+			CHARA_ELE:COUNT = CHARA_AFTER:(MAX_PAR:1)
+			
+			;取得した変数元は0にしておく（フラグは2にする）
+			CHARA_AFTER:(MAX_PAR:1) = 0
+			ELE_FLAG:COUNT = ELE_FLAG2:(MAX_PAR:1)
+			ELE_FLAG2:(MAX_PAR:1) = 2
+			COPY_POINT2:COUNT = COPY_POINT:(MAX_PAR:1)
+		NEXT
+		
+		MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 1, 0, 8)
+		
+		;PRINTFORML 判定値{CFLAG:(220+COPY_POINT2)*ELE+ARG}
+		
+		;増加する予定の属性が一定の値に達している場合、習慣による判定を行う
+		CALL LIFESTYLE_LV_CONVERT, CFLAG:(220+COPY_POINT2)*ELE+ARG
+		
+		;PRINTFORML ELE:{ELE}
+		;PRINTFORML COPY_POINT2:{COPY_POINT2}4
+		
+		
+		IF !RESULT && CFLAG:(220+COPY_POINT2) <= 100 / ELE
+			;生活習慣の変更判定に持ちこみ、変更された場合は属性値を上昇させることができる
+			CALL LIFESTYLE, (CFLAG:(220+COPY_POINT2)+ARG)*ELE/10
+			;PRINTFORML テスト:{CFLAG:(220+COPY_POINT2) - RESULT + ARG}
+			IF RESULT >= 10
+				;PRINTFORML テスト:{CFLAG:(220+COPY_POINT2) - RESULT + ARG}
+				ARG = LIMIT((CFLAG:(220+COPY_POINT2) - RESULT) * -1, 0, ARG)
+			ENDIF
+		ELSEIF CFLAG:(220+COPY_POINT2:(ELE-1)) == 100 / ELE && ELE >= 2
+			CALL LIFESTYLE, (CFLAG:(220+COPY_POINT2)+ARG)*ELE/10
+		ELSE
+			BASE:習慣化 = LIMIT(BASE:習慣化-5, 0, MAXBASE:習慣化)
+		ENDIF
+		
+		;衣装フラグが立っている属性の値が規定値以上の場合、それを減らす
+		IF CHARA_ELE > 100 / ELE
+			CALL ELEMENT_CONVERT, COPY_POINT2
+			;減少値判定
+			LOCAL = CFLAG:("属性／"+ARGS+"") - 100 / ELE
+			;底値より減少値が上回っている場合
+			IF LOCAL < ARG
+				LOCAL:2 = LOCAL
+			ELSE
+				LOCAL:2 = ARG
+			ENDIF
+			
+			PRINTFORM %ARGS,10,LEFT%:{CFLAG:("属性／"+ARGS+"")}　→　
+			CFLAG:("属性／"+ARGS+"") = LIMIT(CFLAG:(220+COPY_POINT2) - LOCAL:2, 100/ELE, 100)
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML {CFLAG:(220+COPY_POINT)}
+			RESETCOLOR
+			ELE:1 -= 1
+		ELSE
+			$RELOOP
+			;衣装属性以外の属性を検索し、それを減らす
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 0, 0, 8)
+			LOCAL = COPY_POINT2:(MAX_PAR:1)
+			CALL ELEMENT_CONVERT, COPY_POINT2:(MAX_PAR:1)
+			
+			;娼婦の場合乞食属性は50％以上の場合減らす
+			IF COPY_POINT2:(MAX_PAR:1) == 6 && CHARA_ELE:(MAX_PAR:1) <= 50 && TALENT:娼婦
+				CHARA_ELE:(MAX_PAR:1) = 0
+				ELE_FLAG:(MAX_PAR:1) = 2
+				GOTO RELOOP
+			ENDIF
+			
+			;減少値判定
+			;底値より減少値が上回っている場合
+			
+			;娼婦の場合、乞食は50％までしか減らない
+			IF TALENT:娼婦 && COPY_POINT2:(MAX_PAR:1) == 6 && (CFLAG:属性／乞食 - 50) < ARG * ELE:1
+				LOCAL:2 = CFLAG:属性／乞食 - 50
+			ELSEIF CFLAG:("属性／"+STR+"") < ARG * ELE:1
+				LOCAL:2 = CFLAG:("属性／"+STR+"")
+			ELSE
+				LOCAL:2 = ARG * ELE:1
+			ENDIF
+			
+			
+			;PRINTFORML LOCAL:{LOCAL:2}
+			
+			PRINTFORM %STR,10,LEFT%:{CFLAG:("属性／"+STR+"")}　→　
+			CFLAG:("属性／"+STR+"") = LIMIT(CFLAG:(220+LOCAL) - LOCAL:2, 0, 100)
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML {CFLAG:(220+LOCAL)}
+			RESETCOLOR
+		ENDIF
+		
+		;属性増加処理
+		FOR COUNT, 0, 8
+			;属性を持つ要素をサーチ
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 1, 0, 8)
+			
+			;属性を持った要素がなくなればループから抜ける
+			IF MAX_PAR:1 == -1
+				CONTINUE
+			ENDIF
+			
+			LOCAL = COPY_POINT2:(MAX_PAR:1)
+			CALL ELEMENT_CONVERT, LOCAL
+			
+			;限界値より上の属性はスキップ
+			IF CFLAG:("属性／"+ARGS+"") < 100 / ELE
+				IF LOCAL:2 < ARG
+					LOCAL:3 = LOCAL:2
+				ELSE
+					LOCAL:3 = ARG
+					LOCAL:2 -= ARG
+				ENDIF
+				PRINTFORM %ARGS,10,LEFT%:{CFLAG:("属性／"+ARGS+"")}　→　
+				;娼婦の場合、50をELEで分けることになる
+				IF TALENT:娼婦 && LOCAL != 6
+					CFLAG:("属性／"+ARGS+"") = LIMIT(CFLAG:(220+LOCAL) + LOCAL:3, 0, 50/ELE)
+				ELSE
+					CFLAG:("属性／"+ARGS+"") = LIMIT(CFLAG:(220+LOCAL) + LOCAL:3, 0, 100/ELE)
+				ENDIF
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML {CFLAG:(220+LOCAL)}
+				RESETCOLOR
+			ENDIF
+			
+			;処理し終えたコピー元は0にする
+			ELE_FLAG:(MAX_PAR:1) = 0
+		NEXT
+	ELSE
+		
+	ENDIF
+ELSE
+	CALL ELEMENT_CONVERT_BIT_REV, CLO_ELE
+	;PRINTFORML 属性値対象:{RESULT}
+	CALL LIFESTYLE, CFLAG:(RESULT+219) / 10
+ENDIF
+
+;============================================================================================
+;属性変化
+;ARG　変化する数値
+;============================================================================================
+@CHANGE_ELEMENT,ARG
+#DIM DOWN_ABL, 1
+#DIM DOWN_PAR, 1
+#DIM MAX_PAR, 4
+#DIM TARGET_PAR, 2
+#DIM CHARA_ELE, 9
+#DIM CHARA_AFTER, 9
+#DIM COPY_POINT, 9
+#DIM COPY_POINT2, 9
+#DIM CLO_ELE, 1
+
+;衣装の属性として入っているかどうか
+#DIM ELE_FLAG, 9
+#DIM ELE_FLAG2, 9
+
+;属性数を格納する変数
+#DIM ELE, 4
+
+;比較用変数
+#DIM COM_PAR, 2
+
+CALL CLOTHE_ABL, "属性"
+CLO_ELE = RESULT
+
+IF (CLO_ELE & 1p1 && CFLAG:属性／姫様 != 100) || (CLO_ELE & 1p2 && CFLAG:属性／メイド != 100) || (CLO_ELE & 1p3 && CFLAG:属性／シスター != 100) || (CLO_ELE & 1p4 && CFLAG:属性／ゴスロリ != 100) || (CLO_ELE & 1p5 && CFLAG:属性／花嫁 != 100) || (CLO_ELE & 1p6 && CFLAG:属性／淫魔 != 100) || (CLO_ELE & 1p7 && CFLAG:属性／乞食 != 100) || (CLO_ELE & 1p8 && CFLAG:属性／武士 != 100) || (CLO_ELE & 1p9 && CFLAG:属性／里娘 != 100)
+	;娼婦の場合、乞食の次に高い割合を調べておく
+	IF TALENT:娼婦
+		REPEAT 9
+			CALL ELEMENT_CONVERT, COUNT
+			LOCALS = %STR%
+			CALL ELEMENT_CONVERT_BIT, COUNT
+			LOCAL = RESULT
+			
+			IF MAX_PAR < CFLAG:("属性／"+STR+"") && STR != "乞食"
+				MAX_PAR = CFLAG:("属性／"+STR+"")
+				MAX_PAR:1 = COUNT
+			ENDIF
+		REND
+		
+		;最も高かった割合の属性を記憶しておく
+		CALL ELEMENT_CONVERT, MAX_PAR:1
+		LOCALS = %STR%
+		
+		;現在着ている服の属性を変換しておく
+		CALL ELEMENT_CONVERT_BIT_REV, CLO_ELE
+		LOCAL:2 = RESULT
+		
+		;現在着ている服の属性を文字列にする
+		CALL ELEMENT_CONVERT, LOCAL:2
+	ENDIF
+	
+	IF CFLAG:属性／乞食 > 50 || !TALENT:娼婦 || (TALENT:娼婦 && CFLAG:("属性／"+STR+"") < 50) || (TALENT:娼婦 && (STR != LOCALS))
+		MAX_PAR = 0
+		MAX_PAR:1 = 0
+		
+		FOR COUNT, 0, 9
+			CHARA_ELE:COUNT = CFLAG:(220+COUNT)
+			IF GETBIT(CLO_ELE, COUNT+1)
+				ELE_FLAG:COUNT = 1
+			ELSE
+				ELE_FLAG:COUNT = 0
+			ENDIF
+		NEXT
+		
+	
+		;初期化
+		VARSET ELE, 0
+		
+		;持っている属性数をサーチ
+		FOR COUNT, 0, 9
+			IF GETBIT(CLO_ELE, COUNT+1)
+				ELE += 1
+				ELE:1 += 1
+			ENDIF
+		NEXT
+		
+		;弾く属性をサーチ
+		FOR COUNT, 0, 9
+			;既定の属性値に達している属性をサーチ
+			IF GETBIT(CLO_ELE, COUNT+1) && CFLAG:(220+COUNT) == 100/ELE
+				ELE:1 -= 1
+			ENDIF
+		NEXT
+		
+		
+		;PRINTFORML {RESULT}
+		;条件を満たせなかった場合、属性変化値を減らす
+		;IF RESULT >= 10
+		;	ARG = RESULT - CHARA_ELE
+		;ENDIF
+		
+		PRINTFORML %CALLNAME:TARGET%は着ている衣装に影響されているようだ……
+		FOR COUNT, 0, 9
+			;属性の内最も高い要素を取る
+			MAX_PAR = MAXARRAY(CHARA_ELE, 0, 9)
+			;該当する属性の位置を取得
+			MAX_PAR:1 = FINDELEMENT(CHARA_ELE, MAX_PAR, 0, 9)
+			
+			;取得したスワップ用変数は0に
+			CHARA_AFTER:COUNT = CHARA_ELE:(MAX_PAR:1)
+			CHARA_ELE:(MAX_PAR:1) = -1
+			COPY_POINT:COUNT = MAX_PAR:1
+			ELE_FLAG2:COUNT = ELE_FLAG:(MAX_PAR:1)
+			ELE_FLAG:(MAX_PAR:1) = 0
+		NEXT
+		
+		;衣装の属性と一致する属性を選出
+		FOR COUNT, 0, 9
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG2, 1, 0, 9)
+			
+			;フラグが立った物が見つからない場合、立っていない物を順に入れていく
+			IF MAX_PAR:1 == -1
+				MAX_PAR:1 = FINDELEMENT(ELE_FLAG2, 0, 0, 9)
+			ENDIF
+			CHARA_ELE:COUNT = CHARA_AFTER:(MAX_PAR:1)
+			
+			;取得した変数元は0にしておく（フラグは2にする）
+			CHARA_AFTER:(MAX_PAR:1) = 0
+			ELE_FLAG:COUNT = ELE_FLAG2:(MAX_PAR:1)
+			ELE_FLAG2:(MAX_PAR:1) = 2
+			COPY_POINT2:COUNT = COPY_POINT:(MAX_PAR:1)
+		NEXT
+		
+		MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 1, 0, 9)
+		
+		;PRINTFORML 判定値{CFLAG:(220+COPY_POINT2)*ELE+ARG}
+		
+		;増加する予定の属性が一定の値に達している場合、習慣による判定を行う
+		CALL LIFESTYLE_LV_CONVERT, CFLAG:(220+COPY_POINT2)*ELE+ARG
+		
+		;PRINTFORML ELE:{ELE}
+		;PRINTFORML COPY_POINT2:{COPY_POINT2}4
+		
+		
+		IF !RESULT && CFLAG:(220+COPY_POINT2) <= 100 / ELE
+			;生活習慣の変更判定に持ちこみ、変更された場合は属性値を上昇させることができる
+			CALL LIFESTYLE, (CFLAG:(220+COPY_POINT2)+ARG)*ELE/10
+			;PRINTFORML テスト:{CFLAG:(220+COPY_POINT2) - RESULT + ARG}
+			IF RESULT >= 10
+				;PRINTFORML テスト:{CFLAG:(220+COPY_POINT2) - RESULT + ARG}
+				ARG = LIMIT((CFLAG:(220+COPY_POINT2) - RESULT) * -1, 0, ARG)
+			ENDIF
+		ELSEIF CFLAG:(220+COPY_POINT2:(ELE-1)) == 100 / ELE && ELE >= 2
+			CALL LIFESTYLE, (CFLAG:(220+COPY_POINT2)+ARG)*ELE/10
+		ELSE
+			BASE:習慣化 = LIMIT(BASE:習慣化-5, 0, MAXBASE:習慣化)
+		ENDIF
+		
+		;衣装フラグが立っている属性の値が規定値以上の場合、それを減らす
+		IF CHARA_ELE > 100 / ELE
+			CALL ELEMENT_CONVERT, COPY_POINT2
+			;減少値判定
+			LOCAL = CFLAG:("属性／"+STR+"") - 100 / ELE
+			;底値より減少値が上回っている場合
+			IF LOCAL < ARG
+				LOCAL:2 = LOCAL
+			ELSE
+				LOCAL:2 = ARG
+			ENDIF
+			
+			PRINTFORM %STR,10,LEFT%:{CFLAG:("属性／"+STR+"")}　→　
+			CFLAG:("属性／"+STR+"") = LIMIT(CFLAG:(220+COPY_POINT2) - LOCAL:2, 100/ELE, 100)
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML {CFLAG:(220+COPY_POINT)}
+			RESETCOLOR
+			ELE:1 -= 1
+		ELSE
+			$RELOOP
+			;衣装属性以外の属性を検索し、それを減らす
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 0, 0, 9)
+			LOCAL = COPY_POINT2:(MAX_PAR:1)
+			CALL ELEMENT_CONVERT, COPY_POINT2:(MAX_PAR:1)
+			
+			;娼婦の場合乞食属性は50％以上の場合減らす
+			IF COPY_POINT2:(MAX_PAR:1) == 6 && CHARA_ELE:(MAX_PAR:1) <= 50 && TALENT:娼婦
+				CHARA_ELE:(MAX_PAR:1) = 0
+				ELE_FLAG:(MAX_PAR:1) = 2
+				GOTO RELOOP
+			ENDIF
+			
+			;減少値判定
+			;底値より減少値が上回っている場合
+			
+			;娼婦の場合、乞食は50％までしか減らない
+			IF TALENT:娼婦 && COPY_POINT2:(MAX_PAR:1) == 6 && (CFLAG:属性／乞食 - 50) < ARG * ELE:1
+				LOCAL:2 = CFLAG:属性／乞食 - 50
+			ELSEIF CFLAG:("属性／"+STR+"") < ARG * ELE:1
+				LOCAL:2 = CFLAG:("属性／"+STR+"")
+			ELSE
+				LOCAL:2 = ARG * ELE:1
+			ENDIF
+			
+			
+			;PRINTFORML LOCAL:{LOCAL:2}
+			
+			PRINTFORM %STR,10,LEFT%:{CFLAG:("属性／"+STR+"")}　→　
+			CFLAG:("属性／"+STR+"") = LIMIT(CFLAG:(220+LOCAL) - LOCAL:2, 0, 100)
+			CALL SETCOLOR_PALAMDOWN
+			PRINTFORML {CFLAG:(220+LOCAL)}
+			RESETCOLOR
+		ENDIF
+		
+		;属性増加処理
+		FOR COUNT, 0, 9
+			;属性を持つ要素をサーチ
+			MAX_PAR:1 = FINDELEMENT(ELE_FLAG, 1, 0, 9)
+			
+			;属性を持った要素がなくなればループから抜ける
+			IF MAX_PAR:1 == -1
+				CONTINUE
+			ENDIF
+			
+			LOCAL = COPY_POINT2:(MAX_PAR:1)
+			CALL ELEMENT_CONVERT, LOCAL
+			
+			;限界値より上の属性はスキップ
+			IF CFLAG:("属性／"+STR+"") < 100 / ELE
+				IF LOCAL:2 < ARG
+					LOCAL:3 = LOCAL:2
+				ELSE
+					LOCAL:3 = ARG
+					LOCAL:2 -= ARG
+				ENDIF
+				PRINTFORM %STR,10,LEFT%:{CFLAG:("属性／"+STR+"")}　→　
+				;娼婦の場合、50をELEで分けることになる
+				IF TALENT:娼婦 && LOCAL != 6
+					CFLAG:("属性／"+STR+"") = LIMIT(CFLAG:(220+LOCAL) + LOCAL:3, 0, 50/ELE)
+				ELSE
+					CFLAG:("属性／"+STR+"") = LIMIT(CFLAG:(220+LOCAL) + LOCAL:3, 0, 100/ELE)
+				ENDIF
+				CALL SETCOLOR_PALAMUP
+				PRINTFORML {CFLAG:(220+LOCAL)}
+				RESETCOLOR
+			ENDIF
+			
+			;処理し終えたコピー元は0にする
+			ELE_FLAG:(MAX_PAR:1) = 0
+		NEXT
+	ELSE
+		
+	ENDIF
+ELSE
+	CALL ELEMENT_CONVERT_BIT_REV, CLO_ELE
+	;PRINTFORML 属性値対象:{RESULT}
+	CALL LIFESTYLE, CFLAG:(RESULT+219) / 10
+ENDIF
+
+
